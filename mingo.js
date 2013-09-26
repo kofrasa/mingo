@@ -260,7 +260,7 @@
         for (var i = 0; i < this._pipe.length; i++) {
           var operator = this._pipe[i];
           for (var key in operator) {
-            collection = pipelineOperators[key].apply(null, [collection, operator[key]]);
+            collection = pipelineOperators[key](collection, operator[key]);
           }
         }
       }
@@ -429,11 +429,11 @@
       var field = expr.substr(1);
       _.each(collection, function (obj) {
         // must throw an error if value is not an array
-        if (_.has(obj, field) && _.isArray(obj[field])) {
-          _.each(obj[field], function (item) {
-            var clone = _.clone(obj);
-            clone[field] = item;
-            result.push(clone);
+        var value = mingo._get(obj, field);
+        if (!!value && _.isArray(value)) {
+          _.each(value, function (item) {
+            obj[field] = item;
+            result.push(obj);
           });
         }
       });
@@ -445,7 +445,7 @@
         var modifiers = _.keys(sortKeys);
         modifiers.reverse().forEach(function (key) {
           var grouped = _.groupBy(collection, function (obj) {
-            return obj[key];
+            return mingo._get(obj, key);
           });
           var indexes = _.keys(grouped);
           var sorted = _.sortBy(indexes, function (obj) {
