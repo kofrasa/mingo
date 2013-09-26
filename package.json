@@ -1,0 +1,35 @@
+{
+  "name": "mingo",
+  "version": "1.0.0",
+  "description": "Javascript implementation of mongo-esque syntax for querying collections",
+  "main": "mingo.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "uglifyjs mingo.js -c -o mingo-min.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kofrasa/mingo.git"
+  },
+  "files": ["mingo.js", "mingo-min.js", "README.md", "LICENSE"],
+  "keywords": [
+    "util",
+    "mongo",
+    "nosql",
+    "query",
+    "browser",
+    "functional",
+    "aggregation",
+    "filtering",
+    "grouping",
+    "searching"
+  ],
+  "author": "Francis Asante <kofrasa@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kofrasa/mingo/issues"
+  }
+}
