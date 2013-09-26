@@ -129,7 +129,7 @@
     this.query = query;
     this.collection = collection;
     this._projection = projection;
-    this._pipe = {};
+    this._operators = {};
     this._result = false;
     this._position = 0;
   };
@@ -137,27 +137,33 @@
   mingo.Cursor.prototype = {
 
     _fetch: function () {
+      var self = this;
+
       if (this._result === false) {
 
         // inject projection operator
         if (_.isObject(this._projection)) {
-          _.extend(this._pipe, {"$project": this._projection});
+          _.extend(this._operators, {"$project": this._projection});
         }
 
-        // suport Backbone Collections if available
+        // support Backbone Collections if available
         if (root != null && !!root.Backbone && !!root.Backbone.Collection) {
           if (this.collection instanceof root.Backbone.Collection) {
             this.collection = this.collection.models;
           }
         }
 
+        if (!_.isArray(this.collection)) {
+          throw Error("Input collection is not of a valid type.")
+        }
+
         // filter collection
         this._result = _.filter(this.collection, this.query.test, this.query);
-
         var pipeline = [];
+
         _.each(['$sort', '$skip', '$limit', '$project'], function (op) {
-          if (_.has(this._pipe, op)) {
-            pipeline.push(_.pick(this._pipe, op));
+          if (_.has(self._operators, op)) {
+            pipeline.push(_.pick(self._operators, op));
           }
         });
 
@@ -201,7 +207,7 @@
      * @return {mingo.Cursor} Returns the cursor, so you can chain this call.
      */
     skip: function(n) {
-      _.extend(this._pipe, {"$skip": n});
+      _.extend(this._operators, {"$skip": n});
       return this;
     },
 
@@ -211,7 +217,7 @@
      * @return {mingo.Cursor} Returns the cursor, so you can chain this call.
      */
     limit: function(n) {
-      _.extend(this._pipe, {"$limit": n});
+      _.extend(this._operators, {"$limit": n});
       return this;
     },
 
@@ -221,7 +227,7 @@
      * @return {mingo.Cursor} Returns the cursor, so you can chain this call.
      */
     sort: function (modifier) {
-      _.extend(this._pipe, {"$sort": modifier});
+      _.extend(this._operators, {"$sort": modifier});
       return this;
     },
 
@@ -259,15 +265,15 @@
   };
 
   mingo.Aggregator = function (operators) {
-    this._pipe = operators;
+    this._operators = operators;
   };
 
   mingo.Aggregator.prototype =  {
     run: function (collection) {
-      if (!_.isEmpty(this._pipe)) {
+      if (!_.isEmpty(this._operators)) {
         // run aggregation pipeline
-        for (var i = 0; i < this._pipe.length; i++) {
-          var operator = this._pipe[i];
+        for (var i = 0; i < this._operators.length; i++) {
+          var operator = this._operators[i];
           for (var key in operator) {
             collection = pipelineOperators[key](collection, operator[key]);
           }
