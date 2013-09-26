@@ -154,7 +154,6 @@
 
         if (!_.isEmpty(this._pipe)) {
           var aggregator = new mingo.Aggregator(this._pipe);
-          alert("Ds");
           this._result = aggregator.run(this._result);
         }
       }
