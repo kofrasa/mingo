@@ -129,7 +129,7 @@
     this.query = query;
     this.collection = collection;
     this._projection = projection;
-    this._pipe = [];
+    this._pipe = {};
     this._result = false;
     this._position = 0;
   };
@@ -138,13 +138,15 @@
 
     _fetch: function () {
       if (this._result === false) {
+
         // inject projection operator
-        if (!_.isEmpty(this._projection) && _.isObject(this._projection)) {
-          this._pipe.push({"$project": this._projection});
+        if (_.isObject(this._projection)) {
+          _.extend(this._pipe, {"$project": this._projection});
         }
 
+        // suport Backbone Collections if available
         if (root != null && !!root.Backbone && !!root.Backbone.Collection) {
-          if ( this.collection instanceof root.Backbone.Collection) {
+          if (this.collection instanceof root.Backbone.Collection) {
             this.collection = this.collection.models;
           }
         }
@@ -152,8 +154,15 @@
         // filter collection
         this._result = _.filter(this.collection, this.query.test, this.query);
 
-        if (!_.isEmpty(this._pipe)) {
-          var aggregator = new mingo.Aggregator(this._pipe);
+        var pipeline = [];
+        _.each(['$sort', '$skip', '$limit', '$project'], function (op) {
+          if (_.has(this._pipe, op)) {
+            pipeline.push(_.pick(this._pipe, op));
+          }
+        });
+
+        if (pipeline.length > 0) {
+          var aggregator = new mingo.Aggregator(pipeline);
           this._result = aggregator.run(this._result);
         }
       }
@@ -192,7 +201,7 @@
      * @return {mingo.Cursor} Returns the cursor, so you can chain this call.
      */
     skip: function(n) {
-      this._pipe.push({"$skip": n});
+      _.extend(this._pipe, {"$skip": n});
       return this;
     },
 
@@ -202,7 +211,7 @@
      * @return {mingo.Cursor} Returns the cursor, so you can chain this call.
      */
     limit: function(n) {
-      this._pipe.push({"$limit": n});
+      _.extend(this._pipe, {"$limit": n});
       return this;
     },
 
@@ -212,7 +221,7 @@
      * @return {mingo.Cursor} Returns the cursor, so you can chain this call.
      */
     sort: function (modifier) {
-      this._pipe.push({"$sort": modifier});
+      _.extend(this._pipe, {"$sort": modifier});
       return this;
     },
 
@@ -331,16 +340,8 @@
    * @type {{find: Function}}
    */
   mingo.CollectionMixin = {
-    query: function (criteria, projection, options) {
-      var cursor = mingo.find(this.models, criteria, projection);
-      if (_.isObject(options)) {
-        _.each(['sort', 'skip', 'limit'], function (item) {
-          if (!!options[item]) {
-            cursor[item].call(cursor, options[item]);
-          }
-        });
-      }
-      return cursor;
+    query: function (criteria, projection) {
+      return mingo.find(this, criteria, projection);
     }
   };
 
