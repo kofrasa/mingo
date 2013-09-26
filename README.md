@@ -12,10 +12,10 @@ Thank you and your fellow contributors
 
 Features
 ---------
-Simple Comparisons ($gt, $gte, $lt, $lte, $regex, $mod, $ne, $nin, $in, $all, $not)
-Full conjunction support ($and, $or, $nor)
-Aggregation Pipeline ($group, $match, $project, $sort, $limit, $unwind)
-Group Operators
+- Simple Comparisons ($gt, $gte, $lt, $lte, $regex, $mod, $ne, $nin, $in, $all, $not)
+- Full conjunction support ($and, $or, $nor)
+- Aggregation Pipeline ($group, $match, $project, $sort, $limit, $unwind)
+- Group Operators
 
 
 Installing
