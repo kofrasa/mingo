@@ -53,6 +53,7 @@ $(document).ready(function () {
       [{"circles.school": {$in: ["Henry"]}}, "can check that value is in array"],
       [{"circles.family": {$nin: ["Pamela"]}}, "can check that value is not in array"],
       [{"languages.programming": {$size: 7 }}, "can determine size of array"],
+      [{"projects.Python": "Flaskapp"}, "can match elements in array"],
       [{"date.month": {$mod: [8, 1]}}, "can check modulo of values"],
       [{"languages.spoken": {$not: {$all: ["english", "french"]}}}, "can check that all values exists in array"]
     ];
