@@ -9,23 +9,20 @@
 
   // global on the server, window in the browser
   var root = this;
-  var Mingo = {}, previous_Mingo;
+  var Mingo = {}, previousMingo;
   var _;
 
   // backup previous Mingo
   if (root != null) {
-    previous_Mingo = root.Mingo;
+    previousMingo = root.Mingo;
   }
 
   Mingo.noConflict = function () {
-    root.Mingo = previous_Mingo;
+    root.Mingo = previousMingo;
     return Mingo;
   };
 
-  // Export the Mingo object for **Node.js**, with
-  // backwards-compatibility for the old `require()` API. If we're in
-  // the browser, add `_` as a global object via a string identifier,
-  // for Closure Compiler "advanced" mode.
+  // Export the Mingo object for **Node.js**
   if (typeof exports !== 'undefined') {
     if (typeof module !== 'undefined' && module.exports) {
       exports = module.exports = Mingo;
@@ -62,6 +59,11 @@
     return value;
   };
 
+  /**
+   * Query object to test collection elements with
+   * @param criteria the pass criteria for the query
+   * @constructor
+   */
   Mingo.Query = function (criteria) {
     this._criteria = criteria;
     this._compiledSelectors = [];
@@ -112,7 +114,7 @@
       var match = true;
       for (var i = 0; i < this._compiledSelectors.length; i++) {
         var compiled = this._compiledSelectors[i];
-        match = compiled.test(model, compiled['context']);
+        match = compiled.test(model);
         if (match === false) {
           break;
         }

@@ -798,5 +798,5 @@
   { "_id" : { "$oid" : "50906d7fa3c412bb040eb893" }, "student_id" : 199, "type" : "exam", "score" : 67.33828604577803 },
   { "_id" : { "$oid" : "50906d7fa3c412bb040eb894" }, "student_id" : 199, "type" : "quiz", "score" : 48.15737364405101 },
   { "_id" : { "$oid" : "50906d7fa3c412bb040eb895" }, "student_id" : 199, "type" : "homework", "score" : 49.34223066136407 },
-  { "_id" : { "$oid" : "50906d7fa3c412bb040eb896" }, "student_id" : 199, "type" : "homework", "score" : 58.09608083191365 },
+  { "_id" : { "$oid" : "50906d7fa3c412bb040eb896" }, "student_id" : 199, "type" : "homework", "score" : 58.09608083191365 }
 ]

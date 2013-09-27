@@ -40,7 +40,7 @@ $(document).ready(function () {
     }
   };
 
-  test("simple comparisons tests", function () {
+  test("Simple comparisons", function () {
     var queries = [
       [{firstName: "Francis"}, "can check for equality"],,
       [{lastName: /^a.+e/i}, "can check against regex"],
@@ -65,7 +65,7 @@ $(document).ready(function () {
   });
 
 
-  test("conjunctions tests", function () {
+  test("Conjunctions", function () {
     var queries = [
       [{$and: [{firstName: "Francis"},{lastName: /^a.+e/i}]}, "can use conjunction true AND true"],
       [{$and: [{firstName: "Francis"},{lastName: "Amoah"}]}, false, "can use conjunction true AND false"],
