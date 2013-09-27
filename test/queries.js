@@ -40,7 +40,7 @@ $(document).ready(function () {
     }
   };
 
-  test("simple comparisons", function () {
+  test("simple comparisons tests", function () {
     var queries = [
       [{firstName: "Francis"}, "can check for equality"],,
       [{lastName: /^a.+e/i}, "can check against regex"],
@@ -58,12 +58,12 @@ $(document).ready(function () {
     ];
 
     _.each(queries, function (q) {
-      ok(mingo.compile(q[0]).test(obj), q[1]);
+      ok(Mingo.compile(q[0]).test(obj), q[1]);
     });
   });
 
 
-  test("conjunctions", function () {
+  test("conjunctions tests", function () {
     var queries = [
       [{$and: [{firstName: "Francis"},{lastName: /^a.+e/i}]}, "can use conjunction true AND true"],
       [{$and: [{firstName: "Francis"},{lastName: "Amoah"}]}, false, "can use conjunction true AND false"],
@@ -83,9 +83,9 @@ $(document).ready(function () {
 
     _.each(queries, function (q) {
       if (q.length === 2) {
-        ok(mingo.compile(q[0]).test(obj), q[1]);
+        ok(Mingo.compile(q[0]).test(obj), q[1]);
       } else if (q.length === 3) {
-        equal(mingo.compile(q[0]).test(obj), q[1], q[2]);
+        equal(Mingo.compile(q[0]).test(obj), q[1], q[2]);
       }
     });
   });

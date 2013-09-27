@@ -9,32 +9,32 @@
 
   // global on the server, window in the browser
   var root = this;
-  var mingo = {}, previous_mingo;
+  var Mingo = {}, previous_Mingo;
   var _;
 
-  // backup previous mingo
+  // backup previous Mingo
   if (root != null) {
-    previous_mingo = root.mingo;
+    previous_Mingo = root.Mingo;
   }
 
-  mingo.noConflict = function () {
-    root.mingo = previous_mingo;
-    return mingo;
+  Mingo.noConflict = function () {
+    root.Mingo = previous_Mingo;
+    return Mingo;
   };
 
-  // Export the mingo object for **Node.js**, with
+  // Export the Mingo object for **Node.js**, with
   // backwards-compatibility for the old `require()` API. If we're in
   // the browser, add `_` as a global object via a string identifier,
   // for Closure Compiler "advanced" mode.
   if (typeof exports !== 'undefined') {
     if (typeof module !== 'undefined' && module.exports) {
-      exports = module.exports = mingo;
+      exports = module.exports = Mingo;
     } else {
-      exports = mingo;
+      exports = Mingo;
     }
     _ = require("underscore"); // get a reference to underscore
   } else {
-    root.mingo = mingo;
+    root.Mingo = Mingo;
     _ = root._; // get a reference to underscore
   }
 
@@ -56,13 +56,13 @@
     return value;
   };
 
-  mingo.Query = function (criteria) {
+  Mingo.Query = function (criteria) {
     this._criteria = criteria;
     this._compiledSelectors = [];
     this._compile();
   };
 
-  mingo.Query.prototype = {
+  Mingo.Query.prototype = {
 
     _compile: function () {
       if (!_.isEmpty(this._criteria) && _.isObject(this._criteria)) {
@@ -89,7 +89,7 @@
       if (_.contains(Ops.simpleOperators, operator)) {
         compiledSelector = {
           test: function (obj) {
-            var actualValue = mingo._resolve(obj, field);
+            var actualValue = Mingo._resolve(obj, field);
             // value of operator must already be fully resolved.
             return simpleOperators[operator](actualValue, value);
           }
@@ -113,7 +113,7 @@
     },
 
     find: function(collection, projection) {
-      return new mingo.Cursor(collection, this, projection);
+      return new Mingo.Cursor(collection, this, projection);
     }
 
   };
@@ -125,7 +125,7 @@
    * @param projection
    * @constructor
    */
-  mingo.Cursor = function (collection, query, projection) {
+  Mingo.Cursor = function (collection, query, projection) {
     this.query = query;
     this.collection = collection;
     this._projection = projection;
@@ -134,7 +134,7 @@
     this._position = 0;
   };
 
-  mingo.Cursor.prototype = {
+  Mingo.Cursor.prototype = {
 
     _fetch: function () {
       var self = this;
@@ -168,7 +168,7 @@
         });
 
         if (pipeline.length > 0) {
-          var aggregator = new mingo.Aggregator(pipeline);
+          var aggregator = new Mingo.Aggregator(pipeline);
           this._result = aggregator.run(this._result);
         }
       }
@@ -204,7 +204,7 @@
      * This is useful for pagination.
      * Default is to skip zero results.
      * @param {Number} n the number of results to skip.
-     * @return {mingo.Cursor} Returns the cursor, so you can chain this call.
+     * @return {Mingo.Cursor} Returns the cursor, so you can chain this call.
      */
     skip: function(n) {
       _.extend(this._operators, {"$skip": n});
@@ -214,7 +214,7 @@
     /**
      * Sets the limit of the number of results to return.
      * @param {Number} n the number of results to limit to.
-     * @return {mingo.Cursor} Returns the cursor, so you can chain this call.
+     * @return {Mingo.Cursor} Returns the cursor, so you can chain this call.
      */
     limit: function(n) {
       _.extend(this._operators, {"$limit": n});
@@ -224,7 +224,7 @@
     /**
      * Sets the sort order of the matching objects
      * @param {Object} modifier an object of key fields and the sort order. 1 for ascending and -1 for descending
-     * @return {mingo.Cursor} Returns the cursor, so you can chain this call.
+     * @return {Mingo.Cursor} Returns the cursor, so you can chain this call.
      */
     sort: function (modifier) {
       _.extend(this._operators, {"$sort": modifier});
@@ -264,11 +264,11 @@
 
   };
 
-  mingo.Aggregator = function (operators) {
+  Mingo.Aggregator = function (operators) {
     this._operators = operators;
   };
 
-  mingo.Aggregator.prototype =  {
+  Mingo.Aggregator.prototype =  {
     run: function (collection) {
       if (!_.isEmpty(this._operators)) {
         // run aggregation pipeline
@@ -290,7 +290,7 @@
    * @returns {*}
    * @private
    */
-  mingo._get = function (obj, field) {
+  Mingo._get = function (obj, field) {
     if (root != null && !!root.Backbone && !!root.Backbone.Model) {
       if (obj instanceof root.Backbone.Model) {
         return obj.get(field);
@@ -305,14 +305,14 @@
    * @param field
    * @returns {*}
    */
-  mingo._resolve = function (obj, field) {
+  Mingo._resolve = function (obj, field) {
     if (!field) {
       return undefined;
     }
     var chain = field.split(".");
     var value = obj;
     for (var i = 0; i < chain.length; i++) {
-      value = mingo._get(value, chain[i]);
+      value = Mingo._get(value, chain[i]);
       if (value === undefined) {
         break;
       }
@@ -324,10 +324,10 @@
   /**
    * Compiles a criteria to a Query object
    * @param criteria
-   * @returns {mingo.Query}
+   * @returns {Mingo.Query}
    */
-  mingo.compile = function (criteria) {
-    return new mingo.Query(criteria);
+  Mingo.compile = function (criteria) {
+    return new Mingo.Query(criteria);
   };
 
   /**
@@ -337,17 +337,17 @@
    * @param projection
    * @returns {*}
    */
-  mingo.find = function (collection, criteria, projection) {
-    return mingo.compile(criteria).find(collection, projection);
+  Mingo.find = function (collection, criteria, projection) {
+    return Mingo.compile(criteria).find(collection, projection);
   };
 
   /**
    * Mixin for Backbone.Collection objects
    * @type {{find: Function}}
    */
-  mingo.CollectionMixin = {
+  Mingo.CollectionMixin = {
     query: function (criteria, projection) {
-      return mingo.find(this, criteria, projection);
+      return Mingo.find(this, criteria, projection);
     }
   };
 
@@ -375,7 +375,7 @@
     },
 
     $match: function (collection, expr) {
-      var query = new mingo.Query(expr);
+      var query = new Mingo.Query(expr);
       return query.find(collection).all();
     },
 
@@ -436,7 +436,7 @@
       var field = expr.substr(1);
       _.each(collection, function (obj) {
         // must throw an error if value is not an array
-        var value = mingo._get(obj, field);
+        var value = Mingo._get(obj, field);
         if (!!value && _.isArray(value)) {
           _.each(value, function (item) {
             obj[field] = item;
@@ -452,7 +452,7 @@
         var modifiers = _.keys(sortKeys);
         modifiers.reverse().forEach(function (key) {
           var grouped = _.groupBy(collection, function (obj) {
-            return mingo._get(obj, key);
+            return Mingo._get(obj, key);
           });
           var indexes = _.keys(grouped);
           var sorted = _.sortBy(indexes, function (obj) {
@@ -489,7 +489,7 @@
       }
       var queries = [];
       _.each(value, function (expr) {
-        queries.push(new mingo.Query(expr));
+        queries.push(new Mingo.Query(expr));
       });
 
       return {
@@ -518,7 +518,7 @@
       }
       var queries = [];
       _.each(value, function (expr) {
-        queries.push(new mingo.Query(expr));
+        queries.push(new Mingo.Query(expr));
       });
 
       return {
@@ -564,7 +564,7 @@
     $not: function (selector, value) {
       var criteria = {};
       criteria[selector] = normalize(value);
-      var query = new mingo.Query(criteria);
+      var query = new Mingo.Query(criteria);
       return {
         test: function (obj) {
           return !query.test(obj);
@@ -906,7 +906,7 @@
   var flatten = function(obj, args, action) {
     for (var i = 0; i < args.length; i++) {
       if (_.isString(args[i]) && args[i].startsWith("$")) {
-        args[i] = mingo._resolve(obj, args[i].substr(1));
+        args[i] = Mingo._resolve(obj, args[i].substr(1));
       }
       if (typeof action === "function") {
         action(args[i]);
@@ -946,7 +946,7 @@
     // field must be blank in this case
     if (_.isString(expr)) {
       if (expr.length > 0 && expr[0] === "$") {
-        return mingo._resolve(record, expr.substr(1));
+        return Mingo._resolve(record, expr.substr(1));
       }
     }
 
