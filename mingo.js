@@ -159,7 +159,7 @@
         // support Backbone Collections if available
         if (root != null && !!root.Backbone && !!root.Backbone.Collection) {
           if (this.collection instanceof root.Backbone.Collection) {
-            this.collection = this.collection.models;
+            this.collection = this.collection.toJSON();
           }
         }
 
@@ -301,11 +301,6 @@
    * @private
    */
   Mingo._get = function (obj, field) {
-    if (root != null && !!root.Backbone && !!root.Backbone.Model) {
-      if (obj instanceof root.Backbone.Model) {
-        return obj.get(field);
-      }
-    }
     return _.result(obj, field);
   };
 
