@@ -53,6 +53,12 @@
         }
       }
     }
+    if (_.isObject(value)) {
+      var notQuery = _.intersection(Ops.queryOperators, _.keys(value)).length === 0;
+      if (notQuery) {
+        return {"$eq": value};
+      }
+    }
     return value;
   };
 
@@ -70,7 +76,7 @@
           var value = this._criteria[name];
           if (_.contains(Ops.compoundOperators, name)) {
             if (_.contains(["$not", "$elemMatch"], name)) {
-              throw new Error("Invalid operator");
+              throw Error("Invalid operator");
             }
             this._processOperator(name, name, value);
           } else {
@@ -94,8 +100,10 @@
             return simpleOperators[operator](actualValue, value);
           }
         };
-      } else {
+      } else if (_.contains(Ops.compoundOperators, operator)) {
         compiledSelector = compoundOperators[operator](field, value);
+      } else {
+        throw Error("Invalid query operator '" + operator + "' detected");
       }
       this._compiledSelectors.push(compiledSelector);
     },
@@ -901,6 +909,7 @@
     groupOperators: _.keys(groupOperators),
     pipelineOperators: _.keys(pipelineOperators)
   };
+  Ops.queryOperators = _.union(Ops.simpleOperators, Ops.compoundOperators);
 
 
   var flatten = function(obj, args, action) {

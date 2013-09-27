@@ -55,7 +55,8 @@ $(document).ready(function () {
       [{"languages.programming": {$size: 7 }}, "can determine size of array"],
       [{"projects.Python": "Flaskapp"}, "can match elements in array"],
       [{"date.month": {$mod: [8, 1]}}, "can check modulo of values"],
-      [{"languages.spoken": {$not: {$all: ["english", "french"]}}}, "can check that all values exists in array"]
+      [{"languages.spoken": {$not: {$all: ["english", "french"]}}}, "can check that all values exists in array"],
+      [{date: {year: 2013, month: 9, day: 25}}, "can match field with object values"]
     ];
 
     _.each(queries, function (q) {
