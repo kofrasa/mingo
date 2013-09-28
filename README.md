@@ -94,7 +94,7 @@ cursor = grades.query({
     $or: [{type: "quiz", score: {$lt: 50}}, {type: "homework", score: {$lt: 50}}]
 }).sort({score: 1, type: -1}).limit(10);
 
-// print grade with the lowerst score
+// print grade with the lowest score
 console.log(cursor.one());
 ~~~
 
