@@ -247,7 +247,7 @@
      */
     next: function () {
       if (this.hasNext()) {
-        return this._result[this._position++];
+        return this.all()[this._position++];
       }
       return false;
     },
@@ -257,7 +257,7 @@
      * @returns {boolean}
      */
     hasNext: function () {
-      return this._fetch().length > this._position;
+      return this.count() > this._position;
     },
 
     max: function (expr) {
@@ -268,8 +268,10 @@
       return groupOperators.$min(this.all(), expr);
     },
 
-    map: function () {
-
+    map: function (callback) {
+      return _.map(this._fetch(), function (obj) {
+        return callback(obj);
+      });
     }
 
   };
