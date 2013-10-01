@@ -75,17 +75,36 @@
     _compile: function () {
       if (!_.isEmpty(this._criteria) && _.isObject(this._criteria)) {
         for (var name in this._criteria) {
-          var value = this._criteria[name];
+          var expr = this._criteria[name];
           if (_.contains(Ops.compoundOperators, name)) {
             if (_.contains(["$not", "$elemMatch"], name)) {
               throw Error("Invalid operator");
             }
-            this._processOperator(name, name, value);
+            this._processOperator(name, name, expr);
           } else {
-            // normalize value
-            value = normalize(value);
-            for (var operator in value) {
-              this._processOperator(name, operator, value[operator]);
+            // normalize expression
+            expr = normalize(expr);
+            for (var operator in expr) {
+              if (_.contains(['$options'], operator)) {
+                continue;
+              }
+              // handle regex with options
+              if (operator === "$regex") {
+                var regex = expr[operator];
+                var options = expr['$options'] || "";
+                var modifiers = "";
+                if (_.isString(regex)) {
+                  regex = new RegExp(regex);
+                }
+                modifiers += (regex.ignoreCase || options.indexOf("i") >= 0)? "i" : "";
+                modifiers += (regex.multiline || options.indexOf("m") >= 0)? "m" : "";
+                modifiers += (regex.global || options.indexOf("g") >= 0)? "g" : "";
+
+                regex = new RegExp(regex.source, modifiers);
+                expr[operator] = regex;
+              }
+
+              this._processOperator(name, operator, expr[operator]);
             }
           }
         }
