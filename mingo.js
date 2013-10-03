@@ -216,8 +216,16 @@
      * Fetch and return the first matching result
      * @returns {Object}
      */
-    one: function () {
-      return _.first(this._fetch(), 1);
+    first: function () {
+      return this.count() > 0 ? this._fetch()[0] : null;
+    },
+
+    /**
+     * Fetch and return the last matching object from the result
+     * @returns {Object}
+     */
+    last: function () {
+      return this.count() > 0 ? this._fetch()[this.count() - 1] : null;
     },
 
     /**

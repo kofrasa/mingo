@@ -43,6 +43,8 @@ $(document).ready(function () {
       var cursor = query.find(data);
       ok(cursor.hasNext(), "can peek for an item");
       ok(cursor.next(), "can select next item");
+      ok(_.isObject(cursor.first()), "can retrieve first item");
+      ok(_.isObject(cursor.last()), "can retrieve last item");
       equal(cursor.count(), 800, "can count items");
 
     });
@@ -63,10 +65,16 @@ $(document).ready(function () {
     });
 
   }).then(function () {
-      test("Aggregation pipeline", function () {
+      test("Aggregation - $project", function () {
 
+        var grades = testData['grades_simple'];
+        var cursor = Mingo.find(grades, {
+          score: {$gte: 50}
+        }, {type: 1, score: 1}).sort({score: 1});
 
-
+        var obj = cursor.first();
+        ok(_.has(obj, "type", "_id") && !_.has(obj, "student_id"), "can project fields");
+        ok(cursor.count() < grades.length);
 
       });
     });
