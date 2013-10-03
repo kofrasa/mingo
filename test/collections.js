@@ -59,11 +59,16 @@ $(document).ready(function () {
         $or: [{type: "quiz", score: {$lt: 50}}, {type: "homework", score: {$lt: 50}}]
       }, {student_id:1}).sort({score: 1});
 
-//      console.log(cursor.one());
-
       ok(cursor.count() < 800, "can query Backbone collection");
     });
 
-  });
+  }).then(function () {
+      test("Aggregation pipeline", function () {
+
+
+
+
+      });
+    });
 
 });

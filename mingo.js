@@ -148,7 +148,7 @@
   };
 
   /**
-   * Cursor to
+   * Cursor to iterate and perform filtering on matched objects
    * @param collection
    * @param query
    * @param projection
@@ -230,8 +230,7 @@
 
     /**
      * Sets the number of results to skip before returning any results.
-     * This is useful for pagination.
-     * Default is to skip zero results.
+     * You must apply cursor.skip() to the cursor before retrieving any matching objects.
      * @param {Number} n the number of results to skip.
      * @return {Mingo.Cursor} Returns the cursor, so you can chain this call.
      */
@@ -242,6 +241,7 @@
 
     /**
      * Sets the limit of the number of results to return.
+     * You must apply limit() to the cursor before retrieving any documents.
      * @param {Number} n the number of results to limit to.
      * @return {Mingo.Cursor} Returns the cursor, so you can chain this call.
      */
@@ -252,7 +252,7 @@
 
     /**
      * Sets the sort order of the matching objects
-     * @param {Object} modifier an object of key fields and the sort order. 1 for ascending and -1 for descending
+     * @param {Object} modifier an object of key and values specifying the sort order. 1 for ascending and -1 for descending
      * @return {Mingo.Cursor} Returns the cursor, so you can chain this call.
      */
     sort: function (modifier) {
@@ -261,12 +261,12 @@
     },
 
     /**
-     * Fetched the next value in the cursor
-     * @returns {*}
+     * Fetches the next value in the iteration of the cursor
+     * @returns {Object | Boolean}
      */
     next: function () {
       if (this.hasNext()) {
-        return this.all()[this._position++];
+        return this._fetch()[this._position++];
       }
       return false;
     },
@@ -279,18 +279,39 @@
       return this.count() > this._position;
     },
 
+    /**
+     * Specifies the exclusive upper bound for a specific field
+     * @param expr
+     * @returns {Number}
+     */
     max: function (expr) {
-      return groupOperators.$max(this.all(), expr);
+      return groupOperators.$max(this._fetch(), expr);
     },
 
+    /**
+     * Specifies the inclusive lower bound for a specific field
+     * @param expr
+     * @returns {Number}
+     */
     min: function (expr) {
-      return groupOperators.$min(this.all(), expr);
+      return groupOperators.$min(this._fetch(), expr);
     },
 
+    /**
+     * Applies function to each document visited by the cursor and collects the return values from successive application into an array.
+     * @param callback
+     * @returns {Array}
+     */
     map: function (callback) {
-      return _.map(this._fetch(), function (obj) {
-        return callback(obj);
-      });
+      return _.map(this._fetch(), callback);
+    },
+
+    /**
+     * Iterates the cursor to apply a JavaScript function to each document from the cursor
+     * @param callback
+     */
+    forEach: function (callback) {
+      _.each(this._fetch(), callback);
     }
 
   };
@@ -369,9 +390,14 @@
 
   /**
    * Mixin for Backbone.Collection objects
-   * @type {{find: Function}}
    */
   Mingo.CollectionMixin = {
+    /**
+     * Runs a query and returns a cursor to the result
+     * @param criteria
+     * @param projection
+     * @returns {Mingo.Cursor}
+     */
     query: function (criteria, projection) {
       return Mingo.find(this, criteria, projection);
     }
@@ -380,17 +406,17 @@
   var pipelineOperators = {
 
     $group: function (collection, expr) {
-      var id = expr["_id"];
+      var id = expr["id"];
       var groups = _.groupBy(collection, function (obj) {
         return computeValue(obj, id, id);
       });
 
-      expr = _.omit(expr, "_id");
+      expr = _.omit(expr, "id");
       groups = _.pairs(groups);
       var result = [];
       while (groups.length > 0) {
         var tuple = groups.pop();
-        var obj = {"_id": tuple[0]};
+        var obj = {"id": tuple[0]};
         for (var key in expr) {
           obj[key] = accumulate(tuple[1], key, expr[key]);
         }
