@@ -67,8 +67,9 @@ while (cursor.hasNext()) {
     console.log(cursor.next());
 }
 
-// use one() or all() to retrieve first or all matched objects
-console.log(cursor.one());
+// use first() or all() to retrieve first or all matched objects
+console.log(cursor.first());
+console.log(cursor.last());
 console.log(cursor.all());
 
 // second example
@@ -82,7 +83,7 @@ query = Mingo.compile({
 cursor = query.find(collection, {student_id: 1, type: 1}).sort({score: 1});
 console.log("all grades > 50 sorted by score: " + cursor.count());
 
-console.log(cursor.one()); // log the first highest record
+console.log(cursor.first()); // log the first highest record
 
 // using with Backbone
 var Grades = Backbone.Collection.extend(Mingo.CollectionMixin);
@@ -95,7 +96,7 @@ cursor = grades.query({
 }).sort({score: 1, type: -1}).limit(10);
 
 // print grade with the lowest score
-console.log(cursor.one());
+console.log(cursor.first());
 ~~~
 
 More to come soon...
