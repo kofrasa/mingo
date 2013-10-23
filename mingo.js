@@ -155,8 +155,8 @@
    * @constructor
    */
   Mingo.Cursor = function (collection, query, projection) {
-    this.query = query;
-    this.collection = collection;
+    this._query = query;
+    this._collection = collection;
     this._projection = projection;
     this._operators = {};
     this._result = false;
@@ -177,17 +177,17 @@
 
         // support Backbone Collections if available
         if (root != null && !!root.Backbone && !!root.Backbone.Collection) {
-          if (this.collection instanceof root.Backbone.Collection) {
-            this.collection = this.collection.toJSON();
+          if (this._collection instanceof root.Backbone.Collection) {
+            this._collection = this._collection.toJSON();
           }
         }
 
-        if (!_.isArray(this.collection)) {
-          throw Error("Input collection is not of a valid type.")
+        if (!_.isArray(this._collection)) {
+          throw Error("Input collection is not of a valid type.");
         }
 
         // filter collection
-        this._result = _.filter(this.collection, this.query.test, this.query);
+        this._result = _.filter(this._collection, this._query.test, this._query);
         var pipeline = [];
 
         _.each(['$sort', '$skip', '$limit', '$project'], function (op) {
@@ -324,6 +324,11 @@
 
   };
 
+  /**
+   * Aggregator for defining filter using mongodb aggregation pipeline syntax
+   * @param operators
+   * @constructor
+   */
   Mingo.Aggregator = function (operators) {
     this._operators = operators;
   };
@@ -393,7 +398,7 @@
    * @returns {*}
    */
   Mingo.find = function (collection, criteria, projection) {
-    return Mingo.compile(criteria).find(collection, projection);
+    return (new Mingo.Query(criteria)).find(collection, projection);
   };
 
   /**
