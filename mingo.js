@@ -577,7 +577,7 @@
     },
 
     $skip: function (collection, value) {
-      _.rest(collection, value);
+      return _.rest(collection, value);
     },
 
     $unwind: function (collection, expr) {
