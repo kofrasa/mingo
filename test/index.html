@@ -8,9 +8,61 @@
   <script type="text/javascript" src="vendor/underscore.js"></script>
   <script type="text/javascript" src="vendor/backbone.js"></script>
   <script type="text/javascript" src="../mingo.js"></script>
+  <script type="text/javascript">
+
+    isReady = $.Deferred();
+
+    var testData = {
+      'grades_simple': null,
+      'grades_complex': null,
+      'students': null
+    };
+
+    // collections
+    var SimpleGrades;
+    var ComplexGrades;
+    var MingoCollection;
+
+    $(document).ready(function () {
+
+      var loaded = $.Deferred();
+      loaded.resolve();
+
+      // preload data
+      _.each(_.keys(testData), function (file) {
+        loaded = loaded.then(function () {
+          return $.getJSON('data/' + file + ".json", function (data) {
+            testData[file] = data;
+          });
+        });
+      });
+
+      MingoCollection =  Backbone.Collection.extend(Mingo.CollectionMixin);
+
+      SimpleGrades = MingoCollection.extend({
+        initialize: function () {
+          this.add(testData['grades_simple']);
+        }
+      });
+
+      ComplexGrades = MingoCollection.extend({
+        initialize: function () {
+          this.add(testData['grades_complex']);
+        }
+      });
+
+      // ready when all data is loaded
+      loaded.done(function () {
+        // start running tests
+        isReady.resolve();
+      });
+
+    });
+  </script>
   <!-- test scripts -->
   <script type="text/javascript" src="queries.js"></script>
   <script type="text/javascript" src="collections.js"></script>
+  <script type="text/javascript" src="10gen_M101P.js"></script>
 </head>
 <body>
   <div id="qunit"></div>

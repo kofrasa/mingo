@@ -59,6 +59,40 @@
     return value;
   };
 
+  // ensure that the passed collection is an array
+  var ensureArray = function (collection) {
+    // support Backbone Collections if available
+    if (root != null && !!root.Backbone && !!root.Backbone.Collection) {
+      if (collection instanceof root.Backbone.Collection) {
+        collection = collection.toJSON();
+      }
+    }
+    return collection;
+  };
+
+  //Generate four random hex digits
+  function S4() {
+    return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+  }
+  //Generate a pseudo-GUID by concatenating random hexadecimal.
+  function guid() {
+    return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
+  }
+
+  // Settings used by Mingo internally
+  var settings = {
+    key: "_id"
+  };
+
+  /**
+   * Setup default settings for Mingo
+   * @param options
+   */
+  Mingo.setup = function (options) {
+    _.extend(settings, options || {});
+  };
+
+
   /**
    * Query object to test collection elements with
    * @param criteria the pass criteria for the query
@@ -143,6 +177,16 @@
 
     find: function(collection, projection) {
       return new Mingo.Cursor(collection, this, projection);
+    },
+
+    remove: function (collection) {
+      var arr = [];
+      for (var i = 0; i < collection.length; i++) {
+        if (this.test(collection[i])) {
+          arr.push(collection[i]);
+        }
+      }
+      return _.difference(collection, arr);
     }
 
   };
@@ -173,13 +217,6 @@
         // inject projection operator
         if (_.isObject(this._projection)) {
           _.extend(this._operators, {"$project": this._projection});
-        }
-
-        // support Backbone Collections if available
-        if (root != null && !!root.Backbone && !!root.Backbone.Collection) {
-          if (this._collection instanceof root.Backbone.Collection) {
-            this._collection = this._collection.toJSON();
-          }
         }
 
         if (!_.isArray(this._collection)) {
@@ -325,7 +362,7 @@
   };
 
   /**
-   * Aggregator for defining filter using mongodb aggregation pipeline syntax
+   * Aggregator for defining filter using mongoDB aggregation pipeline syntax
    * @param operators
    * @constructor
    */
@@ -402,6 +439,29 @@
   };
 
   /**
+   * Returns a new array without objects which match the criteria
+   * @param collection
+   * @param criteria
+   * @returns {Array}
+   */
+  Mingo.remove = function (collection, criteria) {
+    return (new Mingo.Query(criteria)).remove(collection);
+  };
+
+  /**
+   * Return the result collection after running the aggregation pipeline for the given collection
+   * @param collection
+   * @param pipeline
+   * @returns {Array}
+   */
+  Mingo.aggregate = function (collection, pipeline) {
+    if (!_.isArray(pipeline)) {
+      pipeline = _.toArray(arguments).splice(1);
+    }
+    return (new Mingo.Aggregator(pipeline)).run(collection);
+  };
+
+  /**
    * Mixin for Backbone.Collection objects
    */
   Mingo.CollectionMixin = {
@@ -412,24 +472,39 @@
      * @returns {Mingo.Cursor}
      */
     query: function (criteria, projection) {
-      return Mingo.find(this, criteria, projection);
+      return Mingo.find(this.toJSON(), criteria, projection);
+    },
+
+    /**
+     * Runs the given aggregation operators on this collection
+     * @params pipeline
+     * @returns {Array}
+     */
+    aggregate: function (pipeline) {
+      if (!_.isArray(pipeline)) {
+        pipeline = _.toArray(arguments).splice(0);
+      }
+      var args = [this.toJSON()];
+      Array.prototype.push.apply(args, pipeline);
+      return Mingo.aggregate.apply(null, args);
     }
   };
 
   var pipelineOperators = {
 
     $group: function (collection, expr) {
-      var id = expr["id"];
+      var id = expr[settings.key];
       var groups = _.groupBy(collection, function (obj) {
         return computeValue(obj, id, id);
       });
 
-      expr = _.omit(expr, "id");
+      expr = _.omit(expr, settings.key);
       groups = _.pairs(groups);
       var result = [];
       while (groups.length > 0) {
         var tuple = groups.pop();
-        var obj = {"id": tuple[0]};
+        var obj = {};
+        obj[settings.key] = tuple[0];
         for (var key in expr) {
           obj[key] = accumulate(tuple[1], key, expr[key]);
         }
@@ -464,8 +539,8 @@
       var filter = function (obj) { return obj; };
 
       if (whitelist.length > 0) {
-        if (!_.contains(blacklist, "id")) {
-          whitelist.push("id");
+        if (!_.contains(blacklist, settings.key)) {
+          whitelist.push(settings.key);
         }
         filter = function (obj) {
           return _.pick(obj, whitelist);
@@ -516,18 +591,21 @@
       if (!_.isEmpty(sortKeys) && _.isObject(sortKeys)) {
         var modifiers = _.keys(sortKeys);
         modifiers.reverse().forEach(function (key) {
+          var indexes = [];
           var grouped = _.groupBy(collection, function (obj) {
-            return Mingo._get(obj, key);
+            var value = Mingo._get(obj, key);
+            indexes.push(value);
+            return value;
           });
-          var indexes = _.keys(grouped);
-          var sorted = _.sortBy(indexes, function (obj) {
-            return obj;
+          indexes = _.uniq(indexes);
+          var indexes = _.sortBy(indexes, function (item) {
+            return item;
           });
           if (sortKeys[key] === -1) {
-            sorted.reverse();
+            indexes.reverse();
           }
           collection = [];
-          _.each(sorted, function (item) {
+          _.each(indexes, function (item) {
             Array.prototype.push.apply(collection, grouped[item]);
           });
         });
@@ -849,15 +927,17 @@
     },
 
     $max: function (collection, expr) {
-      return _.max(collection, function (obj) {
+      var obj = _.max(collection, function (obj) {
         return computeValue(obj, expr);
       });
+      return computeValue(obj, expr);
     },
 
     $min: function (collection, expr) {
-      return _.min(collection, function (obj) {
-        return computeValue(obj, "", expr);
+      var obj = _.min(collection, function (obj) {
+        return computeValue(obj, expr);
       });
+      return computeValue(obj, expr);
     },
 
     $avg: function (collection, expr) {
