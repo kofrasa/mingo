@@ -31,19 +31,18 @@ isReady.then(function () {
 
       var homework = grades.query({type: 'homework'}).sort({'student_id': 1, 'score': 1}).all();
       var ids = [];
-
-      for (var i = 0, j = 0; i < lowest.length; i++) {
-        console.log(homework[j]['student_id'] + " - " + lowest[i]['_id']);
-        if (homework[j]['student_id'] == lowest[i]['_id'] && homework[j]['score'] == lowest[i]['score']) {
-          ids.push(homework[j]['_id']);
-          while (homework[j]['student_id'] == lowest[i]['_id']) j++;
+      var sid = null;
+      for (var i = 0, j = 0; i < homework.length; i++) {
+        if (homework[i]['student_id'] !== sid) {
+          ids.push(homework[i]['_id']);
+          sid = homework[i]['student_id'];
         }
       }
+
 
       equal(ids.length, 200, "200 minimum homework scores found");
       var result = Mingo.remove(grades.toJSON(), {'_id': {$in: ids}});
 
-//      grades = new MingoCollection(data);
       equal(result.length, 600, "remove lowest homework from grades for each student. count is 600")
 
 

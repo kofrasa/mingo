@@ -493,23 +493,32 @@
   var pipelineOperators = {
 
     $group: function (collection, expr) {
-      var id = expr[settings.key];
+      // lookup key for grouping
+      var idKey = expr[settings.key];
+      var indexes = [];
+      // group collection by key
       var groups = _.groupBy(collection, function (obj) {
-        return computeValue(obj, id, id);
+        var key = computeValue(obj, idKey, idKey);
+        indexes.push(key);
+        return key;
       });
 
+      // group indexes
+      indexes = _.uniq(indexes);
+
+      // remove the group key
       expr = _.omit(expr, settings.key);
-      groups = _.pairs(groups);
+
       var result = [];
-      while (groups.length > 0) {
-        var tuple = groups.pop();
+      _.each(indexes, function (index) {
         var obj = {};
-        obj[settings.key] = tuple[0];
+        obj[settings.key] = index;
+        // compute remaining keys in expression
         for (var key in expr) {
-          obj[key] = accumulate(tuple[1], key, expr[key]);
+          obj[key] = accumulate(groups[index], key, expr[key]);
         }
         result.push(obj);
-      }
+      });
 
       return result;
     },
