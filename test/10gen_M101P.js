@@ -41,11 +41,12 @@ isReady.then(function () {
 
     equal(ids.length, 200, "200 minimum homework scores found");
     var result = Mingo.remove(grades.toJSON(), {'_id': {$in: ids}});
-    equal(result.length, 600, "remove lowest homework from grades for each student. count is 600");
-
+    
     //var res = Mingo.find(result).sort({'score':-1}).skip(100).limit(1).first();
     //console.log(res);
     // Mingo.find(result, {}, {'student_id':1, 'type':1, 'score':1, '_id':0}).sort({'student_id':1, 'score':1}).limit(5);
+
+    equal(result.length, 600, "remove lowest homework from grades for each student. count is 600");
 
     var res = Mingo.aggregate(result, {'$group':{'_id':'$student_id', 'average':{$avg:'$score'}}}, {'$sort':{'average':-1}}, {'$limit':1});
     equal(res[0]['_id'], 54, "student with highest average has id 54");
