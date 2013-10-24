@@ -182,11 +182,11 @@
     remove: function (collection) {
       var arr = [];
       for (var i = 0; i < collection.length; i++) {
-        if (this.test(collection[i])) {
+        if (this.test(collection[i]) === false) {
           arr.push(collection[i]);
         }
       }
-      return _.difference(collection, arr);
+      return arr;
     }
 
   };
