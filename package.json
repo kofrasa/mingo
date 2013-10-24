@@ -1,7 +1,7 @@
 {
   "name": "mingo",
-  "version": "1.0.0",
-  "description": "Javascript implementation of mongo-esque syntax for querying collections",
+  "version": "0.0.1",
+  "description": "JavaScript query library using mongo-esque syntax ",
   "main": "mingo.js",
   "directories": {
     "test": "test"
@@ -15,6 +15,9 @@
     "url": "https://github.com/kofrasa/mingo.git"
   },
   "files": ["mingo.js", "mingo-min.js", "README.md", "LICENSE"],
+  "dependencies": {
+    "underscore": ">=1.5.2"
+  },
   "keywords": [
     "util",
     "mongo",

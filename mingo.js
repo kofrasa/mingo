@@ -59,26 +59,6 @@
     return value;
   };
 
-  // ensure that the passed collection is an array
-  var ensureArray = function (collection) {
-    // support Backbone Collections if available
-    if (root != null && !!root.Backbone && !!root.Backbone.Collection) {
-      if (collection instanceof root.Backbone.Collection) {
-        collection = collection.toJSON();
-      }
-    }
-    return collection;
-  };
-
-  //Generate four random hex digits
-  function S4() {
-    return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
-  }
-  //Generate a pseudo-GUID by concatenating random hexadecimal.
-  function guid() {
-    return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
-  }
-
   // Settings used by Mingo internally
   var settings = {
     key: "_id"
