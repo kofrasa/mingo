@@ -31,17 +31,15 @@ Still in development so you will have to clone the project for now.
         score: { $gte: 50 }
     });
 
-## Sample Data
-~~~javascript
-/**
-var collection = [
-    { "_id" : { "$oid" : "50906d7fa3c412bb040eb577" }, "student_id" : 0, "type" : "exam", "score" : 54.6535436362647 },
-    { "_id" : { "$oid" : "50906d7fa3c412bb040eb578" }, "student_id" : 0, "type" : "quiz", "score" : 31.95004496742112 },
-    { "_id" : { "$oid" : "50906d7fa3c412bb040eb579" }, "student_id" : 0, "type" : "homework", "score" : 14.8504576811645 }
-    ...
-*/
+    /**
+    var collection = [
+        { "_id" : { "$oid" : "50906d7fa3c412bb040eb577" }, "student_id" : 0, "type" : "exam", "score" : 54.6535436362647 },
+        { "_id" : { "$oid" : "50906d7fa3c412bb040eb578" }, "student_id" : 0, "type" : "quiz", "score" : 31.95004496742112 },
+        { "_id" : { "$oid" : "50906d7fa3c412bb040eb579" }, "student_id" : 0, "type" : "homework", "score" : 14.8504576811645 }
+        ...
+    */
 
-## Searching
+## Searching and Filtering
 ~~~javascript
 
 // filter collection with find()
@@ -66,7 +64,7 @@ cursor.first();
 cursor.last();
 cursor.all();
 
-// Remove matched objects
+// Removing matched objects
 var result = query.remove(collection);
 ~~~
 
