@@ -35,6 +35,7 @@ var collection = [
     { "_id" : { "$oid" : "50906d7fa3c412bb040eb579" }, "student_id" : 0, "type" : "homework", "score" : 14.8504576811645 }
     ...
 */
+~~~
 
 ## Searching and Filtering
 ~~~javascript
