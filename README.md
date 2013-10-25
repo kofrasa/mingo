@@ -1,6 +1,6 @@
 Mingo
-=====
-A Javascript implementation of mongo-esque query language for collection manipulation
+=======
+A JavaScript implementation of mongo-esque query language
 
 
 # Dependencies
@@ -14,11 +14,13 @@ A Javascript implementation of mongo-esque query language for collection manipul
 - Group Operators ($addToSet, $sum, $max, $min, $avg, $push, $first, $last)
 
 # Installing
-Still in development so you will have to clone the project for now.
     $ npm install mingo
 
 # Usage
 ~~~javascript
+
+var Mingo = require('mingo');
+
 // create a query with criteria
 // find all grades for homework with score >= 50
 var query = new Mingo.Query({
