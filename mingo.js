@@ -399,6 +399,15 @@
   };
 
   /**
+   * Return a new Mingo.Query with the given criteria.
+   * @param criteria
+   * @returns {Mingo.Query}
+   */
+  Mingo.compile = function (criteria) {
+    return new Mingo.Query(criteria);
+  };
+
+  /**
    * Return a cursor for the given query criteria and options
    * @param collection
    * @param criteria
