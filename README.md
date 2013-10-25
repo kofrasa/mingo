@@ -5,8 +5,6 @@ A Javascript implementation of mongo-esque query language for collection manipul
 
 # Dependencies
 [underscore](https://github.com/jashkenas/underscore)
-Thank you and your fellow contributors
-
 
 # Features
 - Simple Comparisons ($gt, $gte, $lt, $lte, $regex, $mod, $ne, $nin, $in, $all, $not)
@@ -15,33 +13,29 @@ Thank you and your fellow contributors
 - Aggregation Operators ($add, $subtract, $divide, $multiply, $cmp, $strcasecmp, $concat, $substr, $toLower, $toUpper)
 - Group Operators ($addToSet, $sum, $max, $min, $avg, $push, $first, $last)
 
-
 # Installing
 Still in development so you will have to clone the project for now.
-
-    $ git clone git://github.com/kofrasa/mingo.git
-
+    $ npm install mingo
 
 # Usage
+~~~javascript
+// create a query with criteria
+// find all grades for homework with score >= 50
+var query = new Mingo.Query({
+    type: "homework",
+    score: { $gte: 50 }
+});
 
-    // create a query with criteria
-    // find all grades for homework with score >= 50
-    var query = new Mingo.Query({
-        type: "homework",
-        score: { $gte: 50 }
-    });
-
-    /**
-    var collection = [
-        { "_id" : { "$oid" : "50906d7fa3c412bb040eb577" }, "student_id" : 0, "type" : "exam", "score" : 54.6535436362647 },
-        { "_id" : { "$oid" : "50906d7fa3c412bb040eb578" }, "student_id" : 0, "type" : "quiz", "score" : 31.95004496742112 },
-        { "_id" : { "$oid" : "50906d7fa3c412bb040eb579" }, "student_id" : 0, "type" : "homework", "score" : 14.8504576811645 }
-        ...
-    */
+/**
+var collection = [
+    { "_id" : { "$oid" : "50906d7fa3c412bb040eb577" }, "student_id" : 0, "type" : "exam", "score" : 54.6535436362647 },
+    { "_id" : { "$oid" : "50906d7fa3c412bb040eb578" }, "student_id" : 0, "type" : "quiz", "score" : 31.95004496742112 },
+    { "_id" : { "$oid" : "50906d7fa3c412bb040eb579" }, "student_id" : 0, "type" : "homework", "score" : 14.8504576811645 }
+    ...
+*/
 
 ## Searching and Filtering
 ~~~javascript
-
 // filter collection with find()
 var cursor = query.find(collection);
 
@@ -104,6 +98,5 @@ cursor = grades.query({
 cursor.first();
 ~~~
 
-More to come soon...
 
 *Sample collection is an extract from course files from [10gen Education](https://education.10gen.com/courses/10gen/M101P/2013_April/info)*
