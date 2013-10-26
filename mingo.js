@@ -1,9 +1,3 @@
-/**
- * Created with JetBrains PhpStorm.
- * User: francis
- * Date: 9/21/13
- * Time: 8:59 AM
- */
 
 (function () {
 
