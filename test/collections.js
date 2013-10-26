@@ -23,7 +23,7 @@ isReady.then(function () {
   });
 
   test("Backbone integration", function () {
-    var grades = new SimpleGrades();
+    var grades = new MingoCollection(testData['grades_simple']);
     // find students with grades less than 50 in homework or quiz
     // sort by score ascending and type descending
     var cursor = grades.query({
@@ -33,17 +33,26 @@ isReady.then(function () {
     ok(cursor.count() < 800, "can query Backbone collection");
   });
 
-  test("Aggregation Pipeline", function () {
-    var grades = new SimpleGrades();
-    var result = grades.aggregate(
-      {'$group':{'_id':'$student_id', 'average':{$avg:'$score'}}},
-      {'$sort':{'average':-1}}, {'$limit':1}
+  test("Aggregation", function () {
+    var students = testData['students'];
+    var result = Mingo.aggregate(
+      students,
+      {'$unwind': '$scores'},
+      {'$match': {_id: 0}}
     );
-    var val = result[0];
 
-    equal(val["_id"], 164, "can $group with aggregation");
-    equal(Math.round(val["average"] * 100) / 100, 89.3, "can $sort with aggregation");
-    equal(result.length, 1, "can $limit with aggregation");
+    ok(result.length > 1, "can flatten array values with $unwind");
+    equal(result.length, 4, "can filter collection with $match");
+
+//    result = Mingo.aggregate(
+//      students,
+//      {'$unwind': '$scores'},
+//      {'$match': {_id: 0}},
+//      {'$group': {'_id': '$scores.type', 'scores': '$scores.score'}}
+//    );
+//
+//    console.log(result);
+//    equal(result, 3, "can group by field with $group");
 
   });
 

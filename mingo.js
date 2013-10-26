@@ -568,8 +568,9 @@
         var value = Mingo._get(obj, field);
         if (!!value && _.isArray(value)) {
           _.each(value, function (item) {
-            obj[field] = item;
-            result.push(obj);
+            var tmp = _.clone(obj);
+            tmp[field] = item;
+            result.push(tmp);
           });
         }
       });

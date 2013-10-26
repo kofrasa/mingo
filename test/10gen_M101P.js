@@ -11,7 +11,7 @@ isReady.then(function () {
   module("10gen Education: M101P");
 
   test("Homework 2.1", function () {
-    var grades = new SimpleGrades();
+    var grades = new MingoCollection(testData['grades_simple']);
     var cursor = grades.query({
       type: "exam",
       score: {$gte: 65}
@@ -22,7 +22,7 @@ isReady.then(function () {
   });
 
   test("Homework 2.2", function () {
-    var grades = new SimpleGrades();
+    var grades = new MingoCollection(testData['grades_simple']);
     var lowest = grades.aggregate(
       {'$match': { "type": "homework"}},
       {'$group':{'_id':'$student_id', 'score':{$min:'$score'}}},

@@ -10,7 +10,7 @@
   <script type="text/javascript" src="../mingo.js"></script>
   <script type="text/javascript">
 
-    isReady = $.Deferred();
+    var isReady = $.Deferred();
 
     var testData = {
       'grades_simple': null,
@@ -18,10 +18,7 @@
       'students': null
     };
 
-    // collections
-    var SimpleGrades;
-    var ComplexGrades;
-    var MingoCollection;
+    var MingoCollection =  Backbone.Collection.extend(Mingo.CollectionMixin);
 
     $(document).ready(function () {
 
@@ -35,20 +32,6 @@
             testData[file] = data;
           });
         });
-      });
-
-      MingoCollection =  Backbone.Collection.extend(Mingo.CollectionMixin);
-
-      SimpleGrades = MingoCollection.extend({
-        initialize: function () {
-          this.add(testData['grades_simple']);
-        }
-      });
-
-      ComplexGrades = MingoCollection.extend({
-        initialize: function () {
-          this.add(testData['grades_complex']);
-        }
       });
 
       // ready when all data is loaded
