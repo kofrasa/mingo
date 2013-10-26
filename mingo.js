@@ -1050,6 +1050,13 @@
     return args;
   };
 
+  /**
+   * Returns the result of evaluating a $group aggregate operation over a collection
+   * @param collection
+   * @param field
+   * @param expr
+   * @returns {*}
+   */
   var accumulate = function (collection, field, expr) {
     if (_.contains(Ops.groupOperators, field)) {
       return groupOperators[field](collection, expr);
@@ -1059,8 +1066,14 @@
       var result = {};
       for (var key in expr) {
         result[key] = accumulate(collection, key, expr[key]);
+        // must run ONLY one group operator per expression
+        // if so, return result of the computed value
         if (_.contains(Ops.groupOperators, key)) {
           result = result[key];
+          // if there are more keys in expression this is bad
+          if (_.keys(expr).length > 1) {
+            throw new Error("Invalid $group expression '" + JSON.stringify(expr) + "'");
+          }
           break;
         }
       }
@@ -1070,6 +1083,13 @@
     return null;
   };
 
+  /**
+   * Computes the actual value to use in aggregation from the given expression for the record
+   * @param record
+   * @param expr
+   * @param field
+   * @returns {*}
+   */
   var computeValue = function (record, expr, field) {
 
     // if the field of the object is an aggregate operator
@@ -1089,8 +1109,15 @@
       var result = {};
       for (var key in expr) {
         result[key] = computeValue(record, expr[key], key);
+
+        // must run ONLY one aggregate operator per expression
+        // if so, return result of the computed value
         if (_.contains(Ops.aggregateOperators, key)) {
           result = result[key];
+          // if there are more keys in expression this is bad
+          if (_.keys(expr).length > 1) {
+            throw new Error("Invalid aggregation expression '" + JSON.stringify(expr) + "'");
+          }
           break;
         }
       }
