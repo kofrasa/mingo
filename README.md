@@ -13,13 +13,20 @@ A JavaScript implementation of mongo-esque query language
 - Aggregation Operators ($add, $subtract, $divide, $multiply, $cmp, $strcasecmp, $concat, $substr, $toLower, $toUpper)
 - Group Operators ($addToSet, $sum, $max, $min, $avg, $push, $first, $last)
 
-# Installing
+Installing
+------------
     $ npm install mingo
 
-# Usage
+Usage
+------
 ~~~javascript
 
 var Mingo = require('mingo');
+
+// setup the key field for your collection
+Mingo.setup({
+    key: '_id' // default
+});
 
 // create a query with criteria
 // find all grades for homework with score >= 50

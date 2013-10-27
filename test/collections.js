@@ -48,6 +48,13 @@ isReady.then(function () {
     result = Mingo.aggregate(students, {'$skip': 100});
     ok(result.length === students.length - 100, "can skip result with $skip");
 
+    result = Mingo.aggregate(students, {'$limit': 100});
+    ok(result.length === 100, "can limit result with $limit");
+
+    result = Mingo.aggregate(students, {'$project': {'name': 1, '_id': 0}}, {'$limit': 1});
+    var fields = _.keys(result[0]);
+    ok(fields.length === 1 && fields[0] === 'name', "can project result with $project");
+
     // find highest and lowest scores for each type
     var grouped = Mingo.aggregate(
       flattened,
@@ -56,14 +63,7 @@ isReady.then(function () {
     );
     ok(grouped.length === 3, "can group collection with $group");
 
-    result = Mingo.aggregate(
-      flattened,
-      {'$sort': {'scores.score': -1}},
-      {'$limit': 1}
-    );
-
-    ok(result.length === 1, "can limit result with $limit");
-
+    result = Mingo.aggregate(flattened, {'$sort': {'scores.score': -1}});
     result = result[0];
     _.each(grouped, function (o) {
       if (o['_id'] === result['scores']['type']) {
