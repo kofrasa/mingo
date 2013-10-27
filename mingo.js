@@ -577,7 +577,7 @@
         modifiers.reverse().forEach(function (key) {
           var indexes = [];
           var grouped = _.groupBy(collection, function (obj) {
-            var value = Mingo._get(obj, key);
+            var value = Mingo._resolve(obj, key);
             indexes.push(value);
             return value;
           });

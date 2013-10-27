@@ -45,6 +45,9 @@ isReady.then(function () {
     var result = Mingo.aggregate(flattened, {'$match': {_id: 0}});
     ok(result.length === 4, "can filter collection with $match");
 
+    result = Mingo.aggregate(students, {'$skip': 100});
+    ok(result.length === students.length - 100, "can skip result with $skip");
+
     // find highest and lowest scores for each type
     var grouped = Mingo.aggregate(
       flattened,
@@ -52,6 +55,21 @@ isReady.then(function () {
         'lowest': {$min: '$scores.score'}, 'average': {$avg: '$scores.score'}, 'count': {$sum: 1}}}
     );
     ok(grouped.length === 3, "can group collection with $group");
+
+    result = Mingo.aggregate(
+      flattened,
+      {'$sort': {'scores.score': -1}},
+      {'$limit': 1}
+    );
+
+    ok(result.length === 1, "can limit result with $limit");
+
+    result = result[0];
+    _.each(grouped, function (o) {
+      if (o['_id'] === result['scores']['type']) {
+        ok(o['highest'] === result['scores']['score'], "can sort collection with $sort");
+      }
+    });
 
   });
 
@@ -89,5 +107,9 @@ isReady.then(function () {
     val = result[0]['set'];
     ok(val.length === 2 && (_.contains(val, 'A') && _.contains(val, 'B')), "can apply $addToSet in grouping");
   });
+
+//  test("aggregate expression operators", function () {
+//
+//  });
 
 });

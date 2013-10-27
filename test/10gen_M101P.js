@@ -41,7 +41,7 @@ isReady.then(function () {
 
     equal(ids.length, 200, "200 minimum homework scores found");
     var result = Mingo.remove(grades.toJSON(), {'_id': {$in: ids}});
-    
+
     //var res = Mingo.find(result).sort({'score':-1}).skip(100).limit(1).first();
     //console.log(res);
     // Mingo.find(result, {}, {'student_id':1, 'type':1, 'score':1, '_id':0}).sort({'student_id':1, 'score':1}).limit(5);
