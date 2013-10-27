@@ -71,6 +71,7 @@ isReady.then(function () {
       {'$group': {'_id': 'stats', 'max': {$max: '$score'},
         'min': {$min: '$score'}, 'avg': {$avg: '$score'}, 'count': {$sum: 1},
         'classes': {$push: '$class'}, 'set': {$addToSet: '$class'},
+        'first': {$first: '$score'}, 'last': {$last: '$score'}
       }}
     );
 
@@ -79,6 +80,8 @@ isReady.then(function () {
     equal(result[0]['min'], 10, "can apply $min in grouping");
     equal(result[0]['avg'], 14.5, "can apply $avg in grouping");
     equal(result[0]['count'], 10, "can apply $sum in grouping");
+    ok(result[0]['first'] === 10, "can apply $first in grouping");
+    ok(result[0]['last'] === 19, "can apply $last in grouping");
 
     var val = result[0]['classes'];
     ok(val.length == 10 && (_.contains(val, 'A') || _.contains(val, 'B')), "can apply $push in grouping");
