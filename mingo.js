@@ -557,17 +557,20 @@
     $unwind: function (collection, expr) {
       var result = [];
       var field = expr.substr(1);
-      _.each(collection, function (obj) {
+      for (var i = 0; i < collection.length; i++) {
+        var obj = collection[i];
         // must throw an error if value is not an array
         var value = Mingo._get(obj, field);
-        if (!!value && _.isArray(value)) {
+        if (_.isArray(value)) {
           _.each(value, function (item) {
             var tmp = _.clone(obj);
             tmp[field] = item;
             result.push(tmp);
           });
+        } else {
+          throw new Error("Target field '" + field + "' is not of type Array.");
         }
-      });
+      };
       return result;
     },
 
