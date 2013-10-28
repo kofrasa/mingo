@@ -31,12 +31,10 @@ isReady.then(function () {
         'details': {
           "plus10": {$add: ["$scores.score", 10] }
         }
-
       }}
     );
 
     var fields = _.keys(result[0]);
-    console.log(result[0]);
     ok(fields.length === 4, "can project fields with $project");
     ok(_.contains(fields, 'type'), "can rename fields with $project");
     ok(_.isObject(result[0]['details']), "can create and populate sub-documents")

@@ -9,6 +9,32 @@ isReady.then(function () {
 
   module("Collections");
 
+  test("Array of objects", function () {
+    var students = testData['students'];
+
+    var semester = [
+      { "_id" : 7, semester: 3, "grades" : [ { grade: 80, mean: 75, std: 8 },
+        { grade: 85, mean: 90, std: 5 },
+        { grade: 90, mean: 85, std: 3 } ] },
+
+      { "_id" : 8, semester: 3, "grades" : [ { grade: 92, mean: 88, std: 8 },
+        { grade: 78, mean: 90, std: 5 },
+        { grade: 88, mean: 85, std: 3 } ] },
+
+      { "_id" : 8, semester: 3, "grades" : [ { grade: 92, mean: 70, std: 8 },
+        { grade: 78, mean: 60, std: 5 },
+        { grade: 88, mean: 40, std: 3 } ] }
+    ];
+
+    var result = Mingo.find(
+      semester,
+      {"grades.mean": { $gt: 70 }}
+    ).all();
+
+    ok(result.length === 2, "matched elements in array");
+
+  });
+
   test("Cursor operations", function () {
     var data = testData['grades_simple'];
     // create a query with no criteria

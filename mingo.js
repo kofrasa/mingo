@@ -380,19 +380,26 @@
     if (!field) {
       return undefined;
     }
-    var chain = field.split(".");
+    var names = field.split(".");
     var value = obj;
-    for (var i = 0; i < chain.length; i++) {
-      value = Mingo._get(value, chain[i]);
-      // resolve for projection
-      if (chain.length > i + 1) {
-        if (chain[i+1] === "$") {
-          if (_.isArray(value)) {
-            value = value.length > 0? [value[0]] : undefined;
-            break;
+    var isText;
+
+    for (var i = 0; i < names.length; i++) {
+      isText = names[i].match(/^\d+$/) === null;
+
+      if (isText && _.isArray(value)) {
+        var n =  names.slice(i).join(".");
+        var res = [];
+        for (var j = 0; j < value.length; j++) {
+          if (_.isObject(value[j])) {
+            res.push(Mingo._get(value[j], n));
           }
         }
+        value = res;
+      } else {
+        value = Mingo._get(value, names[i]);
       }
+
       if (value === undefined) {
         break;
       }
