@@ -35,26 +35,34 @@ var obj = {
     "Python": ["Kasade", "Code Jam", "Flaskapp", "FlaskUtils"],
     "Scala": [],
     "Javascript": ["mingo", "Backapp", "BackboneApp", "Google Election Maps"]
-  }
+  },
+  grades: [
+    { grade: 92, mean: 88, std: 8 },
+    { grade: 78, mean: 90, std: 5 },
+    { grade: 88, mean: 85, std: 3 }
+  ]
 };
 
 test("Simple comparisons", function () {
   var queries = [
     [{firstName: "Francis"}, "can check for equality"],,
-    [{lastName: /^a.+e/i}, "can check against regex"],
+    [{lastName: /^a.+e/i}, "can check against regex with literal"],
+    [{lastName: {$regex: "a.+e", $options: "i"}}, "can check against regex with $regex operator"],
     [{username: {$not: "mufasa"}}, "can apply $not to direct values"],
     [{username: {$not: { $ne: "kofrasa"}}}, "can apply $not to sub queries"],
-    [{jobs: {$gt: 1, $gte: 6, $lte: 6, $lt: 10}}, "can compare with >, >=, <, <="],
-    [{middlename: {$exists: false}}, "can check if value does not exists"],
-    [{projects: {$exists: true}}, "can check if value exists"],
-    [{"projects.C.1": "student_record" }, "can compare value inside array at index"],
-    [{"circles.school": {$in: ["Henry"]}}, "can check that value is in array"],
-    [{"circles.family": {$nin: ["Pamela"]}}, "can check that value is not in array"],
-    [{"languages.programming": {$size: 7 }}, "can determine size of array"],
-    [{"projects.Python": "Flaskapp"}, "can match elements in array"],
-    [{"date.month": {$mod: [8, 1]}}, "can check modulo of values"],
-    [{"languages.spoken": {$not: {$all: ["english", "french"]}}}, "can check that all values exists in array"],
-    [{date: {year: 2013, month: 9, day: 25}}, "can match field with object values"]
+    [{jobs: {$gt: 1, $gte: 6, $lte: 6, $lt: 10}}, "can compare with $gt, $gte, $lt, $lte"],
+    [{middlename: {$exists: false}}, "can check if value does not exists with $exists"],
+    [{projects: {$exists: true}}, "can check if value exists with $exits"],
+    [{"projects.C.1": "student_record" }, "can compare value inside array at a given index"],
+    [{"circles.school": {$in: ["Henry"]}}, "can check that value is in array with $in"],
+    [{"circles.family": {$nin: ["Pamela"]}}, "can check that value is not in array with $nin"],
+    [{"languages.programming": {$size: 7 }}, "can determine size of nested array with $size"],
+    [{"projects.Python": "Flaskapp"}, "can match nested elements in array"],
+    [{"date.month": {$mod: [8, 1]}}, "can find modulo of values with $mod"],
+    [{"languages.spoken": {$not: {$all: ["english", "french"]}}}, "can check that all values exists in array with $all"],
+    [{date: {year: 2013, month: 9, day: 25}}, "can match field with object values"],
+    [{"grades.0.grade": 92}, "can match fields for objects in a given position in an array"],
+    [{"grades.mean": { $gt: 70 }}, "can match fields for all objects within an array"]
   ];
 
   _.each(queries, function (q) {

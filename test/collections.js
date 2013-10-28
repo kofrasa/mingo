@@ -31,7 +31,7 @@ isReady.then(function () {
       {"grades.mean": { $gt: 70 }}
     ).all();
 
-    ok(result.length === 2, "matched elements in array");
+    ok(result.length === 2, "can match elements in array");
 
   });
 
@@ -40,11 +40,11 @@ isReady.then(function () {
     // create a query with no criteria
     var query = new Mingo.Query();
     var cursor = query.find(data);
-    ok(cursor.hasNext(), "can peek for an item");
-    ok(cursor.next(), "can select next item");
-    ok(_.isObject(cursor.first()), "can retrieve first item");
-    ok(_.isObject(cursor.last()), "can retrieve last item");
-    equal(cursor.count(), 800, "can count items");
+    ok(cursor.hasNext(), "can peek for an item with hasNext()");
+    ok(cursor.next(), "can select next item with next()");
+    ok(_.isObject(cursor.first()), "can retrieve first item with first()");
+    ok(_.isObject(cursor.last()), "can retrieve last item with last()");
+    ok(cursor.count() === 800, "can count items with count()");
 
   });
 
