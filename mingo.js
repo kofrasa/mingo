@@ -529,6 +529,7 @@
 
       if (blacklist.length === 0 && !_.contains(whiteList, settings.key)) {
         whiteList.push(settings.key);
+        expr[settings.key] = 1;
       }
 
       if (whiteList.length === 0) {

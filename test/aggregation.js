@@ -25,12 +25,21 @@ isReady.then(function () {
     var result = Mingo.aggregate(
       students,
       {'$unwind': '$scores'},
-      {'$project': {'name': 1, 'type': '$scores.type', 'score': {$add: ["$scores.score", 10]}}}
+      {'$project': {
+        'name': 1,
+        'type': '$scores.type',
+        'details': {
+          "plus10": {$add: ["$scores.score", 10] }
+        }
+
+      }}
     );
 
     var fields = _.keys(result[0]);
+    console.log(result[0]);
     ok(fields.length === 3, "can project fields with $project");
     ok(_.contains(fields, 'type'), "can rename fields with $project");
+    ok(_.isObject(result[0]['details']), "can create and populate sub-documents")
   });
 
   test("$group operator", function () {
