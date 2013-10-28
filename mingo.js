@@ -384,6 +384,15 @@
     var value = obj;
     for (var i = 0; i < chain.length; i++) {
       value = Mingo._get(value, chain[i]);
+      // resolve for projection
+      if (chain.length > i + 1) {
+        if (chain[i+1] === "$") {
+          if (_.isArray(value)) {
+            value = value.length > 0? [value[0]] : undefined;
+            break;
+          }
+        }
+      }
       if (value === undefined) {
         break;
       }
@@ -702,10 +711,6 @@
       };
     },
 
-    $elemMatch: function (selector, value) {
-      throw Error("$elemMatch not implemented yet!");
-    },
-
     $where: function (selector, value) {
       throw Error("$where is Bad Bad Bad and SHALL NOT be implemented! Sorry :(");
     }
@@ -890,6 +895,28 @@
       return _.isArray(a) && _.isNumber(b) && (a.length === b);
     }
 
+  };
+
+  var projectionOperators = {
+
+    $: function (selector, value) {
+      var tokens = selector.split(".");
+    },
+
+    $elemMatch: function (selector, value) {
+      throw Error("$elemMatch not implemented yet!");
+
+
+      return {
+        test: function (obj) {
+
+        }
+      }
+    },
+
+    $slice: function () {
+
+    }
   };
 
   var groupOperators = {
