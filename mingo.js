@@ -512,44 +512,50 @@
     },
 
     $project: function (collection, expr) {
-      var whitelist = [],
-        blacklist = [],
-        computedFields = {};
+      var whiteList = [], blacklist = [];
 
       for (var key in expr) {
         var obj = expr[key];
-        if (obj === 1 || obj === true) {
-          whitelist.push(key);
-        } else if (obj === 0 || obj === false) {
+        if (obj === 0 || obj === false) {
+          // can only exclude top-level "_id" field
+          if (key !== settings.key) {
+            throw new Error("The top-level _id field is the only field currently supported for exclusion");
+          }
           blacklist.push(key);
-        } else if (_.isString(obj) || _.isObject(obj)) {
-          computedFields[key] = obj;
+        } else if (obj === 1 || obj === true || _.isString(obj) || _.isObject(obj)) {
+          whiteList.push(key);
         }
       }
 
+      if (blacklist.length === 0 && !_.contains(whiteList, settings.key)) {
+        whiteList.push(settings.key);
+      }
+
+      if (whiteList.length === 0) {
+        throw new Error("$projection requires at least one output field");
+      }
+
+      // result collection
       var projected = [];
-      var filter = function (obj) { return obj; };
 
-      if (whitelist.length > 0) {
-        if (!_.contains(blacklist, settings.key)) {
-          whitelist.push(settings.key);
-        }
-        filter = function (obj) {
-          return _.pick(obj, whitelist);
-        };
-      } else if (blacklist.length > 0) {
-        filter = function (obj) {
-          return _.omit(obj, blacklist);
-        };
-      }
+      var record, objKeys, temp, cloneObj;
+      for (var i = 0; i < collection.length; i++) {
+        record = collection[i];
+        objKeys = _.keys(record);
+        cloneObj = {};
 
-      for (var i=0; i < collection.length; i++) {
-        var record = collection[i];
-        for (var field in computedFields) {
-          record = computeValue(record, computedFields[field], field);
-        }
-        record = filter(record);
-        projected.push(record);
+        _.each(whiteList, function (key) {
+          var subExpr = expr[key];
+          if (_.isString(subExpr) || _.isObject(subExpr)) {
+            temp = computeValue(record, subExpr);
+            cloneObj[key] = temp;
+          } else if (subExpr === 1 || subExpr === true) {
+            temp = computeValue(record, key);
+            cloneObj[key] = temp;
+          }
+        });
+
+        projected.push(cloneObj);
       }
 
       return projected;
@@ -707,6 +713,32 @@
       return {
         test: function (obj) {
           return !query.test(obj);
+        }
+      };
+    },
+
+    /**
+     * The $elemMatch operator matches more than one component within an array element
+     * @param selector
+     * @param value
+     * @returns {{test: Function}}
+     */
+    $elemMatch: function (selector, value) {
+      var criteria = {};
+      criteria[selector] = normalize(value);
+      var query = new Mingo.Query(criteria);
+      return {
+        test: function (obj) {
+          var arr = Mingo._resolve(obj, selector);
+          if (_.isUndefined(arr) || !_.isArray(arr)) {
+            return false;
+          }
+          for (var i = 0; i < arr.length; i++) {
+            if (!query.test(arr[i])) {
+              return false;
+            }
+          }
+          return true;
         }
       };
     },
@@ -977,37 +1009,43 @@
 
     $add: function (ctx) {
       var result = 0;
-      flatten(ctx, _.toArray(arguments.splice(1)), function (val) {
+      var values = _.toArray(arguments).slice(1)[0];
+      flatten(ctx, values, function (val) {
         result += val;
       });
       return result;
     },
 
     $subtract: function (ctx) {
-      var args = flatten(ctx, _.toArray(arguments.splice(1)));
+      var values = _.toArray(arguments).slice(1)[0];
+      var args = flatten(ctx, values);
       return args[0] - args[1];
     },
 
     $divide: function (ctx) {
-      var args = flatten(ctx, _.toArray(arguments.splice(1)));
+      var values = _.toArray(arguments).slice(1)[0];
+      var args = flatten(ctx, values);
       return args[0] / args[1];
     },
 
     $multiply: function (ctx) {
+      var values = _.toArray(arguments).slice(1)[0];
       var result = 1;
-      flatten(ctx, _.toArray(arguments.splice(1)), function (val) {
+      flatten(ctx, values, function (val) {
         result *= val;
       });
       return result;
     },
 
     $mod: function (ctx) {
-      var args = flatten(ctx, _.toArray(arguments.splice(1)));
+      var values = _.toArray(arguments).slice(1)[0];
+      var args = flatten(ctx, values);
       return args[0] % args[1];
     },
 
     $cmp: function (ctx) {
-      var args = flatten(ctx, _.toArray(arguments.splice(1)));
+      var values = _.toArray(arguments).slice(1)[0];
+      var args = flatten(ctx, values);
       if (args[0] > args[1]) {
         return 1;
       }
@@ -1015,12 +1053,14 @@
     },
 
     $concat: function (ctx) {
-      var args = flatten(ctx, _.toArray(arguments.splice(1)));
+      var values = _.toArray(arguments).slice(1)[0];
+      var args = flatten(ctx, values);
       return args.join("");
     },
 
     $strcasecmp: function (ctx) {
-      var args = flatten(ctx, _.toArray(arguments.splice(1)));
+      var values = _.toArray(arguments).slice(1)[0];
+      var args = flatten(ctx, values);
       args[0] = args[0].toUpperCase();
       args[1] = args[1].toUpperCase();
       if (args[0] > args[1]) {
@@ -1030,17 +1070,20 @@
     },
 
     $substr: function (ctx) {
-      var args = flatten(ctx, _.toArray(arguments.splice(1)));
+      var values = _.toArray(arguments).slice(1)[0];
+      var args = flatten(ctx, values);
       return args[0].substr(args[1], args[2]);
     },
 
     $toLower: function (ctx) {
-      var args = flatten(ctx, _.toArray(arguments.splice(1)));
+      var values = _.toArray(arguments).slice(1)[0];
+      var args = flatten(ctx, values);
       return args[0].toLowerCase();
     },
 
     $toUpper: function (ctx) {
-      var args = flatten(ctx, _.toArray(arguments.splice(1)));
+      var values = _.toArray(arguments).slice(1)[0];
+      var args = flatten(ctx, values);
       return args[0].toUpperCase();
     }
   };
@@ -1048,7 +1091,8 @@
   // mixin from simple operators
   _.each(["$eq", "$ne", "$gt", "$gte", "$lt", "$lte"], function (op) {
     aggregateOperators[op] = function (ctx) {
-      var args = flatten(ctx, _.toArray(arguments.splice(1)));
+      var values = _.toArray(arguments).slice(1)[0];
+      var args = flatten(ctx, values);
       simpleOperators[op](args[0], args[1]);
     };
   });
@@ -1065,8 +1109,8 @@
 
   var flatten = function(obj, args, action) {
     for (var i = 0; i < args.length; i++) {
-      if (_.isString(args[i]) && args[i].startsWith("$")) {
-        args[i] = Mingo._resolve(obj, args[i].substr(1));
+      if (_.isString(args[i]) && args[i].length >  0) {
+        args[i] = computeValue(obj, args[i]);
       }
       if (typeof action === "function") {
         action(args[i]);
@@ -1117,17 +1161,18 @@
    */
   var computeValue = function (record, expr, field) {
 
+    // if expr is a variable for an object field
+    // field not used in this case
+    if (_.isString(expr)) {
+      if (expr.length > 0) {
+        var str = (expr[0] === "$")? expr.slice(1) : expr;
+        return Mingo._resolve(record, str);
+      }
+    }
+
     // if the field of the object is an aggregate operator
     if (_.contains(Ops.aggregateOperators, field)) {
       return aggregateOperators[field](record, expr);
-    }
-
-    // if expr is a variable for an object field
-    // field must be blank in this case
-    if (_.isString(expr)) {
-      if (expr.length > 0 && expr[0] === "$") {
-        return Mingo._resolve(record, expr.substr(1));
-      }
     }
 
     if (_.isObject(expr)) {

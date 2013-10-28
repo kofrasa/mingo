@@ -22,9 +22,15 @@ isReady.then(function () {
   });
 
   test("$project operator", function () {
-    var result = Mingo.aggregate(students, {'$project': {'name': 1, '_id': 0}}, {'$limit': 1});
+    var result = Mingo.aggregate(
+      students,
+      {'$unwind': '$scores'},
+      {'$project': {'name': 1, 'type': '$scores.type', 'score': {$add: ["$scores.score", 10]}}}
+    );
+
     var fields = _.keys(result[0]);
-    ok(fields.length === 1 && fields[0] === 'name', "can project result with $project");
+    ok(fields.length === 3, "can project fields with $project");
+    ok(_.contains(fields, 'type'), "can rename fields with $project");
   });
 
   test("$group operator", function () {
