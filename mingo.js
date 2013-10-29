@@ -1169,18 +1169,15 @@
    */
   var computeValue = function (record, expr, field) {
 
-    // if expr is a variable for an object field
-    // field not used in this case
-    if (_.isString(expr)) {
-      if (expr.length > 0) {
-        var str = (expr[0] === "$")? expr.slice(1) : expr;
-        return Mingo._resolve(record, str);
-      }
-    }
-
     // if the field of the object is an aggregate operator
     if (_.contains(Ops.aggregateOperators, field)) {
       return aggregateOperators[field](record, expr);
+    }
+
+    // if expr is a variable for an object field
+    // field not used in this case
+    if (_.isString(expr) && expr.length > 0 && expr[0] === "$") {
+      return Mingo._resolve(record, expr.slice(1));
     }
 
     if (_.isObject(expr)) {
