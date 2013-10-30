@@ -37,7 +37,53 @@ isReady.then(function () {
     var fields = _.keys(result[0]);
     ok(fields.length === 4, "can project fields with $project");
     ok(_.contains(fields, 'type'), "can rename fields with $project");
-    ok(_.isObject(result[0]['details']), "can create and populate sub-documents")
+    var temp = result[0]['details'];
+    ok(_.isObject(temp) && _.keys(temp).length === 1, "can create and populate sub-documents");
+
+    var school = [
+      {
+        _id: 1,
+        zipcode: 63109,
+        students: [
+          { name: "john", school: 102, age: 10 },
+          { name: "jess", school: 102, age: 11 },
+          { name: "jeff", school: 108, age: 15 }
+        ]
+      },
+      {
+        _id: 2,
+        zipcode: 63110,
+        students: [
+          { name: "ajax", school: 100, age: 7 },
+          { name: "achilles", school: 100, age: 8 }
+        ]
+      },
+
+      {
+        _id: 3,
+        zipcode: 63109,
+        students: [
+          { name: "ajax", school: 100, age: 7 },
+          { name: "achilles", school: 100, age: 8 }
+        ]
+      },
+
+      {
+        _id: 4,
+        zipcode: 63109,
+        students: [
+          { name: "barney", school: 102, age: 7 }
+        ]
+      }
+    ];
+
+    result = Mingo.find(
+      school,
+      { zipcode: 63109 },
+      {students: { $elemMatch: { school: 102 } }}
+    ).all();
+
+    ok(result.length === 3 && !_.has(result[1], 'students'), "can project with $elemMatch operator");
   });
 
   test("$group operator", function () {

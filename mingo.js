@@ -85,7 +85,7 @@
         for (var name in this._criteria) {
           var expr = this._criteria[name];
           if (_.contains(Ops.compoundOperators, name)) {
-            if (_.contains(["$not", "$elemMatch"], name)) {
+            if (_.contains(["$not"], name)) {
               throw Error("Invalid operator");
             }
             this._processOperator(name, name, expr);
@@ -571,12 +571,21 @@
 
         _.each(whiteList, function (key) {
           var subExpr = expr[key];
-          if (_.isString(subExpr) || _.isObject(subExpr)) {
-            temp = computeValue(record, subExpr);
-            cloneObj[key] = temp;
+          if (_.isString(subExpr)) {
+            cloneObj[key] = computeValue(record, subExpr);
           } else if (subExpr === 1 || subExpr === true) {
-            temp = computeValue(record, key);
-            cloneObj[key] = temp;
+            cloneObj[key] = computeValue(record, key);
+          } else if(_.isObject(subExpr)) {
+            var subKeys = _.keys(subExpr);
+            var onlyKey = subKeys.length == 1? subKeys[0] : false;
+            if (onlyKey !== false && _.contains(Ops.projectionOperators, onlyKey)) {
+              temp = projectionOperators[onlyKey](record, key, subExpr[onlyKey]);
+              if (!_.isUndefined(temp)) {
+                cloneObj[key] = temp;
+              }
+            } else {
+              cloneObj[key] = computeValue(record, subExpr);
+            }
           }
         });
 
@@ -738,32 +747,6 @@
       return {
         test: function (obj) {
           return !query.test(obj);
-        }
-      };
-    },
-
-    /**
-     * The $elemMatch operator matches more than one component within an array element
-     * @param selector
-     * @param value
-     * @returns {{test: Function}}
-     */
-    $elemMatch: function (selector, value) {
-      var criteria = {};
-      criteria[selector] = normalize(value);
-      var query = new Mingo.Query(criteria);
-      return {
-        test: function (obj) {
-          var arr = Mingo._resolve(obj, selector);
-          if (_.isUndefined(arr) || !_.isArray(arr)) {
-            return false;
-          }
-          for (var i = 0; i < arr.length; i++) {
-            if (!query.test(arr[i])) {
-              return false;
-            }
-          }
-          return true;
         }
       };
     },
@@ -956,23 +939,36 @@
 
   var projectionOperators = {
 
-    $: function (selector, value) {
-      var tokens = selector.split(".");
+    $: function (obj, field, expr) {
+      throw new Error("$ not implemented");
     },
 
-    $elemMatch: function (selector, value) {
-      throw Error("$elemMatch not implemented yet!");
+    /**
+     * The $elemMatch operator matches at least than one component within an array element
+     * @param obj
+     * @param field
+     * @param expr
+     * @returns {*}
+     */
+    $elemMatch: function (obj, field, expr) {
+      var array = Mingo._resolve(obj, field);
+      var query = new Mingo.Query(expr);
 
+      if (_.isUndefined(array) || !_.isArray(array)) {
+        return undefined;
+      }
 
-      return {
-        test: function (obj) {
-
+      for (var i = 0; i < array.length; i++) {
+        if (query.test(array[i])) {
+          return array[i];
         }
       }
+
+      return undefined;
     },
 
-    $slice: function () {
-
+    $slice: function (obj, field, expr) {
+      throw new Error("$slice not implemented");
     }
   };
 
@@ -1127,7 +1123,8 @@
     compoundOperators: _.keys(compoundOperators),
     aggregateOperators: _.keys(aggregateOperators),
     groupOperators: _.keys(groupOperators),
-    pipelineOperators: _.keys(pipelineOperators)
+    pipelineOperators: _.keys(pipelineOperators),
+    projectionOperators: _.keys(projectionOperators)
   };
   Ops.queryOperators = _.union(Ops.simpleOperators, Ops.compoundOperators);
 
