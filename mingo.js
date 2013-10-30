@@ -149,10 +149,21 @@
       return match;
     },
 
+    /**
+     *
+     * @param collection
+     * @param projection
+     * @returns {Mingo.Cursor}
+     */
     find: function(collection, projection) {
       return new Mingo.Cursor(collection, this, projection);
     },
 
+    /**
+     * Remove matched documents from the collection returning the new
+     * @param collection
+     * @returns {Array}
+     */
     remove: function (collection) {
       var arr = [];
       for (var i = 0; i < collection.length; i++) {
@@ -326,7 +337,7 @@
     },
 
     /**
-     * Iterates the cursor to apply a JavaScript function to each document from the cursor
+     * Iterates the cursor to apply a JavaScript function to each matched document
      * @param callback
      */
     forEach: function (callback) {
@@ -337,7 +348,7 @@
 
   /**
    * Aggregator for defining filter using mongoDB aggregation pipeline syntax
-   * @param operators
+   * @param operators an Array of pipeline operators
    * @constructor
    */
   Mingo.Aggregator = function (operators) {
@@ -345,6 +356,12 @@
   };
 
   Mingo.Aggregator.prototype =  {
+
+    /**
+     * Executes the aggregation pipeline
+     * @param collection an array of objects to process
+     * @returns {Array}
+     */
     run: function (collection) {
       if (!_.isEmpty(this._operators)) {
         // run aggregation pipeline
@@ -472,7 +489,7 @@
      */
     aggregate: function (pipeline) {
       if (!_.isArray(pipeline)) {
-        pipeline = _.toArray(arguments).splice(0);
+        pipeline = _.toArray(arguments);
       }
       var args = [this.toJSON()];
       Array.prototype.push.apply(args, pipeline);
