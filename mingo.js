@@ -1006,7 +1006,10 @@
       if (_.isUndefined(array) || !_.isArray(array)) {
         return undefined;
       }
-      return Array.prototype.slice.apply(array, [expr]);
+      if (!_.isArray(expr)) {
+        expr = [expr];
+      }
+      return Array.prototype.slice.apply(array, expr);
     }
   };
 
