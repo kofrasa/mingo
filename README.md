@@ -7,11 +7,12 @@ A JavaScript implementation of mongo-esque query language
 [underscore](https://github.com/jashkenas/underscore)
 
 # Features
-- Simple Comparisons ($gt, $gte, $lt, $lte, $regex, $mod, $ne, $nin, $in, $all, $not)
+- Simple Comparisons ($gt, $gte, $lt, $lte, $regex, $mod, $ne, $nin, $in, $all, $not, $elemMatch)
 - Full conjunction support ($and, $or, $nor)
 - Aggregation Pipeline Support ($group, $match, $project, $sort, $limit, $unwind)
-- Aggregation Operators ($add, $subtract, $divide, $multiply, $cmp, $strcasecmp, $concat, $substr, $toLower, $toUpper)
+- Expression Operators ($add, $subtract, $divide, $multiply, $cmp, $strcasecmp, $concat, $substr, $toLower, $toUpper)
 - Group Operators ($addToSet, $sum, $max, $min, $avg, $push, $first, $last)
+- Projection Operators ($elemMatch)
 
 Installing
 ------------

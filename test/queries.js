@@ -61,8 +61,9 @@ test("Simple comparisons", function () {
     [{"date.month": {$mod: [8, 1]}}, "can find modulo of values with $mod"],
     [{"languages.spoken": {$not: {$all: ["english", "french"]}}}, "can check that all values exists in array with $all"],
     [{date: {year: 2013, month: 9, day: 25}}, "can match field with object values"],
-    [{"grades.0.grade": 92}, "can match fields for objects in a given position in an array"],
-    [{"grades.mean": { $gt: 70 }}, "can match fields for all objects within an array"]
+    [{"grades.0.grade": 92}, "can match fields for objects in a given position in an array with dot notation"],
+    [{"grades.mean": { $gt: 70 }}, "can match fields for all objects within an array with dot notation"],
+    [{grades: { $elemMatch: { mean: {$gt: 70} } }}, "can match fields for all objects within an array with $elemMatch"]
   ];
 
   _.each(queries, function (q) {

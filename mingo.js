@@ -73,7 +73,7 @@
    * @constructor
    */
   Mingo.Query = function (criteria) {
-    this._criteria = criteria;
+    this._criteria = criteria || {};
     this._compiledSelectors = [];
     this._compile();
   };
@@ -81,39 +81,46 @@
   Mingo.Query.prototype = {
 
     _compile: function () {
-      if (!_.isEmpty(this._criteria) && _.isObject(this._criteria)) {
-        for (var name in this._criteria) {
-          var expr = this._criteria[name];
-          if (_.contains(Ops.compoundOperators, name)) {
-            if (_.contains(["$not"], name)) {
-              throw Error("Invalid operator");
-            }
-            this._processOperator(name, name, expr);
-          } else {
-            // normalize expression
-            expr = normalize(expr);
-            for (var operator in expr) {
-              if (_.contains(['$options'], operator)) {
-                continue;
-              }
-              // handle regex with options
-              if (operator === "$regex") {
-                var regex = expr[operator];
-                var options = expr['$options'] || "";
-                var modifiers = "";
-                if (_.isString(regex)) {
-                  regex = new RegExp(regex);
-                }
-                modifiers += (regex.ignoreCase || options.indexOf("i") >= 0)? "i" : "";
-                modifiers += (regex.multiline || options.indexOf("m") >= 0)? "m" : "";
-                modifiers += (regex.global || options.indexOf("g") >= 0)? "g" : "";
 
-                regex = new RegExp(regex.source, modifiers);
-                expr[operator] = regex;
-              }
+      if (_.isEmpty(this._criteria)) return;
 
-              this._processOperator(name, operator, expr[operator]);
+      if (_.isArray(this._criteria) ||
+        _.isFunction(this._criteria) ||
+        !_.isObject(this._criteria)) {
+        throw new Error("Invalid type for criteria");
+      }
+
+      for (var name in this._criteria) {
+        var expr = this._criteria[name];
+        if (_.contains(Ops.compoundOperators, name)) {
+          if (_.contains(["$not"], name)) {
+            throw Error("Invalid operator");
+          }
+          this._processOperator(name, name, expr);
+        } else {
+          // normalize expression
+          expr = normalize(expr);
+          for (var operator in expr) {
+            if (_.contains(['$options'], operator)) {
+              continue;
             }
+            // handle regex with options
+            if (operator === "$regex") {
+              var regex = expr[operator];
+              var options = expr['$options'] || "";
+              var modifiers = "";
+              if (_.isString(regex)) {
+                regex = new RegExp(regex);
+              }
+              modifiers += (regex.ignoreCase || options.indexOf("i") >= 0)? "i" : "";
+              modifiers += (regex.multiline || options.indexOf("m") >= 0)? "m" : "";
+              modifiers += (regex.global || options.indexOf("g") >= 0)? "g" : "";
+
+              regex = new RegExp(regex.source, modifiers);
+              expr[operator] = regex;
+            }
+
+            this._processOperator(name, operator, expr[operator]);
           }
         }
       }
@@ -933,6 +940,24 @@
      */
     $size: function (a, b) {
       return _.isArray(a) && _.isNumber(b) && (a.length === b);
+    },
+
+    /**
+     * The $elemMatch operator matches more than one component within an array element
+     * @param a
+     * @param b
+     */
+    $elemMatch: function (a, b) {
+      if (_.isArray(a) && !_.isEmpty(a)) {
+        var query = new Mingo.Query(b);
+        for (var i = 0; i < a.length; i++) {
+          if (!query.test(a[i])) {
+            return false;
+          }
+        }
+        return true;
+      }
+      return false;
     }
 
   };
@@ -944,7 +969,9 @@
     },
 
     /**
-     * The $elemMatch operator matches at least than one component within an array element
+     * The $elemMatch projection operator limits the contents of an array field that is
+     * included in the query results to contain only the array element that matches the $elemMatch condition
+     *
      * @param obj
      * @param field
      * @param expr
