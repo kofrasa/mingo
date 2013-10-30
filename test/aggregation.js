@@ -84,6 +84,17 @@ isReady.then(function () {
     ).all();
 
     ok(result.length === 3 && !_.has(result[1], 'students'), "can project with $elemMatch operator");
+
+    result = Mingo.find(
+      school,
+      {},
+      {students: { $slice: -1 }}
+    ).first();
+
+    var matched = result.students.length === 1;
+    matched = matched && result.students[0]['name'] === 'jeff';
+    ok(matched, "can slice projected array elements with $slice");
+
   });
 
   test("$group operator", function () {

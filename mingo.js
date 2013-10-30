@@ -994,8 +994,19 @@
       return undefined;
     },
 
+    /**
+     * The $slice operator controls the number of items of an array that a query returns
+     * @param obj
+     * @param field
+     * @param expr
+     */
     $slice: function (obj, field, expr) {
-      throw new Error("$slice not implemented");
+      var array = Mingo._resolve(obj, field);
+
+      if (_.isUndefined(array) || !_.isArray(array)) {
+        return undefined;
+      }
+      return Array.prototype.slice.apply(array, [expr]);
     }
   };
 
