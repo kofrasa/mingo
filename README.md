@@ -12,7 +12,7 @@ A JavaScript implementation of mongo-esque query language
 - Aggregation Pipeline Support ($group, $match, $project, $sort, $limit, $unwind)
 - Expression Operators ($add, $subtract, $divide, $multiply, $cmp, $strcasecmp, $concat, $substr, $toLower, $toUpper)
 - Group Operators ($addToSet, $sum, $max, $min, $avg, $push, $first, $last)
-- Projection Operators ($elemMatch)
+- Projection Operators ($elemMatch, $slice)
 
 Installing
 ------------
