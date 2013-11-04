@@ -45,7 +45,8 @@
       }
     }
     if (_.isObject(value)) {
-      var notQuery = _.intersection(Ops.queryOperators, _.keys(value)).length === 0;
+      var operators = _.union(Ops.queryOperators, Ops.customOperators);
+      var notQuery = _.intersection(operators, _.keys(value)).length === 0;
       if (notQuery) {
         return {"$eq": value};
       }
@@ -138,6 +139,8 @@
         };
       } else if (_.contains(Ops.compoundOperators, operator)) {
         compiledSelector = compoundOperators[operator](field, value);
+      } else if (_.contains(Ops.customOperators, operator)) {
+        compiledSelector = customOperators[operator](field, value);
       } else {
         throw Error("Invalid query operator '" + operator + "' detected");
       }
@@ -502,6 +505,29 @@
       Array.prototype.push.apply(args, pipeline);
       return Mingo.aggregate.apply(null, args);
     }
+  };
+
+  // store custom operator functions
+  var customOperators = {};
+
+  /**
+   * Adds a new custom operator.
+   * Function must accept two arguments (selector, value) and must
+   * return an object with one function 'test' which accepts an object from the collection and return a boolean
+   * @param operator
+   * @param fn
+   */
+  Mingo.addOperator = function (operator, fn) {
+    if (operator && operator[0] !== "$") {
+      throw new Error("Invalid name, custom operator must start with '$'");
+    }
+    if (_.intersection(Ops.queryOperators, operator).length > 0) {
+      throw new Error("Invalid name, cannot override default operator '" + operator + "'");
+    }
+
+    customOperators[operator] = fn;
+    Ops.customOperators.push(operator);
+    Ops.customOperators = _.uniq(Ops.customOperators);
   };
 
   var pipelineOperators = {
@@ -1165,7 +1191,8 @@
     aggregateOperators: _.keys(aggregateOperators),
     groupOperators: _.keys(groupOperators),
     pipelineOperators: _.keys(pipelineOperators),
-    projectionOperators: _.keys(projectionOperators)
+    projectionOperators: _.keys(projectionOperators),
+    customOperators: []
   };
   Ops.queryOperators = _.union(Ops.simpleOperators, Ops.compoundOperators);
 
