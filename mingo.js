@@ -1014,7 +1014,7 @@
         case 16:
           return _.isNumeric(a) && a <= 2147483647 && (a + "").indexOf(".") === -1;
         case 18:
-          return _.isNumeric(a) && a <= 9223372036854775807 && (a + "").indexOf(".") === -1;
+          return _.isNumeric(a) && a > 2147483647 && a <= 9223372036854775807 && (a + "").indexOf(".") === -1;
         default:
           return false;
       }
