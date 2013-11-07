@@ -40,7 +40,8 @@ var obj = {
     { grade: 92, mean: 88, std: 8 },
     { grade: 78, mean: 90, std: 5 },
     { grade: 88, mean: 85, std: 3 }
-  ]
+  ],
+  today: new Date()
 };
 
 test("Simple comparisons", function () {
@@ -63,7 +64,8 @@ test("Simple comparisons", function () {
     [{date: {year: 2013, month: 9, day: 25}}, "can match field with object values"],
     [{"grades.0.grade": 92}, "can match fields for objects in a given position in an array with dot notation"],
     [{"grades.mean": { $gt: 70 }}, "can match fields for all objects within an array with dot notation"],
-    [{grades: { $elemMatch: { mean: {$gt: 70} } }}, "can match fields for all objects within an array with $elemMatch"]
+    [{grades: { $elemMatch: { mean: {$gt: 70} } }}, "can match fields for all objects within an array with $elemMatch"],
+    [{today: {$type: 9}}, "can match type of fields with $type"]
   ];
 
   _.each(queries, function (q) {

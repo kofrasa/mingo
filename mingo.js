@@ -984,6 +984,40 @@
         return true;
       }
       return false;
+    },
+
+    /**
+     * $type selects the documents where the value of the field is the specified BSON type
+     * @param a
+     * @param b
+     * @returns {boolean}
+     */
+    $type: function (a, b) {
+      switch (b) {
+        case 1:
+          return _.isNumeric(a) && (a + "").indexOf(".") !== -1;
+        case 2:
+        case 5:
+          return _.isString(a);
+        case 3:
+          return _.isObject(a);
+        case 4:
+          return _.isArray(a);
+        case 8:
+          return _.isBoolean(a);
+        case 9:
+          return _.isDate(a);
+        case 10:
+          return _.isNull(a);
+        case 11:
+          return _.isRegExp(a);
+        case 16:
+          return _.isNumeric(a) && a <= 2147483647 && (a + "").indexOf(".") === -1;
+        case 18:
+          return _.isNumeric(a) && a <= 9223372036854775807 && (a + "").indexOf(".") === -1;
+        default:
+          return false;
+      }
     }
 
   };
