@@ -21,7 +21,7 @@ var obj = {
     day: 25
   },
   languages: {
-    spoken: ["english"],
+    spoken: ["english", 'french', 'spanish'],
     programming: ["C", "Python", "Scala", "Java", "Javascript", "Bash", "C#"]
   },
   circles: {
@@ -60,7 +60,7 @@ test("Simple comparisons", function () {
     [{"languages.programming": {$size: 7 }}, "can determine size of nested array with $size"],
     [{"projects.Python": "Flaskapp"}, "can match nested elements in array"],
     [{"date.month": {$mod: [8, 1]}}, "can find modulo of values with $mod"],
-    [{"languages.spoken": {$not: {$all: ["english", "french"]}}}, "can check that all values exists in array with $all"],
+    [{"languages.spoken": {$all: ["french", "english"]}}, "can check that all values exists in array with $all"],
     [{date: {year: 2013, month: 9, day: 25}}, "can match field with object values"],
     [{"grades.0.grade": 92}, "can match fields for objects in a given position in an array with dot notation"],
     [{"grades.mean": { $gt: 70 }}, "can match fields for all objects within an array with dot notation"],
@@ -99,4 +99,41 @@ test("Conjunctions", function () {
       equal(Mingo.compile(q[0]).test(obj), q[1], q[2]);
     }
   });
+});
+
+test("using $all with $elemMatch", function () {
+  var data = [
+    {
+      "_id" : "5234ccb7687ea597eabee677",
+      "code" : "efg",
+      "tags" : [ "school", "book"],
+      "qty" : [
+        { "size" : "S", "num" : 10, "color" : "blue" },
+        { "size" : "M", "num" : 100, "color" : "blue" },
+        { "size" : "L", "num" : 100, "color" : "green" }
+      ]
+    },
+    {
+      "_id" : "52350353b2eff1353b349de9",
+      "code" : "ijk",
+      "tags" : [ "electronics", "school" ],
+      "qty" : [
+        { "size" : "M", "num" : 100, "color" : "green" }
+      ]
+    }
+  ];
+  var q = Mingo.compile({
+    qty: { $all: [
+      { "$elemMatch" : { size: "M", num: { $gt: 50} } },
+      { "$elemMatch" : { num : 100, color: "green" } }
+    ] }
+  });
+
+  var result = true;
+  _.each(data, function (obj) {
+    result = result && q.test(obj);
+  });
+
+  ok(result, "can match object using $all with $elemMatch");
+
 });

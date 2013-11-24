@@ -36,4 +36,26 @@ isReady.then(function () {
     ok(cursor.count() < 800, "can query Backbone collection");
   });
 
+  test("Match $all with $elemMatch on nested elements", function () {
+
+    var data = [{
+      user: { username: 'User1', projects: [{ name: "Project 1", rating: { complexity: 6 }}, { name: "Project 2", rating: { complexity: 2 }}] }
+    },{
+      user: { username: 'User2', projects: [{ name: "Project 1", rating: { complexity: 6 }}, { name: "Project 2", rating: { complexity: 8 }}] }
+    }];
+    var query = {
+      'user.projects': {
+        "$all": [{
+          "$elemMatch": {
+            'rating.complexity': { '$gt' : 6 }
+          }
+        }]
+      }
+    };
+    // It should return one user object
+    var result = Mingo.find(data, query).count();
+    ok(result === 1, "can match using $all with $elemMatch on nested elements");
+
+  });
+
 });

@@ -415,13 +415,12 @@
       isText = names[i].match(/^\d+$/) === null;
 
       if (isText && _.isArray(value)) {
-        var n =  names.slice(i).join(".");
         var res = [];
-        for (var j = 0; j < value.length; j++) {
-          if (_.isObject(value[j])) {
-            res.push(Mingo._get(value[j], n));
+        _.each(value, function (item) {
+          if (_.isObject(item)) {
+            res.push(Mingo._resolve(item, names[i]));
           }
-        }
+        });
         value = res;
       } else {
         value = Mingo._get(value, names[i]);
@@ -951,11 +950,19 @@
      * @returns {*}
      */
     $all: function (a, b) {
-      // order of arguments matter. underscore maintains order after intersection
+      var self = this;
+      var matched = false;
       if (_.isArray(a) && _.isArray(b)) {
-        return _.intersection(b, a).length === b.length;
+        for (var i = 0; i < b.length; i++) {
+          if (_.isObject(b[i]) && _.contains(_.keys(b[i]), "$elemMatch")) {
+            matched = matched || self.$elemMatch(a, b[i].$elemMatch);
+          } else {
+            // order of arguments matter. underscore maintains order after intersection
+            return _.intersection(b, a).length === b.length;
+          }
+        }
       }
-      return false;
+      return matched;
     },
 
     /**
@@ -977,11 +984,10 @@
       if (_.isArray(a) && !_.isEmpty(a)) {
         var query = new Mingo.Query(b);
         for (var i = 0; i < a.length; i++) {
-          if (!query.test(a[i])) {
-            return false;
+          if (query.test(a[i])) {
+            return true;
           }
         }
-        return true;
       }
       return false;
     },
