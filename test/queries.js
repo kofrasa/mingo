@@ -65,7 +65,8 @@ test("Simple comparisons", function () {
     [{"grades.0.grade": 92}, "can match fields for objects in a given position in an array with dot notation"],
     [{"grades.mean": { $gt: 70 }}, "can match fields for all objects within an array with dot notation"],
     [{grades: { $elemMatch: { mean: {$gt: 70} } }}, "can match fields for all objects within an array with $elemMatch"],
-    [{today: {$type: 9}}, "can match type of fields with $type"]
+    [{today: {$type: 9}}, "can match type of fields with $type"],
+    [{$where: "this.jobs === 6 && this.grades.length < 10"}, "can match with $where expression"]
   ];
 
   _.each(queries, function (q) {

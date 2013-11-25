@@ -786,7 +786,14 @@
     },
 
     $where: function (selector, value) {
-      throw Error("$where is Bad Bad Bad and SHALL NOT be implemented! Sorry :(");
+      if (!_.isFunction(value)) {
+        value = new Function("return " + value + ";");
+      }
+      return {
+        test: function (obj) {
+          return value.call(obj) === true;
+        }
+      };
     }
 
   };
