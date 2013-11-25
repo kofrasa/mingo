@@ -34,25 +34,46 @@
     _.isString, _.isBoolean, _.isNumber, _.isDate, _.isNull, _.isRegExp
   ];
 
-  var normalize = function(value) {
+  function normalize(expr) {
+    // normalized primitives
     for (var i = 0; i < primitives.length; i++) {
-      if (primitives[i](value)) {
-        if (_.isRegExp(value)) {
-          return {"$regex": value};
+      if (primitives[i](expr)) {
+        if (_.isRegExp(expr)) {
+          return {"$regex": expr};
         } else {
-          return {"$eq": value};
+          return {"$eq": expr};
         }
       }
     }
-    if (_.isObject(value)) {
+    // normalize object expression
+    if (_.isObject(expr)) {
       var operators = _.union(Ops.queryOperators, Ops.customOperators);
-      var notQuery = _.intersection(operators, _.keys(value)).length === 0;
+      var keys = _.keys(expr);
+      var notQuery = _.intersection(operators, keys).length === 0;
+
+      // no valid query operator found, so we do simple comparison
       if (notQuery) {
-        return {"$eq": value};
+        return {"$eq": expr};
+      }
+
+      // ensure valid regex
+      if (_.contains(keys, "$regex")) {
+        var regex = expr['$regex'];
+        var options = expr['$options'] || "";
+        var modifiers = "";
+        if (_.isString(regex)) {
+          modifiers += (regex.ignoreCase || options.indexOf("i") >= 0)? "i" : "";
+          modifiers += (regex.multiline || options.indexOf("m") >= 0)? "m" : "";
+          modifiers += (regex.global || options.indexOf("g") >= 0)? "g" : "";
+          regex = new RegExp(regex, modifiers);
+        }
+        expr['$regex'] = regex;
+        delete expr['$options'];
       }
     }
-    return value;
-  };
+
+    return expr;
+  }
 
   // Settings used by Mingo internally
   var settings = {
@@ -102,25 +123,6 @@
           // normalize expression
           expr = normalize(expr);
           for (var operator in expr) {
-            if (_.contains(['$options'], operator)) {
-              continue;
-            }
-            // handle regex with options
-            if (operator === "$regex") {
-              var regex = expr[operator];
-              var options = expr['$options'] || "";
-              var modifiers = "";
-              if (_.isString(regex)) {
-                regex = new RegExp(regex);
-              }
-              modifiers += (regex.ignoreCase || options.indexOf("i") >= 0)? "i" : "";
-              modifiers += (regex.multiline || options.indexOf("m") >= 0)? "m" : "";
-              modifiers += (regex.global || options.indexOf("g") >= 0)? "g" : "";
-
-              regex = new RegExp(regex.source, modifiers);
-              expr[operator] = regex;
-            }
-
             this._processOperator(name, operator, expr[operator]);
           }
         }
