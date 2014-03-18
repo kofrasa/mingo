@@ -138,3 +138,12 @@ test("using $all with $elemMatch", function () {
   ok(result, "can match object using $all with $elemMatch");
 
 });
+
+
+//test("Custom operators - $between", function () {
+//
+//  Mingo.addOperator("$between", function () {
+//
+//  });
+//
+//});

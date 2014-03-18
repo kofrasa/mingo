@@ -1,6 +1,8 @@
 
 (function () {
 
+  "use strict";
+
   // global on the server, window in the browser
   var root = this;
   var Mingo = {}, previousMingo;
@@ -474,7 +476,7 @@
    */
   Mingo.aggregate = function (collection, pipeline) {
     if (!_.isArray(pipeline)) {
-      pipeline = _.toArray(arguments).splice(1);
+      throw Error("Aggregation pipeline must be an array")
     }
     return (new Mingo.Aggregator(pipeline)).run(collection);
   };
@@ -500,7 +502,7 @@
      */
     aggregate: function (pipeline) {
       if (!_.isArray(pipeline)) {
-        pipeline = _.toArray(arguments);
+        throw Error("Pipeline must be an array")
       }
       var args = [this.toJSON()];
       Array.prototype.push.apply(args, pipeline);
