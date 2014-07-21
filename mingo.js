@@ -1414,7 +1414,10 @@
      */
     $substr: function (obj, expr) {
       var args = flatten(obj, expr);
-      return args[0].substr(args[1], args[2]);
+      if (_.isString(args[0])) {
+        return args[0].substr(args[1], args[2]);
+      }
+      return undefined;
     },
 
     /**
