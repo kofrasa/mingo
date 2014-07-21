@@ -1,4 +1,3 @@
-
 (function () {
 
   "use strict";
@@ -64,9 +63,9 @@
         var options = expr['$options'] || "";
         var modifiers = "";
         if (_.isString(regex)) {
-          modifiers += (regex.ignoreCase || options.indexOf("i") >= 0)? "i" : "";
-          modifiers += (regex.multiline || options.indexOf("m") >= 0)? "m" : "";
-          modifiers += (regex.global || options.indexOf("g") >= 0)? "g" : "";
+          modifiers += (regex.ignoreCase || options.indexOf("i") >= 0) ? "i" : "";
+          modifiers += (regex.multiline || options.indexOf("m") >= 0) ? "m" : "";
+          modifiers += (regex.global || options.indexOf("g") >= 0) ? "g" : "";
           regex = new RegExp(regex, modifiers);
         }
         expr['$regex'] = regex;
@@ -109,8 +108,7 @@
       if (_.isEmpty(this._criteria)) return;
 
       if (_.isArray(this._criteria) ||
-        _.isFunction(this._criteria) ||
-        !_.isObject(this._criteria)) {
+        _.isFunction(this._criteria) || !_.isObject(this._criteria)) {
         throw new Error("Invalid type for criteria");
       }
 
@@ -169,7 +167,7 @@
      * @param projection
      * @returns {Mingo.Cursor}
      */
-    find: function(collection, projection) {
+    find: function (collection, projection) {
       return new Mingo.Cursor(collection, this, projection);
     },
 
@@ -278,7 +276,7 @@
      * @param {Number} n the number of results to skip.
      * @return {Mingo.Cursor} Returns the cursor, so you can chain this call.
      */
-    skip: function(n) {
+    skip: function (n) {
       _.extend(this._operators, {"$skip": n});
       return this;
     },
@@ -289,7 +287,7 @@
      * @param {Number} n the number of results to limit to.
      * @return {Mingo.Cursor} Returns the cursor, so you can chain this call.
      */
-    limit: function(n) {
+    limit: function (n) {
       _.extend(this._operators, {"$limit": n});
       return this;
     },
@@ -369,7 +367,7 @@
     this._operators = operators;
   };
 
-  Mingo.Aggregator.prototype =  {
+  Mingo.Aggregator.prototype = {
 
     /**
      * Executes the aggregation pipeline
@@ -481,6 +479,10 @@
     return (new Mingo.Aggregator(pipeline)).run(collection);
   };
 
+  Mingo.createCollection = function (options) {
+
+  };
+
   /**
    * Mixin for Backbone.Collection objects
    */
@@ -535,6 +537,13 @@
 
   var pipelineOperators = {
 
+    /**
+     * Groups documents together for the purpose of calculating aggregate values based on a collection of documents.
+     *
+     * @param collection
+     * @param expr
+     * @returns {Array}
+     */
     $group: function (collection, expr) {
       // lookup key for grouping
       var idKey = expr[settings.key];
@@ -566,11 +575,27 @@
       return result;
     },
 
+    /**
+     * Filters the document stream, and only allows matching documents to pass into the next pipeline stage.
+     * $match uses standard MongoDB queries.
+     *
+     * @param collection
+     * @param expr
+     * @returns {Array|*}
+     */
     $match: function (collection, expr) {
       var query = new Mingo.Query(expr);
       return query.find(collection).all();
     },
 
+    /**
+     * Reshapes a document stream.
+     * $project can rename, add, or remove fields as well as create computed values and sub-documents.
+     *
+     * @param collection
+     * @param expr
+     * @returns {Array}
+     */
     $project: function (collection, expr) {
       var whiteList = [], blacklist = [];
 
@@ -611,9 +636,9 @@
             cloneObj[key] = computeValue(record, subExpr);
           } else if (subExpr === 1 || subExpr === true) {
             cloneObj[key] = computeValue(record, key);
-          } else if(_.isObject(subExpr)) {
+          } else if (_.isObject(subExpr)) {
             var subKeys = _.keys(subExpr);
-            var onlyKey = subKeys.length == 1? subKeys[0] : false;
+            var onlyKey = subKeys.length == 1 ? subKeys[0] : false;
             if (onlyKey !== false && _.contains(Ops.projectionOperators, onlyKey)) {
               temp = projectionOperators[onlyKey](record, key, subExpr[onlyKey]);
               if (!_.isUndefined(temp)) {
@@ -631,14 +656,35 @@
       return projected;
     },
 
+    /**
+     * Restricts the number of documents in an aggregation pipeline.
+     *
+     * @param collection
+     * @param value
+     * @returns {Object|*}
+     */
     $limit: function (collection, value) {
       return _.first(collection, value);
     },
 
+    /**
+     * Skips over a specified number of documents from the pipeline and returns the rest.
+     *
+     * @param collection
+     * @param value
+     * @returns {*}
+     */
     $skip: function (collection, value) {
       return _.rest(collection, value);
     },
 
+    /**
+     * Takes an array of documents and returns them as a stream of documents.
+     *
+     * @param collection
+     * @param expr
+     * @returns {Array}
+     */
     $unwind: function (collection, expr) {
       var result = [];
       var field = expr.substr(1);
@@ -655,10 +701,17 @@
         } else {
           throw new Error("Target field '" + field + "' is not of type Array.");
         }
-      };
+      }
       return result;
     },
 
+    /**
+     * Takes all input documents and returns them in a stream of sorted documents.
+     *
+     * @param collection
+     * @param sortKeys
+     * @returns {*}
+     */
     $sort: function (collection, sortKeys) {
       if (!_.isEmpty(sortKeys) && _.isObject(sortKeys)) {
         var modifiers = _.keys(sortKeys);
@@ -683,6 +736,25 @@
         });
       }
       return collection;
+    },
+
+    /**
+     * Returns an ordered stream of documents based on proximity to a geospatial point.
+     *
+     * @param collection
+     * @param expr
+     */
+    $geoNear: function(collection, expr) {
+
+    },
+
+    /**
+     * Restricts the content of a returned document on a per-field level.
+     * @param collection
+     * @param expr
+     */
+    $redact: function (collection, expr) {
+
     }
 
   };
@@ -709,7 +781,7 @@
 
       return {
         test: function (obj) {
-          for (var i =0; i < queries.length; i++) {
+          for (var i = 0; i < queries.length; i++) {
             if (queries[i].test(obj) === false) {
               return false;
             }
@@ -787,6 +859,12 @@
       };
     },
 
+    /**
+     * Matches documents that satisfy a JavaScript expression.
+     * @param selector
+     * @param value
+     * @returns {{test: test}}
+     */
     $where: function (selector, value) {
       if (!_.isFunction(value)) {
         value = new Function("return " + value + ";");
@@ -796,6 +874,16 @@
           return value.call(obj) === true;
         }
       };
+    },
+
+    /**
+     * Performs text search
+     * @param selector
+     * @param value
+     * @returns {{test: test}}
+     */
+    $text: function (selector, value) {
+      throw Error("$text not implemented");
     }
 
   };
@@ -811,7 +899,7 @@
      * @returns {*}
      */
     $eq: function (a, b) {
-      a = _.isArray(a)? a : [a];
+      a = _.isArray(a) ? a : [a];
       a = _.find(a, function (val) {
         return _.isEqual(val, b);
       });
@@ -837,7 +925,7 @@
      * @returns {*}
      */
     $in: function (a, b) {
-      a = _.isArray(a)? a : [a];
+      a = _.isArray(a) ? a : [a];
       return _.intersection(a, b).length > 0;
     },
 
@@ -861,8 +949,8 @@
      * @param b
      * @returns {boolean}
      */
-    $lt: function(a, b) {
-      a = _.isArray(a)? a : [a];
+    $lt: function (a, b) {
+      a = _.isArray(a) ? a : [a];
       a = _.find(a, function (val) {
         return val < b
       });
@@ -876,8 +964,8 @@
      * @param b
      * @returns {boolean}
      */
-    $lte: function(a, b) {
-      a = _.isArray(a)? a : [a];
+    $lte: function (a, b) {
+      a = _.isArray(a) ? a : [a];
       a = _.find(a, function (val) {
         return val <= b
       });
@@ -891,8 +979,8 @@
      * @param b
      * @returns {boolean}
      */
-    $gt: function(a, b) {
-      a = _.isArray(a)? a : [a];
+    $gt: function (a, b) {
+      a = _.isArray(a) ? a : [a];
       a = _.find(a, function (val) {
         return val > b
       });
@@ -906,8 +994,8 @@
      * @param b
      * @returns {boolean}
      */
-    $gte: function(a, b) {
-      a = _.isArray(a)? a : [a];
+    $gte: function (a, b) {
+      a = _.isArray(a) ? a : [a];
       a = _.find(a, function (val) {
         return val >= b
       });
@@ -915,13 +1003,13 @@
     },
 
     /**
-     * $mod selects the documents where the field value divided by the divisor has the specified remainder.
+     * Performs a modulo operation on the value of a field and selects documents with a specified result.
      * @param a
      * @param b
      * @returns {*|boolean|boolean}
      */
     $mod: function (a, b) {
-      a = _.isArray(a)? a : [a];
+      a = _.isArray(a) ? a : [a];
       a = _.find(a, function (val) {
         return _.isNumber(val) && _.isArray(b) && b.length === 2 && (val % b[0]) === b[1];
       });
@@ -929,14 +1017,13 @@
     },
 
     /**
-     * The $regex operator provides regular expression capabilities for pattern matching strings in queries.
-     * MongoDB uses Perl compatible regular expressions
+     * Selects documents where values match a specified regular expression.
      * @param a
      * @param b
      * @returns {*|boolean}
      */
     $regex: function (a, b) {
-      a = _.isArray(a)? a : [a];
+      a = _.isArray(a) ? a : [a];
       a = _.find(a, function (val) {
         return _.isString(val) && _.isRegExp(b) && (!!val.match(b));
       });
@@ -955,10 +1042,11 @@
     },
 
     /**
-     * $all selects the documents where the field holds an array which contains all elements (e.g. <value>, <value1>, etc.) in the array
+     * Matches arrays that contain all elements specified in the query.
+     *
      * @param a
      * @param b
-     * @returns {*}
+     * @returns boolean
      */
     $all: function (a, b) {
       var self = this;
@@ -977,17 +1065,19 @@
     },
 
     /**
-     * The $size operator matches any array with the number of elements specified by the argument. For example:
+     * Selects documents if the array field is a specified size.
+     *
      * @param a
      * @param b
      * @returns {*|boolean}
      */
-    $size: function (a, b) {
+    $size: function (field, value) {
       return _.isArray(a) && _.isNumber(b) && (a.length === b);
     },
 
     /**
-     * The $elemMatch operator matches more than one component within an array element
+     * Selects documents if element in the array field matches all the specified $elemMatch condition.
+     *
      * @param a
      * @param b
      */
@@ -1039,15 +1129,65 @@
 
   };
 
+  var geoSpatialOperators = {
+
+    /**
+     * Selects geometries within a bounding GeoJSON geometry.
+     *
+     */
+    $geoWithin: function () {
+
+    },
+
+    /**
+     * Selects geometries that intersect with a GeoJSON geometry.
+     */
+    $geoIntersects: function () {
+
+    },
+
+    /**
+     * Returns geospatial objects in proximity to a point.
+     */
+    $near: function () {
+
+    },
+
+    /**
+     * Returns geospatial objects in proximity to a point on a sphere.
+     */
+    $nearSphere: function () {
+
+    }
+
+  };
+
   var projectionOperators = {
 
+    /**
+     * Projects the first element in an array that matches the query condition.
+     *
+     * @param obj
+     * @param field
+     * @param expr
+     */
     $: function (obj, field, expr) {
       throw new Error("$ not implemented");
     },
 
     /**
-     * The $elemMatch projection operator limits the contents of an array field that is
-     * included in the query results to contain only the array element that matches the $elemMatch condition
+     * Projects the document's score assigned during $text operation.
+     *
+     * @param obj
+     * @param field
+     * @param expr
+     */
+    $meta: function (obj, field, expr) {
+
+    },
+
+    /**
+     * Projects only the first element from an array that matches the specified $elemMatch condition.
      *
      * @param obj
      * @param field
@@ -1072,7 +1212,8 @@
     },
 
     /**
-     * The $slice operator controls the number of items of an array that a query returns
+     * Limits the number of elements projected from an array. Supports skip and limit slices.
+     *
      * @param obj
      * @param field
      * @param expr
@@ -1092,6 +1233,13 @@
 
   var groupOperators = {
 
+    /**
+     * Returns an array of all the unique values for the selected field among for each document in that group.
+     *
+     * @param collection
+     * @param expr
+     * @returns {*}
+     */
     $addToSet: function (collection, expr) {
       var result = _.map(collection, function (obj) {
         return computeValue(obj, expr);
@@ -1099,18 +1247,31 @@
       return _.uniq(result);
     },
 
+    /**
+     * Returns the sum of all the values in a group.
+     *
+     * @param collection
+     * @param expr
+     * @returns {*}
+     */
     $sum: function (collection, expr) {
       if (_.isNumber(expr)) {
         // take a short cut if expr is number literal
         return collection.length * expr;
       }
-      var result = _.reduce(collection, function (acc, obj) {
+      return _.reduce(collection, function (acc, obj) {
         // pass empty field to avoid naming conflicts with fields on documents
         return acc + computeValue(obj, expr);
       }, 0);
-      return result;
     },
 
+    /**
+     * Returns the highest value in a group.
+     *
+     * @param collection
+     * @param expr
+     * @returns {*}
+     */
     $max: function (collection, expr) {
       var obj = _.max(collection, function (obj) {
         return computeValue(obj, expr);
@@ -1118,6 +1279,13 @@
       return computeValue(obj, expr);
     },
 
+    /**
+     * Returns the lowest value in a group.
+     *
+     * @param collection
+     * @param expr
+     * @returns {*}
+     */
     $min: function (collection, expr) {
       var obj = _.min(collection, function (obj) {
         return computeValue(obj, expr);
@@ -1125,22 +1293,50 @@
       return computeValue(obj, expr);
     },
 
+    /**
+     * Returns an average of all the values in a group.
+     *
+     * @param collection
+     * @param expr
+     * @returns {number}
+     */
     $avg: function (collection, expr) {
       return this.$sum(collection, expr) / collection.length;
     },
 
+    /**
+     * Returns an array of all values for the selected field among for each document in that group.
+     *
+     * @param collection
+     * @param expr
+     * @returns {Array|*}
+     */
     $push: function (collection, expr) {
       return _.map(collection, function (obj) {
         return computeValue(obj, expr);
       });
     },
 
+    /**
+     * Returns the first value in a group.
+     *
+     * @param collection
+     * @param expr
+     * @returns {*}
+     */
     $first: function (collection, expr) {
-      return (collection.length > 0)? computeValue(collection[0], expr) : undefined;
+      return (collection.length > 0) ? computeValue(collection[0], expr) : undefined;
     },
 
+    /**
+     * Returns the last value in a group.
+     *
+     * @param collection
+     * @param expr
+     * @returns {*}
+     */
     $last: function (collection, expr) {
-      return (collection.length > 0)? computeValue(collection[collection.length - 1], expr) : undefined;
+      return (collection.length > 0) ? computeValue(collection[collection.length - 1], expr) : undefined;
     }
   };
 
@@ -1188,15 +1384,26 @@
       if (args[0] > args[1]) {
         return 1;
       }
-      return (args[0] < args[1])? -1 : 0;
+      return (args[0] < args[1]) ? -1 : 0;
     },
 
+    /**
+     * Concatenates two strings.
+     * @param ctx
+     * @returns {string|*}
+     */
     $concat: function (ctx) {
       var values = _.toArray(arguments).slice(1)[0];
       var args = flatten(ctx, values);
       return args.join("");
     },
 
+    /**
+     * Compares two strings and returns an integer that reflects the comparison.
+     *
+     * @param ctx
+     * @returns {number}
+     */
     $strcasecmp: function (ctx) {
       var values = _.toArray(arguments).slice(1)[0];
       var args = flatten(ctx, values);
@@ -1205,21 +1412,39 @@
       if (args[0] > args[1]) {
         return 1;
       }
-      return (args[0] < args[1])? -1 : 0;
+      return (args[0] < args[1]) ? -1 : 0;
     },
 
+    /**
+     * Takes a string and returns portion of that string.
+     *
+     * @param ctx
+     * @returns {string}
+     */
     $substr: function (ctx) {
       var values = _.toArray(arguments).slice(1)[0];
       var args = flatten(ctx, values);
       return args[0].substr(args[1], args[2]);
     },
 
+    /**
+     * Converts a string to lowercase.
+     *
+     * @param ctx
+     * @returns {string}
+     */
     $toLower: function (ctx) {
       var values = _.toArray(arguments).slice(1)[0];
       var args = flatten(ctx, values);
       return args[0].toLowerCase();
     },
 
+    /**
+     * Converts a string to uppercase.
+     *
+     * @param ctx
+     * @returns {string}
+     */
     $toUpper: function (ctx) {
       var values = _.toArray(arguments).slice(1)[0];
       var args = flatten(ctx, values);
@@ -1236,6 +1461,11 @@
     };
   });
 
+  // These operators provide operations on sets.
+  var setOperators = {
+
+  };
+
   var Ops = {
     simpleOperators: _.keys(simpleOperators),
     compoundOperators: _.keys(compoundOperators),
@@ -1248,13 +1478,20 @@
   Ops.queryOperators = _.union(Ops.simpleOperators, Ops.compoundOperators);
 
 
-  var flatten = function(obj, args, action) {
+  /**
+   *
+   * @param obj
+   * @param args
+   * @param cb callback
+   * @returns {*}
+   */
+  var flatten = function (obj, args, cb) {
     for (var i = 0; i < args.length; i++) {
-      if (_.isString(args[i]) && args[i].length >  0) {
+      if (_.isString(args[i]) && args[i].length > 0) {
         args[i] = computeValue(obj, args[i]);
       }
-      if (typeof action === "function") {
-        action(args[i]);
+      if (typeof cb === "function") {
+        cb(args[i]);
       }
     }
     return args;
@@ -1262,6 +1499,7 @@
 
   /**
    * Returns the result of evaluating a $group aggregate operation over a collection
+   *
    * @param collection
    * @param field
    * @param expr
@@ -1295,6 +1533,7 @@
 
   /**
    * Computes the actual value to use in aggregation from the given expression for the record
+   *
    * @param record
    * @param expr
    * @param field
@@ -1342,4 +1581,4 @@
     return undefined;
   };
 
-}).call(this);
+}());
