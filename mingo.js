@@ -113,17 +113,21 @@
       }
 
       for (var name in this._criteria) {
-        var expr = this._criteria[name];
-        if (_.contains(Ops.compoundOperators, name)) {
-          if (_.contains(["$not"], name)) {
-            throw Error("Invalid operator");
-          }
-          this._processOperator(name, name, expr);
-        } else {
-          // normalize expression
-          expr = normalize(expr);
-          for (var operator in expr) {
-            this._processOperator(name, operator, expr[operator]);
+        if (this._criteria.hasOwnProperty(name)) {
+          var expr = this._criteria[name];
+          if (_.contains(Ops.compoundOperators, name)) {
+            if (_.contains(["$not"], name)) {
+              throw Error("Invalid operator");
+            }
+            this._processOperator(name, name, expr);
+          } else {
+            // normalize expression
+            expr = normalize(expr);
+            for (var op in expr) {
+              if (expr.hasOwnProperty(op)) {
+                this._processOperator(name, op, expr[op]);
+              }
+            }
           }
         }
       }
@@ -380,7 +384,9 @@
         for (var i = 0; i < this._operators.length; i++) {
           var operator = this._operators[i];
           for (var key in operator) {
-            collection = pipelineOperators[key](collection, operator[key]);
+            if (operator.hasOwnProperty(key)) {
+              collection = pipelineOperators[key](collection, operator[key]);
+            }
           }
         }
       }
@@ -567,7 +573,9 @@
         obj[settings.key] = index;
         // compute remaining keys in expression
         for (var key in expr) {
-          obj[key] = accumulate(groups[index], key, expr[key]);
+          if (expr.hasOwnProperty(key)) {
+            obj[key] = accumulate(groups[index], key, expr[key]);
+          }
         }
         result.push(obj);
       });
@@ -600,15 +608,17 @@
       var whiteList = [], blacklist = [];
 
       for (var key in expr) {
-        var obj = expr[key];
-        if (obj === 0 || obj === false) {
-          // can only exclude top-level "_id" field
-          if (key !== settings.key) {
-            throw new Error("The top-level _id field is the only field currently supported for exclusion");
+        if (expr.hasOwnProperty(key)) {
+          var obj = expr[key];
+          if (obj === 0 || obj === false) {
+            // can only exclude top-level "_id" field
+            if (key !== settings.key) {
+              throw new Error("The top-level _id field is the only field currently supported for exclusion");
+            }
+            blacklist.push(key);
+          } else if (obj === 1 || obj === true || _.isString(obj) || _.isObject(obj)) {
+            whiteList.push(key);
           }
-          blacklist.push(key);
-        } else if (obj === 1 || obj === true || _.isString(obj) || _.isObject(obj)) {
-          whiteList.push(key);
         }
       }
 
@@ -744,7 +754,7 @@
      * @param collection
      * @param expr
      */
-    $geoNear: function(collection, expr) {
+    $geoNear: function (collection, expr) {
 
     },
 
@@ -1513,16 +1523,18 @@
     if (_.isObject(expr)) {
       var result = {};
       for (var key in expr) {
-        result[key] = accumulate(collection, key, expr[key]);
-        // must run ONLY one group operator per expression
-        // if so, return result of the computed value
-        if (_.contains(Ops.groupOperators, key)) {
-          result = result[key];
-          // if there are more keys in expression this is bad
-          if (_.keys(expr).length > 1) {
-            throw new Error("Invalid $group expression '" + JSON.stringify(expr) + "'");
+        if (expr.hasOwnProperty(key)) {
+          result[key] = accumulate(collection, key, expr[key]);
+          // must run ONLY one group operator per expression
+          // if so, return result of the computed value
+          if (_.contains(Ops.groupOperators, key)) {
+            result = result[key];
+            // if there are more keys in expression this is bad
+            if (_.keys(expr).length > 1) {
+              throw new Error("Invalid $group expression '" + JSON.stringify(expr) + "'");
+            }
+            break;
           }
-          break;
         }
       }
       return result;
@@ -1555,17 +1567,19 @@
     if (_.isObject(expr)) {
       var result = {};
       for (var key in expr) {
-        result[key] = computeValue(record, expr[key], key);
+        if (expr.hasOwnProperty(key)) {
+          result[key] = computeValue(record, expr[key], key);
 
-        // must run ONLY one aggregate operator per expression
-        // if so, return result of the computed value
-        if (_.contains(Ops.aggregateOperators, key)) {
-          result = result[key];
-          // if there are more keys in expression this is bad
-          if (_.keys(expr).length > 1) {
-            throw new Error("Invalid aggregation expression '" + JSON.stringify(expr) + "'");
+          // must run ONLY one aggregate operator per expression
+          // if so, return result of the computed value
+          if (_.contains(Ops.aggregateOperators, key)) {
+            result = result[key];
+            // if there are more keys in expression this is bad
+            if (_.keys(expr).length > 1) {
+              throw new Error("Invalid aggregation expression '" + JSON.stringify(expr) + "'");
+            }
+            break;
           }
-          break;
         }
       }
       return result;
