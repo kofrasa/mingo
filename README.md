@@ -1,12 +1,10 @@
-Mingo
-=======
+# Mingo
 A JavaScript implementation of mongo-esque query language
 
-
-# Dependencies
+## Dependencies
 [underscore](https://github.com/jashkenas/underscore)
 
-# Features
+## Features
 - Simple Comparisons ($gt, $gte, $lt, $lte, $regex, $mod, $ne, $nin, $in, $all, $not, $elemMatch)
 - Full conjunction support ($and, $or, $nor)
 - Aggregation Pipeline Support ($group, $match, $project, $sort, $limit, $unwind)
@@ -14,12 +12,10 @@ A JavaScript implementation of mongo-esque query language
 - Group Operators ($addToSet, $sum, $max, $min, $avg, $push, $first, $last)
 - Projection Operators ($elemMatch, $slice)
 
-Installing
-------------
-    $ npm install mingo
+## Installing
+$ npm install mingo
 
-Usage
-------
+## Usage
 ~~~javascript
 
 var Mingo = require('mingo');
@@ -35,17 +31,9 @@ var query = new Mingo.Query({
     type: "homework",
     score: { $gte: 50 }
 });
-
-/**
-var collection = [
-    { "_id" : { "$oid" : "50906d7fa3c412bb040eb577" }, "student_id" : 0, "type" : "exam", "score" : 54.6535436362647 },
-    { "_id" : { "$oid" : "50906d7fa3c412bb040eb578" }, "student_id" : 0, "type" : "quiz", "score" : 31.95004496742112 },
-    { "_id" : { "$oid" : "50906d7fa3c412bb040eb579" }, "student_id" : 0, "type" : "homework", "score" : 14.8504576811645 }
-    ...
-*/
 ~~~
 
-## Searching and Filtering
+### Searching and Filtering
 ~~~javascript
 // filter collection with find()
 var cursor = query.find(collection);
@@ -73,7 +61,7 @@ cursor.all();
 var result = query.remove(collection);
 ~~~
 
-## Aggregation Pipeline
+### Aggregation Pipeline
 ~~~javascript
 var agg = new Mingo.Aggregator([
     {'$match': { "type": "homework"}},
@@ -86,9 +74,11 @@ var result = agg.run(collection);
 // shorthand
 result = Mingo.aggregate(
     collection,
-    {'$match': { "type": "homework"}},
-    {'$group':{'_id':'$student_id', 'score':{$min:'$score'}}},
-    {'$sort':{'_id': 1, 'score': 1}}
+    [
+        {'$match': { "type": "homework"}},
+        {'$group':{'_id':'$student_id', 'score':{$min:'$score'}}},
+        {'$sort':{'_id': 1, 'score': 1}}
+    ]
 );
 ~~~
 

@@ -10,28 +10,36 @@ isReady.then(function () {
   module("Aggregation Framework");
 
   var students = testData['students'];
+  var simple_grades = testData['grades_simple'];
 
   test("$match operator", function () {
-    var result = Mingo.aggregate(students, {'$match': {_id: {$in: [0,1,2,3,4]}}});
+    var result = Mingo.aggregate(students, [
+      {'$match': {_id: {$in: [0, 1, 2, 3, 4]}}}
+    ]);
     ok(result.length === 5, "can filter collection with $match");
   });
 
   test("$unwind operator", function () {
-    var flattened = Mingo.aggregate(students, {'$unwind': '$scores'});
+    var flattened = Mingo.aggregate(students, [
+      {'$unwind': '$scores'}
+    ]);
     ok(flattened.length === 800, "can unwind array value in collection");
   });
 
   test("$project operator", function () {
     var result = Mingo.aggregate(
       students,
-      {'$unwind': '$scores'},
-      {'$project': {
-        'name': 1,
-        'type': '$scores.type',
-        'details': {
-          "plus10": {$add: ["$scores.score", 10] }
-        }
-      }}
+      [
+        {'$unwind': '$scores'},
+        {'$project': {
+          'name': 1,
+          'type': '$scores.type',
+          'details': {
+            "plus10": {$add: ["$scores.score", 10] }
+          }
+        }},
+        { '$limit': 1}
+      ]
     );
 
     var fields = _.keys(result[0]);
@@ -98,28 +106,71 @@ isReady.then(function () {
   });
 
   test("$group operator", function () {
-    var flattened = Mingo.aggregate(students, {'$unwind': '$scores'});
+    var flattened = Mingo.aggregate(students, [
+      {'$unwind': '$scores'}
+    ]);
     var grouped = Mingo.aggregate(
       flattened,
-      {'$group': {'_id': '$scores.type', 'highest': {$max: '$scores.score'},
-        'lowest': {$min: '$scores.score'}, 'average': {$avg: '$scores.score'}, 'count': {$sum: 1}}}
+      [
+        {'$group': {'_id': '$scores.type', 'highest': {$max: '$scores.score'},
+          'lowest': {$min: '$scores.score'}, 'average': {$avg: '$scores.score'}, 'count': {$sum: 1}}}
+      ]
     );
     ok(grouped.length === 3, "can group collection with $group");
   });
 
   test("$limit operator", function () {
-    var result = Mingo.aggregate(students, {'$limit': 100});
+    var result = Mingo.aggregate(students, [
+      {'$limit': 100}
+    ]);
     ok(result.length === 100, "can limit result with $limit");
   });
 
   test("$skip operator", function () {
-    var result = Mingo.aggregate(students, {'$skip': 100});
+    var result = Mingo.aggregate(students, [
+      {'$skip': 100}
+    ]);
     ok(result.length === students.length - 100, "can skip result with $skip");
   });
 
   test("$sort operator", function () {
-    var result = Mingo.aggregate(students, {'$sort': {'_id': -1}});
+    var result = Mingo.aggregate(students, [
+      {'$sort': {'_id': -1}}
+    ]);
     ok(result[0]['_id'] === 199, "can sort collection with $sort");
+  });
+
+  test("$toUpper operator", function () {
+    var result = Mingo.aggregate(students,
+      [
+        { $project: { name: 1, caption: {$toUpper: "$name"} } },
+        { $sort: { name: 1 } },
+        { $limit: 3}
+      ]
+    );
+    ok(result[1]['name'].toUpperCase() === result[1]['caption'], "can apply $toUpper operator");
+  });
+
+  test("$toLower operator", function () {
+    var result = Mingo.aggregate(students,
+      [
+        { $project: { name: 1, caption: {$toLower: "$name"} } },
+        { $sort: { name: 1 } },
+        { $limit: 3}
+      ]
+    );
+    ok(result[1]['name'].toLowerCase() === result[1]['caption'], "can apply $toLowerCase operator");
+  });
+
+  test("$substr operator", function () {
+    var result = Mingo.aggregate(simple_grades,
+      [
+        { $project: { hash: {$substr: ["$_id.$oid", 0, 8]} } },
+        { $limit: 1}
+      ]
+    );
+    var hash = result[0]['_id']['$oid'].substr(0, 8);
+    ok(result[0]['hash'] == hash, "can apply $substr operator");
   });
 
 });

@@ -485,9 +485,6 @@
     return (new Mingo.Aggregator(pipeline)).run(collection);
   };
 
-  Mingo.createCollection = function (options) {
-
-  };
 
   /**
    * Mixin for Backbone.Collection objects
@@ -509,11 +506,7 @@
      * @returns {Array}
      */
     aggregate: function (pipeline) {
-      if (!_.isArray(pipeline)) {
-        throw Error("Pipeline must be an array")
-      }
-      var args = [this.toJSON()];
-      Array.prototype.push.apply(args, pipeline);
+      var args = [this.toJSON(), pipeline];
       return Mingo.aggregate.apply(null, args);
     }
   };
@@ -532,7 +525,7 @@
     if (operator && operator[0] !== "$") {
       throw new Error("Invalid name, custom operator must start with '$'");
     }
-    if (_.intersection(Ops.queryOperators, operator).length > 0) {
+    if (_.contains(Ops.queryOperators, operator)) {
       throw new Error("Invalid name, cannot override default operator '" + operator + "'");
     }
 
@@ -605,60 +598,51 @@
      * @returns {Array}
      */
     $project: function (collection, expr) {
-      var whiteList = [], blacklist = [];
-
-      for (var key in expr) {
-        if (expr.hasOwnProperty(key)) {
-          var obj = expr[key];
-          if (obj === 0 || obj === false) {
-            // can only exclude top-level "_id" field
-            if (key !== settings.key) {
-              throw new Error("The top-level _id field is the only field currently supported for exclusion");
-            }
-            blacklist.push(key);
-          } else if (obj === 1 || obj === true || _.isString(obj) || _.isObject(obj)) {
-            whiteList.push(key);
-          }
-        }
-      }
-
-      if (blacklist.length === 0 && !_.contains(whiteList, settings.key)) {
-        whiteList.push(settings.key);
-        expr[settings.key] = 1;
-      }
-
-      if (whiteList.length === 0) {
-        throw new Error("$projection requires at least one output field");
-      }
 
       // result collection
       var projected = [];
+      var objKeys = _.keys(expr);
+      var removeId = false;
 
-      var record, objKeys, temp, cloneObj;
+      if (_.contains(objKeys, settings.key)) {
+        var id = objKeys[settings.key];
+        removeId = (id === 0 || id === false);
+      }
+
       for (var i = 0; i < collection.length; i++) {
-        record = collection[i];
-        objKeys = _.keys(record);
-        cloneObj = {};
+        var obj = collection[i];
+        var cloneObj = {};
 
-        _.each(whiteList, function (key) {
+        _.each(objKeys, function (key) {
+
+          // tiny optimization here to skip over id
+          if (removeId && key === settings.key) return;
+
           var subExpr = expr[key];
+
           if (_.isString(subExpr)) {
-            cloneObj[key] = computeValue(record, subExpr);
+            cloneObj[key] = computeValue(obj, subExpr, key);
           } else if (subExpr === 1 || subExpr === true) {
-            cloneObj[key] = computeValue(record, key);
+            cloneObj[key] = _.result(obj, key);
           } else if (_.isObject(subExpr)) {
-            var subKeys = _.keys(subExpr);
-            var onlyKey = subKeys.length == 1 ? subKeys[0] : false;
-            if (onlyKey !== false && _.contains(Ops.projectionOperators, onlyKey)) {
-              temp = projectionOperators[onlyKey](record, key, subExpr[onlyKey]);
+            var operator = _.keys(subExpr);
+            operator = operator.length > 1 ? false : operator[0];
+            if (operator !== false && _.contains(Ops.projectionOperators, operator)) {
+              // apply the projection operator on the operator expression for the key
+              var temp = projectionOperators[operator](obj, subExpr[operator], key);
               if (!_.isUndefined(temp)) {
                 cloneObj[key] = temp;
               }
             } else {
-              cloneObj[key] = computeValue(record, subExpr);
+              // compute the value for the sub expression for the key
+              cloneObj[key] = computeValue(obj, subExpr, key);
             }
           }
         });
+
+        if (!removeId && !_.has(cloneObj, settings.key)) {
+          cloneObj[settings.key] = obj[settings.key];
+        }
 
         projected.push(cloneObj);
       }
@@ -1081,7 +1065,7 @@
      * @param b
      * @returns {*|boolean}
      */
-    $size: function (field, value) {
+    $size: function (a, b) {
       return _.isArray(a) && _.isNumber(b) && (a.length === b);
     },
 
@@ -1181,7 +1165,7 @@
      * @param field
      * @param expr
      */
-    $: function (obj, field, expr) {
+    $: function (obj, expr, field) {
       throw new Error("$ not implemented");
     },
 
@@ -1192,7 +1176,7 @@
      * @param field
      * @param expr
      */
-    $meta: function (obj, field, expr) {
+    $meta: function (obj, expr, field) {
 
     },
 
@@ -1204,7 +1188,7 @@
      * @param expr
      * @returns {*}
      */
-    $elemMatch: function (obj, field, expr) {
+    $elemMatch: function (obj, expr, field) {
       var array = Mingo._resolve(obj, field);
       var query = new Mingo.Query(expr);
 
@@ -1228,10 +1212,10 @@
      * @param field
      * @param expr
      */
-    $slice: function (obj, field, expr) {
+    $slice: function (obj, expr, field) {
       var array = Mingo._resolve(obj, field);
 
-      if (_.isUndefined(array) || !_.isArray(array)) {
+      if (_.isUndefined(array)) {
         return undefined;
       }
       if (!_.isArray(expr)) {
@@ -1352,45 +1336,43 @@
 
   var aggregateOperators = {
 
-    $add: function (ctx) {
-      var result = 0;
-      var values = _.toArray(arguments).slice(1)[0];
-      flatten(ctx, values, function (val) {
-        result += val;
-      });
-      return result;
+    $add: function (obj, expr) {
+      var args = flatten(obj, expr);
+      return _.reduce(args, function (memo, num) {
+        return memo + num;
+      }, 0);
     },
 
-    $subtract: function (ctx) {
-      var values = _.toArray(arguments).slice(1)[0];
-      var args = flatten(ctx, values);
+    /**
+     * Takes an array that contains two numbers or two dates and subtracts the second value from the first.
+     *
+     * @param ctx
+     * @returns {number}
+     */
+    $subtract: function (obj, expr) {
+      var args = flatten(obj, expr);
       return args[0] - args[1];
     },
 
-    $divide: function (ctx) {
-      var values = _.toArray(arguments).slice(1)[0];
-      var args = flatten(ctx, values);
+    $divide: function (obj, expr) {
+      var args = flatten(obj, expr);
       return args[0] / args[1];
     },
 
-    $multiply: function (ctx) {
-      var values = _.toArray(arguments).slice(1)[0];
-      var result = 1;
-      flatten(ctx, values, function (val) {
-        result *= val;
-      });
-      return result;
+    $multiply: function (obj, expr) {
+      var args = flatten(obj, expr);
+      return _.reduce(args, function (memo, num) {
+        return memo * num;
+      }, 1);
     },
 
-    $mod: function (ctx) {
-      var values = _.toArray(arguments).slice(1)[0];
-      var args = flatten(ctx, values);
+    $mod: function (obj, expr) {
+      var args = flatten(obj, expr);
       return args[0] % args[1];
     },
 
-    $cmp: function (ctx) {
-      var values = _.toArray(arguments).slice(1)[0];
-      var args = flatten(ctx, values);
+    $cmp: function (obj, expr) {
+      var args = flatten(obj, expr);
       if (args[0] > args[1]) {
         return 1;
       }
@@ -1402,9 +1384,8 @@
      * @param ctx
      * @returns {string|*}
      */
-    $concat: function (ctx) {
-      var values = _.toArray(arguments).slice(1)[0];
-      var args = flatten(ctx, values);
+    $concat: function (obj, expr) {
+      var args = flatten(obj, expr);
       return args.join("");
     },
 
@@ -1414,9 +1395,8 @@
      * @param ctx
      * @returns {number}
      */
-    $strcasecmp: function (ctx) {
-      var values = _.toArray(arguments).slice(1)[0];
-      var args = flatten(ctx, values);
+    $strcasecmp: function (obj, expr) {
+      var args = flatten(obj, expr);
       args[0] = args[0].toUpperCase();
       args[1] = args[1].toUpperCase();
       if (args[0] > args[1]) {
@@ -1428,46 +1408,45 @@
     /**
      * Takes a string and returns portion of that string.
      *
-     * @param ctx
+     * @param obj
+     * @param expr
      * @returns {string}
      */
-    $substr: function (ctx) {
-      var values = _.toArray(arguments).slice(1)[0];
-      var args = flatten(ctx, values);
+    $substr: function (obj, expr) {
+      var args = flatten(obj, expr);
       return args[0].substr(args[1], args[2]);
     },
 
     /**
      * Converts a string to lowercase.
      *
-     * @param ctx
+     * @param obj
+     * @param expr
      * @returns {string}
      */
-    $toLower: function (ctx) {
-      var values = _.toArray(arguments).slice(1)[0];
-      var args = flatten(ctx, values);
-      return args[0].toLowerCase();
+    $toLower: function (obj, expr) {
+      var value = computeValue(obj, expr);
+      return value.toLowerCase();
     },
 
     /**
      * Converts a string to uppercase.
      *
-     * @param ctx
+     * @param obj
+     * @param expr
      * @returns {string}
      */
-    $toUpper: function (ctx) {
-      var values = _.toArray(arguments).slice(1)[0];
-      var args = flatten(ctx, values);
-      return args[0].toUpperCase();
+    $toUpper: function (obj, expr) {
+      var value = computeValue(obj, expr);
+      return value.toUpperCase();
     }
   };
 
-  // mixin from simple operators
+  // mixin simple operators into aggregate operators
   _.each(["$eq", "$ne", "$gt", "$gte", "$lt", "$lte"], function (op) {
-    aggregateOperators[op] = function (ctx) {
-      var values = _.toArray(arguments).slice(1)[0];
-      var args = flatten(ctx, values);
-      simpleOperators[op](args[0], args[1]);
+    aggregateOperators[op] = function (obj, expr) {
+      var args = flatten(obj, expr);
+      return simpleOperators[op](args[0], args[1]);
     };
   });
 
@@ -1489,30 +1468,26 @@
 
 
   /**
-   *
+   * Resolve the arguments to the aggregate operator
    * @param obj
    * @param args
-   * @param cb callback
    * @returns {*}
    */
-  var flatten = function (obj, args, cb) {
+  var flatten = function (obj, args) {
     for (var i = 0; i < args.length; i++) {
       if (_.isString(args[i]) && args[i].length > 0) {
         args[i] = computeValue(obj, args[i]);
-      }
-      if (typeof cb === "function") {
-        cb(args[i]);
       }
     }
     return args;
   };
 
   /**
-   * Returns the result of evaluating a $group aggregate operation over a collection
+   * Returns the result of evaluating a $group operation over a collection
    *
    * @param collection
-   * @param field
-   * @param expr
+   * @param field the name of the aggregate operator or field
+   * @param expr the expression of the aggregate operator for the field
    * @returns {*}
    */
   var accumulate = function (collection, field, expr) {
@@ -1540,35 +1515,35 @@
       return result;
     }
 
-    return null;
+    return undefined;
   };
 
   /**
    * Computes the actual value to use in aggregation from the given expression for the record
    *
-   * @param record
-   * @param expr
-   * @param field
+   * @param obj the current object from the collection
+   * @param expr the expression for the given field
+   * @param field the field name
    * @returns {*}
    */
-  var computeValue = function (record, expr, field) {
+  var computeValue = function (obj, expr, field) {
 
-    // if the field of the object is an aggregate operator
+    // if the field of the object is a valid operator
     if (_.contains(Ops.aggregateOperators, field)) {
-      return aggregateOperators[field](record, expr);
+      return aggregateOperators[field](obj, expr);
     }
 
     // if expr is a variable for an object field
     // field not used in this case
     if (_.isString(expr) && expr.length > 0 && expr[0] === "$") {
-      return Mingo._resolve(record, expr.slice(1));
+      return Mingo._resolve(obj, expr.slice(1));
     }
 
     if (_.isObject(expr)) {
       var result = {};
       for (var key in expr) {
         if (expr.hasOwnProperty(key)) {
-          result[key] = computeValue(record, expr[key], key);
+          result[key] = computeValue(obj, expr[key], key);
 
           // must run ONLY one aggregate operator per expression
           // if so, return result of the computed value
@@ -1583,16 +1558,17 @@
         }
       }
       return result;
-    }
 
-    // check and return value if already in a resolved state
-    for (var i = 0; i < primitives.length; i++) {
-      if (primitives[i](expr)) {
-        return expr;
+    } else {
+      // check and return value if already in a resolved state
+      for (var i = 0; i < primitives.length; i++) {
+        if (primitives[i](expr)) {
+          return expr;
+        }
       }
     }
 
     return undefined;
   };
 
-}());
+}).call(this);

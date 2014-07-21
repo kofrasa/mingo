@@ -23,11 +23,11 @@ isReady.then(function () {
 
   test("Homework 2.2", function () {
     var grades = new MingoCollection(testData['grades_simple']);
-    var lowest = grades.aggregate(
+    var lowest = grades.aggregate([
       {'$match': { "type": "homework"}},
       {'$group':{'_id':'$student_id', 'score':{$min:'$score'}}},
       {'$sort':{'_id': 1, 'score': 1}}
-    );
+    ]);
 
     var homework = grades.query({type: 'homework'}).sort({'student_id': 1, 'score': 1}).all();
     var ids = [];
@@ -48,7 +48,9 @@ isReady.then(function () {
 
     equal(result.length, 600, "remove lowest homework from grades for each student. count is 600");
 
-    var res = Mingo.aggregate(result, {'$group':{'_id':'$student_id', 'average':{$avg:'$score'}}}, {'$sort':{'average':-1}}, {'$limit':1});
+    var res = Mingo.aggregate(result, [
+      {'$group':{'_id':'$student_id', 'average':{$avg:'$score'}}}, {'$sort':{'average':-1}}, {'$limit':1}
+    ]);
     equal(res[0]['_id'], 54, "student with highest average has id 54");
   });
 
