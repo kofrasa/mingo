@@ -236,7 +236,7 @@
 
         if (pipeline.length > 0) {
           var aggregator = new Mingo.Aggregator(pipeline);
-          this._result = aggregator.run(this._result);
+          this._result = aggregator.run(this._result, this._query);
         }
       }
       return this._result;
@@ -378,14 +378,18 @@
      * @param collection an array of objects to process
      * @returns {Array}
      */
-    run: function (collection) {
+    run: function (collection, query) {
       if (!_.isEmpty(this._operators)) {
         // run aggregation pipeline
         for (var i = 0; i < this._operators.length; i++) {
           var operator = this._operators[i];
           for (var key in operator) {
             if (operator.hasOwnProperty(key)) {
-              collection = pipelineOperators[key](collection, operator[key]);
+              if (query) {
+                collection = pipelineOperators[key].call(query, collection, operator[key]);
+              } else {
+                collection = pipelineOperators[key](collection, operator[key]);
+              }
             }
           }
         }
@@ -716,8 +720,7 @@
             indexes.push(value);
             return value;
           });
-          indexes = _.uniq(indexes);
-          var indexes = _.sortBy(indexes, function (item) {
+          indexes = _.sortBy(_.uniq(indexes), function (item) {
             return item;
           });
           if (sortKeys[key] === -1) {
@@ -730,35 +733,13 @@
         });
       }
       return collection;
-    },
-
-    /**
-     * Returns an ordered stream of documents based on proximity to a geospatial point.
-     *
-     * @param collection
-     * @param expr
-     */
-    $geoNear: function (collection, expr) {
-
-    },
-
-    /**
-     * Restricts the content of a returned document on a per-field level.
-     * @param collection
-     * @param expr
-     */
-    $redact: function (collection, expr) {
-
     }
-
   };
 
   var compoundOperators = {
 
     /**
-     * $and performs a logical AND operation on an array of two or more expressions (e.g. <expression1>, <expression2>, etc.)
-     * and selects the documents that satisfy all the expressions in the array. The $and operator uses short-circuit evaluation.
-     * If the first expression (e.g. <expression1>) evaluates to false, MongoDB will not evaluate the remaining expressions
+     * Joins query clauses with a logical AND returns all documents that match the conditions of both clauses.
      *
      * @param selector
      * @param value
@@ -786,8 +767,7 @@
     },
 
     /**
-     * The $or operator performs a logical OR operation on an array of two or more <expressions> and selects
-     * the documents that satisfy at least one of the <expressions>
+     * Joins query clauses with a logical OR returns all documents that match the conditions of either clause.
      *
      * @param selector
      * @param value
@@ -815,8 +795,7 @@
     },
 
     /**
-     * $nor performs a logical NOR operation on an array of two or more <expressions> and
-     * selects the documents that fail all the <expressions> in the array.
+     * Joins query clauses with a logical NOR returns all documents that fail to match both clauses.
      *
      * @param selector
      * @param value
@@ -835,8 +814,7 @@
     },
 
     /**
-     * $not performs a logical NOT operation on the specified <operator-expression> and selects the documents
-     * that do not match the <operator-expression>. This includes documents that do not contain the field.
+     * Inverts the effect of a query expression and returns documents that do not match the query expression.
      *
      * @param selector
      * @param value
@@ -855,6 +833,7 @@
 
     /**
      * Matches documents that satisfy a JavaScript expression.
+     *
      * @param selector
      * @param value
      * @returns {{test: test}}
@@ -872,6 +851,7 @@
 
     /**
      * Performs text search
+     *
      * @param selector
      * @param value
      * @returns {{test: test}}
@@ -885,8 +865,7 @@
   var simpleOperators = {
 
     /**
-     * Pseudo operator, introduced for convenience and consistency
-     * Checks that two values are equal
+     * Checks that two values are equal. Pseudo operator introduced for convenience and consistency
      *
      * @param a
      * @param b
@@ -901,8 +880,8 @@
     },
 
     /**
-     * $ne selects the documents where the value of the field is not equal (i.e. !=) to the specified value.
-     * This includes documents that do not contain the field
+     * Matches all values that are not equal to the value specified in the query.
+     *
      * @param a
      * @param b
      * @returns {boolean}
@@ -912,7 +891,7 @@
     },
 
     /**
-     * $in selects the documents where the field value equals any value in the specified array (e.g. <value1>, <value2>, etc.)
+     * Matches any of the values that exist in an array specified in the query.
      *
      * @param a
      * @param b
@@ -924,9 +903,7 @@
     },
 
     /**
-     * $nin selects the documents where:
-     * the field value is not in the specified array or
-     * the field does not exist.
+     * Matches values that do not exist in an array specified to the query.
      *
      * @param a
      * @param b
@@ -937,7 +914,7 @@
     },
 
     /**
-     * $lt selects the documents where the value of the field is less than (i.e. <) the specified value.
+     * Matches values that are less than the value specified in the query.
      *
      * @param a
      * @param b
@@ -952,7 +929,7 @@
     },
 
     /**
-     * $lte selects the documents where the value of the field is less than or equal to (i.e. <=) the specified value.
+     * Matches values that are less than or equal to the value specified in the query.
      *
      * @param a
      * @param b
@@ -967,7 +944,7 @@
     },
 
     /**
-     * $gt selects those documents where the value of the field is greater than (i.e. >) the specified value.
+     * Matches values that are greater than the value specified in the query.
      *
      * @param a
      * @param b
@@ -982,7 +959,7 @@
     },
 
     /**
-     * $gte selects the documents where the value of the field is greater than or equal to (i.e. >=) a specified value (e.g. value.)
+     * Matches values that are greater than or equal to the value specified in the query.
      *
      * @param a
      * @param b
@@ -998,6 +975,7 @@
 
     /**
      * Performs a modulo operation on the value of a field and selects documents with a specified result.
+     *
      * @param a
      * @param b
      * @returns {*|boolean|boolean}
@@ -1012,6 +990,7 @@
 
     /**
      * Selects documents where values match a specified regular expression.
+     *
      * @param a
      * @param b
      * @returns {*|boolean}
@@ -1025,8 +1004,8 @@
     },
 
     /**
-     * $exists selects the documents that contain the field if <boolean> is true.
-     * If <boolean> is false, the query only returns the documents that do not contain the field.
+     * Matches documents that have the specified field.
+     *
      * @param a
      * @param b
      * @returns {boolean|*|boolean}
@@ -1088,7 +1067,8 @@
     },
 
     /**
-     * $type selects the documents where the value of the field is the specified BSON type
+     * Selects documents if a field is of the specified type.
+     *
      * @param a
      * @param b
      * @returns {boolean}
@@ -1123,39 +1103,6 @@
 
   };
 
-  var geoSpatialOperators = {
-
-    /**
-     * Selects geometries within a bounding GeoJSON geometry.
-     *
-     */
-    $geoWithin: function () {
-
-    },
-
-    /**
-     * Selects geometries that intersect with a GeoJSON geometry.
-     */
-    $geoIntersects: function () {
-
-    },
-
-    /**
-     * Returns geospatial objects in proximity to a point.
-     */
-    $near: function () {
-
-    },
-
-    /**
-     * Returns geospatial objects in proximity to a point on a sphere.
-     */
-    $nearSphere: function () {
-
-    }
-
-  };
-
   var projectionOperators = {
 
     /**
@@ -1167,17 +1114,6 @@
      */
     $: function (obj, expr, field) {
       throw new Error("$ not implemented");
-    },
-
-    /**
-     * Projects the document's score assigned during $text operation.
-     *
-     * @param obj
-     * @param field
-     * @param expr
-     */
-    $meta: function (obj, expr, field) {
-
     },
 
     /**
@@ -1336,6 +1272,13 @@
 
   var aggregateOperators = {
 
+    /**
+     * Computes the sum of an array of numbers.
+     *
+     * @param obj
+     * @param expr
+     * @returns {Object}
+     */
     $add: function (obj, expr) {
       var args = flatten(obj, expr);
       return _.reduce(args, function (memo, num) {
@@ -1346,7 +1289,8 @@
     /**
      * Takes an array that contains two numbers or two dates and subtracts the second value from the first.
      *
-     * @param ctx
+     * @param obj
+     * @param expr
      * @returns {number}
      */
     $subtract: function (obj, expr) {
@@ -1354,11 +1298,25 @@
       return args[0] - args[1];
     },
 
+    /**
+     * Takes two numbers and divides the first number by the second.
+     *
+     * @param obj
+     * @param expr
+     * @returns {number}
+     */
     $divide: function (obj, expr) {
       var args = flatten(obj, expr);
       return args[0] / args[1];
     },
 
+    /**
+     * Computes the product of an array of numbers.
+     *
+     * @param obj
+     * @param expr
+     * @returns {Object}
+     */
     $multiply: function (obj, expr) {
       var args = flatten(obj, expr);
       return _.reduce(args, function (memo, num) {
@@ -1366,11 +1324,25 @@
       }, 1);
     },
 
+    /**
+     * Takes two numbers and calculates the modulo of the first number divided by the second.
+     *
+     * @param obj
+     * @param expr
+     * @returns {number}
+     */
     $mod: function (obj, expr) {
       var args = flatten(obj, expr);
       return args[0] % args[1];
     },
 
+    /**
+     * Compares two values and returns the result of the comparison as an integer.
+     *
+     * @param obj
+     * @param expr
+     * @returns {number}
+     */
     $cmp: function (obj, expr) {
       var args = flatten(obj, expr);
       if (args[0] > args[1]) {
@@ -1381,7 +1353,9 @@
 
     /**
      * Concatenates two strings.
-     * @param ctx
+     *
+     * @param obj
+     * @param expr
      * @returns {string|*}
      */
     $concat: function (obj, expr) {
@@ -1392,7 +1366,8 @@
     /**
      * Compares two strings and returns an integer that reflects the comparison.
      *
-     * @param ctx
+     * @param obj
+     * @param expr
      * @returns {number}
      */
     $strcasecmp: function (obj, expr) {

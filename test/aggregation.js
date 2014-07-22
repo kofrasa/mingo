@@ -105,6 +105,27 @@ isReady.then(function () {
 
   });
 
+//  test("$ positional operator", function () {
+//    var result = Mingo.find([
+//      { "_id": 7, semester: 3, "grades": [
+//        { grade: 80, mean: 75, std: 8 },
+//        { grade: 85, mean: 90, std: 5 },
+//        { grade: 90, mean: 85, std: 3 }
+//      ] },
+//
+//      { "_id": 8, semester: 3, "grades": [
+//        { grade: 92, mean: 88, std: 8 },
+//        { grade: 78, mean: 90, std: 5 },
+//        { grade: 88, mean: 85, std: 3 }
+//      ] }
+//    ],
+//      { "grades.mean": { $gt: 80 } },
+//      { "grades.$": 1 }
+//    ).all();
+//    console.log(result);
+//    ok(result[0]['grades'].length == 1, "can apply $ positional operator");
+//  });
+
   test("$group operator", function () {
     var flattened = Mingo.aggregate(students, [
       {'$unwind': '$scores'}
