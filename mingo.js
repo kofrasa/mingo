@@ -48,9 +48,8 @@
     }
     // normalize object expression
     if (_.isObject(expr)) {
-      var operators = _.union(Ops.queryOperators, Ops.customOperators);
       var keys = _.keys(expr);
-      var notQuery = _.intersection(operators, keys).length === 0;
+      var notQuery = _.intersection(Ops.queryOperators, keys).length === 0;
 
       // no valid query operator found, so we do simple comparison
       if (notQuery) {
@@ -145,8 +144,6 @@
         };
       } else if (_.contains(Ops.compoundOperators, operator)) {
         compiledSelector = compoundOperators[operator](field, value);
-      } else if (_.contains(Ops.customOperators, operator)) {
-        compiledSelector = customOperators[operator](field, value);
       } else {
         throw Error("Invalid query operator '" + operator + "' detected");
       }
@@ -515,29 +512,6 @@
     }
   };
 
-  // store custom operator functions
-  var customOperators = {};
-
-  /**
-   * Adds a new custom operator.
-   * Function must accept two arguments (selector, value) and must
-   * return an object with one function 'test' which accepts an object from the collection and return a boolean
-   * @param operator
-   * @param fn
-   */
-  Mingo.addOperator = function (operator, fn) {
-    if (operator && operator[0] !== "$") {
-      throw new Error("Invalid name, custom operator must start with '$'");
-    }
-    if (_.contains(Ops.queryOperators, operator)) {
-      throw new Error("Invalid name, cannot override default operator '" + operator + "'");
-    }
-
-    customOperators[operator] = fn;
-    Ops.customOperators.push(operator);
-    Ops.customOperators = _.uniq(Ops.customOperators);
-  };
-
   var pipelineOperators = {
 
     /**
@@ -785,7 +759,7 @@
       return {
         test: function (obj) {
           for (var i = 0; i < queries.length; i++) {
-            if (queries[i].test(obj) === true) {
+            if (queries[i].test(obj)) {
               return true;
             }
           }
@@ -1552,8 +1526,7 @@
     aggregateOperators: _.keys(aggregateOperators),
     groupOperators: _.keys(groupOperators),
     pipelineOperators: _.keys(pipelineOperators),
-    projectionOperators: _.keys(projectionOperators),
-    customOperators: []
+    projectionOperators: _.keys(projectionOperators)
   };
   Ops.queryOperators = _.union(Ops.simpleOperators, Ops.compoundOperators);
 
