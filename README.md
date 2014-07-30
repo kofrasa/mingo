@@ -4,16 +4,21 @@ A JavaScript implementation of mongo-esque query language
 ## Dependencies
 [underscore](https://github.com/jashkenas/underscore)
 
-## Features
-- Simple Comparisons ($gt, $gte, $lt, $lte, $regex, $mod, $ne, $nin, $in, $all, $not, $elemMatch)
-- Full conjunction support ($and, $or, $nor)
-- Aggregation Pipeline Support ($group, $match, $project, $sort, $limit, $unwind)
-- Expression Operators ($add, $subtract, $divide, $multiply, $cmp, $strcasecmp, $concat, $substr, $toLower, $toUpper)
-- Group Operators ($addToSet, $sum, $max, $min, $avg, $push, $first, $last)
-- Projection Operators ($elemMatch, $slice)
-
 ## Installing
 $ npm install mingo
+
+## Features
+- Comparisons Operators ($gt, $gte, $lt, $lte, $ne, $nin, $in)
+- Logical Operators ($and, $or, $nor, $not)
+- Evaluation Operators ($regex, $mod, $where)
+- Array Operators ($all, $elemMatch, $size)
+- Element Operators ($exists, $type)
+- Aggregation Pipeline Operators ($group, $match, $project, $sort, $limit, $unwind, $skip)
+- Conditional Operators ($cond, $ifNull)
+- Group Operators ($addToSet, $sum, $max, $min, $avg, $push, $first, $last)
+- Arithmetic Operators ($add, $divide, $mod, $multiply, $subtract)
+- String Operators ($cmp, $strcasecmp, $concat, $substr, $toLower, $toUpper)
+- Projection Operators ($elemMatch, $slice)
 
 ## Usage
 ~~~javascript
@@ -99,5 +104,4 @@ cursor = grades.query({
 cursor.first();
 ~~~
 
-
-*Sample collection is an extract from course files from [10gen Education](https://education.10gen.com/courses/10gen/M101P/2013_April/info)*
+For documentation on using query operators see [mongodb](http://docs.mongodb.org/manual/reference/operator/query/)

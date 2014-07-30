@@ -1280,7 +1280,7 @@
      * @returns {Object}
      */
     $add: function (obj, expr) {
-      var args = flatten(obj, expr);
+      var args = computeValue(obj, expr);
       return _.reduce(args, function (memo, num) {
         return memo + num;
       }, 0);
@@ -1294,7 +1294,7 @@
      * @returns {number}
      */
     $subtract: function (obj, expr) {
-      var args = flatten(obj, expr);
+      var args = computeValue(obj, expr);
       return args[0] - args[1];
     },
 
@@ -1306,7 +1306,7 @@
      * @returns {number}
      */
     $divide: function (obj, expr) {
-      var args = flatten(obj, expr);
+      var args = computeValue(obj, expr);
       return args[0] / args[1];
     },
 
@@ -1318,7 +1318,7 @@
      * @returns {Object}
      */
     $multiply: function (obj, expr) {
-      var args = flatten(obj, expr);
+      var args = computeValue(obj, expr);
       return _.reduce(args, function (memo, num) {
         return memo * num;
       }, 1);
@@ -1332,7 +1332,7 @@
      * @returns {number}
      */
     $mod: function (obj, expr) {
-      var args = flatten(obj, expr);
+      var args = computeValue(obj, expr);
       return args[0] % args[1];
     },
 
@@ -1344,7 +1344,7 @@
      * @returns {number}
      */
     $cmp: function (obj, expr) {
-      var args = flatten(obj, expr);
+      var args = computeValue(obj, expr);
       if (args[0] > args[1]) {
         return 1;
       }
@@ -1359,7 +1359,7 @@
      * @returns {string|*}
      */
     $concat: function (obj, expr) {
-      var args = flatten(obj, expr);
+      var args = computeValue(obj, expr);
       return args.join("");
     },
 
@@ -1371,7 +1371,7 @@
      * @returns {number}
      */
     $strcasecmp: function (obj, expr) {
-      var args = flatten(obj, expr);
+      var args = computeValue(obj, expr);
       args[0] = args[0].toUpperCase();
       args[1] = args[1].toUpperCase();
       if (args[0] > args[1]) {
@@ -1388,7 +1388,7 @@
      * @returns {string}
      */
     $substr: function (obj, expr) {
-      var args = flatten(obj, expr);
+      var args = computeValue(obj, expr);
       if (_.isString(args[0])) {
         return args[0].substr(args[1], args[2]);
       }
@@ -1420,22 +1420,146 @@
     }
   };
 
+  // These operators provide operations on sets.
+  var setOperators = {
+    /**
+     * Returns true if two sets have the same elements.
+     * @param obj
+     * @param expr
+     */
+    $setEquals: function (obj, expr) {
+      var args = computeValue(obj, expr);
+      return _.difference(args[0], args[1]).length === 0;
+    },
+
+    /**
+     * Returns the common elements of the input sets.
+     * @param obj
+     * @param expr
+     */
+    $setIntersection: function (obj, expr) {
+      var args = computeValue(obj, expr);
+      return _.intersection(args[0], args[1]);
+    },
+
+    /**
+     * Returns elements of a set that do not appear in a second set.
+     * @param obj
+     * @param expr
+     */
+    $setDifference: function (obj, expr) {
+      var args = computeValue(obj, expr);
+      return _.difference(args[0], args[1]);
+    },
+
+    /**
+     * Returns a set that holds all elements of the input sets.
+     * @param obj
+     * @param expr
+     */
+    $setUnion: function (obj, expr) {
+      var args = computeValue(obj, expr);
+      return _.union(args[0], args[1]);
+    },
+
+    /**
+     * Returns true if all elements of a set appear in a second set.
+     * @param obj
+     * @param expr
+     */
+    $setIsSubset: function (obj, expr) {
+      var args = computeValue(obj, expr);
+      return _.intersection(args[0], args[1]).length === args[0].length;
+    },
+
+    /**
+     * Returns true if any elements of a set evaluate to true, and false otherwise.
+     * @param obj
+     * @param expr
+     */
+    $anyElementTrue: function (obj, expr) {
+      var args = computeValue(obj, expr);
+      for (var i = 0; i < args.length; i++) {
+        if (!!args[i])
+          return true;
+      }
+      return false;
+    },
+
+    /**
+     * Returns true if all elements of a set evaluate to true, and false otherwise.
+     * @param obj
+     * @param expr
+     */
+    $allElementsTrue: function (obj, expr) {
+      var args = computeValue(obj, expr);
+      for (var i = 0; i < args.length; i++) {
+        if (!args[i])
+          return false;
+      }
+      return true;
+    }
+  };
+
+  var conditionalOperators = {
+
+    /**
+     * A ternary operator that evaluates one expression,
+     * and depending on the result returns the value of one following expressions.
+     *
+     * @param obj
+     * @param expr
+     */
+    $cond: function (obj, expr) {
+      var ifExpr, thenExpr, elseExpr;
+      if (_.isArray(expr)) {
+        if (expr.length != 3) {
+          throw Error("Invalid arguments for $cond operator");
+        }
+        ifExpr = expr[0];
+        thenExpr = expr[1];
+        elseExpr = expr[2];
+      } else if (_.isObject(expr)) {
+        ifExpr = expr['if'];
+        thenExpr = expr['then'];
+        elseExpr = expr['else'];
+      }
+      var condition = computeValue(obj, ifExpr);
+      return condition ? computeValue(obj, thenExpr) : computeValue(obj, elseExpr);
+    },
+
+    /**
+     * Evaluates an expression and returns the first expression if it evaluates to a non-null value.
+     * Otherwise, $ifNull returns the second expression's value.
+     *
+     * @param obj
+     * @param expr
+     * @returns {*}
+     */
+    $ifNull: function (obj, expr) {
+      if (!_.isArray(expr) || expr.length != 2) {
+        throw Error("Invalid arguments for $ifNull operator");
+      }
+      var args = computeValue(obj, expr);
+      return (args[0] === null || args[0] === undefined) ? args[1] : args[0];
+    }
+  };
+
   // mixin simple operators into aggregate operators
   _.each(["$eq", "$ne", "$gt", "$gte", "$lt", "$lte"], function (op) {
     aggregateOperators[op] = function (obj, expr) {
-      var args = flatten(obj, expr);
+      var args = computeValue(obj, expr);
       return simpleOperators[op](args[0], args[1]);
     };
   });
 
-  // These operators provide operations on sets.
-  var setOperators = {
-
-  };
+  // mixin extra operators into aggregate operators
+  _.extend(aggregateOperators, setOperators, conditionalOperators);
 
   var Ops = {
     simpleOperators: _.keys(simpleOperators),
     compoundOperators: _.keys(compoundOperators),
+    setOperators: _.keys(setOperators),
     aggregateOperators: _.keys(aggregateOperators),
     groupOperators: _.keys(groupOperators),
     pipelineOperators: _.keys(pipelineOperators),
@@ -1443,22 +1567,6 @@
     customOperators: []
   };
   Ops.queryOperators = _.union(Ops.simpleOperators, Ops.compoundOperators);
-
-
-  /**
-   * Resolve the arguments to the aggregate operator
-   * @param obj
-   * @param args
-   * @returns {*}
-   */
-  var flatten = function (obj, args) {
-    for (var i = 0; i < args.length; i++) {
-      if (_.isString(args[i]) && args[i].length > 0) {
-        args[i] = computeValue(obj, args[i]);
-      }
-    }
-    return args;
-  };
 
   /**
    * Returns the result of evaluating a $group operation over a collection
@@ -1497,11 +1605,11 @@
   };
 
   /**
-   * Computes the actual value to use in aggregation from the given expression for the record
+   * Computes the actual value of the expression using the given object as context
    *
    * @param obj the current object from the collection
    * @param expr the expression for the given field
-   * @param field the field name
+   * @param field the field name (may also be an aggregate operator)
    * @returns {*}
    */
   var computeValue = function (obj, expr, field) {
@@ -1517,8 +1625,15 @@
       return Mingo._resolve(obj, expr.slice(1));
     }
 
-    if (_.isObject(expr)) {
-      var result = {};
+    var result;
+
+    if (_.isArray(expr)) {
+      result = [];
+      for (var i = 0; i < expr.length; i++) {
+        result.push(computeValue(obj, expr[i], null));
+      }
+    } else if (_.isObject(expr)) {
+      result = {};
       for (var key in expr) {
         if (expr.hasOwnProperty(key)) {
           result[key] = computeValue(obj, expr[key], key);
@@ -1535,8 +1650,6 @@
           }
         }
       }
-      return result;
-
     } else {
       // check and return value if already in a resolved state
       for (var i = 0; i < primitives.length; i++) {
@@ -1546,7 +1659,7 @@
       }
     }
 
-    return undefined;
+    return result;
   };
 
 }).call(this);

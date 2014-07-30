@@ -46,14 +46,17 @@ var obj = {
 
 test("Simple comparisons", function () {
   var queries = [
-    [{firstName: "Francis"}, "can check for equality"],,
+    [{firstName: "Francis"}, "can check for equality with $eq"],
     [{lastName: /^a.+e/i}, "can check against regex with literal"],
     [{lastName: {$regex: "a.+e", $options: "i"}}, "can check against regex with $regex operator"],
     [{username: {$not: "mufasa"}}, "can apply $not to direct values"],
     [{username: {$not: { $ne: "kofrasa"}}}, "can apply $not to sub queries"],
-    [{jobs: {$gt: 1, $gte: 6, $lte: 6, $lt: 10}}, "can compare with $gt, $gte, $lt, $lte"],
+    [{jobs: {$gt: 1}}, "can compare with $gt"],
+    [{jobs: {$gte: 6}}, "can compare with $gte"],
+    [{jobs: {$lt: 10}}, "can compare with $lt"],
+    [{jobs: {$lte: 6}}, "can compare with $lte"],
     [{middlename: {$exists: false}}, "can check if value does not exists with $exists"],
-    [{projects: {$exists: true}}, "can check if value exists with $exits"],
+    [{projects: {$exists: true}}, "can check if value exists with $exists"],
     [{"projects.C.1": "student_record" }, "can compare value inside array at a given index"],
     [{"circles.school": {$in: ["Henry"]}}, "can check that value is in array with $in"],
     [{"circles.family": {$nin: ["Pamela"]}}, "can check that value is not in array with $nin"],
