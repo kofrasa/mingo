@@ -847,17 +847,6 @@
           return value.call(obj) === true;
         }
       };
-    },
-
-    /**
-     * Performs text search
-     *
-     * @param selector
-     * @param value
-     * @returns {{test: test}}
-     */
-    $text: function (selector, value) {
-      throw Error("$text not implemented");
     }
 
   };
