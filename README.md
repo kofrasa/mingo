@@ -1,5 +1,5 @@
 # Mingo
-A JavaScript implementation of MongoDB query language
+JavaScript implementation of MongoDB query language
 
 # Dependencies
 [underscore](https://github.com/jashkenas/underscore)
