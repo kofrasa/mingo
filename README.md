@@ -1,13 +1,18 @@
 # Mingo
 A JavaScript implementation of mongo-esque query language
 
-## Dependencies
+# Dependencies
 [underscore](https://github.com/jashkenas/underscore)
 
-## Installing
-$ npm install mingo
+# Installing
+```$ npm install mingo```
 
-## Features
+In browser
+```html
+<script type="text/javascript" src="./mingo-min.js"</script>
+```
+
+# Features
 - Comparisons Operators ($gt, $gte, $lt, $lte, $ne, $nin, $in)
 - Logical Operators ($and, $or, $nor, $not)
 - Evaluation Operators ($regex, $mod, $where)
@@ -20,7 +25,7 @@ $ npm install mingo
 - String Operators ($cmp, $strcasecmp, $concat, $substr, $toLower, $toUpper)
 - Projection Operators ($elemMatch, $slice)
 
-## Usage
+# Usage
 ~~~javascript
 
 var Mingo = require('mingo');
@@ -36,10 +41,17 @@ var query = new Mingo.Query({
     type: "homework",
     score: { $gte: 50 }
 });
+
+// shorthand
+var result = Mingo.find(collection, {
+                    type: "homework",
+                    score: { $gte: 50 }
+                });
+
 ~~~
 
-### Searching and Filtering
-~~~javascript
+## Searching and Filtering
+```javascript
 // filter collection with find()
 var cursor = query.find(collection);
 
@@ -64,10 +76,10 @@ cursor.all();
 
 // Removing matched objects
 var result = query.remove(collection);
-~~~
+```
 
-### Aggregation Pipeline
-~~~javascript
+## Aggregation Pipeline
+```javascript
 var agg = new Mingo.Aggregator([
     {'$match': { "type": "homework"}},
     {'$group':{'_id':'$student_id', 'score':{$min:'$score'}}},
@@ -85,10 +97,10 @@ result = Mingo.aggregate(
         {'$sort':{'_id': 1, 'score': 1}}
     ]
 );
-~~~
+```
 
 ## Backbone Integration
-~~~javascript
+```javascript
 // using with Backbone
 var Grades = Backbone.Collection.extend(Mingo.CollectionMixin);
 
@@ -102,6 +114,26 @@ cursor = grades.query({
 
 // print grade with the lowest score
 cursor.first();
-~~~
+```
 
 For documentation on using query operators see [mongodb](http://docs.mongodb.org/manual/reference/operator/query/)
+
+# API
+### Mingo.Query(expression)
+Creates a new ```Mingo.Query``` object with the given query expression
+
+### Mingo.Aggregate(expressions)
+Creates a new ```Mingo.Aggregate``` object with a collection of aggregation pipeline expressions
+
+### Mingo.find(collection, expression)
+Returns the matching objects from compiling and running the query expression against the given collection
+
+### Mingo.remove(collection, expression)
+Returns the non-matching objects from compiling and running the query expression against the given collection
+
+### Mingo.aggregate(collection, expressions)
+Returns the result of running the aggregate expressions sequentially over the given collection
+
+
+# License
+MIT Copyright (c) 2013 Francis Asante
