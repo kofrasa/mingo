@@ -9,7 +9,7 @@ A JavaScript implementation of mongo-esque query language
 
 In browser
 ```html
-<script type="text/javascript" src="./mingo-min.js"</script>
+<script type="text/javascript" src="./mingo-min.js"></script>
 ```
 
 # Features
@@ -133,7 +133,6 @@ Returns the non-matching objects from compiling and running the query expression
 
 ### Mingo.aggregate(collection, expressions)
 Returns the result of running the aggregate expressions sequentially over the given collection
-
 
 # License
 MIT Copyright (c) 2013 Francis Asante
