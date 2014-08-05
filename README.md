@@ -121,7 +121,7 @@ For documentation on using query operators see [mongodb](http://docs.mongodb.org
 ### Mingo.Query(expression)
 Creates a new ```Mingo.Query``` object with the given query expression
 
-### Mingo.Aggregate(expressions)
+### Mingo.Aggregator(expressions)
 Creates a new ```Mingo.Aggregator``` object with a collection of aggregation pipeline expressions
 
 ### Mingo.CollectionMixin
