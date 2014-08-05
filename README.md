@@ -123,7 +123,10 @@ For documentation on using query operators see [mongodb](http://docs.mongodb.org
 Creates a new ```Mingo.Query``` object with the given query expression
 
 ### Mingo.Aggregate(expressions)
-Creates a new ```Mingo.Aggregate``` object with a collection of aggregation pipeline expressions
+Creates a new ```Mingo.Aggregator``` object with a collection of aggregation pipeline expressions
+
+### Mingo.CollectionMixin
+A mixin object for ```Backbone.Collection``` which adds ```query()``` and ```aggregate()``` methods to the object
 
 ### Mingo.find(collection, expression)
 Returns the matching objects from compiling and running the query expression against the given collection
