@@ -74,7 +74,7 @@ cursor.first();
 cursor.last();
 cursor.all();
 
-// Removing matched objects
+// Filter non-matched objects
 var result = query.remove(collection);
 ```
 
@@ -126,16 +126,16 @@ Creates a new ```Mingo.Query``` object with the given query expression
 Creates a new ```Mingo.Aggregator``` object with a collection of aggregation pipeline expressions
 
 ### Mingo.CollectionMixin
-A mixin object for ```Backbone.Collection``` which adds ```query()``` and ```aggregate()``` methods to the object
+A mixin object for ```Backbone.Collection``` which adds ```query()``` and ```aggregate()``` methods
 
 ### Mingo.find(collection, expression)
-Returns the matching objects from compiling and running the query expression against the given collection
+Returns the matched objects from executing the query expression against the collection
 
 ### Mingo.remove(collection, expression)
-Returns the non-matching objects from compiling and running the query expression against the given collection
+Returns the non-matched objects from executing the query expression against the collection
 
 ### Mingo.aggregate(collection, expressions)
-Returns the result of running the aggregate expressions sequentially over the given collection
+Returns the result of executing the aggregate expressions over the collection
 
 # License
 MIT Copyright (c) 2013 Francis Asante
