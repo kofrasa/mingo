@@ -138,7 +138,7 @@ Returns the result of executing the aggregate expressions over the collection
 
 # TODO
  - Geospatial Query Operators ($geoWithin, $geoIntersects, $near, $nearSphere)
- - Geometry Specifiers ($geometry, $maxDistance, $center, $centerSphere, $box, $polygon, $uniqueDocs)
+ - Geometry Specifiers ($geometry, $maxDistance, $center, $centerSphere, $box, $polygon)
 
 # License
 MIT Copyright (c) 2013 Francis Asante
