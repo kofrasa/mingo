@@ -1,50 +1,57 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
-    <meta charset='utf-8'>
+    <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+    <title>Mingo by kofrasa</title>
 
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
     <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
-
-    <title>Mingo by kofrasa</title>
   </head>
-
   <body>
-    <header>
-      <div class="inner">
-        <h1>Mingo</h1>
-        <h2>JavaScript query library using mongo-esque syntax</h2>
-        <a href="https://github.com/kofrasa/mingo" class="button"><small>View project on</small>GitHub</a>
-      </div>
-    </header>
+    <div class="wrapper">
+      <header>
+        <h1 class="header">Mingo</h1>
+        <p class="header">JavaScript query library using mongo-esque syntax</p>
 
-    <div id="content-wrapper">
-      <div class="inner clearfix">
-        <section id="main-content">
-          <h1>
+        <ul>
+          <li class="download"><a class="buttons" href="https://github.com/kofrasa/mingo/zipball/master">Download ZIP</a></li>
+          <li class="download"><a class="buttons" href="https://github.com/kofrasa/mingo/tarball/master">Download TAR</a></li>
+          <li><a class="buttons github" href="https://github.com/kofrasa/mingo">View On GitHub</a></li>
+        </ul>
+
+        <p class="header">This project is maintained by <a class="header name" href="https://github.com/kofrasa">kofrasa</a></p>
+
+
+      </header>
+      <section>
+        <h1>
 <a name="mingo" class="anchor" href="#mingo"><span class="octicon octicon-link"></span></a>Mingo</h1>
 
-<p>A JavaScript implementation of mongo-esque query language</p>
+<p>A JavaScript implementation of MongoDB query language</p>
 
-<h2>
-<a name="dependencies" class="anchor" href="#dependencies"><span class="octicon octicon-link"></span></a>Dependencies</h2>
+<h1>
+<a name="dependencies" class="anchor" href="#dependencies"><span class="octicon octicon-link"></span></a>Dependencies</h1>
 
 <p><a href="https://github.com/jashkenas/underscore">underscore</a></p>
 
-<h2>
-<a name="installing" class="anchor" href="#installing"><span class="octicon octicon-link"></span></a>Installing</h2>
+<h1>
+<a name="installing" class="anchor" href="#installing"><span class="octicon octicon-link"></span></a>Installing</h1>
 
-<p>$ npm install mingo</p>
+<p><code>$ npm install mingo</code></p>
 
-<h2>
-<a name="features" class="anchor" href="#features"><span class="octicon octicon-link"></span></a>Features</h2>
+<p>In browser</p>
+
+<div class="highlight highlight-html"><pre><span class="nt">&lt;script </span><span class="na">type=</span><span class="s">"text/javascript"</span> <span class="na">src=</span><span class="s">"./mingo-min.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
+</pre></div>
+
+<h1>
+<a name="features" class="anchor" href="#features"><span class="octicon octicon-link"></span></a>Features</h1>
 
 <ul>
 <li>Comparisons Operators ($gt, $gte, $lt, $lte, $ne, $nin, $in)</li>
@@ -58,8 +65,8 @@
 <li>Arithmetic Operators ($add, $divide, $mod, $multiply, $subtract)</li>
 <li>String Operators ($cmp, $strcasecmp, $concat, $substr, $toLower, $toUpper)</li>
 <li>Projection Operators ($elemMatch, $slice)</li>
-</ul><h2>
-<a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h2>
+</ul><h1>
+<a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h1>
 
 <div class="highlight highlight-javascript"><pre>
 <span class="kd">var</span> <span class="nx">Mingo</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'mingo'</span><span class="p">);</span>
@@ -75,10 +82,16 @@
     <span class="nx">type</span><span class="o">:</span> <span class="s2">"homework"</span><span class="p">,</span>
     <span class="nx">score</span><span class="o">:</span> <span class="p">{</span> <span class="nx">$gte</span><span class="o">:</span> <span class="mi">50</span> <span class="p">}</span>
 <span class="p">});</span>
+
+<span class="c1">// shorthand</span>
+<span class="kd">var</span> <span class="nx">result</span> <span class="o">=</span> <span class="nx">Mingo</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span><span class="nx">collection</span><span class="p">,</span> <span class="p">{</span>
+                    <span class="nx">type</span><span class="o">:</span> <span class="s2">"homework"</span><span class="p">,</span>
+                    <span class="nx">score</span><span class="o">:</span> <span class="p">{</span> <span class="nx">$gte</span><span class="o">:</span> <span class="mi">50</span> <span class="p">}</span>
+                <span class="p">});</span>
 </pre></div>
 
-<h3>
-<a name="searching-and-filtering" class="anchor" href="#searching-and-filtering"><span class="octicon octicon-link"></span></a>Searching and Filtering</h3>
+<h2>
+<a name="searching-and-filtering" class="anchor" href="#searching-and-filtering"><span class="octicon octicon-link"></span></a>Searching and Filtering</h2>
 
 <div class="highlight highlight-javascript"><pre><span class="c1">// filter collection with find()</span>
 <span class="kd">var</span> <span class="nx">cursor</span> <span class="o">=</span> <span class="nx">query</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span><span class="nx">collection</span><span class="p">);</span>
@@ -102,12 +115,12 @@
 <span class="nx">cursor</span><span class="p">.</span><span class="nx">last</span><span class="p">();</span>
 <span class="nx">cursor</span><span class="p">.</span><span class="nx">all</span><span class="p">();</span>
 
-<span class="c1">// Removing matched objects</span>
+<span class="c1">// Filter non-matched objects</span>
 <span class="kd">var</span> <span class="nx">result</span> <span class="o">=</span> <span class="nx">query</span><span class="p">.</span><span class="nx">remove</span><span class="p">(</span><span class="nx">collection</span><span class="p">);</span>
 </pre></div>
 
-<h3>
-<a name="aggregation-pipeline" class="anchor" href="#aggregation-pipeline"><span class="octicon octicon-link"></span></a>Aggregation Pipeline</h3>
+<h2>
+<a name="aggregation-pipeline" class="anchor" href="#aggregation-pipeline"><span class="octicon octicon-link"></span></a>Aggregation Pipeline</h2>
 
 <div class="highlight highlight-javascript"><pre><span class="kd">var</span> <span class="nx">agg</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Mingo</span><span class="p">.</span><span class="nx">Aggregator</span><span class="p">([</span>
     <span class="p">{</span><span class="s1">'$match'</span><span class="o">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="o">:</span> <span class="s2">"homework"</span><span class="p">}},</span>
@@ -147,25 +160,56 @@
 </pre></div>
 
 <p>For documentation on using query operators see <a href="http://docs.mongodb.org/manual/reference/operator/query/">mongodb</a></p>
-        </section>
 
-        <aside id="sidebar">
-          <a href="https://github.com/kofrasa/mingo/zipball/master" class="button">
-            <small>Download</small>
-            .zip file
-          </a>
-          <a href="https://github.com/kofrasa/mingo/tarball/master" class="button">
-            <small>Download</small>
-            .tar.gz file
-          </a>
+<h1>
+<a name="api" class="anchor" href="#api"><span class="octicon octicon-link"></span></a>API</h1>
 
-          <p class="repo-owner"><a href="https://github.com/kofrasa/mingo"></a> is maintained by <a href="https://github.com/kofrasa">kofrasa</a>.</p>
+<h3>
+<a name="mingoqueryexpression" class="anchor" href="#mingoqueryexpression"><span class="octicon octicon-link"></span></a>Mingo.Query(expression)</h3>
 
-          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
-        </aside>
-      </div>
+<p>Creates a new <code>Mingo.Query</code> object with the given query expression</p>
+
+<h3>
+<a name="mingoaggregatorexpressions" class="anchor" href="#mingoaggregatorexpressions"><span class="octicon octicon-link"></span></a>Mingo.Aggregator(expressions)</h3>
+
+<p>Creates a new <code>Mingo.Aggregator</code> object with a collection of aggregation pipeline expressions</p>
+
+<h3>
+<a name="mingocollectionmixin" class="anchor" href="#mingocollectionmixin"><span class="octicon octicon-link"></span></a>Mingo.CollectionMixin</h3>
+
+<p>A mixin object for <code>Backbone.Collection</code> which adds <code>query()</code> and <code>aggregate()</code> methods</p>
+
+<h3>
+<a name="mingofindcollection-expression" class="anchor" href="#mingofindcollection-expression"><span class="octicon octicon-link"></span></a>Mingo.find(collection, expression)</h3>
+
+<p>Returns the matched objects from executing the query expression against the collection</p>
+
+<h3>
+<a name="mingoremovecollection-expression" class="anchor" href="#mingoremovecollection-expression"><span class="octicon octicon-link"></span></a>Mingo.remove(collection, expression)</h3>
+
+<p>Returns the non-matched objects from executing the query expression against the collection</p>
+
+<h3>
+<a name="mingoaggregatecollection-expressions" class="anchor" href="#mingoaggregatecollection-expressions"><span class="octicon octicon-link"></span></a>Mingo.aggregate(collection, expressions)</h3>
+
+<p>Returns the result of executing the aggregate expressions over the collection</p>
+
+<h1>
+<a name="todo" class="anchor" href="#todo"><span class="octicon octicon-link"></span></a>TODO</h1>
+
+<ul>
+<li>Geospatial Query Operators ($geoWithin, $geoIntersects, $near, $nearSphere)</li>
+<li>Geometry Specifiers ($geometry, $maxDistance, $center, $centerSphere, $box, $polygon)</li>
+</ul><h1>
+<a name="license" class="anchor" href="#license"><span class="octicon octicon-link"></span></a>License</h1>
+
+<p>MIT Copyright (c) 2013 Francis Asante</p>
+      </section>
+      <footer>
+        <p><small>Hosted on <a href="http://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
+      </footer>
     </div>
-
-  
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+		
   </body>
 </html>
