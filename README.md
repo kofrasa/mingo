@@ -1,5 +1,5 @@
 # Mingo
-A JavaScript implementation of mongo-esque query language
+A JavaScript implementation of MongoDB query language
 
 # Dependencies
 [underscore](https://github.com/jashkenas/underscore)
@@ -26,7 +26,7 @@ In browser
 - Projection Operators ($elemMatch, $slice)
 
 # Usage
-~~~javascript
+```javascript
 
 var Mingo = require('mingo');
 
@@ -47,8 +47,7 @@ var result = Mingo.find(collection, {
                     type: "homework",
                     score: { $gte: 50 }
                 });
-
-~~~
+```
 
 ## Searching and Filtering
 ```javascript
@@ -136,6 +135,10 @@ Returns the non-matched objects from executing the query expression against the 
 
 ### Mingo.aggregate(collection, expressions)
 Returns the result of executing the aggregate expressions over the collection
+
+# TODO
+ - Geospatial Query Operators ($geoWithin, $geoIntersects, $near, $nearSphere)
+ - Geometry Specifiers ($geometry, $maxDistance, $center, $centerSphere, $box, $polygon, $uniqueDocs)
 
 # License
 MIT Copyright (c) 2013 Francis Asante
