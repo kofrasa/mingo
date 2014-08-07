@@ -170,7 +170,7 @@
     },
 
     /**
-     * Returns a Mingo.Cursor object for iterating over the results of the query
+     * Performs a query on a collection and returns a cursor object.
      * @param collection
      * @param projection
      * @returns {Mingo.Cursor}
@@ -467,7 +467,7 @@
   };
 
   /**
-   * Return a cursor for the given query criteria and options
+   * Performs a query on a collection and returns a cursor object.
    * @param collection
    * @param criteria
    * @param projection

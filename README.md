@@ -43,16 +43,19 @@ var query = new Mingo.Query({
 });
 
 // shorthand
-var result = Mingo.find(collection, {
-                    type: "homework",
-                    score: { $gte: 50 }
-                });
+query = Mingo.compile({
+            type: "homework",
+            score: { $gte: 50 }
+        });
 ```
 
 ## Searching and Filtering
 ```javascript
 // filter collection with find()
 var cursor = query.find(collection);
+
+// could also be
+// cursor = Mingo.find(collection, criteria);
 
 // sort, skip and limit by chaining
 cursor.sort({student_id: 1, score: -1})
@@ -121,7 +124,7 @@ For documentation on using query operators see [mongodb](http://docs.mongodb.org
 ### Mingo.Query(criteria)
 Creates a new ```Mingo.Query``` object with the given query criteria
 - ```test(obj)``` Returns true if the object passes the query criteria, otherwise false.
-- ```find(collection, [projection])``` Returns a ```Mingo.Cursor``` for iterating over the results of the query
+- ```find(collection, [projection])``` Performs a query on a collection and returns a ```Mingo.Cursor``` object.
 - ```remove(collection)``` Remove matching documents from the collection and return the remainder
 
 ### Mingo.Aggregator(expressions)
@@ -147,20 +150,20 @@ Creates a new ```Mingo.Cursor``` object which holds the result of applying the q
 
 ### Mingo.CollectionMixin
 A mixin object for ```Backbone.Collection``` which adds ```query()``` and ```aggregate()``` methods
-- ```query(criteria)```
-- ```aggregate(expressions)```
+- ```query(criteria)``` Performs a query on the collection and returns a ```Mingo.Cursor``` object.
+- ```aggregate(expressions)``` Performs aggregation operation using the aggregation pipeline.
 
 ### Mingo.compile(criteria)
-Returns a ```Mingo.Query``` given the criteria
+Returns a ```Mingo.Query``` with the given criteria
 
-### Mingo.find(collection, criteria)
-Returns a ```Mingo.Cursor``` for a ```Mingo.Query``` with the given criteria
+### Mingo.find(collection, criteria, projection)
+Performs a query on a collection and returns a ```Mingo.Cursor``` object.
 
 ### Mingo.remove(collection, criteria)
 Returns the non-matched objects as a collection from executing a ```Mingo.Query``` with the given criteria
 
 ### Mingo.aggregate(collection, expressions)
-Returns the result of executing the aggregate expressions over the collection
+Performs aggregation operation using the aggregation pipeline.
 
 # TODO
  - Geospatial Query Operators ($geoWithin, $geoIntersects, $near, $nearSphere)
