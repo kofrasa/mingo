@@ -118,20 +118,46 @@ cursor.first();
 For documentation on using query operators see [mongodb](http://docs.mongodb.org/manual/reference/operator/query/)
 
 # API
-### Mingo.Query(expression)
-Creates a new ```Mingo.Query``` object with the given query expression
+### Mingo.Query(criteria)
+Creates a new ```Mingo.Query``` object with the given query criteria
+- ```test(obj)``` Returns true if the object passes the query criteria, otherwise false.
+- ```find(collection, [projection])``` Returns a ```Mingo.Cursor``` for iterating over the results of the query
+- ```remove(collection)``` Remove matching documents from the collection and return the remainder
 
 ### Mingo.Aggregator(expressions)
 Creates a new ```Mingo.Aggregator``` object with a collection of aggregation pipeline expressions
+- ```run()``` Apply the pipeline operations over the collection by order of the sequence added
+
+### Mingo.Cursor(collection, query, projection)
+Creates a new ```Mingo.Cursor``` object which holds the result of applying the query over the collection
+- ```all()``` Returns the documents in a cursor as a collection.
+- ```first()``` Returns the first documents in a cursor.
+- ```last()``` Returns the last document in a cursor
+- ```count()``` Returns a count of the documents in a cursor.
+- ```limit(n)``` Constrains the size of a cursor's result set.
+- ```skip(n)``` Returns a cursor that begins returning results only after passing or skipping a number of documents.
+- ```sort(modifier)``` Returns results ordered according to a sort specification.
+- ```next()``` Returns the next document in a cursor.
+- ```hasNext()``` Returns true if the cursor has documents and can be iterated.
+- ```max(expression)``` Specifies an exclusive upper index bound for a cursor
+- ```min(expression)``` Specifies an inclusive lower index bound for a cursor.
+- ```map(callback)``` Applies a function to each document in a cursor and collects the return values in an array.
+- ```forEach(callback)``` Applies a JavaScript function for every document in a cursor.
+
 
 ### Mingo.CollectionMixin
 A mixin object for ```Backbone.Collection``` which adds ```query()``` and ```aggregate()``` methods
+- ```query(criteria)```
+- ```aggregate(expressions)```
 
-### Mingo.find(collection, expression)
-Returns the matched objects from executing the query expression against the collection
+### Mingo.compile(criteria)
+Returns a ```Mingo.Query``` given the criteria
 
-### Mingo.remove(collection, expression)
-Returns the non-matched objects from executing the query expression against the collection
+### Mingo.find(collection, criteria)
+Returns a ```Mingo.Cursor``` for a ```Mingo.Query``` with the given criteria
+
+### Mingo.remove(collection, criteria)
+Returns the non-matched objects as a collection from executing a ```Mingo.Query``` with the given criteria
 
 ### Mingo.aggregate(collection, expressions)
 Returns the result of executing the aggregate expressions over the collection
@@ -139,6 +165,7 @@ Returns the result of executing the aggregate expressions over the collection
 # TODO
  - Geospatial Query Operators ($geoWithin, $geoIntersects, $near, $nearSphere)
  - Geometry Specifiers ($geometry, $maxDistance, $center, $centerSphere, $box, $polygon)
+ - Implement ```Mingo.Stream``` API to filter objects
 
 # License
-MIT Copyright (c) 2013 Francis Asante
+MIT

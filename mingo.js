@@ -17,6 +17,11 @@
     return Mingo;
   };
 
+  var nodeEnabled = 'undefined' !== typeof exports &&
+      'undefined' !== typeof module &&
+      'undefined' !== typeof require &&
+      'undefined' !== typeof process;
+
   // Export the Mingo object for **Node.js**
   if (typeof exports !== 'undefined') {
     if (typeof module !== 'undefined' && module.exports) {
@@ -96,7 +101,7 @@
    */
   Mingo.Query = function (criteria) {
     this._criteria = criteria || {};
-    this._compiledSelectors = [];
+    this._compiled = [];
     this._compile();
   };
 
@@ -111,20 +116,20 @@
         throw new Error("Invalid type for criteria");
       }
 
-      for (var name in this._criteria) {
-        if (this._criteria.hasOwnProperty(name)) {
-          var expr = this._criteria[name];
-          if (_.contains(Ops.compoundOperators, name)) {
-            if (_.contains(["$not"], name)) {
+      for (var field in this._criteria) {
+        if (this._criteria.hasOwnProperty(field)) {
+          var expr = this._criteria[field];
+          if (_.contains(Ops.compoundOperators, field)) {
+            if (_.contains(["$not"], field)) {
               throw Error("Invalid operator");
             }
-            this._processOperator(name, name, expr);
+            this._processOperator(field, field, expr);
           } else {
             // normalize expression
             expr = normalize(expr);
             for (var op in expr) {
               if (expr.hasOwnProperty(op)) {
-                this._processOperator(name, op, expr[op]);
+                this._processOperator(field, op, expr[op]);
               }
             }
           }
@@ -147,23 +152,25 @@
       } else {
         throw Error("Invalid query operator '" + operator + "' detected");
       }
-      this._compiledSelectors.push(compiledSelector);
-    },
-
-    test: function (model) {
-      var match = true;
-      for (var i = 0; i < this._compiledSelectors.length; i++) {
-        var compiled = this._compiledSelectors[i];
-        match = compiled.test(model);
-        if (match === false) {
-          break;
-        }
-      }
-      return match;
+      this._compiled.push(compiledSelector);
     },
 
     /**
-     *
+     * Checks if the object passes the query criteria. Returns true if so, false otherwise.
+     * @param obj
+     * @returns {boolean}
+     */
+    test: function (obj) {
+      for (var i = 0; i < this._compiled.length; i++) {
+        if (!this._compiled[i].test(obj)) {
+          return false;
+        }
+      }
+      return true;
+    },
+
+    /**
+     * Returns a Mingo.Cursor object for iterating over the results of the query
      * @param collection
      * @param projection
      * @returns {Mingo.Cursor}
@@ -173,19 +180,26 @@
     },
 
     /**
-     * Remove matched documents from the collection returning the new
+     * Remove matched documents from the collection returning the remainder
      * @param collection
      * @returns {Array}
      */
     remove: function (collection) {
       var arr = [];
       for (var i = 0; i < collection.length; i++) {
-        if (this.test(collection[i]) === false) {
+        if (!this.test(collection[i])) {
           arr.push(collection[i]);
         }
       }
       return arr;
     }
+
+//    stream: function () {
+//      if (!nodeEnabled) {
+//        throw Error("Require NodeJS context");
+//      }
+//      var Stream = require('stream');
+//    }
 
   };
 
@@ -210,31 +224,32 @@
     _fetch: function () {
       var self = this;
 
-      if (this._result === false) {
+      if (this._result !== false) {
+        return this._result;
+      }
 
-        // inject projection operator
-        if (_.isObject(this._projection)) {
-          _.extend(this._operators, {"$project": this._projection});
+      // inject projection operator
+      if (_.isObject(this._projection)) {
+        _.extend(this._operators, {"$project": this._projection});
+      }
+
+      if (!_.isArray(this._collection)) {
+        throw Error("Input collection is not of a valid type.");
+      }
+
+      // filter collection
+      this._result = _.filter(this._collection, this._query.test, this._query);
+      var pipeline = [];
+
+      _.each(['$sort', '$skip', '$limit', '$project'], function (op) {
+        if (_.has(self._operators, op)) {
+          pipeline.push(_.pick(self._operators, op));
         }
+      });
 
-        if (!_.isArray(this._collection)) {
-          throw Error("Input collection is not of a valid type.");
-        }
-
-        // filter collection
-        this._result = _.filter(this._collection, this._query.test, this._query);
-        var pipeline = [];
-
-        _.each(['$sort', '$skip', '$limit', '$project'], function (op) {
-          if (_.has(self._operators, op)) {
-            pipeline.push(_.pick(self._operators, op));
-          }
-        });
-
-        if (pipeline.length > 0) {
-          var aggregator = new Mingo.Aggregator(pipeline);
-          this._result = aggregator.run(this._result, this._query);
-        }
+      if (pipeline.length > 0) {
+        var aggregator = new Mingo.Aggregator(pipeline);
+        this._result = aggregator.run(this._result, this._query);
       }
       return this._result;
     },
@@ -272,8 +287,7 @@
     },
 
     /**
-     * Sets the number of results to skip before returning any results.
-     * You must apply cursor.skip() to the cursor before retrieving any matching objects.
+     * Returns a cursor that begins returning results only after passing or skipping a number of documents.
      * @param {Number} n the number of results to skip.
      * @return {Mingo.Cursor} Returns the cursor, so you can chain this call.
      */
@@ -283,8 +297,7 @@
     },
 
     /**
-     * Sets the limit of the number of results to return.
-     * You must apply limit() to the cursor before retrieving any documents.
+     * Constrains the size of a cursor's result set.
      * @param {Number} n the number of results to limit to.
      * @return {Mingo.Cursor} Returns the cursor, so you can chain this call.
      */
@@ -294,7 +307,7 @@
     },
 
     /**
-     * Sets the sort order of the matching objects
+     * Returns results ordered according to a sort specification.
      * @param {Object} modifier an object of key and values specifying the sort order. 1 for ascending and -1 for descending
      * @return {Mingo.Cursor} Returns the cursor, so you can chain this call.
      */
@@ -304,18 +317,18 @@
     },
 
     /**
-     * Fetches the next value in the iteration of the cursor
+     * Returns the next document in a cursor.
      * @returns {Object | Boolean}
      */
     next: function () {
       if (this.hasNext()) {
         return this._fetch()[this._position++];
       }
-      return false;
+      return null;
     },
 
     /**
-     * Checks if the cursor can continue to iterate
+     * Returns true if the cursor has documents and can be iterated.
      * @returns {boolean}
      */
     hasNext: function () {
@@ -341,7 +354,7 @@
     },
 
     /**
-     * Applies function to each document visited by the cursor and collects the return values from successive application into an array.
+     * Applies a function to each document in a cursor and collects the return values in an array.
      * @param callback
      * @returns {Array}
      */
@@ -350,7 +363,7 @@
     },
 
     /**
-     * Iterates the cursor to apply a JavaScript function to each matched document
+     * Applies a JavaScript function for every document in a cursor.
      * @param callback
      */
     forEach: function (callback) {
@@ -371,8 +384,9 @@
   Mingo.Aggregator.prototype = {
 
     /**
-     * Executes the aggregation pipeline
+     * Apply the pipeline operations over the collection by order of the sequence added
      * @param collection an array of objects to process
+     * @param query the `Mingo.Query` object to use as context
      * @returns {Array}
      */
     run: function (collection, query) {
@@ -457,7 +471,7 @@
    * @param collection
    * @param criteria
    * @param projection
-   * @returns {*}
+   * @returns {Mingo.Cursor}
    */
   Mingo.find = function (collection, criteria, projection) {
     return (new Mingo.Query(criteria)).find(collection, projection);
@@ -484,6 +498,11 @@
       throw Error("Aggregation pipeline must be an array")
     }
     return (new Mingo.Aggregator(pipeline)).run(collection);
+  };
+
+
+  Mingo.Stream = function (criteria) {
+
   };
 
 
