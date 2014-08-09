@@ -101,6 +101,9 @@
    * @constructor
    */
   Mingo.Query = function (criteria, projection) {
+    if (!(this instanceof Mingo.Query))
+      return new Mingo.Query(criteria, projection);
+
     this._criteria = criteria;
     this._projection = projection;
     this._compiled = [];
@@ -250,6 +253,10 @@
    * @constructor
    */
   Mingo.Cursor = function (collection, query, projection) {
+
+    if (!(this instanceof Mingo.Cursor))
+      return new Mingo.Cursor(collection, query, projection);
+
     this._query = query;
     this._collection = collection;
     this._projection = projection || query._projection;
@@ -417,6 +424,9 @@
    * @constructor
    */
   Mingo.Aggregator = function (operators) {
+    if (!(this instanceof Mingo.Aggregator))
+      return new Mingo.Aggregator(operators);
+
     this._operators = operators;
   };
 

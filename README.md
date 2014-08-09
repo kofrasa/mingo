@@ -159,7 +159,7 @@ Creates a ```Mingo.Query``` object with the given query criteria
 - ```test(obj)``` Returns true if the object passes the query criteria, otherwise false.
 - ```find(collection[, projection])``` Performs a query on a collection and returns a ```Mingo.Cursor``` object.
 - ```remove(collection)``` Remove matching documents from the collection and return the remainder
-- ```stream()``` Returns a ```Mingo.Stream``` for filtering an object stream. This is available for Node only.
+- ```stream()``` Return a ```Mingo.Stream``` to filter and transform JSON objects from a readable stream. This is available for Node only.
 
 ### Mingo.Aggregator(expressions)
 Creates a ```Mingo.Aggregator``` object with a collection of aggregation pipeline expressions
@@ -181,7 +181,7 @@ Creates a ```Mingo.Cursor``` object which holds the result of applying the query
 - ```map(callback)``` Applies a function to each document in a cursor and collects the return values in an array.
 - ```forEach(callback)``` Applies a JavaScript function for every document in a cursor.
 
-### Mingo.Stream(query[, options]) - NodeJS only
+### Mingo.Stream(query[,options]) - NodeJS only
 A Transform stream that can be piped from/to any readable/writable JSON stream.
 
 ### Mingo.CollectionMixin
@@ -189,10 +189,7 @@ A mixin object for ```Backbone.Collection``` which adds ```query()``` and ```agg
 - ```query(criteria)``` Performs a query on the collection and returns a ```Mingo.Cursor``` object.
 - ```aggregate(expressions)``` Performs aggregation operation using the aggregation pipeline.
 
-### Mingo.compile(criteria)
-Returns a ```Mingo.Query``` with the given criteria
-
-### Mingo.find(collection, criteria, projection)
+### Mingo.find(collection, criteria[,projection])
 Performs a query on a collection and returns a ```Mingo.Cursor``` object.
 
 ### Mingo.remove(collection, criteria)
