@@ -1,12 +1,7 @@
-/**
- * Created with JetBrains PhpStorm.
- * User: francis
- * Date: 9/25/13
- * Time: 1:21 PM
- */
 
-
-module("Queries");
+var test = require('tape'),
+  _ = require('underscore'),
+  Mingo = require('../mingo');
 
 var obj = {
   firstName: "Francis",
@@ -44,7 +39,8 @@ var obj = {
   today: new Date()
 };
 
-test("Simple comparisons", function () {
+test('Simple comparisons', function (t) {
+  t.plan(24);
   var queries = [
     [{firstName: "Francis"}, "can check for equality with $eq"],
     [{lastName: /^a.+e/i}, "can check against regex with literal"],
@@ -73,12 +69,13 @@ test("Simple comparisons", function () {
   ];
 
   _.each(queries, function (q) {
-    ok(Mingo.compile(q[0]).test(obj), q[1]);
+    t.ok(Mingo.compile(q[0]).test(obj), q[1]);
   });
 });
 
 
-test("Conjunctions", function () {
+test("Conjunctions", function (t) {
+  t.plan(12);
   var queries = [
     [{$and: [{firstName: "Francis"},{lastName: /^a.+e/i}]}, "can use conjunction true AND true"],
     [{$and: [{firstName: "Francis"},{lastName: "Amoah"}]}, false, "can use conjunction true AND false"],
@@ -98,14 +95,16 @@ test("Conjunctions", function () {
 
   _.each(queries, function (q) {
     if (q.length === 2) {
-      ok(Mingo.compile(q[0]).test(obj), q[1]);
+      t.ok(Mingo.compile(q[0]).test(obj), q[1]);
     } else if (q.length === 3) {
-      equal(Mingo.compile(q[0]).test(obj), q[1], q[2]);
+      t.equal(Mingo.compile(q[0]).test(obj), q[1], q[2]);
     }
   });
 });
 
-test("using $all with $elemMatch", function () {
+
+test("using $all with $elemMatch", function (t) {
+  t.plan(1);
   var data = [
     {
       "_id" : "5234ccb7687ea597eabee677",
@@ -138,15 +137,6 @@ test("using $all with $elemMatch", function () {
     result = result && q.test(obj);
   });
 
-  ok(result, "can match object using $all with $elemMatch");
+  t.ok(result, "can match object using $all with $elemMatch");
 
 });
-
-
-//test("Custom operators - $between", function () {
-//
-//  Mingo.addOperator("$between", function () {
-//
-//  });
-//
-//});

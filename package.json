@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "tape test/*.js",
     "build": "uglifyjs mingo.js -c -o mingo-min.js"
   },
   "repository": {
@@ -17,6 +17,12 @@
   "files": ["mingo.js", "mingo-min.js", "README.md", "LICENSE"],
   "dependencies": {
     "underscore": ">=1.5.2"
+  },
+  "devDependencies": {
+    "underscore": ">=1.5.2",
+    "backbone": ">=1.1.2",
+    "tape": "~2.14.0",
+    "JSON": "~1.0.0"
   },
   "keywords": [
     "util",
