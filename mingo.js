@@ -18,9 +18,9 @@
   };
 
   var nodeEnabled = 'undefined' !== typeof exports &&
-      'undefined' !== typeof module &&
-      'undefined' !== typeof require &&
-      'undefined' !== typeof process;
+    'undefined' !== typeof module &&
+    'undefined' !== typeof require &&
+    'undefined' !== typeof process;
 
   // Export the Mingo object for **Node.js**
   if (typeof exports !== 'undefined') {
@@ -97,10 +97,12 @@
   /**
    * Query object to test collection elements with
    * @param criteria the pass criteria for the query
+   * @param projection optional projection specifiers
    * @constructor
    */
-  Mingo.Query = function (criteria) {
-    this._criteria = criteria || {};
+  Mingo.Query = function (criteria, projection) {
+    this._criteria = criteria;
+    this._projection = projection;
     this._compiled = [];
     this._compile();
   };
@@ -193,15 +195,52 @@
       }
       return arr;
     }
-
-//    stream: function () {
-//      if (!nodeEnabled) {
-//        throw Error("Require NodeJS context");
-//      }
-//      var Stream = require('stream');
-//    }
-
   };
+
+  if (nodeEnabled) {
+
+    var Transform = require('stream').Transform;
+    var util = require('util');
+
+    Mingo.Query.prototype.stream = function (options) {
+      return new Mingo.Stream(this, options);
+    };
+
+    /**
+     * Create a Transform class
+     * @param query
+     * @param options
+     * @returns {Mingo.Stream}
+     * @constructor
+     */
+    Mingo.Stream = function (query, options) {
+
+      if (!(this instanceof Mingo.Stream))
+        return new Mingo.Stream(query, options);
+
+      options = options || {};
+      _.extend(options, {objectMode: true});
+      Transform.call(this, options);
+      // query for this stream
+      this._query = query;
+    };
+    // extend Transform
+    util.inherits(Mingo.Stream, Transform);
+
+    Mingo.Stream.prototype._transform = function (chunk, encoding, done) {
+      if (_.isObject(chunk) && this._query.test(chunk)) {
+        if (_.isEmpty(this._query._projection)) {
+          this.push(chunk);
+        } else {
+          var cursor = new Mingo.Cursor([chunk], this._query);
+          if (cursor.hasNext()) {
+            this.push(cursor.next());
+          }
+        }
+      }
+      done();
+    };
+  }
 
   /**
    * Cursor to iterate and perform filtering on matched objects
@@ -213,7 +252,7 @@
   Mingo.Cursor = function (collection, query, projection) {
     this._query = query;
     this._collection = collection;
-    this._projection = projection;
+    this._projection = projection || query._projection;
     this._operators = {};
     this._result = false;
     this._position = 0;
@@ -460,10 +499,11 @@
   /**
    * Return a new Mingo.Query with the given criteria.
    * @param criteria
+   * @param projection
    * @returns {Mingo.Query}
    */
-  Mingo.compile = function (criteria) {
-    return new Mingo.Query(criteria);
+  Mingo.compile = function (criteria, projection) {
+    return new Mingo.Query(criteria, projection);
   };
 
   /**
@@ -499,12 +539,6 @@
     }
     return (new Mingo.Aggregator(pipeline)).run(collection);
   };
-
-
-  Mingo.Stream = function (criteria) {
-
-  };
-
 
   /**
    * Mixin for Backbone.Collection objects
@@ -595,6 +629,10 @@
      * @returns {Array}
      */
     $project: function (collection, expr) {
+
+      if (_.isEmpty(expr)) {
+        return collection;
+      }
 
       // result collection
       var projected = [];

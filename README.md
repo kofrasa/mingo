@@ -78,6 +78,8 @@ cursor.all();
 
 // Filter non-matched objects
 var result = query.remove(collection);
+
+a.pipe(query).pipe(process.stdout);
 ```
 
 ## Aggregation Pipeline
@@ -101,6 +103,37 @@ result = Mingo.aggregate(
 );
 ```
 
+## Stream Filtering
+```js
+var JSONStream = require('JSONStream'),
+    fs = require('fs'),
+    Mingo = require('mingo');
+
+var query = Mingo.compile({
+  scores: { $elemMatch: {type: "exam", score: {$gt: 90}} }
+}, {name: 1});
+
+// ex. [
+//      { "_id" : 11, "name" : "Marcus Blohm", "scores" : [
+//          { "type" : "exam", "score" : 78.42617835651868 },
+//          { "type" : "quiz", "score" : 82.58372817930675 },
+//          { "type" : "homework", "score" : 87.49924733328717 },
+//          { "type" : "homework", "score" : 15.81264595052612 } ]
+//      },
+//      ...
+//     ]
+file = fs.createReadStream('./students.json');
+
+var qs = query.stream();
+qs.on('data', function (data) {
+    console.log(data); // log filtered outputs
+    // ex. { name: 'Dinah Sauve', _id: 49 }
+});
+
+file.pipe(JSONStream.parse("*")).pipe(qs);
+
+```
+
 ## Backbone Integration
 ```javascript
 // using with Backbone
@@ -121,18 +154,19 @@ cursor.first();
 For documentation on using query operators see [mongodb](http://docs.mongodb.org/manual/reference/operator/query/)
 
 # API
-### Mingo.Query(criteria)
-Creates a new ```Mingo.Query``` object with the given query criteria
+### Mingo.Query(criteria[, projection])
+Creates a ```Mingo.Query``` object with the given query criteria
 - ```test(obj)``` Returns true if the object passes the query criteria, otherwise false.
-- ```find(collection, [projection])``` Performs a query on a collection and returns a ```Mingo.Cursor``` object.
+- ```find(collection[, projection])``` Performs a query on a collection and returns a ```Mingo.Cursor``` object.
 - ```remove(collection)``` Remove matching documents from the collection and return the remainder
+- ```stream()``` Returns a ```Mingo.Stream``` for filtering an object stream. This is available for Node only.
 
 ### Mingo.Aggregator(expressions)
-Creates a new ```Mingo.Aggregator``` object with a collection of aggregation pipeline expressions
+Creates a ```Mingo.Aggregator``` object with a collection of aggregation pipeline expressions
 - ```run()``` Apply the pipeline operations over the collection by order of the sequence added
 
-### Mingo.Cursor(collection, query, projection)
-Creates a new ```Mingo.Cursor``` object which holds the result of applying the query over the collection
+### Mingo.Cursor(collection, query[, projection])
+Creates a ```Mingo.Cursor``` object which holds the result of applying the query over the collection
 - ```all()``` Returns the documents in a cursor as a collection.
 - ```first()``` Returns the first documents in a cursor.
 - ```last()``` Returns the last document in a cursor
@@ -147,6 +181,8 @@ Creates a new ```Mingo.Cursor``` object which holds the result of applying the q
 - ```map(callback)``` Applies a function to each document in a cursor and collects the return values in an array.
 - ```forEach(callback)``` Applies a JavaScript function for every document in a cursor.
 
+### Mingo.Stream(query[, options]) - NodeJS only
+A Transform stream that can be piped from/to any readable/writable JSON stream.
 
 ### Mingo.CollectionMixin
 A mixin object for ```Backbone.Collection``` which adds ```query()``` and ```aggregate()``` methods
@@ -168,7 +204,6 @@ Performs aggregation operation using the aggregation pipeline.
 # TODO
  - Geospatial Query Operators ($geoWithin, $geoIntersects, $near, $nearSphere)
  - Geometry Specifiers ($geometry, $maxDistance, $center, $centerSphere, $box, $polygon)
- - Implement ```Mingo.Stream``` API to filter objects
 
 # License
 MIT
