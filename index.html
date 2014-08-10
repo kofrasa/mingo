@@ -65,11 +65,14 @@
 <li>Arithmetic Operators ($add, $divide, $mod, $multiply, $subtract)</li>
 <li>String Operators ($cmp, $strcasecmp, $concat, $substr, $toLower, $toUpper)</li>
 <li>Projection Operators ($elemMatch, $slice)</li>
+<li>JSON stream filtering and projection. <em>NodeJS only</em>
+</li>
 </ul><h1>
 <a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h1>
 
 <div class="highlight highlight-javascript"><pre>
 <span class="kd">var</span> <span class="nx">Mingo</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'mingo'</span><span class="p">);</span>
+<span class="c1">// or just access *Mingo* global in browser</span>
 
 <span class="c1">// setup the key field for your collection</span>
 <span class="nx">Mingo</span><span class="p">.</span><span class="nx">setup</span><span class="p">({</span>
@@ -82,12 +85,6 @@
     <span class="nx">type</span><span class="o">:</span> <span class="s2">"homework"</span><span class="p">,</span>
     <span class="nx">score</span><span class="o">:</span> <span class="p">{</span> <span class="nx">$gte</span><span class="o">:</span> <span class="mi">50</span> <span class="p">}</span>
 <span class="p">});</span>
-
-<span class="c1">// shorthand</span>
-<span class="kd">var</span> <span class="nx">result</span> <span class="o">=</span> <span class="nx">Mingo</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span><span class="nx">collection</span><span class="p">,</span> <span class="p">{</span>
-                    <span class="nx">type</span><span class="o">:</span> <span class="s2">"homework"</span><span class="p">,</span>
-                    <span class="nx">score</span><span class="o">:</span> <span class="p">{</span> <span class="nx">$gte</span><span class="o">:</span> <span class="mi">50</span> <span class="p">}</span>
-                <span class="p">});</span>
 </pre></div>
 
 <h2>
@@ -95,6 +92,9 @@
 
 <div class="highlight highlight-javascript"><pre><span class="c1">// filter collection with find()</span>
 <span class="kd">var</span> <span class="nx">cursor</span> <span class="o">=</span> <span class="nx">query</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span><span class="nx">collection</span><span class="p">);</span>
+
+<span class="c1">// shorthand with query criteria</span>
+<span class="c1">// cursor = Mingo.find(collection, criteria);</span>
 
 <span class="c1">// sort, skip and limit by chaining</span>
 <span class="nx">cursor</span><span class="p">.</span><span class="nx">sort</span><span class="p">({</span><span class="nx">student_id</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span> <span class="nx">score</span><span class="o">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">})</span>
@@ -117,6 +117,8 @@
 
 <span class="c1">// Filter non-matched objects</span>
 <span class="kd">var</span> <span class="nx">result</span> <span class="o">=</span> <span class="nx">query</span><span class="p">.</span><span class="nx">remove</span><span class="p">(</span><span class="nx">collection</span><span class="p">);</span>
+
+<span class="nx">a</span><span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">query</span><span class="p">).</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">stdout</span><span class="p">);</span>
 </pre></div>
 
 <h2>
@@ -139,6 +141,38 @@
         <span class="p">{</span><span class="s1">'$sort'</span><span class="o">:</span><span class="p">{</span><span class="s1">'_id'</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">'score'</span><span class="o">:</span> <span class="mi">1</span><span class="p">}}</span>
     <span class="p">]</span>
 <span class="p">);</span>
+</pre></div>
+
+<h2>
+<a name="stream-filtering" class="anchor" href="#stream-filtering"><span class="octicon octicon-link"></span></a>Stream Filtering</h2>
+
+<div class="highlight highlight-js"><pre><span class="kd">var</span> <span class="nx">JSONStream</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'JSONStream'</span><span class="p">),</span>
+    <span class="nx">fs</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'fs'</span><span class="p">),</span>
+    <span class="nx">Mingo</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'mingo'</span><span class="p">);</span>
+
+<span class="kd">var</span> <span class="nx">query</span> <span class="o">=</span> <span class="nx">Mingo</span><span class="p">.</span><span class="nx">compile</span><span class="p">({</span>
+  <span class="nx">scores</span><span class="o">:</span> <span class="p">{</span> <span class="nx">$elemMatch</span><span class="o">:</span> <span class="p">{</span><span class="nx">type</span><span class="o">:</span> <span class="s2">"exam"</span><span class="p">,</span> <span class="nx">score</span><span class="o">:</span> <span class="p">{</span><span class="nx">$gt</span><span class="o">:</span> <span class="mi">90</span><span class="p">}}</span> <span class="p">}</span>
+<span class="p">},</span> <span class="p">{</span><span class="nx">name</span><span class="o">:</span> <span class="mi">1</span><span class="p">});</span>
+
+<span class="c1">// ex. [</span>
+<span class="c1">//      { "_id" : 11, "name" : "Marcus Blohm", "scores" : [</span>
+<span class="c1">//          { "type" : "exam", "score" : 78.42617835651868 },</span>
+<span class="c1">//          { "type" : "quiz", "score" : 82.58372817930675 },</span>
+<span class="c1">//          { "type" : "homework", "score" : 87.49924733328717 },</span>
+<span class="c1">//          { "type" : "homework", "score" : 15.81264595052612 } ]</span>
+<span class="c1">//      },</span>
+<span class="c1">//      ...</span>
+<span class="c1">//     ]</span>
+<span class="nx">file</span> <span class="o">=</span> <span class="nx">fs</span><span class="p">.</span><span class="nx">createReadStream</span><span class="p">(</span><span class="s1">'./students.json'</span><span class="p">);</span>
+
+<span class="kd">var</span> <span class="nx">qs</span> <span class="o">=</span> <span class="nx">query</span><span class="p">.</span><span class="nx">stream</span><span class="p">();</span>
+<span class="nx">qs</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">'data'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">data</span><span class="p">);</span> <span class="c1">// log filtered outputs</span>
+    <span class="c1">// ex. { name: 'Dinah Sauve', _id: 49 }</span>
+<span class="p">});</span>
+
+<span class="nx">file</span><span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">JSONStream</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="s2">"*"</span><span class="p">)).</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">qs</span><span class="p">);</span>
+
 </pre></div>
 
 <h2>
@@ -165,34 +199,89 @@
 <a name="api" class="anchor" href="#api"><span class="octicon octicon-link"></span></a>API</h1>
 
 <h3>
-<a name="mingoqueryexpression" class="anchor" href="#mingoqueryexpression"><span class="octicon octicon-link"></span></a>Mingo.Query(expression)</h3>
+<a name="mingoquerycriteria-projection" class="anchor" href="#mingoquerycriteria-projection"><span class="octicon octicon-link"></span></a>Mingo.Query(criteria, [projection])</h3>
 
-<p>Creates a new <code>Mingo.Query</code> object with the given query expression</p>
+<p>Creates a <code>Mingo.Query</code> object with the given query criteria</p>
 
-<h3>
+<ul>
+<li>
+<code>test(obj)</code> Returns true if the object passes the query criteria, otherwise false.</li>
+<li>
+<code>find(collection, [projection])</code> Performs a query on a collection and returns a <code>Mingo.Cursor</code> object.</li>
+<li>
+<code>remove(collection)</code> Remove matching documents from the collection and return the remainder</li>
+<li>
+<code>stream()</code> Return a <code>Mingo.Stream</code> to filter and transform JSON objects from a readable stream. <em>NodeJS only</em>
+</li>
+</ul><h3>
 <a name="mingoaggregatorexpressions" class="anchor" href="#mingoaggregatorexpressions"><span class="octicon octicon-link"></span></a>Mingo.Aggregator(expressions)</h3>
 
-<p>Creates a new <code>Mingo.Aggregator</code> object with a collection of aggregation pipeline expressions</p>
+<p>Creates a <code>Mingo.Aggregator</code> object with a collection of aggregation pipeline expressions</p>
+
+<ul>
+<li>
+<code>run()</code> Apply the pipeline operations over the collection by order of the sequence added</li>
+</ul><h3>
+<a name="mingocursorcollection-query-projection" class="anchor" href="#mingocursorcollection-query-projection"><span class="octicon octicon-link"></span></a>Mingo.Cursor(collection, query, [projection])</h3>
+
+<p>Creates a <code>Mingo.Cursor</code> object which holds the result of applying the query over the collection</p>
+
+<ul>
+<li>
+<code>all()</code> Returns all the matched documents in a cursor as a collection.</li>
+<li>
+<code>first()</code> Returns the first documents in a cursor.</li>
+<li>
+<code>last()</code> Returns the last document in a cursor</li>
+<li>
+<code>count()</code> Returns a count of the documents in a cursor.</li>
+<li>
+<code>limit(n)</code> Constrains the size of a cursor's result set.</li>
+<li>
+<code>skip(n)</code> Returns a cursor that begins returning results only after passing or skipping a number of documents.</li>
+<li>
+<code>sort(modifier)</code> Returns results ordered according to a sort specification.</li>
+<li>
+<code>next()</code> Returns the next document in a cursor.</li>
+<li>
+<code>hasNext()</code> Returns true if the cursor has documents and can be iterated.</li>
+<li>
+<code>max(expression)</code> Specifies an exclusive upper index bound for a cursor</li>
+<li>
+<code>min(expression)</code> Specifies an inclusive lower index bound for a cursor.</li>
+<li>
+<code>map(callback)</code> Applies a function to each document in a cursor and collects the return values in an array.</li>
+<li>
+<code>forEach(callback)</code> Applies a JavaScript function for every document in a cursor.</li>
+</ul><h3>
+<a name="mingostreamquery-options---nodejs-only" class="anchor" href="#mingostreamquery-options---nodejs-only"><span class="octicon octicon-link"></span></a>Mingo.Stream(query, [options]) - NodeJS only</h3>
+
+<p>A Transform stream that can be piped from/to any readable/writable JSON stream.</p>
 
 <h3>
 <a name="mingocollectionmixin" class="anchor" href="#mingocollectionmixin"><span class="octicon octicon-link"></span></a>Mingo.CollectionMixin</h3>
 
 <p>A mixin object for <code>Backbone.Collection</code> which adds <code>query()</code> and <code>aggregate()</code> methods</p>
 
+<ul>
+<li>
+<code>query(criteria)</code> Performs a query on the collection and returns a <code>Mingo.Cursor</code> object.</li>
+<li>
+<code>aggregate(expressions)</code> Performs aggregation operation using the aggregation pipeline.</li>
+</ul><h3>
+<a name="mingofindcollection-criteria-projection" class="anchor" href="#mingofindcollection-criteria-projection"><span class="octicon octicon-link"></span></a>Mingo.find(collection, criteria, [projection])</h3>
+
+<p>Performs a query on a collection and returns a <code>Mingo.Cursor</code> object.</p>
+
 <h3>
-<a name="mingofindcollection-expression" class="anchor" href="#mingofindcollection-expression"><span class="octicon octicon-link"></span></a>Mingo.find(collection, expression)</h3>
+<a name="mingoremovecollection-criteria" class="anchor" href="#mingoremovecollection-criteria"><span class="octicon octicon-link"></span></a>Mingo.remove(collection, criteria)</h3>
 
-<p>Returns the matched objects from executing the query expression against the collection</p>
-
-<h3>
-<a name="mingoremovecollection-expression" class="anchor" href="#mingoremovecollection-expression"><span class="octicon octicon-link"></span></a>Mingo.remove(collection, expression)</h3>
-
-<p>Returns the non-matched objects from executing the query expression against the collection</p>
+<p>Returns the non-matched objects as a collection from executing a <code>Mingo.Query</code> with the given criteria</p>
 
 <h3>
 <a name="mingoaggregatecollection-expressions" class="anchor" href="#mingoaggregatecollection-expressions"><span class="octicon octicon-link"></span></a>Mingo.aggregate(collection, expressions)</h3>
 
-<p>Returns the result of executing the aggregate expressions over the collection</p>
+<p>Performs aggregation operation using the aggregation pipeline.</p>
 
 <h1>
 <a name="todo" class="anchor" href="#todo"><span class="octicon octicon-link"></span></a>TODO</h1>
@@ -203,7 +292,7 @@
 </ul><h1>
 <a name="license" class="anchor" href="#license"><span class="octicon octicon-link"></span></a>License</h1>
 
-<p>MIT Copyright (c) 2013 Francis Asante</p>
+<p>MIT</p>
       </section>
       <footer>
         <p><small>Hosted on <a href="http://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
