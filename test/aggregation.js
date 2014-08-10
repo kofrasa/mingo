@@ -9,7 +9,7 @@ var students = JSON.parse(fs.readFileSync(__dirname + '/data/students.json'));
 var gradesSimple = JSON.parse(fs.readFileSync(__dirname + '/data/grades_simple.json'));
 
 
-test("Aggregation Framework", function (t) {
+test("Aggregation Pipeline Operators", function (t) {
 
     t.test("$match operator", function (t) {
       t.plan(1);
@@ -166,43 +166,43 @@ test("Aggregation Framework", function (t) {
       ]);
       t.ok(result[0]['_id'] === 199, "can sort collection with $sort");
     });
+});
 
-    t.test("$toUpper operator", function (t) {
-      t.plan(1);
-      var result = Mingo.aggregate(students,
-        [
-          { $project: { name: 1, caption: {$toUpper: "$name"} } },
-          { $sort: { name: 1 } },
-          { $limit: 3}
-        ]
-      );
-      t.ok(result[1]['name'].toUpperCase() === result[1]['caption'], "can apply $toUpper operator");
-    });
+test("String Operators", function (t) {
 
-    t.test("$toLower operator", function (t) {
-      t.plan(1);
-      var result = Mingo.aggregate(students,
-        [
-          { $project: { name: 1, caption: {$toLower: "$name"} } },
-          { $sort: { name: 1 } },
-          { $limit: 3}
-        ]
-      );
-      t.ok(result[1]['name'].toLowerCase() === result[1]['caption'], "can apply $toLowerCase operator");
-    });
+  t.test("$toUpper operator", function (t) {
+    t.plan(1);
+    var result = Mingo.aggregate(students,
+      [
+        { $project: { name: 1, caption: {$toUpper: "$name"} } },
+        { $sort: { name: 1 } },
+        { $limit: 3}
+      ]
+    );
+    t.ok(result[1]['name'].toUpperCase() === result[1]['caption'], "can apply $toUpper operator");
+  });
 
-    t.test("$substr operator", function (t) {
-      t.plan(1);
-      var result = Mingo.aggregate(gradesSimple,
-        [
-          { $project: { hash: {$substr: ["$_id.$oid", 0, 8]} } },
-          { $limit: 1}
-        ]
-      );
-      var hash = result[0]['_id']['$oid'].substr(0, 8);
-      t.ok(result[0]['hash'] == hash, "can apply $substr operator");
-    });
+  t.test("$toLower operator", function (t) {
+    t.plan(1);
+    var result = Mingo.aggregate(students,
+      [
+        { $project: { name: 1, caption: {$toLower: "$name"} } },
+        { $sort: { name: 1 } },
+        { $limit: 3}
+      ]
+    );
+    t.ok(result[1]['name'].toLowerCase() === result[1]['caption'], "can apply $toLowerCase operator");
+  });
 
-  }
-)
-;
+  t.test("$substr operator", function (t) {
+    t.plan(1);
+    var result = Mingo.aggregate(gradesSimple,
+      [
+        { $project: { hash: {$substr: ["$_id.$oid", 0, 8]} } },
+        { $limit: 1}
+      ]
+    );
+    var hash = result[0]['_id']['$oid'].substr(0, 8);
+    t.ok(result[0]['hash'] == hash, "can apply $substr operator");
+  });
+});

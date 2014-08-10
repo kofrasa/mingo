@@ -39,7 +39,7 @@ var obj = {
   today: new Date()
 };
 
-test('Simple comparisons', function (t) {
+test('Comparison, Evaluation, and Element Operators', function (t) {
   t.plan(24);
   var queries = [
     [{firstName: "Francis"}, "can check for equality with $eq"],
@@ -74,7 +74,7 @@ test('Simple comparisons', function (t) {
 });
 
 
-test("Conjunctions", function (t) {
+test("Logical Operators", function (t) {
   t.plan(12);
   var queries = [
     [{$and: [{firstName: "Francis"},{lastName: /^a.+e/i}]}, "can use conjunction true AND true"],
@@ -103,7 +103,7 @@ test("Conjunctions", function (t) {
 });
 
 
-test("using $all with $elemMatch", function (t) {
+test("Array Operators", function (t) {
   t.plan(1);
   var data = [
     {

@@ -12,6 +12,12 @@ In browser
 <script type="text/javascript" src="./mingo-min.js"></script>
 ```
 
+# Usage
+```js
+var Mingo = require('mingo');
+// or just access *Mingo* global in browser
+```
+
 # Features
 - Comparisons Operators ($gt, $gte, $lt, $lte, $ne, $nin, $in)
 - Logical Operators ($and, $or, $nor, $not)
@@ -24,6 +30,7 @@ In browser
 - Arithmetic Operators ($add, $divide, $mod, $multiply, $subtract)
 - String Operators ($cmp, $strcasecmp, $concat, $substr, $toLower, $toUpper)
 - Projection Operators ($elemMatch, $slice)
+- JSON stream filtering and projection. *NodeJS only*
 
 # Usage
 ```javascript
@@ -41,12 +48,6 @@ var query = new Mingo.Query({
     type: "homework",
     score: { $gte: 50 }
 });
-
-// shorthand
-query = Mingo.compile({
-            type: "homework",
-            score: { $gte: 50 }
-        });
 ```
 
 ## Searching and Filtering
@@ -54,7 +55,7 @@ query = Mingo.compile({
 // filter collection with find()
 var cursor = query.find(collection);
 
-// could also be
+// shorthand with query criteria
 // cursor = Mingo.find(collection, criteria);
 
 // sort, skip and limit by chaining
@@ -154,20 +155,20 @@ cursor.first();
 For documentation on using query operators see [mongodb](http://docs.mongodb.org/manual/reference/operator/query/)
 
 # API
-### Mingo.Query(criteria[, projection])
+### Mingo.Query(criteria, [projection])
 Creates a ```Mingo.Query``` object with the given query criteria
 - ```test(obj)``` Returns true if the object passes the query criteria, otherwise false.
-- ```find(collection[, projection])``` Performs a query on a collection and returns a ```Mingo.Cursor``` object.
+- ```find(collection, [projection])``` Performs a query on a collection and returns a ```Mingo.Cursor``` object.
 - ```remove(collection)``` Remove matching documents from the collection and return the remainder
-- ```stream()``` Return a ```Mingo.Stream``` to filter and transform JSON objects from a readable stream. This is available for Node only.
+- ```stream()``` Return a ```Mingo.Stream``` to filter and transform JSON objects from a readable stream. *NodeJS only*
 
 ### Mingo.Aggregator(expressions)
 Creates a ```Mingo.Aggregator``` object with a collection of aggregation pipeline expressions
 - ```run()``` Apply the pipeline operations over the collection by order of the sequence added
 
-### Mingo.Cursor(collection, query[, projection])
+### Mingo.Cursor(collection, query, [projection])
 Creates a ```Mingo.Cursor``` object which holds the result of applying the query over the collection
-- ```all()``` Returns the documents in a cursor as a collection.
+- ```all()``` Returns all the matched documents in a cursor as a collection.
 - ```first()``` Returns the first documents in a cursor.
 - ```last()``` Returns the last document in a cursor
 - ```count()``` Returns a count of the documents in a cursor.
@@ -181,7 +182,7 @@ Creates a ```Mingo.Cursor``` object which holds the result of applying the query
 - ```map(callback)``` Applies a function to each document in a cursor and collects the return values in an array.
 - ```forEach(callback)``` Applies a JavaScript function for every document in a cursor.
 
-### Mingo.Stream(query[,options]) - NodeJS only
+### Mingo.Stream(query, [options]) - NodeJS only
 A Transform stream that can be piped from/to any readable/writable JSON stream.
 
 ### Mingo.CollectionMixin
@@ -189,7 +190,7 @@ A mixin object for ```Backbone.Collection``` which adds ```query()``` and ```agg
 - ```query(criteria)``` Performs a query on the collection and returns a ```Mingo.Cursor``` object.
 - ```aggregate(expressions)``` Performs aggregation operation using the aggregation pipeline.
 
-### Mingo.find(collection, criteria[,projection])
+### Mingo.find(collection, criteria, [projection])
 Performs a query on a collection and returns a ```Mingo.Cursor``` object.
 
 ### Mingo.remove(collection, criteria)
