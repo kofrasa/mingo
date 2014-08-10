@@ -12,12 +12,6 @@ In browser
 <script type="text/javascript" src="./mingo-min.js"></script>
 ```
 
-# Usage
-```js
-var Mingo = require('mingo');
-// or just access *Mingo* global in browser
-```
-
 # Features
 - Comparisons Operators ($gt, $gte, $lt, $lte, $ne, $nin, $in)
 - Logical Operators ($and, $or, $nor, $not)
@@ -36,6 +30,7 @@ var Mingo = require('mingo');
 ```javascript
 
 var Mingo = require('mingo');
+// or just access *Mingo* global in browser
 
 // setup the key field for your collection
 Mingo.setup({
