@@ -1,5 +1,6 @@
 # Mingo
 JavaScript implementation of MongoDB query language
+
 [![build status](https://secure.travis-ci.org/kofrasa/mingo.png)](http://travis-ci.org/kofrasa/mingo)
 
 # Dependencies
