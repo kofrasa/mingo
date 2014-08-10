@@ -107,7 +107,7 @@ var JSONStream = require('JSONStream'),
     fs = require('fs'),
     Mingo = require('mingo');
 
-var query = Mingo.compile({
+var query = new Mingo.Query({
   scores: { $elemMatch: {type: "exam", score: {$gt: 90}} }
 }, {name: 1});
 
