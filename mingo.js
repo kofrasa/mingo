@@ -690,7 +690,7 @@
           }
 
           if (newValue !== undefined) {
-            cloneObj[key] = _.isObject(newValue)? _.clone(newValue) : newValue;
+            cloneObj[key] = _.isObject(newValue) ? _.clone(newValue) : newValue;
           }
 
         });
@@ -1395,6 +1395,10 @@
      */
     $concat: function (obj, expr) {
       var args = computeValue(obj, expr);
+      // does not allow concatenation with nulls
+      if (_.contains(args, null) || _.contains(args, undefined)) {
+        return null;
+      }
       return args.join("");
     },
 
@@ -1407,8 +1411,8 @@
      */
     $strcasecmp: function (obj, expr) {
       var args = computeValue(obj, expr);
-      args[0] = args[0].toUpperCase();
-      args[1] = args[1].toUpperCase();
+      args[0] = _.isEmpty(args[0]) ? "" : args[0].toUpperCase();
+      args[1] = _.isEmpty(args[1]) ? "" : args[1].toUpperCase();
       if (args[0] > args[1]) {
         return 1;
       }
@@ -1416,7 +1420,8 @@
     },
 
     /**
-     * Takes a string and returns portion of that string.
+     * Returns a substring of a string, starting at a specified index position and including the specified number of characters.
+     * The index is zero-based.
      *
      * @param obj
      * @param expr
@@ -1425,9 +1430,15 @@
     $substr: function (obj, expr) {
       var args = computeValue(obj, expr);
       if (_.isString(args[0])) {
-        return args[0].substr(args[1], args[2]);
+        if (args[1] < 0) {
+          return "";
+        } else if (args[2] < 0) {
+          return args[0].substr(args[1]);
+        } else {
+          return args[0].substr(args[1], args[2]);
+        }
       }
-      return undefined;
+      return "";
     },
 
     /**
@@ -1439,7 +1450,7 @@
      */
     $toLower: function (obj, expr) {
       var value = computeValue(obj, expr);
-      return value.toLowerCase();
+      return _.isEmpty(value) ? "" : value.toLowerCase();
     },
 
     /**
@@ -1451,7 +1462,7 @@
      */
     $toUpper: function (obj, expr) {
       var value = computeValue(obj, expr);
-      return value.toUpperCase();
+      return _.isEmpty(value) ? "" : value.toUpperCase();
     }
   };
 
