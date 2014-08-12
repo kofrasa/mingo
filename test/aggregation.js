@@ -28,7 +28,7 @@ test("Aggregation Pipeline Operators", function (t) {
     });
 
     t.test("$project operator", function (t) {
-      t.plan(5)
+      t.plan(7);
       var result = Mingo.aggregate(
         students,
         [
@@ -105,6 +105,54 @@ test("Aggregation Pipeline Operators", function (t) {
       matched = matched && result.students[0]['name'] === 'jeff';
       t.ok(matched, "can slice projected array elements with $slice");
 
+      // examples from mongoDB website
+
+      var products = [
+        { "_id" : 1, "item" : "abc1", description: "product 1", qty: 300 },
+        { "_id" : 2, "item" : "abc2", description: "product 2", qty: 200 },
+        { "_id" : 3, "item" : "xyz1", description: "product 3", qty: 250 },
+        { "_id" : 4, "item" : "VWZ1", description: "product 4", qty: 300 },
+        { "_id" : 5, "item" : "VWZ2", description: "product 5", qty: 180 }
+      ];
+
+      result = Mingo.aggregate(products, [
+        {
+          $project:
+          {
+            item: 1,
+            qty: 1,
+            qtyEq250: { $eq: [ "$qty", 250 ] },
+            _id: 0
+          }
+        }
+      ]);
+      t.deepEqual(result, [
+        { "item" : "abc1", "qty" : 300, "qtyEq250" : false },
+        { "item" : "abc2", "qty" : 200, "qtyEq250" : false },
+        { "item" : "xyz1", "qty" : 250, "qtyEq250" : true },
+        { "item" : "VWZ1", "qty" : 300, "qtyEq250" : false },
+        { "item" : "VWZ2", "qty" : 180, "qtyEq250" : false }
+      ], "can project with $eq operator");
+
+      // $cmp
+      result = Mingo.aggregate(products, [
+        {
+          $project:
+          {
+            item: 1,
+            qty: 1,
+            cmpTo250: { $cmp: [ "$qty", 250 ] },
+            _id: 0
+          }
+        }]);
+      t.deepEqual(result, [
+        { "item" : "abc1", "qty" : 300, "cmpTo250" : 1 },
+        { "item" : "abc2", "qty" : 200, "cmpTo250" : -1 },
+        { "item" : "xyz1", "qty" : 250, "cmpTo250" : 0 },
+        { "item" : "VWZ1", "qty" : 300, "cmpTo250" : 1 },
+        { "item" : "VWZ2", "qty" : 180, "cmpTo250" : -1 }
+      ], "can project with $cmp operator");
+
     });
 
 //  test("$ positional operator", function () {
@@ -168,8 +216,62 @@ test("Aggregation Pipeline Operators", function (t) {
     });
 });
 
-test("String Operators", function (t) {
+test("Arithmetic Aggregation Operators", function (t) {
+  t.plan(4);
 
+  var sales = [
+    { "_id" : 1, "item" : "abc", "price" : 10, "fee" : 2, "discount" : 5, "quantity": 2, date: new Date("2014-03-01T08:00:00Z") },
+    { "_id" : 2, "item" : "jkl", "price" : 20, "fee" : 1, "discount" : 2, "quantity": 1, date: new Date("2014-03-01T09:00:00Z") },
+    { "_id" : 3, "item" : "xyz", "price" : 5,  "fee" : 0, "discount" : 1, "quantity": 10, date: new Date("2014-03-15T09:00:00Z") }
+  ];
+
+  // $add
+  var result = Mingo.aggregate(sales, [
+    { $project: { item: 1, total: { $add: [ "$price", "$fee" ] } } }
+  ]);
+  t.deepEqual(result, [
+    { "_id" : 1, "item" : "abc", "total" : 12 },
+    { "_id" : 2, "item" : "jkl", "total" : 21 },
+    { "_id" : 3, "item" : "xyz", "total" : 5 }
+  ], "aggregate with $add operator");
+
+  // $subtract
+  result = Mingo.aggregate(sales, [
+    { $project: { item: 1, total: { $subtract: [ { $add: [ "$price", "$fee" ] }, "$discount" ] } } }
+  ]);
+  t.deepEqual(result, [
+    { "_id" : 1, "item" : "abc", "total" : 7 },
+    { "_id" : 2, "item" : "jkl", "total" : 19 },
+    { "_id" : 3, "item" : "xyz", "total" : 4 }
+  ], "aggregate with $subtract operator");
+
+  // $multiply
+  result = Mingo.aggregate(sales, [
+    { $project: { date: 1, item: 1, total: { $multiply: [ "$price", "$quantity" ] } } }
+  ]);
+  t.deepEqual(result, [
+    { "_id" : 1, "item" : "abc", "date" : new Date("2014-03-01T08:00:00Z"), "total" : 20 },
+    { "_id" : 2, "item" : "jkl", "date" : new Date("2014-03-01T09:00:00Z"), "total" : 20 },
+    { "_id" : 3, "item" : "xyz", "date" : new Date("2014-03-15T09:00:00Z"), "total" : 50 }
+  ], "aggregate with $multiply operator");
+
+  // $divide
+  result = Mingo.aggregate([
+    { "_id" : 1, "name" : "A", "hours" : 80, "resources" : 7 },
+    { "_id" : 2, "name" : "B", "hours" : 40, "resources" : 4 }
+  ], [
+    { $project: { name: 1, workdays: { $divide: [ "$hours", 8 ] } } }
+  ]);
+  t.deepEqual(result, [
+    { "_id" : 1, "name" : "A", "workdays" : 10 },
+    { "_id" : 2, "name" : "B", "workdays" : 5 }
+  ], "aggregate with $divide operator");
+
+  t.end();
+
+});
+
+test("Aggregation String Operators", function (t) {
   t.test("$toUpper operator", function (t) {
     t.plan(1);
     var result = Mingo.aggregate(students,
@@ -179,7 +281,7 @@ test("String Operators", function (t) {
         { $limit: 3}
       ]
     );
-    t.ok(result[1]['name'].toUpperCase() === result[1]['caption'], "can apply $toUpper operator");
+    t.ok(result[1]['name'].toUpperCase() === result[1]['caption'], "aggregate with $toUpper operator");
   });
 
   t.test("$toLower operator", function (t) {
@@ -191,7 +293,7 @@ test("String Operators", function (t) {
         { $limit: 3}
       ]
     );
-    t.ok(result[1]['name'].toLowerCase() === result[1]['caption'], "can apply $toLowerCase operator");
+    t.ok(result[1]['name'].toLowerCase() === result[1]['caption'], "aggregate with $toLowerCase operator");
   });
 
   t.test("$substr operator", function (t) {
@@ -203,6 +305,6 @@ test("String Operators", function (t) {
       ]
     );
     var hash = result[0]['_id']['$oid'].substr(0, 8);
-    t.ok(result[0]['hash'] == hash, "can apply $substr operator");
+    t.ok(result[0]['hash'] == hash, "aggregate with $substr operator");
   });
 });

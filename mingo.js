@@ -126,7 +126,7 @@
           var expr = this._criteria[field];
           if (_.contains(Ops.compoundOperators, field)) {
             if (_.contains(["$not"], field)) {
-              throw Error("Invalid operator");
+              throw new Error("Invalid operator");
             }
             this._processOperator(field, field, expr);
           } else {
@@ -155,7 +155,7 @@
       } else if (_.contains(Ops.compoundOperators, operator)) {
         compiledSelector = compoundOperators[operator](field, value);
       } else {
-        throw Error("Invalid query operator '" + operator + "' detected");
+        throw new Error("Invalid query operator '" + operator + "' detected");
       }
       this._compiled.push(compiledSelector);
     },
@@ -280,7 +280,7 @@
       }
 
       if (!_.isArray(this._collection)) {
-        throw Error("Input collection is not of a valid type.");
+        throw new Error("Input collection is not of a valid type.");
       }
 
       // filter collection
@@ -545,7 +545,7 @@
    */
   Mingo.aggregate = function (collection, pipeline) {
     if (!_.isArray(pipeline)) {
-      throw Error("Aggregation pipeline must be an array")
+      throw new Error("Aggregation pipeline must be an array")
     }
     return (new Mingo.Aggregator(pipeline)).run(collection);
   };
@@ -647,11 +647,15 @@
       // result collection
       var projected = [];
       var objKeys = _.keys(expr);
-      var removeId = false;
 
       if (_.contains(objKeys, settings.key)) {
-        var id = objKeys[settings.key];
-        removeId = (id === 0 || id === false);
+        var id = expr[settings.key];
+        if (id === 0 || id === false) {
+          objKeys = _.without(objKeys, settings.key);
+        }
+      } else {
+        // if not specified the add the ID field
+        objKeys.push(settings.key);
       }
 
       for (var i = 0; i < collection.length; i++) {
@@ -660,15 +664,16 @@
 
         _.each(objKeys, function (key) {
 
-          // tiny optimization here to skip over id
-          if (removeId && key === settings.key) return;
-
           var subExpr = expr[key];
+          var newValue;
 
-          if (_.isString(subExpr)) {
-            cloneObj[key] = computeValue(obj, subExpr, key);
+          // tiny optimization here to skip over id
+          if (key === settings.key && _.isEmpty(subExpr)) {
+            newValue = obj[key];
+          } else if (_.isString(subExpr)) {
+            newValue = computeValue(obj, subExpr, key);
           } else if (subExpr === 1 || subExpr === true) {
-            cloneObj[key] = _.result(obj, key);
+            newValue = _.result(obj, key);
           } else if (_.isObject(subExpr)) {
             var operator = _.keys(subExpr);
             operator = operator.length > 1 ? false : operator[0];
@@ -676,19 +681,19 @@
               // apply the projection operator on the operator expression for the key
               var temp = projectionOperators[operator](obj, subExpr[operator], key);
               if (!_.isUndefined(temp)) {
-                cloneObj[key] = temp;
+                newValue = temp;
               }
             } else {
               // compute the value for the sub expression for the key
-              cloneObj[key] = computeValue(obj, subExpr, key);
+              newValue = computeValue(obj, subExpr, key);
             }
           }
+
+          if (newValue !== undefined) {
+            cloneObj[key] = _.isObject(newValue)? _.clone(newValue) : newValue;
+          }
+
         });
-
-        if (!removeId && !_.has(cloneObj, settings.key)) {
-          cloneObj[settings.key] = obj[settings.key];
-        }
-
         projected.push(cloneObj);
       }
 
@@ -1544,7 +1549,7 @@
       var ifExpr, thenExpr, elseExpr;
       if (_.isArray(expr)) {
         if (expr.length != 3) {
-          throw Error("Invalid arguments for $cond operator");
+          throw new Error("Invalid arguments for $cond operator");
         }
         ifExpr = expr[0];
         thenExpr = expr[1];
@@ -1568,7 +1573,7 @@
      */
     $ifNull: function (obj, expr) {
       if (!_.isArray(expr) || expr.length != 2) {
-        throw Error("Invalid arguments for $ifNull operator");
+        throw new Error("Invalid arguments for $ifNull operator");
       }
       var args = computeValue(obj, expr);
       return (args[0] === null || args[0] === undefined) ? args[1] : args[0];
