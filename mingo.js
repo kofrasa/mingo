@@ -803,7 +803,7 @@
       return {
         test: function (obj) {
           for (var i = 0; i < queries.length; i++) {
-            if (queries[i].test(obj) === false) {
+            if (!queries[i].test(obj)) {
               return false;
             }
           }
@@ -1475,7 +1475,12 @@
      */
     $setEquals: function (obj, expr) {
       var args = computeValue(obj, expr);
-      return _.difference(args[0], args[1]).length === 0;
+      var first = _.uniq(args[0]);
+      var second = _.uniq(args[1]);
+      if (first.length !== second.length) {
+        return false;
+      }
+      return _.difference(first, second).length == 0;
     },
 
     /**
@@ -1524,7 +1529,8 @@
      * @param expr
      */
     $anyElementTrue: function (obj, expr) {
-      var args = computeValue(obj, expr);
+      // mongodb nests the array expression in another
+      var args = computeValue(obj, expr)[0];
       for (var i = 0; i < args.length; i++) {
         if (!!args[i])
           return true;
@@ -1538,7 +1544,8 @@
      * @param expr
      */
     $allElementsTrue: function (obj, expr) {
-      var args = computeValue(obj, expr);
+      // mongodb nests the array expression in another
+      var args = computeValue(obj, expr)[0];
       for (var i = 0; i < args.length; i++) {
         if (!args[i])
           return false;

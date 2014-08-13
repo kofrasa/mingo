@@ -25,6 +25,7 @@ In browser
 - Group Operators ($addToSet, $sum, $max, $min, $avg, $push, $first, $last)
 - Arithmetic Operators ($add, $divide, $mod, $multiply, $subtract)
 - String Operators ($cmp, $strcasecmp, $concat, $substr, $toLower, $toUpper)
+- Set Operators ($setEquals, $setIntersection, $setDifference, $setUnion, $setIsSubset, $anyElementTrue, $allElementsTrue)
 - Projection Operators ($elemMatch, $slice)
 - JSON stream filtering and projection. *NodeJS only*
 
