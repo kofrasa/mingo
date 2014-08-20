@@ -11,6 +11,8 @@ JavaScript implementation of MongoDB query language
 
 In browser
 ```html
+<!-- DO NOT FORGET Underscore -->
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js"></script>
 <script type="text/javascript" src="./mingo-min.js"></script>
 ```
 
@@ -27,7 +29,7 @@ In browser
 - String Operators ($cmp, $strcasecmp, $concat, $substr, $toLower, $toUpper)
 - Set Operators ($setEquals, $setIntersection, $setDifference, $setUnion, $setIsSubset, $anyElementTrue, $allElementsTrue)
 - Projection Operators ($elemMatch, $slice)
-- JSON stream filtering and projection. *NodeJS only*
+- JSON stream filtering and projection. **NodeJS only**
 
 # Usage
 ```javascript
