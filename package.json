@@ -1,6 +1,6 @@
 {
   "name": "mingo",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "JavaScript implementation of MongoDB query language",
   "main": "mingo.js",
   "directories": {
@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "tape test/*.js",
-    "build": "uglifyjs mingo.js -c -o mingo-min.js"
+    "build": "uglifyjs mingo.js -c -m -o mingo-min.js"
   },
   "repository": {
     "type": "git",

@@ -3,20 +3,20 @@ JavaScript implementation of MongoDB query language
 
 [![build status](https://secure.travis-ci.org/kofrasa/mingo.png)](http://travis-ci.org/kofrasa/mingo)
 
-# Dependencies
+## Dependencies
 [underscore](https://github.com/jashkenas/underscore)
 
-# Installing
+## Installing
 ```$ npm install mingo```
 
 In browser
 ```html
 <!-- DO NOT FORGET Underscore -->
-<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js"></script>
+<script type="text/javascript" src="./underscore-min.js"></script>
 <script type="text/javascript" src="./mingo-min.js"></script>
 ```
 
-# Features
+## Features
 - Comparisons Operators ($gt, $gte, $lt, $lte, $ne, $nin, $in)
 - Logical Operators ($and, $or, $nor, $not)
 - Evaluation Operators ($regex, $mod, $where)
@@ -29,9 +29,9 @@ In browser
 - String Operators ($cmp, $strcasecmp, $concat, $substr, $toLower, $toUpper)
 - Set Operators ($setEquals, $setIntersection, $setDifference, $setUnion, $setIsSubset, $anyElementTrue, $allElementsTrue)
 - Projection Operators ($elemMatch, $slice)
-- JSON stream filtering and projection. **NodeJS only**
+- JSON stream filtering and projection. ***NodeJS only***
 
-# Usage
+## Usage
 ```javascript
 
 var Mingo = require('mingo');
@@ -77,10 +77,8 @@ cursor.first();
 cursor.last();
 cursor.all();
 
-// Filter non-matched objects
+// Filter non-matched objects (
 var result = query.remove(collection);
-
-a.pipe(query).pipe(process.stdout);
 ```
 
 ## Aggregation Pipeline
@@ -154,7 +152,7 @@ cursor.first();
 
 For documentation on using query operators see [mongodb](http://docs.mongodb.org/manual/reference/operator/query/)
 
-# API
+## API
 ### Mingo.Query(criteria, [projection])
 Creates a ```Mingo.Query``` object with the given query criteria
 - ```test(obj)``` Returns true if the object passes the query criteria, otherwise false.
@@ -199,9 +197,9 @@ Returns the non-matched objects as a collection from executing a ```Mingo.Query`
 ### Mingo.aggregate(collection, expressions)
 Performs aggregation operation using the aggregation pipeline.
 
-# TODO
+## TODO
  - Geospatial Query Operators ($geoWithin, $geoIntersects, $near, $nearSphere)
  - Geometry Specifiers ($geometry, $maxDistance, $center, $centerSphere, $box, $polygon)
 
-# License
+## License
 MIT
