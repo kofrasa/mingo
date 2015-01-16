@@ -1,9 +1,12 @@
-(function () {
+// Mingo.js 0.3
+// Copyright (c) 2015 Francis Asante <kofrasa@gmail.com>
+// MIT
+
+(function (root, undefined) {
 
   "use strict";
 
   // global on the server, window in the browser
-  var root = this;
   var Mingo = {}, previousMingo;
   var _;
 
@@ -17,13 +20,10 @@
     return Mingo;
   };
 
-  var nodeEnabled = 'undefined' !== typeof exports &&
-    'undefined' !== typeof module &&
-    'undefined' !== typeof require &&
-    'undefined' !== typeof process;
+  var nodeEnabled = ('undefined' !== typeof exports && 'undefined' !== typeof require);
 
-  // Export the Mingo object for **Node.js**
-  if (typeof exports !== 'undefined') {
+  // Export the Mingo object for Node.js
+  if (nodeEnabled) {
     if (typeof module !== 'undefined' && module.exports) {
       exports = module.exports = Mingo;
     } else {
@@ -1714,4 +1714,4 @@
     return result;
   };
 
-}).call(this);
+}(this));
