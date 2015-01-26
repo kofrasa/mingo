@@ -279,7 +279,7 @@
         _.extend(this._operators, {"$project": this._projection});
       }
 
-      if (!_.isArray(this._collection)) {
+      if (!_.isArray(this._collection) && !_.isObject(this._collection)) {
         throw new Error("Input collection is not of a valid type.");
       }
 
