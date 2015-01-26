@@ -147,7 +147,7 @@
       if (_.contains(Ops.simpleOperators, operator)) {
         compiledSelector = {
           test: function (obj) {
-            var actualValue = Mingo._resolve(obj, field);
+            var actualValue = resolve(obj, field);
             // value of operator must already be fully resolved.
             return simpleOperators[operator](actualValue, value);
           }
@@ -280,7 +280,7 @@
       }
 
       if (!_.isArray(this._collection)) {
-        throw new Error("Input collection is not of a valid type.");
+        throw new Error("Input collection is not of valid type. Must be an Array.");
       }
 
       // filter collection
@@ -445,7 +445,7 @@
           var operator = this._operators[i];
           for (var key in operator) {
             if (operator.hasOwnProperty(key)) {
-              if (query) {
+              if (query instanceof Mingo.Query) {
                 collection = pipelineOperators[key].call(query, collection, operator[key]);
               } else {
                 collection = pipelineOperators[key](collection, operator[key]);
@@ -465,9 +465,9 @@
    * @returns {*}
    * @private
    */
-  Mingo._get = function (obj, field) {
+  function get(obj, field) {
     return _.result(obj, field);
-  };
+  }
 
   /**
    * Resolve the value of the field (dot separated) on the given object
@@ -475,7 +475,7 @@
    * @param field
    * @returns {*}
    */
-  Mingo._resolve = function (obj, field) {
+  function resolve(obj, field) {
     if (!field) {
       return undefined;
     }
@@ -490,12 +490,12 @@
         var res = [];
         _.each(value, function (item) {
           if (_.isObject(item)) {
-            res.push(Mingo._resolve(item, names[i]));
+            res.push(resolve(item, names[i]));
           }
         });
         value = res;
       } else {
-        value = Mingo._get(value, names[i]);
+        value = get(value, names[i]);
       }
 
       if (value === undefined) {
@@ -504,17 +504,7 @@
     }
 
     return value;
-  };
-
-  /**
-   * Return a new Mingo.Query with the given criteria.
-   * @param criteria
-   * @param projection
-   * @returns {Mingo.Query}
-   */
-  Mingo.compile = function (criteria, projection) {
-    return new Mingo.Query(criteria, projection);
-  };
+  }
 
   /**
    * Performs a query on a collection and returns a cursor object.
@@ -626,8 +616,7 @@
      * @returns {Array|*}
      */
     $match: function (collection, expr) {
-      var query = new Mingo.Query(expr);
-      return query.find(collection).all();
+      return (new Mingo.Query(expr)).find(collection).all();
     },
 
     /**
@@ -735,7 +724,7 @@
       for (var i = 0; i < collection.length; i++) {
         var obj = collection[i];
         // must throw an error if value is not an array
-        var value = Mingo._get(obj, field);
+        var value = get(obj, field);
         if (_.isArray(value)) {
           _.each(value, function (item) {
             var tmp = _.clone(obj);
@@ -762,7 +751,7 @@
         modifiers.reverse().forEach(function (key) {
           var indexes = [];
           var grouped = _.groupBy(collection, function (obj) {
-            var value = Mingo._resolve(obj, key);
+            var value = resolve(obj, key);
             indexes.push(value);
             return value;
           });
@@ -1160,7 +1149,7 @@
      * @returns {*}
      */
     $elemMatch: function (obj, expr, field) {
-      var array = Mingo._resolve(obj, field);
+      var array = resolve(obj, field);
       var query = new Mingo.Query(expr);
 
       if (_.isUndefined(array) || !_.isArray(array)) {
@@ -1184,7 +1173,7 @@
      * @param expr
      */
     $slice: function (obj, expr, field) {
-      var array = Mingo._resolve(obj, field);
+      var array = resolve(obj, field);
 
       if (_.isUndefined(array)) {
         return undefined;
@@ -1628,7 +1617,7 @@
    * @param expr the expression of the aggregate operator for the field
    * @returns {*}
    */
-  var accumulate = function (collection, field, expr) {
+  function accumulate(collection, field, expr) {
     if (_.contains(Ops.groupOperators, field)) {
       return groupOperators[field](collection, expr);
     }
@@ -1654,7 +1643,7 @@
     }
 
     return undefined;
-  };
+  }
 
   /**
    * Computes the actual value of the expression using the given object as context
@@ -1664,7 +1653,7 @@
    * @param field the field name (may also be an aggregate operator)
    * @returns {*}
    */
-  var computeValue = function (obj, expr, field) {
+  function computeValue(obj, expr, field) {
 
     // if the field of the object is a valid operator
     if (_.contains(Ops.aggregateOperators, field)) {
@@ -1674,7 +1663,7 @@
     // if expr is a variable for an object field
     // field not used in this case
     if (_.isString(expr) && expr.length > 0 && expr[0] === "$") {
-      return Mingo._resolve(obj, expr.slice(1));
+      return resolve(obj, expr.slice(1));
     }
 
     var result;
@@ -1712,6 +1701,6 @@
     }
 
     return result;
-  };
+  }
 
 }(this));

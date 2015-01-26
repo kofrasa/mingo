@@ -1,6 +1,9 @@
 # Mingo
 JavaScript implementation of MongoDB query language
 
+Mingo harnesses the power of MongoDB-style queries and allows direct querying of in-memory 
+javascript objects in both client and server-side environments.
+
 [![build status](https://secure.travis-ci.org/kofrasa/mingo.png)](http://travis-ci.org/kofrasa/mingo)
 
 ## Dependencies
@@ -158,7 +161,7 @@ Creates a ```Mingo.Query``` object with the given query criteria
 - ```test(obj)``` Returns true if the object passes the query criteria, otherwise false.
 - ```find(collection, [projection])``` Performs a query on a collection and returns a ```Mingo.Cursor``` object.
 - ```remove(collection)``` Remove matching documents from the collection and return the remainder
-- ```stream()``` Return a ```Mingo.Stream``` to filter and transform JSON objects from a readable stream. *NodeJS only*
+- ```stream()``` Return a ```Mingo.Stream``` to filter and transform JSON objects from a readable stream. **NodeJS only**
 
 ### Mingo.Aggregator(expressions)
 Creates a ```Mingo.Aggregator``` object with a collection of aggregation pipeline expressions

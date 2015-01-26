@@ -69,7 +69,7 @@ test('Comparison, Evaluation, and Element Operators', function (t) {
   ];
 
   _.each(queries, function (q) {
-    t.ok(Mingo.compile(q[0]).test(obj), q[1]);
+    t.ok(Mingo.Query(q[0]).test(obj), q[1]);
   });
 });
 
@@ -95,9 +95,9 @@ test("Logical Operators", function (t) {
 
   _.each(queries, function (q) {
     if (q.length === 2) {
-      t.ok(Mingo.compile(q[0]).test(obj), q[1]);
+      t.ok(new Mingo.Query(q[0]).test(obj), q[1]);
     } else if (q.length === 3) {
-      t.equal(Mingo.compile(q[0]).test(obj), q[1], q[2]);
+      t.equal(new Mingo.Query(q[0]).test(obj), q[1], q[2]);
     }
   });
 });
@@ -125,7 +125,7 @@ test("Array Operators", function (t) {
       ]
     }
   ];
-  var q = Mingo.compile({
+  var q = new Mingo.Query({
     qty: { $all: [
       { "$elemMatch" : { size: "M", num: { $gt: 50} } },
       { "$elemMatch" : { num : 100, color: "green" } }
