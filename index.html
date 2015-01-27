@@ -1,57 +1,61 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8">
+    <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Mingo by kofrasa</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
 
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <script src="javascripts/scale.fix.js"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
     <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
+
+    <title>Mingo by kofrasa</title>
   </head>
+
   <body>
-    <div class="wrapper">
-      <header>
-        <h1 class="header">Mingo</h1>
-        <p class="header">JavaScript implementation of MongoDB query language</p>
+    <header>
+      <div class="inner">
+        <h1>Mingo</h1>
+        <h2>JavaScript implementation of MongoDB query language</h2>
+        <a href="https://github.com/kofrasa/mingo" class="button"><small>View project on</small> GitHub</a>
+      </div>
+    </header>
 
-        <ul>
-          <li class="download"><a class="buttons" href="https://github.com/kofrasa/mingo/zipball/master">Download ZIP</a></li>
-          <li class="download"><a class="buttons" href="https://github.com/kofrasa/mingo/tarball/master">Download TAR</a></li>
-          <li><a class="buttons github" href="https://github.com/kofrasa/mingo">View On GitHub</a></li>
-        </ul>
-
-        <p class="header">This project is maintained by <a class="header name" href="https://github.com/kofrasa">kofrasa</a></p>
-
-
-      </header>
-      <section>
-        <h1>
-<a name="mingo" class="anchor" href="#mingo"><span class="octicon octicon-link"></span></a>Mingo</h1>
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <h1>
+<a id="mingo" class="anchor" href="#mingo" aria-hidden="true"><span class="octicon octicon-link"></span></a>Mingo</h1>
 
 <p>JavaScript implementation of MongoDB query language</p>
 
-<h1>
-<a name="dependencies" class="anchor" href="#dependencies"><span class="octicon octicon-link"></span></a>Dependencies</h1>
+<p>Mingo harnesses the power of MongoDB-style queries for direct querying of in-memory 
+javascript objects in both client and server-side environments.</p>
+
+<p><a href="http://travis-ci.org/kofrasa/mingo"><img src="https://secure.travis-ci.org/kofrasa/mingo.png" alt="build status"></a></p>
+
+<h2>
+<a id="dependencies" class="anchor" href="#dependencies" aria-hidden="true"><span class="octicon octicon-link"></span></a>Dependencies</h2>
 
 <p><a href="https://github.com/jashkenas/underscore">underscore</a></p>
 
-<h1>
-<a name="installing" class="anchor" href="#installing"><span class="octicon octicon-link"></span></a>Installing</h1>
+<h2>
+<a id="installing" class="anchor" href="#installing" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installing</h2>
 
 <p><code>$ npm install mingo</code></p>
 
 <p>In browser</p>
 
-<div class="highlight highlight-html"><pre><span class="nt">&lt;script </span><span class="na">type=</span><span class="s">"text/javascript"</span> <span class="na">src=</span><span class="s">"./mingo-min.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
-</pre></div>
+<div class="highlight highlight-html"><pre><span class="pl-c">&lt;!-- DO NOT FORGET Underscore --&gt;</span>
+&lt;<span class="pl-ent">script</span> <span class="pl-e">type</span>=<span class="pl-s1"><span class="pl-pds">"</span>text/javascript<span class="pl-pds">"</span></span> <span class="pl-e">src</span>=<span class="pl-s1"><span class="pl-pds">"</span>./underscore-min.js<span class="pl-pds">"</span></span>&gt;&lt;/<span class="pl-ent">script</span>&gt;
+&lt;<span class="pl-ent">script</span> <span class="pl-e">type</span>=<span class="pl-s1"><span class="pl-pds">"</span>text/javascript<span class="pl-pds">"</span></span> <span class="pl-e">src</span>=<span class="pl-s1"><span class="pl-pds">"</span>./mingo-min.js<span class="pl-pds">"</span></span>&gt;&lt;/<span class="pl-ent">script</span>&gt;</pre></div>
 
-<h1>
-<a name="features" class="anchor" href="#features"><span class="octicon octicon-link"></span></a>Features</h1>
+<h2>
+<a id="features" class="anchor" href="#features" aria-hidden="true"><span class="octicon octicon-link"></span></a>Features</h2>
 
 <ul>
 <li>Comparisons Operators ($gt, $gte, $lt, $lte, $ne, $nin, $in)</li>
@@ -64,142 +68,138 @@
 <li>Group Operators ($addToSet, $sum, $max, $min, $avg, $push, $first, $last)</li>
 <li>Arithmetic Operators ($add, $divide, $mod, $multiply, $subtract)</li>
 <li>String Operators ($cmp, $strcasecmp, $concat, $substr, $toLower, $toUpper)</li>
+<li>Set Operators ($setEquals, $setIntersection, $setDifference, $setUnion, $setIsSubset, $anyElementTrue, $allElementsTrue)</li>
 <li>Projection Operators ($elemMatch, $slice)</li>
-<li>JSON stream filtering and projection. <em>NodeJS only</em>
+<li>JSON stream filtering and projection. <strong><em>NodeJS only</em></strong>
 </li>
-</ul><h1>
-<a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h1>
+</ul>
+
+<h2>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage</h2>
 
 <div class="highlight highlight-javascript"><pre>
-<span class="kd">var</span> <span class="nx">Mingo</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'mingo'</span><span class="p">);</span>
-<span class="c1">// or just access *Mingo* global in browser</span>
+<span class="pl-s">var</span> Mingo <span class="pl-k">=</span> <span class="pl-s3">require</span>(<span class="pl-s1"><span class="pl-pds">'</span>mingo<span class="pl-pds">'</span></span>);
+<span class="pl-c">// or just access *Mingo* global in browser</span>
 
-<span class="c1">// setup the key field for your collection</span>
-<span class="nx">Mingo</span><span class="p">.</span><span class="nx">setup</span><span class="p">({</span>
-    <span class="nx">key</span><span class="o">:</span> <span class="s1">'_id'</span> <span class="c1">// default</span>
-<span class="p">});</span>
+<span class="pl-c">// setup the key field for your collection</span>
+Mingo.setup({
+    key<span class="pl-k">:</span> <span class="pl-s1"><span class="pl-pds">'</span>_id<span class="pl-pds">'</span></span> <span class="pl-c">// default</span>
+});
 
-<span class="c1">// create a query with criteria</span>
-<span class="c1">// find all grades for homework with score &gt;= 50</span>
-<span class="kd">var</span> <span class="nx">query</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Mingo</span><span class="p">.</span><span class="nx">Query</span><span class="p">({</span>
-    <span class="nx">type</span><span class="o">:</span> <span class="s2">"homework"</span><span class="p">,</span>
-    <span class="nx">score</span><span class="o">:</span> <span class="p">{</span> <span class="nx">$gte</span><span class="o">:</span> <span class="mi">50</span> <span class="p">}</span>
-<span class="p">});</span>
+<span class="pl-c">// create a query with criteria</span>
+<span class="pl-c">// find all grades for homework with score &gt;= 50</span>
+<span class="pl-s">var</span> query <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">Mingo.Query</span>({
+    type<span class="pl-k">:</span> <span class="pl-s1"><span class="pl-pds">"</span>homework<span class="pl-pds">"</span></span>,
+    score<span class="pl-k">:</span> { $gte<span class="pl-k">:</span> <span class="pl-c1">50</span> }
+});</pre></div>
+
+<h2>
+<a id="searching-and-filtering" class="anchor" href="#searching-and-filtering" aria-hidden="true"><span class="octicon octicon-link"></span></a>Searching and Filtering</h2>
+
+<div class="highlight highlight-javascript"><pre><span class="pl-c">// filter collection with find()</span>
+<span class="pl-s">var</span> cursor <span class="pl-k">=</span> query.<span class="pl-s3">find</span>(collection);
+
+<span class="pl-c">// shorthand with query criteria</span>
+<span class="pl-c">// cursor = Mingo.find(collection, criteria);</span>
+
+<span class="pl-c">// sort, skip and limit by chaining</span>
+cursor.<span class="pl-s3">sort</span>({student_id<span class="pl-k">:</span> <span class="pl-c1">1</span>, score<span class="pl-k">:</span> <span class="pl-k">-</span><span class="pl-c1">1</span>})
+    .skip(<span class="pl-c1">100</span>)
+    .limit(<span class="pl-c1">100</span>);
+
+<span class="pl-c">// count matches</span>
+cursor.count();
+
+<span class="pl-c">// iterate cursor</span>
+<span class="pl-c">// iteration is forward only</span>
+<span class="pl-k">while</span> (cursor.hasNext()) {
+    <span class="pl-en">console</span><span class="pl-s3">.log</span>(cursor.<span class="pl-sc">next</span>());
+}
+
+<span class="pl-c">// use first(), last() and all() to retrieve matched objects</span>
+cursor.first();
+cursor.last();
+cursor.<span class="pl-sc">all</span>();
+
+<span class="pl-c">// Filter non-matched objects (</span>
+<span class="pl-s">var</span> result <span class="pl-k">=</span> query.<span class="pl-s3">remove</span>(collection);</pre></div>
+
+<h2>
+<a id="aggregation-pipeline" class="anchor" href="#aggregation-pipeline" aria-hidden="true"><span class="octicon octicon-link"></span></a>Aggregation Pipeline</h2>
+
+<div class="highlight highlight-javascript"><pre><span class="pl-s">var</span> agg <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">Mingo.Aggregator</span>([
+    {<span class="pl-s1"><span class="pl-pds">'</span>$match<span class="pl-pds">'</span></span><span class="pl-k">:</span> { <span class="pl-s1"><span class="pl-pds">"</span>type<span class="pl-pds">"</span></span><span class="pl-k">:</span> <span class="pl-s1"><span class="pl-pds">"</span>homework<span class="pl-pds">"</span></span>}},
+    {<span class="pl-s1"><span class="pl-pds">'</span>$group<span class="pl-pds">'</span></span><span class="pl-k">:</span>{<span class="pl-s1"><span class="pl-pds">'</span>_id<span class="pl-pds">'</span></span><span class="pl-k">:</span><span class="pl-s1"><span class="pl-pds">'</span>$student_id<span class="pl-pds">'</span></span>, <span class="pl-s1"><span class="pl-pds">'</span>score<span class="pl-pds">'</span></span><span class="pl-k">:</span>{$min<span class="pl-k">:</span><span class="pl-s1"><span class="pl-pds">'</span>$score<span class="pl-pds">'</span></span>}}},
+    {<span class="pl-s1"><span class="pl-pds">'</span>$sort<span class="pl-pds">'</span></span><span class="pl-k">:</span>{<span class="pl-s1"><span class="pl-pds">'</span>_id<span class="pl-pds">'</span></span><span class="pl-k">:</span> <span class="pl-c1">1</span>, <span class="pl-s1"><span class="pl-pds">'</span>score<span class="pl-pds">'</span></span><span class="pl-k">:</span> <span class="pl-c1">1</span>}}
+]);
+
+<span class="pl-s">var</span> result <span class="pl-k">=</span> agg.run(collection);
+
+<span class="pl-c">// shorthand</span>
+result <span class="pl-k">=</span> Mingo.aggregate(
+    collection,
+    [
+        {<span class="pl-s1"><span class="pl-pds">'</span>$match<span class="pl-pds">'</span></span><span class="pl-k">:</span> { <span class="pl-s1"><span class="pl-pds">"</span>type<span class="pl-pds">"</span></span><span class="pl-k">:</span> <span class="pl-s1"><span class="pl-pds">"</span>homework<span class="pl-pds">"</span></span>}},
+        {<span class="pl-s1"><span class="pl-pds">'</span>$group<span class="pl-pds">'</span></span><span class="pl-k">:</span>{<span class="pl-s1"><span class="pl-pds">'</span>_id<span class="pl-pds">'</span></span><span class="pl-k">:</span><span class="pl-s1"><span class="pl-pds">'</span>$student_id<span class="pl-pds">'</span></span>, <span class="pl-s1"><span class="pl-pds">'</span>score<span class="pl-pds">'</span></span><span class="pl-k">:</span>{$min<span class="pl-k">:</span><span class="pl-s1"><span class="pl-pds">'</span>$score<span class="pl-pds">'</span></span>}}},
+        {<span class="pl-s1"><span class="pl-pds">'</span>$sort<span class="pl-pds">'</span></span><span class="pl-k">:</span>{<span class="pl-s1"><span class="pl-pds">'</span>_id<span class="pl-pds">'</span></span><span class="pl-k">:</span> <span class="pl-c1">1</span>, <span class="pl-s1"><span class="pl-pds">'</span>score<span class="pl-pds">'</span></span><span class="pl-k">:</span> <span class="pl-c1">1</span>}}
+    ]
+);</pre></div>
+
+<h2>
+<a id="stream-filtering" class="anchor" href="#stream-filtering" aria-hidden="true"><span class="octicon octicon-link"></span></a>Stream Filtering</h2>
+
+<div class="highlight highlight-js"><pre><span class="pl-s">var</span> JSONStream <span class="pl-k">=</span> <span class="pl-s3">require</span>(<span class="pl-s1"><span class="pl-pds">'</span>JSONStream<span class="pl-pds">'</span></span>),
+    fs <span class="pl-k">=</span> <span class="pl-s3">require</span>(<span class="pl-s1"><span class="pl-pds">'</span>fs<span class="pl-pds">'</span></span>),
+    Mingo <span class="pl-k">=</span> <span class="pl-s3">require</span>(<span class="pl-s1"><span class="pl-pds">'</span>mingo<span class="pl-pds">'</span></span>);
+
+<span class="pl-s">var</span> query <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">Mingo.Query</span>({
+  scores<span class="pl-k">:</span> { $elemMatch<span class="pl-k">:</span> {type<span class="pl-k">:</span> <span class="pl-s1"><span class="pl-pds">"</span>exam<span class="pl-pds">"</span></span>, score<span class="pl-k">:</span> {$gt<span class="pl-k">:</span> <span class="pl-c1">90</span>}} }
+}, {name<span class="pl-k">:</span> <span class="pl-c1">1</span>});
+
+<span class="pl-c">// ex. [</span>
+<span class="pl-c">//      { "_id" : 11, "name" : "Marcus Blohm", "scores" : [</span>
+<span class="pl-c">//          { "type" : "exam", "score" : 78.42617835651868 },</span>
+<span class="pl-c">//          { "type" : "quiz", "score" : 82.58372817930675 },</span>
+<span class="pl-c">//          { "type" : "homework", "score" : 87.49924733328717 },</span>
+<span class="pl-c">//          { "type" : "homework", "score" : 15.81264595052612 } ]</span>
+<span class="pl-c">//      },</span>
+<span class="pl-c">//      ...</span>
+<span class="pl-c">//     ]</span>
+file <span class="pl-k">=</span> fs.createReadStream(<span class="pl-s1"><span class="pl-pds">'</span>./students.json<span class="pl-pds">'</span></span>);
+
+<span class="pl-s">var</span> qs <span class="pl-k">=</span> query.stream();
+qs.on(<span class="pl-s1"><span class="pl-pds">'</span>data<span class="pl-pds">'</span></span>, <span class="pl-st">function</span> (<span class="pl-vpf">data</span>) {
+    <span class="pl-en">console</span><span class="pl-s3">.log</span>(data); <span class="pl-c">// log filtered outputs</span>
+    <span class="pl-c">// ex. { name: 'Dinah Sauve', _id: 49 }</span>
+});
+
+file.pipe(JSONStream.<span class="pl-s3">parse</span>(<span class="pl-s1"><span class="pl-pds">"</span>*<span class="pl-pds">"</span></span>)).pipe(qs);
 </pre></div>
 
 <h2>
-<a name="searching-and-filtering" class="anchor" href="#searching-and-filtering"><span class="octicon octicon-link"></span></a>Searching and Filtering</h2>
+<a id="backbone-integration" class="anchor" href="#backbone-integration" aria-hidden="true"><span class="octicon octicon-link"></span></a>Backbone Integration</h2>
 
-<div class="highlight highlight-javascript"><pre><span class="c1">// filter collection with find()</span>
-<span class="kd">var</span> <span class="nx">cursor</span> <span class="o">=</span> <span class="nx">query</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span><span class="nx">collection</span><span class="p">);</span>
+<div class="highlight highlight-javascript"><pre><span class="pl-c">// using with Backbone</span>
+<span class="pl-s">var</span> Grades <span class="pl-k">=</span> Backbone.Collection.extend(Mingo.CollectionMixin);
 
-<span class="c1">// shorthand with query criteria</span>
-<span class="c1">// cursor = Mingo.find(collection, criteria);</span>
+<span class="pl-s">var</span> grades <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">Grades</span>(collection);
 
-<span class="c1">// sort, skip and limit by chaining</span>
-<span class="nx">cursor</span><span class="p">.</span><span class="nx">sort</span><span class="p">({</span><span class="nx">student_id</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span> <span class="nx">score</span><span class="o">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">})</span>
-    <span class="p">.</span><span class="nx">skip</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
-    <span class="p">.</span><span class="nx">limit</span><span class="p">(</span><span class="mi">100</span><span class="p">);</span>
+<span class="pl-c">// find students with grades less than 50 in homework or quiz</span>
+<span class="pl-c">// sort by score ascending and type descending</span>
+cursor <span class="pl-k">=</span> grades.query({
+    $or<span class="pl-k">:</span> [{type<span class="pl-k">:</span> <span class="pl-s1"><span class="pl-pds">"</span>quiz<span class="pl-pds">"</span></span>, score<span class="pl-k">:</span> {$lt<span class="pl-k">:</span> <span class="pl-c1">50</span>}}, {type<span class="pl-k">:</span> <span class="pl-s1"><span class="pl-pds">"</span>homework<span class="pl-pds">"</span></span>, score<span class="pl-k">:</span> {$lt<span class="pl-k">:</span> <span class="pl-c1">50</span>}}]
+}).<span class="pl-s3">sort</span>({score<span class="pl-k">:</span> <span class="pl-c1">1</span>, type<span class="pl-k">:</span> <span class="pl-k">-</span><span class="pl-c1">1</span>}).limit(<span class="pl-c1">10</span>);
 
-<span class="c1">// count matches</span>
-<span class="nx">cursor</span><span class="p">.</span><span class="nx">count</span><span class="p">();</span>
-
-<span class="c1">// iterate cursor</span>
-<span class="c1">// iteration is forward only</span>
-<span class="k">while</span> <span class="p">(</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">hasNext</span><span class="p">())</span> <span class="p">{</span>
-    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">next</span><span class="p">());</span>
-<span class="p">}</span>
-
-<span class="c1">// use first(), last() and all() to retrieve matched objects</span>
-<span class="nx">cursor</span><span class="p">.</span><span class="nx">first</span><span class="p">();</span>
-<span class="nx">cursor</span><span class="p">.</span><span class="nx">last</span><span class="p">();</span>
-<span class="nx">cursor</span><span class="p">.</span><span class="nx">all</span><span class="p">();</span>
-
-<span class="c1">// Filter non-matched objects</span>
-<span class="kd">var</span> <span class="nx">result</span> <span class="o">=</span> <span class="nx">query</span><span class="p">.</span><span class="nx">remove</span><span class="p">(</span><span class="nx">collection</span><span class="p">);</span>
-
-<span class="nx">a</span><span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">query</span><span class="p">).</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">stdout</span><span class="p">);</span>
-</pre></div>
-
-<h2>
-<a name="aggregation-pipeline" class="anchor" href="#aggregation-pipeline"><span class="octicon octicon-link"></span></a>Aggregation Pipeline</h2>
-
-<div class="highlight highlight-javascript"><pre><span class="kd">var</span> <span class="nx">agg</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Mingo</span><span class="p">.</span><span class="nx">Aggregator</span><span class="p">([</span>
-    <span class="p">{</span><span class="s1">'$match'</span><span class="o">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="o">:</span> <span class="s2">"homework"</span><span class="p">}},</span>
-    <span class="p">{</span><span class="s1">'$group'</span><span class="o">:</span><span class="p">{</span><span class="s1">'_id'</span><span class="o">:</span><span class="s1">'$student_id'</span><span class="p">,</span> <span class="s1">'score'</span><span class="o">:</span><span class="p">{</span><span class="nx">$min</span><span class="o">:</span><span class="s1">'$score'</span><span class="p">}}},</span>
-    <span class="p">{</span><span class="s1">'$sort'</span><span class="o">:</span><span class="p">{</span><span class="s1">'_id'</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">'score'</span><span class="o">:</span> <span class="mi">1</span><span class="p">}}</span>
-<span class="p">]);</span>
-
-<span class="kd">var</span> <span class="nx">result</span> <span class="o">=</span> <span class="nx">agg</span><span class="p">.</span><span class="nx">run</span><span class="p">(</span><span class="nx">collection</span><span class="p">);</span>
-
-<span class="c1">// shorthand</span>
-<span class="nx">result</span> <span class="o">=</span> <span class="nx">Mingo</span><span class="p">.</span><span class="nx">aggregate</span><span class="p">(</span>
-    <span class="nx">collection</span><span class="p">,</span>
-    <span class="p">[</span>
-        <span class="p">{</span><span class="s1">'$match'</span><span class="o">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="o">:</span> <span class="s2">"homework"</span><span class="p">}},</span>
-        <span class="p">{</span><span class="s1">'$group'</span><span class="o">:</span><span class="p">{</span><span class="s1">'_id'</span><span class="o">:</span><span class="s1">'$student_id'</span><span class="p">,</span> <span class="s1">'score'</span><span class="o">:</span><span class="p">{</span><span class="nx">$min</span><span class="o">:</span><span class="s1">'$score'</span><span class="p">}}},</span>
-        <span class="p">{</span><span class="s1">'$sort'</span><span class="o">:</span><span class="p">{</span><span class="s1">'_id'</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">'score'</span><span class="o">:</span> <span class="mi">1</span><span class="p">}}</span>
-    <span class="p">]</span>
-<span class="p">);</span>
-</pre></div>
-
-<h2>
-<a name="stream-filtering" class="anchor" href="#stream-filtering"><span class="octicon octicon-link"></span></a>Stream Filtering</h2>
-
-<div class="highlight highlight-js"><pre><span class="kd">var</span> <span class="nx">JSONStream</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'JSONStream'</span><span class="p">),</span>
-    <span class="nx">fs</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'fs'</span><span class="p">),</span>
-    <span class="nx">Mingo</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'mingo'</span><span class="p">);</span>
-
-<span class="kd">var</span> <span class="nx">query</span> <span class="o">=</span> <span class="nx">Mingo</span><span class="p">.</span><span class="nx">compile</span><span class="p">({</span>
-  <span class="nx">scores</span><span class="o">:</span> <span class="p">{</span> <span class="nx">$elemMatch</span><span class="o">:</span> <span class="p">{</span><span class="nx">type</span><span class="o">:</span> <span class="s2">"exam"</span><span class="p">,</span> <span class="nx">score</span><span class="o">:</span> <span class="p">{</span><span class="nx">$gt</span><span class="o">:</span> <span class="mi">90</span><span class="p">}}</span> <span class="p">}</span>
-<span class="p">},</span> <span class="p">{</span><span class="nx">name</span><span class="o">:</span> <span class="mi">1</span><span class="p">});</span>
-
-<span class="c1">// ex. [</span>
-<span class="c1">//      { "_id" : 11, "name" : "Marcus Blohm", "scores" : [</span>
-<span class="c1">//          { "type" : "exam", "score" : 78.42617835651868 },</span>
-<span class="c1">//          { "type" : "quiz", "score" : 82.58372817930675 },</span>
-<span class="c1">//          { "type" : "homework", "score" : 87.49924733328717 },</span>
-<span class="c1">//          { "type" : "homework", "score" : 15.81264595052612 } ]</span>
-<span class="c1">//      },</span>
-<span class="c1">//      ...</span>
-<span class="c1">//     ]</span>
-<span class="nx">file</span> <span class="o">=</span> <span class="nx">fs</span><span class="p">.</span><span class="nx">createReadStream</span><span class="p">(</span><span class="s1">'./students.json'</span><span class="p">);</span>
-
-<span class="kd">var</span> <span class="nx">qs</span> <span class="o">=</span> <span class="nx">query</span><span class="p">.</span><span class="nx">stream</span><span class="p">();</span>
-<span class="nx">qs</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">'data'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">data</span><span class="p">);</span> <span class="c1">// log filtered outputs</span>
-    <span class="c1">// ex. { name: 'Dinah Sauve', _id: 49 }</span>
-<span class="p">});</span>
-
-<span class="nx">file</span><span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">JSONStream</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="s2">"*"</span><span class="p">)).</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">qs</span><span class="p">);</span>
-
-</pre></div>
-
-<h2>
-<a name="backbone-integration" class="anchor" href="#backbone-integration"><span class="octicon octicon-link"></span></a>Backbone Integration</h2>
-
-<div class="highlight highlight-javascript"><pre><span class="c1">// using with Backbone</span>
-<span class="kd">var</span> <span class="nx">Grades</span> <span class="o">=</span> <span class="nx">Backbone</span><span class="p">.</span><span class="nx">Collection</span><span class="p">.</span><span class="nx">extend</span><span class="p">(</span><span class="nx">Mingo</span><span class="p">.</span><span class="nx">CollectionMixin</span><span class="p">);</span>
-
-<span class="kd">var</span> <span class="nx">grades</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Grades</span><span class="p">(</span><span class="nx">collection</span><span class="p">);</span>
-
-<span class="c1">// find students with grades less than 50 in homework or quiz</span>
-<span class="c1">// sort by score ascending and type descending</span>
-<span class="nx">cursor</span> <span class="o">=</span> <span class="nx">grades</span><span class="p">.</span><span class="nx">query</span><span class="p">({</span>
-    <span class="nx">$or</span><span class="o">:</span> <span class="p">[{</span><span class="nx">type</span><span class="o">:</span> <span class="s2">"quiz"</span><span class="p">,</span> <span class="nx">score</span><span class="o">:</span> <span class="p">{</span><span class="nx">$lt</span><span class="o">:</span> <span class="mi">50</span><span class="p">}},</span> <span class="p">{</span><span class="nx">type</span><span class="o">:</span> <span class="s2">"homework"</span><span class="p">,</span> <span class="nx">score</span><span class="o">:</span> <span class="p">{</span><span class="nx">$lt</span><span class="o">:</span> <span class="mi">50</span><span class="p">}}]</span>
-<span class="p">}).</span><span class="nx">sort</span><span class="p">({</span><span class="nx">score</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span> <span class="nx">type</span><span class="o">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">}).</span><span class="nx">limit</span><span class="p">(</span><span class="mi">10</span><span class="p">);</span>
-
-<span class="c1">// print grade with the lowest score</span>
-<span class="nx">cursor</span><span class="p">.</span><span class="nx">first</span><span class="p">();</span>
-</pre></div>
+<span class="pl-c">// print grade with the lowest score</span>
+cursor.first();</pre></div>
 
 <p>For documentation on using query operators see <a href="http://docs.mongodb.org/manual/reference/operator/query/">mongodb</a></p>
 
-<h1>
-<a name="api" class="anchor" href="#api"><span class="octicon octicon-link"></span></a>API</h1>
+<h2>
+<a id="api" class="anchor" href="#api" aria-hidden="true"><span class="octicon octicon-link"></span></a>API</h2>
 
 <h3>
-<a name="mingoquerycriteria-projection" class="anchor" href="#mingoquerycriteria-projection"><span class="octicon octicon-link"></span></a>Mingo.Query(criteria, [projection])</h3>
+<a id="mingoquerycriteria-projection" class="anchor" href="#mingoquerycriteria-projection" aria-hidden="true"><span class="octicon octicon-link"></span></a>Mingo.Query(criteria, [projection])</h3>
 
 <p>Creates a <code>Mingo.Query</code> object with the given query criteria</p>
 
@@ -211,18 +211,22 @@
 <li>
 <code>remove(collection)</code> Remove matching documents from the collection and return the remainder</li>
 <li>
-<code>stream()</code> Return a <code>Mingo.Stream</code> to filter and transform JSON objects from a readable stream. <em>NodeJS only</em>
+<code>stream()</code> Return a <code>Mingo.Stream</code> to filter and transform JSON objects from a readable stream. <strong><em>NodeJS only</em></strong>
 </li>
-</ul><h3>
-<a name="mingoaggregatorexpressions" class="anchor" href="#mingoaggregatorexpressions"><span class="octicon octicon-link"></span></a>Mingo.Aggregator(expressions)</h3>
+</ul>
+
+<h3>
+<a id="mingoaggregatorexpressions" class="anchor" href="#mingoaggregatorexpressions" aria-hidden="true"><span class="octicon octicon-link"></span></a>Mingo.Aggregator(expressions)</h3>
 
 <p>Creates a <code>Mingo.Aggregator</code> object with a collection of aggregation pipeline expressions</p>
 
 <ul>
 <li>
 <code>run()</code> Apply the pipeline operations over the collection by order of the sequence added</li>
-</ul><h3>
-<a name="mingocursorcollection-query-projection" class="anchor" href="#mingocursorcollection-query-projection"><span class="octicon octicon-link"></span></a>Mingo.Cursor(collection, query, [projection])</h3>
+</ul>
+
+<h3>
+<a id="mingocursorcollection-query-projection" class="anchor" href="#mingocursorcollection-query-projection" aria-hidden="true"><span class="octicon octicon-link"></span></a>Mingo.Cursor(collection, query, [projection])</h3>
 
 <p>Creates a <code>Mingo.Cursor</code> object which holds the result of applying the query over the collection</p>
 
@@ -253,13 +257,15 @@
 <code>map(callback)</code> Applies a function to each document in a cursor and collects the return values in an array.</li>
 <li>
 <code>forEach(callback)</code> Applies a JavaScript function for every document in a cursor.</li>
-</ul><h3>
-<a name="mingostreamquery-options---nodejs-only" class="anchor" href="#mingostreamquery-options---nodejs-only"><span class="octicon octicon-link"></span></a>Mingo.Stream(query, [options]) - NodeJS only</h3>
+</ul>
+
+<h3>
+<a id="mingostreamquery-options---nodejs-only" class="anchor" href="#mingostreamquery-options---nodejs-only" aria-hidden="true"><span class="octicon octicon-link"></span></a>Mingo.Stream(query, [options]) - NodeJS only</h3>
 
 <p>A Transform stream that can be piped from/to any readable/writable JSON stream.</p>
 
 <h3>
-<a name="mingocollectionmixin" class="anchor" href="#mingocollectionmixin"><span class="octicon octicon-link"></span></a>Mingo.CollectionMixin</h3>
+<a id="mingocollectionmixin" class="anchor" href="#mingocollectionmixin" aria-hidden="true"><span class="octicon octicon-link"></span></a>Mingo.CollectionMixin</h3>
 
 <p>A mixin object for <code>Backbone.Collection</code> which adds <code>query()</code> and <code>aggregate()</code> methods</p>
 
@@ -268,37 +274,54 @@
 <code>query(criteria)</code> Performs a query on the collection and returns a <code>Mingo.Cursor</code> object.</li>
 <li>
 <code>aggregate(expressions)</code> Performs aggregation operation using the aggregation pipeline.</li>
-</ul><h3>
-<a name="mingofindcollection-criteria-projection" class="anchor" href="#mingofindcollection-criteria-projection"><span class="octicon octicon-link"></span></a>Mingo.find(collection, criteria, [projection])</h3>
+</ul>
+
+<h3>
+<a id="mingofindcollection-criteria-projection" class="anchor" href="#mingofindcollection-criteria-projection" aria-hidden="true"><span class="octicon octicon-link"></span></a>Mingo.find(collection, criteria, [projection])</h3>
 
 <p>Performs a query on a collection and returns a <code>Mingo.Cursor</code> object.</p>
 
 <h3>
-<a name="mingoremovecollection-criteria" class="anchor" href="#mingoremovecollection-criteria"><span class="octicon octicon-link"></span></a>Mingo.remove(collection, criteria)</h3>
+<a id="mingoremovecollection-criteria" class="anchor" href="#mingoremovecollection-criteria" aria-hidden="true"><span class="octicon octicon-link"></span></a>Mingo.remove(collection, criteria)</h3>
 
 <p>Returns the non-matched objects as a collection from executing a <code>Mingo.Query</code> with the given criteria</p>
 
 <h3>
-<a name="mingoaggregatecollection-expressions" class="anchor" href="#mingoaggregatecollection-expressions"><span class="octicon octicon-link"></span></a>Mingo.aggregate(collection, expressions)</h3>
+<a id="mingoaggregatecollection-expressions" class="anchor" href="#mingoaggregatecollection-expressions" aria-hidden="true"><span class="octicon octicon-link"></span></a>Mingo.aggregate(collection, expressions)</h3>
 
 <p>Performs aggregation operation using the aggregation pipeline.</p>
 
-<h1>
-<a name="todo" class="anchor" href="#todo"><span class="octicon octicon-link"></span></a>TODO</h1>
+<h2>
+<a id="todo" class="anchor" href="#todo" aria-hidden="true"><span class="octicon octicon-link"></span></a>TODO</h2>
 
 <ul>
 <li>Geospatial Query Operators ($geoWithin, $geoIntersects, $near, $nearSphere)</li>
 <li>Geometry Specifiers ($geometry, $maxDistance, $center, $centerSphere, $box, $polygon)</li>
-</ul><h1>
-<a name="license" class="anchor" href="#license"><span class="octicon octicon-link"></span></a>License</h1>
+</ul>
+
+<h2>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span class="octicon octicon-link"></span></a>License</h2>
 
 <p>MIT</p>
-      </section>
-      <footer>
-        <p><small>Hosted on <a href="http://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
-      </footer>
+        </section>
+
+        <aside id="sidebar">
+          <a href="https://github.com/kofrasa/mingo/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/kofrasa/mingo/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
+
+          <p class="repo-owner"><a href="https://github.com/kofrasa/mingo"></a> is maintained by <a href="https://github.com/kofrasa">kofrasa</a>.</p>
+
+          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
+        </aside>
+      </div>
     </div>
-    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
-		
+
+  
   </body>
 </html>
