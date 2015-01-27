@@ -8,13 +8,13 @@
   },
   "scripts": {
     "test": "tape test/*.js",
-    "build": "uglifyjs mingo.js -c -m -o mingo-min.js"
+    "build": "uglifyjs mingo.js -c -m -o mingo.min.js"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/kofrasa/mingo.git"
   },
-  "files": ["mingo.js", "mingo-min.js", "README.md", "LICENSE"],
+  "files": ["mingo.js", "mingo.min.js", "README.md", "LICENSE"],
   "dependencies": {
     "underscore": ">=1.5.2"
   },

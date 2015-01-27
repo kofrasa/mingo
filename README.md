@@ -16,7 +16,7 @@ In browser
 ```html
 <!-- DO NOT FORGET Underscore -->
 <script type="text/javascript" src="./underscore-min.js"></script>
-<script type="text/javascript" src="./mingo-min.js"></script>
+<script type="text/javascript" src="./mingo.min.js"></script>
 ```
 
 ## Features
@@ -32,7 +32,7 @@ In browser
 - String Operators ($cmp, $strcasecmp, $concat, $substr, $toLower, $toUpper)
 - Set Operators ($setEquals, $setIntersection, $setDifference, $setUnion, $setIsSubset, $anyElementTrue, $allElementsTrue)
 - Projection Operators ($elemMatch, $slice)
-- JSON stream filtering and projection. ***NodeJS only***
+- JSON stream filtering and projection. *_NodeJS only_*
 
 ## Usage
 ```javascript
@@ -161,7 +161,7 @@ Creates a ```Mingo.Query``` object with the given query criteria
 - ```test(obj)``` Returns true if the object passes the query criteria, otherwise false.
 - ```find(collection, [projection])``` Performs a query on a collection and returns a ```Mingo.Cursor``` object.
 - ```remove(collection)``` Remove matching documents from the collection and return the remainder
-- ```stream()``` Return a ```Mingo.Stream``` to filter and transform JSON objects from a readable stream. **NodeJS only**
+- ```stream()``` Return a ```Mingo.Stream``` to filter and transform JSON objects from a readable stream. *_NodeJS only_*
 
 ### Mingo.Aggregator(expressions)
 Creates a ```Mingo.Aggregator``` object with a collection of aggregation pipeline expressions
@@ -183,7 +183,7 @@ Creates a ```Mingo.Cursor``` object which holds the result of applying the query
 - ```map(callback)``` Applies a function to each document in a cursor and collects the return values in an array.
 - ```forEach(callback)``` Applies a JavaScript function for every document in a cursor.
 
-### Mingo.Stream(query, [options]) - NodeJS only
+### Mingo.Stream(query, [options]) - _NodeJS only_
 A Transform stream that can be piped from/to any readable/writable JSON stream.
 
 ### Mingo.CollectionMixin
