@@ -20,6 +20,7 @@ In browser
 ```
 
 ## Features
+- Supports Dot Notation for both '_<array>.<index>_' and '_<document>.<field>_' selectors
 - Comparisons Operators ($gt, $gte, $lt, $lte, $ne, $nin, $in)
 - Logical Operators ($and, $or, $nor, $not)
 - Evaluation Operators ($regex, $mod, $where)

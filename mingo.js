@@ -1175,8 +1175,8 @@
     $slice: function (obj, expr, field) {
       var array = resolve(obj, field);
 
-      if (_.isUndefined(array)) {
-        return undefined;
+      if (_.isUndefined(array) || _.isNull(array)) {
+        return array;
       }
       if (!_.isArray(expr)) {
         expr = [expr];
