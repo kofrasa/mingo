@@ -28,7 +28,7 @@ test("Aggregation Pipeline Operators", function (t) {
     });
 
     t.test("$project operator", function (t) {
-      t.plan(7);
+      t.plan(8);
       var result = Mingo.aggregate(
         students,
         [
@@ -93,6 +93,7 @@ test("Aggregation Pipeline Operators", function (t) {
         {students: { $elemMatch: { school: 102 } }}
       ).all();
 
+      t.ok(result[0].students.length == 1, "should return array from $elemMatch projection");
       t.ok(result.length === 3 && !_.has(result[1], 'students'), "can project with $elemMatch operator");
 
       result = Mingo.find(

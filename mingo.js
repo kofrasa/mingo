@@ -1158,7 +1158,7 @@
 
       for (var i = 0; i < array.length; i++) {
         if (query.test(array[i])) {
-          return array[i];
+          return [array[i]];
         }
       }
 
