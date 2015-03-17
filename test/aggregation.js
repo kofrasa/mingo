@@ -28,7 +28,7 @@ test("Aggregation Pipeline Operators", function (t) {
     });
 
     t.test("$project operator", function (t) {
-      t.plan(8);
+      t.plan(5);
       var result = Mingo.aggregate(
         students,
         [
@@ -49,62 +49,6 @@ test("Aggregation Pipeline Operators", function (t) {
       t.ok(_.contains(fields, 'type'), "can rename fields with $project");
       var temp = result[0]['details'];
       t.ok(_.isObject(temp) && _.keys(temp).length === 1, "can create and populate sub-documents");
-
-      var school = [
-        {
-          _id: 1,
-          zipcode: 63109,
-          students: [
-            { name: "john", school: 102, age: 10 },
-            { name: "jess", school: 102, age: 11 },
-            { name: "jeff", school: 108, age: 15 }
-          ]
-        },
-        {
-          _id: 2,
-          zipcode: 63110,
-          students: [
-            { name: "ajax", school: 100, age: 7 },
-            { name: "achilles", school: 100, age: 8 }
-          ]
-        },
-
-        {
-          _id: 3,
-          zipcode: 63109,
-          students: [
-            { name: "ajax", school: 100, age: 7 },
-            { name: "achilles", school: 100, age: 8 }
-          ]
-        },
-
-        {
-          _id: 4,
-          zipcode: 63109,
-          students: [
-            { name: "barney", school: 102, age: 7 }
-          ]
-        }
-      ];
-
-      result = Mingo.find(
-        school,
-        { zipcode: 63109 },
-        {students: { $elemMatch: { school: 102 } }}
-      ).all();
-
-      t.ok(result[0].students.length == 1, "should return array from $elemMatch projection");
-      t.ok(result.length === 3 && !_.has(result[1], 'students'), "can project with $elemMatch operator");
-
-      result = Mingo.find(
-        school,
-        {},
-        {students: { $slice: -1 }}
-      ).first();
-
-      var matched = result.students.length === 1;
-      matched = matched && result.students[0]['name'] === 'jeff';
-      t.ok(matched, "can slice projected array elements with $slice");
 
       // examples from mongoDB website
 

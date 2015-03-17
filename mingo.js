@@ -650,6 +650,8 @@
       for (var i = 0; i < collection.length; i++) {
         var obj = collection[i];
         var cloneObj = {};
+        var foundSlice = false;
+        var dropKeys = [];
 
         _.each(objKeys, function (key) {
 
@@ -672,10 +674,15 @@
               if (!_.isUndefined(temp)) {
                 newValue = temp;
               }
+              if (operator == '$slice') {
+                foundSlice = true;
+              }
             } else {
               // compute the value for the sub expression for the key
               newValue = computeValue(obj, subExpr, key);
             }
+          } else {
+            dropKeys.push(key);
           }
 
           if (newValue !== undefined) {
@@ -683,6 +690,11 @@
           }
 
         });
+        // if projection included $slice operator
+        // include keys that were not explicitly excluded
+        if (foundSlice) {
+          cloneObj = _.defaults(cloneObj, _.omit(obj, dropKeys));
+        }
         projected.push(cloneObj);
       }
 
@@ -1182,11 +1194,11 @@
         if (!_.isNumber(expr)) {
           throw new Error("Invalid type for $slice operator");
         }
-        expr = expr < 0? [expr] : [0, expr];
+        expr = expr < 0 ? [expr] : [0, expr];
       } else {
         // MongoDB $slice works a bit differently from Array.slice
         // Uses single argument for 'limit' and array argument [skip, limit]
-        var skip = (expr[0] < 0)? array.length + expr[0]: expr;
+        var skip = (expr[0] < 0) ? array.length + expr[0] : expr;
         var limit = skip + expr[1];
         expr = [skip, limit];
       }
