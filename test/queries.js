@@ -73,6 +73,13 @@ test('Comparison, Evaluation, and Element Operators', function (t) {
   });
 });
 
+test("Projection Operators", function (t) {
+  t.plan(1);
+  var user = Mingo.find([obj], {}, {'languages.programming': {$slice: [-3, 2]}}).first();
+  var lang = user['languages.programming'];
+  t.ok(2 == lang.length && lang[1] == 'Bash', "can use $slice projection operator");
+});
+
 
 test("Logical Operators", function (t) {
   t.plan(12);

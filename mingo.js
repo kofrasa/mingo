@@ -1175,12 +1175,22 @@
     $slice: function (obj, expr, field) {
       var array = resolve(obj, field);
 
-      if (_.isUndefined(array) || _.isNull(array)) {
+      if (!_.isArray(array)) {
         return array;
       }
       if (!_.isArray(expr)) {
-        expr = [0, expr]; //fix for #11 - calling with a number should take that many items from the beginning.
+        if (!_.isNumber(expr)) {
+          throw new Error("Invalid type for $slice operator");
+        }
+        expr = expr < 0? [expr] : [0, expr];
+      } else {
+        // MongoDB $slice works a bit differently from Array.slice
+        // Uses single argument for 'limit' and array argument [skip, limit]
+        var skip = (expr[0] < 0)? array.length + expr[0]: expr;
+        var limit = skip + expr[1];
+        expr = [skip, limit];
       }
+
       return Array.prototype.slice.apply(array, expr);
     }
   };
