@@ -1179,7 +1179,7 @@
         return array;
       }
       if (!_.isArray(expr)) {
-        expr = [expr];
+        expr = [0, expr]; //fix for #11 - calling with a number should take that many items from the beginning.
       }
       return Array.prototype.slice.apply(array, expr);
     }
