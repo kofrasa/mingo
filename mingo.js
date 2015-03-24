@@ -116,18 +116,14 @@
 
       if (_.isEmpty(this._criteria)) return;
 
-      if (_.isArray(this._criteria) ||
-        _.isFunction(this._criteria) || !_.isObject(this._criteria)) {
+      if (_.isArray(this._criteria) || _.isFunction(this._criteria) || !_.isObject(this._criteria)) {
         throw new Error("Invalid type for criteria");
       }
 
       for (var field in this._criteria) {
         if (this._criteria.hasOwnProperty(field)) {
           var expr = this._criteria[field];
-          if (_.contains(Ops.compoundOperators, field)) {
-            if (_.contains(["$not"], field)) {
-              throw new Error("Invalid operator");
-            }
+          if (_.contains(['$and', '$or', '$nor'], field)) {
             this._processOperator(field, field, expr);
           } else {
             // normalize expression
@@ -465,7 +461,7 @@
    * @returns {*}
    * @private
    */
-  function get(obj, field) {
+  function getValue(obj, field) {
     return _.result(obj, field);
   }
 
@@ -495,7 +491,7 @@
         });
         value = res;
       } else {
-        value = get(value, names[i]);
+        value = getValue(value, names[i]);
       }
 
       if (value === undefined) {
@@ -736,7 +732,7 @@
       for (var i = 0; i < collection.length; i++) {
         var obj = collection[i];
         // must throw an error if value is not an array
-        var value = get(obj, field);
+        var value = getValue(obj, field);
         if (_.isArray(value)) {
           _.each(value, function (item) {
             var tmp = _.clone(obj);
@@ -1277,7 +1273,7 @@
      * @returns {number}
      */
     $avg: function (collection, expr) {
-      return this.$sum(collection, expr) / collection.length;
+      return this.$sum(collection, expr) / (collection.length || 1);
     },
 
     /**
@@ -1316,7 +1312,10 @@
     }
   };
 
-  var aggregateOperators = {
+
+  /////////// Common Aggregation Operators ///////////
+
+  var arithmeticOperators = {
 
     /**
      * Computes the sum of an array of numbers.
@@ -1380,22 +1379,10 @@
     $mod: function (obj, expr) {
       var args = computeValue(obj, expr);
       return args[0] % args[1];
-    },
+    }
+  };
 
-    /**
-     * Compares two values and returns the result of the comparison as an integer.
-     *
-     * @param obj
-     * @param expr
-     * @returns {number}
-     */
-    $cmp: function (obj, expr) {
-      var args = computeValue(obj, expr);
-      if (args[0] > args[1]) {
-        return 1;
-      }
-      return (args[0] < args[1]) ? -1 : 0;
-    },
+  var stringOperators = {
 
     /**
      * Concatenates two strings.
@@ -1477,7 +1464,141 @@
     }
   };
 
-  // These operators provide operations on sets.
+  var dateOperators = {
+    /**
+     * Returns the day of the year for a date as a number between 1 and 366 (leap year).
+     * @param obj
+     * @param expr
+     */
+    $dayOfYear: function (obj, expr) {
+      var d = computeValue(obj, expr);
+      if (_.isDate(value)) {
+        var start = new Date(d.getFullYear(), 0, 0);
+        var diff = d - start;
+        var oneDay = 1000 * 60 * 60 * 24;
+        return Math.round(diff / oneDay);
+      }
+      return undefined;
+    },
+
+    /**
+     * Returns the day of the month for a date as a number between 1 and 31.
+     * @param obj
+     * @param expr
+     */
+    $dayOfMonth: function (obj, expr) {
+      var d = computeValue(obj, expr);
+      return _.isDate(d) ? d.getDate() : undefined;
+    },
+
+    /**
+     * Returns the day of the week for a date as a number between 1 (Sunday) and 7 (Saturday).
+     * @param obj
+     * @param expr
+     */
+    $dayOfWeek: function (obj, expr) {
+      var d = computeValue(obj, expr);
+      return _.isDate(d) ? d.getDay() + 1 : undefined;
+    },
+
+    /**
+     * Returns the year for a date as a number (e.g. 2014).
+     * @param obj
+     * @param expr
+     */
+    $year: function (obj, expr) {
+      var d = computeValue(obj, expr);
+      return _.isDate(d) ? d.getFullYear() + 1 : undefined;
+    },
+
+    /**
+     * Returns the month for a date as a number between 1 (January) and 12 (December).
+     * @param obj
+     * @param expr
+     */
+    $month: function (obj, expr) {
+      var d = computeValue(obj, expr);
+      return _.isDate(d) ? d.getMonth() + 1 : undefined;
+    },
+
+    /**
+     * Returns the week number for a date as a number between 0
+     * (the partial week that precedes the first Sunday of the year) and 53 (leap year).
+     * @param obj
+     * @param expr
+     */
+    $week: function (obj, expr) {
+      var d = computeValue(obj, expr);
+      // TODO
+      throw new Error("Not Implemented");
+    },
+
+    /**
+     * Returns the hour for a date as a number between 0 and 23.
+     * @param obj
+     * @param expr
+     */
+    $hour: function (obj, expr) {
+      var d = computeValue(obj, expr);
+      return _.isDate(d) ? d.getHours() : undefined;
+    },
+
+    /**
+     * Returns the minute for a date as a number between 0 and 59.
+     * @param obj
+     * @param expr
+     */
+    $minute: function (obj, expr) {
+      var d = computeValue(obj, expr);
+      return _.isDate(d) ? d.getMinutes() : undefined;
+    },
+
+    /**
+     * Returns the seconds for a date as a number between 0 and 60 (leap seconds).
+     * @param obj
+     * @param expr
+     */
+    $second: function (obj, expr) {
+      var d = computeValue(obj, expr);
+      return _.isDate(d) ? d.getSeconds() : undefined;
+    },
+
+    /**
+     * Returns the milliseconds of a date as a number between 0 and 999.
+     * @param obj
+     * @param expr
+     */
+    $millisecond: function (obj, expr) {
+      var d = computeValue(obj, expr);
+      return _.isDate(d) ? d.getMilliseconds() : undefined;
+    },
+
+    /**
+     * Returns the date as a formatted string.
+     * @param obj
+     * @param expr
+     */
+    $dateToString: function (obj, expr) {
+      var fmt = expr['format'];
+      var date = computeValue(obj, expr['date']);
+      // TODO: use python-style date formatting
+      /*
+       %Y	Year (4 digits, zero padded)	0000-9999
+       %m	Month (2 digits, zero padded)	01-12
+       %d	Day of Month (2 digits, zero padded)	01-31
+       %H	Hour (2 digits, zero padded, 24-hour clock)	00-23
+       %M	Minute (2 digits, zero padded)	00-59
+       %S	Second (2 digits, zero padded)	00-60
+       %L	Millisecond (3 digits, zero padded)	000-999
+       %j	Day of year (3 digits, zero padded)	001-366
+       %w	Day of week (1-Sunday, 7-Saturday)	1-7
+       %U	Week of year (2 digits, zero padded)	00-53
+       %%	Percent Character as a Literal	%
+       */
+      throw new Error("Not Implemented");
+    }
+  };
+
   var setOperators = {
     /**
      * Returns true if two sets have the same elements.
@@ -1609,7 +1730,23 @@
     }
   };
 
-  // mixin simple operators into aggregate operators
+  var comparisonOperators = {
+    /**
+     * Compares two values and returns the result of the comparison as an integer.
+     *
+     * @param obj
+     * @param expr
+     * @returns {number}
+     */
+    $cmp: function (obj, expr) {
+      var args = computeValue(obj, expr);
+      if (args[0] > args[1]) {
+        return 1;
+      }
+      return (args[0] < args[1]) ? -1 : 0;
+    }
+  };
+  // mixin comparison operators
   _.each(["$eq", "$ne", "$gt", "$gte", "$lt", "$lte"], function (op) {
     aggregateOperators[op] = function (obj, expr) {
       var args = computeValue(obj, expr);
@@ -1617,13 +1754,21 @@
     };
   });
 
-  // mixin extra operators into aggregate operators
-  _.extend(aggregateOperators, setOperators, conditionalOperators);
+  // combine aggregate operators
+  var aggregateOperators = _.extend(
+    {},
+    arithmeticOperators,
+    comparisonOperators,
+    conditionalOperators,
+    dateOperators,
+    setOperators,
+    stringOperators
+  );
+
 
   var Ops = {
     simpleOperators: _.keys(simpleOperators),
     compoundOperators: _.keys(compoundOperators),
-    setOperators: _.keys(setOperators),
     aggregateOperators: _.keys(aggregateOperators),
     groupOperators: _.keys(groupOperators),
     pipelineOperators: _.keys(pipelineOperators),
