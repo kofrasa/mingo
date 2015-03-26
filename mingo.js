@@ -123,7 +123,7 @@
       for (var field in this._criteria) {
         if (this._criteria.hasOwnProperty(field)) {
           var expr = this._criteria[field];
-          if (_.contains(['$and', '$or', '$nor'], field)) {
+          if (_.contains(['$and', '$or', '$nor', '$where'], field)) {
             this._processOperator(field, field, expr);
           } else {
             // normalize expression
@@ -1746,6 +1746,18 @@
       return (args[0] < args[1]) ? -1 : 0;
     }
   };
+
+  // combine aggregate operators
+  var aggregateOperators = _.extend(
+      {},
+      arithmeticOperators,
+      comparisonOperators,
+      conditionalOperators,
+      dateOperators,
+      setOperators,
+      stringOperators
+    );
+
   // mixin comparison operators
   _.each(["$eq", "$ne", "$gt", "$gte", "$lt", "$lte"], function (op) {
     aggregateOperators[op] = function (obj, expr) {
@@ -1753,18 +1765,6 @@
       return simpleOperators[op](args[0], args[1]);
     };
   });
-
-  // combine aggregate operators
-  var aggregateOperators = _.extend(
-    {},
-    arithmeticOperators,
-    comparisonOperators,
-    conditionalOperators,
-    dateOperators,
-    setOperators,
-    stringOperators
-  );
-
 
   var Ops = {
     simpleOperators: _.keys(simpleOperators),
