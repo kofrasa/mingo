@@ -26,28 +26,29 @@ In browser
 - BackboneJS Integration
 - JSON stream filtering and projection. *NodeJS only*
 
-| Query and Projection Operators |
-----------------------------------
-| `Comparison Operators`    | `$gt`, `$gte`, `$lt`, `$lte`, `$ne`, `$nin`, `$in` |
-| `Logical Operators`       | `$and`, `$or`, `$nor`, `$not` |
-| `Evaluation Operators`    | `$regex`, `$mod`, `$where` |
-| `Array Operators`         | `$all`, `$elemMatch`, `$size` |
-| `Element Operators`       | `$exists`, `$type` |
+| Query and Projection Operators ||
+|--------------------------------|
+| `Comparison Operators`    | `$gt` `$gte` `$lt` `$lte` `$ne` `$nin` `$in` |
+| `Logical Operators`       | `$and` `$or` `$nor` `$not` |
+| `Evaluation Operators`    | `$regex` `$mod` `$where` |
+| `Array Operators`         | `$all` `$elemMatch` `$size` |
+| `Element Operators`       | `$exists` `$type` |
 
-| Aggregation Framework Operators |
------------------------------------
-| `Aggregation Pipeline Stages`     | `$group`, `$match`, `$project`, `$sort`, `$limit`, `$unwind`, `$skip` |
-| `Group Accumulator Operators`     | `$addToSet`,`$sum`,`$max`,`$min`,`$avg`,`$push`,`$first`,`$last` |
-| `Projection Operators`            | `$elemMatch`, `$slice` |
-| `Arithmetic Operators`            | `$add`,`$divide`,`$mod`,`$multiply`,`$subtract` |
+
+| Aggregation Framework Operators   ||
+|-----------------------------------|
+| `Aggregation Pipeline Stages`     | `$group` `$match` `$project` `$sort` `$limit` `$unwind` `$skip` |
+| `Group Accumulator Operators`     | `$addToSet` `$sum` `$max` `$min` `$avg` `$push` `$first` `$last` |
+| `Projection Operators`            | `$elemMatch` `$slice` |
+| `Arithmetic Operators`            | `$add` `$divide` `$mod` `$multiply` `$subtract` |
 | `Array Operators`                 | `$size` |
-| `Boolean Operators`               | `$and`,`$or`,`$not` |
-| `Comparison Operators`            | `$cmp`,`$gt`,`$gte`,`$lt`,`$lte`,`$ne`,`$nin`,`$in` |
-| `Conditional Operators`           | `$cond`, `$ifNull` |
-| `Date Operators`                  | `$dayOfYear`,`$dayOfMonth`,`$dayOfWeek`,`$year`,`$month`,`$week`,`$hour`,`$minute`,`$second`,`$millisecond` |
-| `Set Operators`                   | `$setEquals`, `$setIntersection`, `$setDifference`, `$setUnion`, `$setIsSubset`, `$anyElementTrue`, `$allElementsTrue` |
-| `String Operators`                | `$strcasecmp`, `$concat`, `$substr`, `$toLower`, `$toUpper` |
-| `Variable Operators`              | `$map`, `$let` |
+| `Boolean Operators`               | `$and` `$or` `$not` |
+| `Comparison Operators`            | `$cmp` `$gt` `$gte` `$lt` `$lte` `$ne` `$nin` `$in` |
+| `Conditional Operators`           | `$cond` `$ifNull` |
+| `Date Operators`                  | `$dayOfYear` `$dayOfMonth` `$dayOfWeek` `$year` `$month` `$week` `$hour` `$minute` `$second` `$millisecond` |
+| `Set Operators`                   | `$setEquals` `$setIntersection` `$setDifference` `$setUnion` `$setIsSubset` `$anyElementTrue` `$allElementsTrue` |
+| `String Operators`                | `$strcasecmp` `$concat` `$substr` `$toLower` `$toUpper` |
+| `Variable Operators`              | `$map` `$let` |
 
 
 ## Usage
