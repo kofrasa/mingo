@@ -6,8 +6,6 @@ var test = require('tape'),
 
 
 var students = JSON.parse(fs.readFileSync(__dirname + '/data/students.json'));
-var gradesSimple = JSON.parse(fs.readFileSync(__dirname + '/data/grades_simple.json'));
-
 
 test("Aggregation Pipeline Operators", function (t) {
 
@@ -601,6 +599,28 @@ test("Literal Operators", function (t) {
     {"_id": 2, "costsOneDollar": false},
     {"_id": 3, "costsOneDollar": true}
   ], result, "can apply $literal operator");
+
+  t.end();
+});
+
+test("Array Operators", function (t) {
+  t.plan(1);
+  var result = Mingo.aggregate([
+    {"_id": 1, "item": "ABC1", "description": "product 1", colors: ["blue", "black", "red"]},
+    {"_id": 2, "item": "ABC2", "description": "product 2", colors: ["purple"]},
+    {"_id": 3, "item": "XYZ1", "description": "product 3", colors: []}
+  ], [{
+    $project: {
+      item: 1,
+      numberOfColors: {$size: "$colors"}
+    }
+  }]);
+
+  t.deepEqual([
+    { "_id" : 1, "item" : "ABC1", "numberOfColors" : 3 },
+    { "_id" : 2, "item" : "ABC2", "numberOfColors" : 1 },
+    { "_id" : 3, "item" : "XYZ1", "numberOfColors" : 0 }
+  ], result, "can apply $size operator");
 
   t.end();
 });
