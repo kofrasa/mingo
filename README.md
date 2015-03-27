@@ -22,33 +22,26 @@ In browser
 ## Features
 - Supports Dot Notation for both '_&lt;array&gt;.&lt;index&gt;_' and '_&lt;document&gt;.&lt;field&gt;_' selectors
 - Query and Projection Operators
+    - Array Operators (`$all`, `$elemMatch`, `$size`)
+    - Comparisons Operators (`$gt`, `$gte`, `$lt`, `$lte`, `$ne`, `$nin`, `$in`)
+    - Element Operators (`$exists`, `$type`)
+    - Evaluation Operators (`$regex`, `$mod`, `$where`)
+    - Logical Operators (`$and`, `$or`, `$nor`, `$not`)
 - Aggregation Framework Operators
+    - Pipeline Stage Operators (`$group`, `$match`, `$project`, `$sort`, `$limit`, `$unwind`, `$skip`)
+    - Group Accumulator Operators (`$addToSet`, `$sum`, `$max`, `$min`, `$avg`, `$push`, `$first`, `$last`)
+    - Projection Operators (`$elemMatch`, `$slice`)
+    - Arithmetic Operators (`$add`, `$divide`, `$mod`, `$multiply`, `$subtract`)
+    - Array Operators (`$size`)
+    - Boolean Operators (`$and`, `$or`, `$not`)
+    - Comparisons Operators (`$cmp`, `$gt`, `$gte`, `$lt`, `$lte`, `$ne`, `$nin`, `$in`)
+    - Conditional Operators (`$cond`, `$ifNull`)
+    - Date Operators (`$dayOfYear`, `$dayOfMonth`, `$dayOfWeek`, `$year`, `$month`, `$week`, `$hour`, `$minute`, `$second`, `$millisecond`)
+    - Set Operators (`$setEquals`, `$setIntersection`, `$setDifference`, `$setUnion`, `$setIsSubset`, `$anyElementTrue`, `$allElementsTrue`)
+    - String Operators (`$strcasecmp`, `$concat`, `$substr`, `$toLower`, `$toUpper`)
+    - Variable Operators (`$map`, `$let`)
 - BackboneJS Integration
 - JSON stream filtering and projection. *NodeJS only*
-
-| Query and Projection Operators |      |
-| :----------------------------- |:---- |
-| `Comparison Operators`    | `$gt` `$gte` `$lt` `$lte` `$ne` `$nin` `$in` |
-| `Logical Operators`       | `$and` `$or` `$nor` `$not` |
-| `Evaluation Operators`    | `$regex` `$mod` `$where` |
-| `Array Operators`         | `$all` `$elemMatch` `$size` |
-| `Element Operators`       | `$exists` `$type` |
-
-
-| Aggregation Framework Operators   |               |
-| :-------------------------------- | :------------ |
-| `Aggregation Pipeline Stages`     | `$group` `$match` `$project` `$sort` `$limit` `$unwind` `$skip` |
-| `Group Accumulator Operators`     | `$addToSet` `$sum` `$max` `$min` `$avg` `$push` `$first` `$last` |
-| `Projection Operators`            | `$elemMatch` `$slice` |
-| `Arithmetic Operators`            | `$add` `$divide` `$mod` `$multiply` `$subtract` |
-| `Array Operators`                 | `$size` |
-| `Boolean Operators`               | `$and` `$or` `$not` |
-| `Comparison Operators`            | `$cmp` `$gt` `$gte` `$lt` `$lte` `$ne` `$nin` `$in` |
-| `Conditional Operators`           | `$cond` `$ifNull` |
-| `Date Operators`                  | `$dayOfYear` `$dayOfMonth` `$dayOfWeek` `$year` `$month` `$week` `$hour` `$minute` `$second` `$millisecond` |
-| `Set Operators`                   | `$setEquals` `$setIntersection` `$setDifference` `$setUnion` `$setIsSubset` `$anyElementTrue` `$allElementsTrue` |
-| `String Operators`                | `$strcasecmp` `$concat` `$substr` `$toLower` `$toUpper` |
-| `Variable Operators`              | `$map` `$let` |
 
 
 ## Usage
