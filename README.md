@@ -21,19 +21,27 @@ In browser
 
 ## Features
 - Supports Dot Notation for both '_&lt;array&gt;.&lt;index&gt;_' and '_&lt;document&gt;.&lt;field&gt;_' selectors
-- Comparisons Operators ($gt, $gte, $lt, $lte, $ne, $nin, $in)
-- Logical Operators ($and, $or, $nor, $not)
-- Evaluation Operators ($regex, $mod, $where)
-- Array Operators ($all, $elemMatch, $size)
-- Element Operators ($exists, $type)
-- Aggregation Pipeline Operators ($group, $match, $project, $sort, $limit, $unwind, $skip)
-- Conditional Operators ($cond, $ifNull)
-- Group Operators ($addToSet, $sum, $max, $min, $avg, $push, $first, $last)
-- Arithmetic Operators ($add, $divide, $mod, $multiply, $subtract)
-- String Operators ($cmp, $strcasecmp, $concat, $substr, $toLower, $toUpper)
-- Set Operators ($setEquals, $setIntersection, $setDifference, $setUnion, $setIsSubset, $anyElementTrue, $allElementsTrue)
-- Projection Operators ($elemMatch, $slice)
-- JSON stream filtering and projection. *_NodeJS only_*
+- Query and Projection Operators
+    - Comparisons Operators ($gt, $gte, $lt, $lte, $ne, $nin, $in)
+    - Logical Operators ($and, $or, $nor, $not)
+    - Evaluation Operators ($regex, $mod, $where)
+    - Array Operators ($all, $elemMatch, $size)
+    - Element Operators ($exists, $type)
+    - Projection Operators ($elemMatch, $slice)
+- Aggregation Framework Operators
+    - Pipeline Operators ($group, $match, $project, $sort, $limit, $unwind, $skip)
+    - Boolean Operators ($and, $or, $not)
+    - Conditional Operators ($cond, $ifNull)
+    - Group Accumulator Operators ($addToSet, $sum, $max, $min, $avg, $push, $first, $last)
+    - Comparisons Operators ($cmp, $gt, $gte, $lt, $lte, $ne, $nin, $in)
+    - Arithmetic Operators ($add, $divide, $mod, $multiply, $subtract)
+    - Array Operators ($size)
+    - String Operators ($strcasecmp, $concat, $substr, $toLower, $toUpper)
+    - Set Operators ($setEquals, $setIntersection, $setDifference, $setUnion, $setIsSubset, $anyElementTrue, $allElementsTrue)
+    - Variable Operators ($map, $let)
+    - Date Operators ($dayOfYear, $dayOfMonth, $dayOfWeek, $year, $month, $week, $hour, $minute, $second, $millisecond)
+- BackboneJS Integration
+- JSON stream filtering and projection. *NodeJS only*
 
 ## Usage
 ```javascript
