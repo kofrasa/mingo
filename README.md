@@ -27,7 +27,7 @@ In browser
 - JSON stream filtering and projection. *NodeJS only*
 
 | Query and Projection Operators ||
-|--------------------------------|
+| ------------------------------ ||
 | `Comparison Operators`    | `$gt` `$gte` `$lt` `$lte` `$ne` `$nin` `$in` |
 | `Logical Operators`       | `$and` `$or` `$nor` `$not` |
 | `Evaluation Operators`    | `$regex` `$mod` `$where` |
@@ -36,7 +36,7 @@ In browser
 
 
 | Aggregation Framework Operators   ||
-|-----------------------------------|
+| --------------------------------- ||
 | `Aggregation Pipeline Stages`     | `$group` `$match` `$project` `$sort` `$limit` `$unwind` `$skip` |
 | `Group Accumulator Operators`     | `$addToSet` `$sum` `$max` `$min` `$avg` `$push` `$first` `$last` |
 | `Projection Operators`            | `$elemMatch` `$slice` |
