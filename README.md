@@ -26,8 +26,8 @@ In browser
 - BackboneJS Integration
 - JSON stream filtering and projection. *NodeJS only*
 
-| Query and Projection Operators ||
-| ------------------------------ ||
+| Query and Projection Operators |      |
+| :----------------------------- |:---- |
 | `Comparison Operators`    | `$gt` `$gte` `$lt` `$lte` `$ne` `$nin` `$in` |
 | `Logical Operators`       | `$and` `$or` `$nor` `$not` |
 | `Evaluation Operators`    | `$regex` `$mod` `$where` |
@@ -35,8 +35,8 @@ In browser
 | `Element Operators`       | `$exists` `$type` |
 
 
-| Aggregation Framework Operators   ||
-| --------------------------------- ||
+| Aggregation Framework Operators   |               |
+| :-------------------------------- | :------------ |
 | `Aggregation Pipeline Stages`     | `$group` `$match` `$project` `$sort` `$limit` `$unwind` `$skip` |
 | `Group Accumulator Operators`     | `$addToSet` `$sum` `$max` `$min` `$avg` `$push` `$first` `$last` |
 | `Projection Operators`            | `$elemMatch` `$slice` |
