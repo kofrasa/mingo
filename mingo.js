@@ -1479,7 +1479,7 @@
      */
     $dayOfYear: function (obj, expr) {
       var d = computeValue(obj, expr, null);
-      if (_.isDate(value)) {
+      if (_.isDate(d)) {
         var start = new Date(d.getFullYear(), 0, 0);
         var diff = d - start;
         var oneDay = 1000 * 60 * 60 * 24;
@@ -1515,7 +1515,7 @@
      */
     $year: function (obj, expr) {
       var d = computeValue(obj, expr, null);
-      return _.isDate(d) ? d.getFullYear() + 1 : undefined;
+      return _.isDate(d) ? d.getFullYear() : undefined;
     },
 
     /**

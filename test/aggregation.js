@@ -617,10 +617,47 @@ test("Array Operators", function (t) {
   }]);
 
   t.deepEqual([
-    { "_id" : 1, "item" : "ABC1", "numberOfColors" : 3 },
-    { "_id" : 2, "item" : "ABC2", "numberOfColors" : 1 },
-    { "_id" : 3, "item" : "XYZ1", "numberOfColors" : 0 }
+    {"_id": 1, "item": "ABC1", "numberOfColors": 3},
+    {"_id": 2, "item": "ABC2", "numberOfColors": 1},
+    {"_id": 3, "item": "XYZ1", "numberOfColors": 0}
   ], result, "can apply $size operator");
 
   t.end();
+});
+
+test("Date Operators", function (t) {
+  t.plan(9);
+
+  var result = Mingo.aggregate([{
+    "_id": 1, "item": "abc", "price": 10, "quantity": 2, "date": new Date("2014-01-01T08:15:39.736Z")
+  }], [{
+    $project: {
+      year: {$year: "$date"},
+      month: {$month: "$date"},
+      day: {$dayOfMonth: "$date"},
+      hour: {$hour: "$date"},
+      minutes: {$minute: "$date"},
+      seconds: {$second: "$date"},
+      milliseconds: {$millisecond: "$date"},
+      dayOfYear: {$dayOfYear: "$date"},
+      dayOfWeek: {$dayOfWeek: "$date"}
+      //week: {$week: "$date"}
+    }
+  }]);
+
+  result = result[0];
+
+  t.ok(result.year == 2014, "can apply $year");
+  t.ok(result.month == 1, "can apply $month");
+  t.ok(result.day == 1, "can apply $day");
+  t.ok(result.hour == 8, "can apply $hour");
+  t.ok(result.minutes == 15, "can apply $minutes");
+  t.ok(result.seconds == 39, "can apply $seconds");
+  t.ok(result.milliseconds == 736, "can apply $milliseconds");
+  t.ok(result.dayOfWeek == 4, "can apply $dayOfWeek");
+  t.ok(result.dayOfYear == 1, "can apply $dayOfYear");
+  //t.ok(result.week == 1, "can apply $week");
+
+  t.end();
+
 });
