@@ -28,8 +28,8 @@ In browser
     - Evaluation Operators (`$regex`, `$mod`, `$where`)
     - Logical Operators (`$and`, `$or`, `$nor`, `$not`)
 - Aggregation Framework Operators
-    - Pipeline Stage Operators (`$group`, `$match`, `$project`, `$sort`, `$limit`, `$unwind`, `$skip`)
-    - Group Accumulator Operators (`$addToSet`, `$sum`, `$max`, `$min`, `$avg`, `$push`, `$first`, `$last`)
+    - Pipeline Operators (`$group`, `$match`, `$project`, `$sort`, `$limit`, `$unwind`, `$skip`)
+    - Group Operators (`$addToSet`, `$sum`, `$max`, `$min`, `$avg`, `$push`, `$first`, `$last`)
     - Projection Operators (`$elemMatch`, `$slice`)
     - Arithmetic Operators (`$add`, `$divide`, `$mod`, `$multiply`, `$subtract`)
     - Array Operators (`$size`)
@@ -37,6 +37,7 @@ In browser
     - Comparisons Operators (`$cmp`, `$gt`, `$gte`, `$lt`, `$lte`, `$ne`, `$nin`, `$in`)
     - Conditional Operators (`$cond`, `$ifNull`)
     - Date Operators (`$dayOfYear`, `$dayOfMonth`, `$dayOfWeek`, `$year`, `$month`, `$week`, `$hour`, `$minute`, `$second`, `$millisecond`)
+    - Literal Operators (`$literal`)
     - Set Operators (`$setEquals`, `$setIntersection`, `$setDifference`, `$setUnion`, `$setIsSubset`, `$anyElementTrue`, `$allElementsTrue`)
     - String Operators (`$strcasecmp`, `$concat`, `$substr`, `$toLower`, `$toUpper`)
     - Variable Operators (`$map`, `$let`)
