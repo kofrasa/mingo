@@ -26,7 +26,7 @@ gulp.task('test', function (cb) {
 });
 
 gulp.task('watch', function (){
-  gulp.watch('mingo.js', ['build']);
+  gulp.watch('mingo.js', ['build', 'test']);
   gulp.watch('test/*.js', ['test']);
 });
 
