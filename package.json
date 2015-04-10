@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "tape test/*.js",
-    "build": "uglifyjs mingo.js -c -m -o mingo.min.js"
+    "build": "uglifyjs mingo.js -c -m -o mingo.min.js --source-map mingo.min.map"
   },
   "repository": {
     "type": "git",
