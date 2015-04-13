@@ -20,14 +20,12 @@
     return Mingo;
   };
 
-  var nodeEnabled = ('undefined' !== typeof exports && 'undefined' !== typeof require);
+  var nodeEnabled = ('undefined' !== typeof module && 'undefined' !== typeof require);
 
   // Export the Mingo object for Node.js
   if (nodeEnabled) {
-    if (typeof module !== 'undefined' && module.exports) {
-      exports = module.exports = Mingo;
-    } else {
-      exports = Mingo;
+    if (typeof module !== 'undefined') {
+      module.exports = Mingo;
     }
     _ = require("underscore"); // get a reference to underscore
   } else {
