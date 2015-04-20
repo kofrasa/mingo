@@ -1,0 +1,42 @@
+{
+  "name": "mingo",
+  "main": "mingo.js",
+  "version": "0.4.2",
+  "homepage": "https://github.com/kofrasa/mingo",
+  "authors": [
+    "Francis Asante <kofrasa@gmail.com>"
+  ],
+  "description": "JavaScript implementation of MongoDB query language",
+  "moduleType": [
+    "es6",
+    "globals",
+    "node"
+  ],
+  "dependencies": {
+    "underscore": ">=1.5.2"
+  },
+  "keywords": [
+    "util",
+    "mongo",
+    "mongodb",
+    "nosql",
+    "query",
+    "browser",
+    "functional",
+    "aggregation",
+    "filtering",
+    "grouping",
+    "searching"
+  ],
+  "license": "MIT",
+  "ignore": [
+    ".*",
+    "**/.*",
+    "*.md",
+    "gulpfile.js",
+    "package.json",
+    "node_modules",
+    "bower_components",
+    "test"
+  ]
+}
