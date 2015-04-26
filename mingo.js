@@ -57,7 +57,7 @@
     // normalize object expression
     if (_.isObject(expr)) {
       var keys = _.keys(expr);
-      var notQuery = _.intersection(Ops.queryOperators, keys).length === 0;
+      var notQuery = _.intersection(ops(OP_QUERY), keys).length === 0;
 
       // no valid query operator found, so we do simple comparison
       if (notQuery) {
@@ -142,21 +142,11 @@
     },
 
     _processOperator: function (field, operator, value) {
-      var compiledSelector;
-      if (_.contains(Ops.simpleOperators, operator)) {
-        compiledSelector = {
-          test: function (obj) {
-            var fieldValue = resolve(obj, field);
-            // value of operator must already be fully resolved.
-            return simpleOperators[operator](fieldValue, value);
-          }
-        };
-      } else if (_.contains(Ops.compoundOperators, operator)) {
-        compiledSelector = compoundOperators[operator](field, value);
+      if (_.contains(ops(OP_QUERY), operator)) {
+        this._compiled.push(queryOperators[operator](field, value));
       } else {
         throw new Error("Invalid query operator '" + operator + "' detected");
       }
-      this._compiled.push(compiledSelector);
     },
 
     /**
@@ -443,7 +433,7 @@
         for (var i = 0; i < this._operators.length; i++) {
           var operator = this._operators[i];
           var key = _.keys(operator);
-          if (key.length == 1 && _.contains(Ops.pipelineOperators, key[0])) {
+          if (key.length == 1 && _.contains(ops(OP_PIPELINE), key[0])) {
             key = key[0];
             if (query instanceof Mingo.Query) {
               collection = pipelineOperators[key].call(query, collection, operator[key]);
@@ -539,6 +529,59 @@
       throw new Error("Aggregation pipeline must be an array");
     }
     return (new Mingo.Aggregator(pipeline)).run(collection);
+  };
+
+  /**
+   * Add new operators
+   * @param type the operator type to extend
+   * @param f a function returning an object of new operators
+   */
+  Mingo.addOperator = function (type, f) {
+    var newOperators = f({
+      resolve: resolve,
+      computeValue: computeValue,
+      key: function () {
+        return settings.key;
+      }
+    });
+
+    // ensure correct type specified
+    if (!_.contains(['aggregate', 'group', 'pipeline', 'projection', 'query'], type)) {
+      throw new Error("Could not identify type '" + type + "'");
+    }
+
+    var operators = _.keys(OPERATORS[type]);
+
+    // check for existing operators
+    _.each(_.keys(newOperators), function (op) {
+      if (_.contains(operators, op)) {
+        throw new Error("Operator " + op + " is already defined for " + type + " operators");
+      }
+    });
+
+    var modifiedOperators = {};
+
+    switch (type) {
+      case 'query':
+        _.each(_.keys(newOperators), function (op) {
+          modifiedOperators[op] = (function (f, ctx) {
+            return function (selector, value) {
+              return {
+                test: function (obj) {
+                  // value of field must be fully resolved.
+                  var lhs = resolve(obj, selector);
+                  return f.call(ctx, selector, lhs, value);
+                }
+              };
+            }
+          }(newOperators[op], newOperators));
+        });
+        break;
+    }
+
+    // toss the operator salad :)
+    _.extend(OPERATORS[type], modifiedOperators);
+
   };
 
   /**
@@ -669,7 +712,7 @@
           } else if (_.isObject(subExpr)) {
             var operator = _.keys(subExpr);
             operator = operator.length > 1 ? false : operator[0];
-            if (operator !== false && _.contains(Ops.projectionOperators, operator)) {
+            if (operator !== false && _.contains(ops(OP_PROJECTION), operator)) {
               // apply the projection operator on the operator expression for the key
               var temp = projectionOperators[operator](obj, subExpr[operator], key);
               if (!_.isUndefined(temp)) {
@@ -783,6 +826,9 @@
       return collection;
     }
   };
+
+  ////////// QUERY OPERATORS //////////
+  var queryOperators = {};
 
   var compoundOperators = {
 
@@ -898,6 +944,9 @@
     }
 
   };
+
+  // add compound query operators
+  _.extend(queryOperators, compoundOperators);
 
   var simpleOperators = {
 
@@ -1137,8 +1186,21 @@
           return false;
       }
     }
-
   };
+  // add simple query operators
+  _.each(_.keys(simpleOperators), function (op) {
+    queryOperators[op] = (function (f, ctx) {
+      return function (selector, value) {
+        return {
+          test: function (obj) {
+            // value of field must be fully resolved.
+            var lhs = resolve(obj, selector);
+            return f.call(ctx, lhs, value);
+          }
+        };
+      }
+    }(simpleOperators[op], simpleOperators));
+  });
 
   var projectionOperators = {
 
@@ -1914,15 +1976,24 @@
     variableOperators
   );
 
-  var Ops = {
-    simpleOperators: _.keys(simpleOperators),
-    compoundOperators: _.keys(compoundOperators),
-    aggregateOperators: _.keys(aggregateOperators),
-    groupOperators: _.keys(groupOperators),
-    pipelineOperators: _.keys(pipelineOperators),
-    projectionOperators: _.keys(projectionOperators)
+  var OP_QUERY = 'query',
+    OP_GROUP = 'group',
+    OP_AGGREGATE = 'aggregate',
+    OP_PIPELINE = 'pipeline',
+    OP_PROJECTION = 'projection';
+
+  // operator definitions
+  var OPERATORS = {
+    'aggregate': aggregateOperators,
+    'group': groupOperators,
+    'pipeline': pipelineOperators,
+    'projection': projectionOperators,
+    'query': queryOperators
   };
-  Ops.queryOperators = _.union(Ops.simpleOperators, Ops.compoundOperators);
+
+  function ops(type) {
+    return _.keys(OPERATORS[type]);
+  }
 
   /**
    * Returns the result of evaluating a $group operation over a collection
@@ -1933,7 +2004,7 @@
    * @returns {*}
    */
   function accumulate(collection, field, expr) {
-    if (_.contains(Ops.groupOperators, field)) {
+    if (_.contains(ops(OP_GROUP), field)) {
       return groupOperators[field](collection, expr);
     }
 
@@ -1944,7 +2015,7 @@
           result[key] = accumulate(collection, key, expr[key]);
           // must run ONLY one group operator per expression
           // if so, return result of the computed value
-          if (_.contains(Ops.groupOperators, key)) {
+          if (_.contains(ops(OP_GROUP), key)) {
             result = result[key];
             // if there are more keys in expression this is bad
             if (_.keys(expr).length > 1) {
@@ -1971,7 +2042,7 @@
   function computeValue(obj, expr, field) {
 
     // if the field of the object is a valid operator
-    if (_.contains(Ops.aggregateOperators, field)) {
+    if (_.contains(ops(OP_AGGREGATE), field)) {
       return aggregateOperators[field](obj, expr);
     }
 
@@ -1995,7 +2066,7 @@
 
           // must run ONLY one aggregate operator per expression
           // if so, return result of the computed value
-          if (_.contains(Ops.aggregateOperators, key)) {
+          if (_.contains(ops(OP_AGGREGATE), key)) {
             result = result[key];
             // if there are more keys in expression this is bad
             if (_.keys(expr).length > 1) {
