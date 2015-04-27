@@ -570,7 +570,12 @@
                 test: function (obj) {
                   // value of field must be fully resolved.
                   var lhs = resolve(obj, selector);
-                  return f.call(ctx, selector, lhs, value);
+                  var result = f.call(ctx, selector, lhs, value);
+                  if (_.isBoolean(result)) {
+                    return result;
+                  } else if (result instanceof Mingo.Query) {
+                    return result.test(obj);
+                  }
                 }
               };
             }
