@@ -26,7 +26,7 @@ test("Aggregation Pipeline Operators", function (t) {
   });
 
   t.test("$project operator", function (t) {
-    t.plan(5);
+    t.plan(13);
     var result = Mingo.aggregate(
       students,
       [
@@ -96,6 +96,41 @@ test("Aggregation Pipeline Operators", function (t) {
       {"item": "VWZ2", "qty": 180, "cmpTo250": -1}
     ], "can project with $cmp operator");
 
+    result = Mingo.aggregate(
+        students,
+        [
+          {
+            '$project': {
+              'name': 0
+            }
+          },
+          {'$limit': 1}
+        ]
+    );
+
+    fields = _.keys(result[0]);
+    t.ok(fields.length === 2, "2/3 fields are included. Instead: " + fields.length);
+    t.ok(fields.indexOf('name') === -1, "name is excluded");
+    t.ok(fields.indexOf('_id') >= 0, "_id is included");
+    t.ok(fields.indexOf('scores') >= 0, "score is included");
+
+    result = Mingo.aggregate(
+        students,
+        [
+          {
+            '$project': {
+              '_id': 0
+            }
+          },
+          {'$limit': 1}
+        ]
+    );
+
+    fields = _.keys(result[0]);
+    t.ok(fields.length === 2, "2/3 fields are included. Instead: " + fields.length);
+    t.ok(fields.indexOf('name') >= 0, "name is included");
+    t.ok(fields.indexOf('_id') === -1, "_id is excluded");
+    t.ok(fields.indexOf('scores') >= 0, "score is included");
   });
 
   t.test("$group operator", function (t) {

@@ -680,11 +680,15 @@
       // result collection
       var projected = [];
       var objKeys = _.keys(expr);
+      var idOnlyExcludedExpression = false;
 
       if (_.contains(objKeys, settings.key)) {
         var id = expr[settings.key];
         if (id === 0 || id === false) {
           objKeys = _.without(objKeys, settings.key);
+          if (_.isEmpty(objKeys)) {
+            idOnlyExcludedExpression = true;
+          }
         }
       } else {
         // if not specified the add the ID field
@@ -695,12 +699,18 @@
         var obj = collection[i];
         var cloneObj = {};
         var foundSlice = false;
+        var foundExclusion = false;
         var dropKeys = [];
-
+        if (idOnlyExcludedExpression) {
+          dropKeys.push(settings.key);
+        }
         _.each(objKeys, function (key) {
 
           var subExpr = expr[key];
           var newValue;
+          if (key !== settings.key && subExpr === 0) {
+            foundExclusion = true;
+          }
 
           // tiny optimization here to skip over id
           if (key === settings.key && _.isEmpty(subExpr)) {
@@ -732,11 +742,11 @@
           if (newValue !== undefined) {
             cloneObj[key] = _.isObject(newValue) ? _.clone(newValue) : newValue;
           }
-
         });
         // if projection included $slice operator
+        // Also if exclusion fields are found or we want to exclude only the id field
         // include keys that were not explicitly excluded
-        if (foundSlice) {
+        if (foundSlice || foundExclusion || idOnlyExcludedExpression) {
           cloneObj = _.defaults(cloneObj, _.omit(obj, dropKeys));
         }
         projected.push(cloneObj);
