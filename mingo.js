@@ -547,7 +547,7 @@
     });
 
     // ensure correct type specified
-    if (!_.contains(['aggregate', 'group', 'pipeline', 'projection', 'query'], type)) {
+    if (!_.contains([OP_AGGREGATE, OP_GROUP, OP_PIPELINE, OP_PROJECTION, OP_QUERY], type)) {
       throw new Error("Could not identify type '" + type + "'");
     }
 
@@ -560,10 +560,10 @@
       }
     });
 
+    var wrapped = {};
 
     switch (type) {
       case OP_QUERY:
-        var wrapped = {};
         _.each(_.keys(newOperators), function (op) {
           wrapped[op] = (function (f, ctx) {
             return function (selector, value) {
@@ -584,8 +584,22 @@
             }
           }(newOperators[op], newOperators));
         });
-        newOperators = wrapped;
         break;
+      case OP_PROJECTION:
+        _.each(_.keys(newOperators), function (op) {
+          wrapped[op] = (function (f, ctx) {
+            return function (obj, expr, selector) {
+              var lhs = resolve(obj, selector);
+              return f.call(ctx, selector, lhs, expr);
+            }
+          }(newOperators[op], newOperators));
+        });
+        break;
+    }
+
+    // update if wrapped
+    if (!_.isEmpty(wrapped)) {
+      newOperators = wrapped;
     }
 
     // toss the operator salad :)
