@@ -540,6 +540,7 @@
     var newOperators = f({
       resolve: resolve,
       computeValue: computeValue,
+      ops: ops,
       key: function () {
         return settings.key;
       }
@@ -703,14 +704,17 @@
       }
 
       for (var i = 0; i < collection.length; i++) {
+
         var obj = collection[i];
         var cloneObj = {};
         var foundSlice = false;
         var foundExclusion = false;
         var dropKeys = [];
+
         if (idOnlyExcludedExpression) {
           dropKeys.push(settings.key);
         }
+
         _.each(objKeys, function (key) {
 
           var subExpr = expr[key];
@@ -1993,11 +1997,11 @@
     variableOperators
   );
 
-  var OP_QUERY = 'query',
-    OP_GROUP = 'group',
-    OP_AGGREGATE = 'aggregate',
-    OP_PIPELINE = 'pipeline',
-    OP_PROJECTION = 'projection';
+  var OP_QUERY = Mingo.OP_QUERY = 'query',
+    OP_GROUP = Mingo.OP_GROUP = 'group',
+    OP_AGGREGATE = Mingo.OP_AGGREGATE = 'aggregate',
+    OP_PIPELINE = Mingo.OP_PIPELINE = 'pipeline',
+    OP_PROJECTION = Mingo.OP_PROJECTION = 'projection';
 
   // operator definitions
   var OPERATORS = {
@@ -2008,6 +2012,11 @@
     'query': queryOperators
   };
 
+  /**
+   * Return the registered operators on the given operator category
+   * @param type catgory of operators
+   * @returns {*}
+   */
   function ops(type) {
     return _.keys(OPERATORS[type]);
   }
