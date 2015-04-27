@@ -560,12 +560,12 @@
       }
     });
 
-    var modifiedOperators = {};
 
     switch (type) {
-      case 'query':
+      case OP_QUERY:
+        var wrapped = {};
         _.each(_.keys(newOperators), function (op) {
-          modifiedOperators[op] = (function (f, ctx) {
+          wrapped[op] = (function (f, ctx) {
             return function (selector, value) {
               return {
                 test: function (obj) {
@@ -584,11 +584,12 @@
             }
           }(newOperators[op], newOperators));
         });
+        newOperators = wrapped;
         break;
     }
 
     // toss the operator salad :)
-    _.extend(OPERATORS[type], modifiedOperators);
+    _.extend(OPERATORS[type], newOperators);
 
   };
 
