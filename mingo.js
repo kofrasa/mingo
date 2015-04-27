@@ -575,6 +575,8 @@
                     return result;
                   } else if (result instanceof Mingo.Query) {
                     return result.test(obj);
+                  } else {
+                    throw new Error("Invalid return type for '" + op + "'. Must return a Boolean or Mingo.Query");
                   }
                 }
               };
