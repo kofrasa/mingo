@@ -536,7 +536,7 @@
    * @param type the operator type to extend
    * @param f a function returning an object of new operators
    */
-  Mingo.addOperator = function (type, f) {
+  Mingo.addOperators = function (type, f) {
     var newOperators = f({
       resolve: resolve,
       computeValue: computeValue,

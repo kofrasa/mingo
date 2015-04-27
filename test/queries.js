@@ -212,7 +212,7 @@ test("Array Operators", function (t) {
 test("Custom Query Operators", function (t) {
   t.plan(1);
 
-  Mingo.addOperator('query', function () {
+  Mingo.addOperators('query', function () {
     return {
       '$between': function (expr, value, args) {
         return value >= args[0] && value <= args[1];
