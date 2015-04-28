@@ -212,7 +212,7 @@ test("Array Operators", function (t) {
 test("Custom Query Operators", function (t) {
   t.plan(1);
 
-  Mingo.addOperators('query', function () {
+  Mingo.addOperators(Mingo.OP_QUERY, function () {
     return {
       '$between': function (expr, value, args) {
         return value >= args[0] && value <= args[1];
@@ -223,5 +223,7 @@ test("Custom Query Operators", function (t) {
   var coll = [{a: 1, b: 1}, {a: 7, b: 1}, {a: 10, b: 6}, {a: 20, b: 10}];
   var result = Mingo.find(coll, {a: {'$between': [5, 10]}}, null).all();
   t.equal(2, result.length, "can add custom operator");
+
+  // TODO: add tests for other operator types
 
 });

@@ -551,10 +551,13 @@
       throw new Error("Could not identify type '" + type + "'");
     }
 
-    var operators = _.keys(OPERATORS[type]);
+    var operators = ops(type);
 
     // check for existing operators
     _.each(_.keys(newOperators), function (op) {
+      if (!/^\$\w+$/.test(op)) {
+        throw new Error("Invalid operator name '" + op + "'");
+      }
       if (_.contains(operators, op)) {
         throw new Error("Operator " + op + " is already defined for " + type + " operators");
       }
