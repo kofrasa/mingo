@@ -1,4 +1,4 @@
-// Mingo.js 0.4.2
+// Mingo.js 0.5.0
 // Copyright (c) 2015 Francis Asante <kofrasa@gmail.com>
 // MIT
 
