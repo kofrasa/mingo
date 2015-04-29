@@ -656,33 +656,28 @@
     $group: function (collection, expr) {
       // lookup key for grouping
       var idKey = expr[settings.key];
-      var indexes = [];
-      // group collection by key
-      var groups = _.groupBy(collection, function (obj) {
-        var key = computeValue(obj, idKey, idKey);
-        indexes.push(key);
-        return key;
+
+      var partitions = groupBy(collection, function (obj) {
+        return computeValue(obj, idKey, idKey);
       });
 
-      // group indexes
-      indexes = _.uniq(indexes);
+      var result = [];
 
       // remove the group key
       expr = _.omit(expr, settings.key);
 
-      var result = [];
-      _.each(indexes, function (index) {
+      _.each(partitions.keys, function (value, i) {
         var obj = {};
 
-        // omit undefined index
-        if (!_.isUndefined(index)) {
-          obj[settings.key] = index;
+        // exclude undefined key value
+        if (!_.isUndefined(value)) {
+          obj[settings.key] = value;
         }
 
         // compute remaining keys in expression
         for (var key in expr) {
           if (expr.hasOwnProperty(key)) {
-            obj[key] = accumulate(groups[index], key, expr[key]);
+            obj[key] = accumulate(partitions.groups[i], key, expr[key]);
           }
         }
         result.push(obj);
@@ -1347,6 +1342,9 @@
      * @returns {*}
      */
     $sum: function (collection, expr) {
+      if (!_.isArray(collection)) {
+        return 0;
+      }
       if (_.isNumber(expr)) {
         // take a short cut if expr is number literal
         return collection.length * expr;
@@ -2051,6 +2049,51 @@
    */
   function ops(type) {
     return _.keys(OPERATORS[type]);
+  }
+
+  /**
+   * Groups the collection into sets by the returned key
+   *
+   * @param collection
+   * @param fn
+   */
+  function groupBy(collection, fn) {
+
+    var result = {
+      'keys': [],
+      'groups': []
+    };
+
+    _.each(collection, function (obj) {
+
+      var key = fn(obj);
+      var index = -1;
+
+      if (_.isObject(key)) {
+        for (var i = 0; i < result.keys.length; i++) {
+          if (_.isEqual(key, result.keys[i])) {
+            index = i;
+            break;
+          }
+        }
+      } else {
+        index = _.indexOf(result.keys, key);
+      }
+
+      if (index > -1) {
+        result.groups[index].push(obj);
+      } else {
+        result.keys.push(key);
+        result.groups.push([obj]);
+      }
+    });
+
+    // assert this
+    if (result.keys.length !== result.groups.length) {
+      throw new Error("assert groupBy(): keys.length !== groups.length");
+    }
+
+    return result;
   }
 
   /**
