@@ -673,7 +673,12 @@
       var result = [];
       _.each(indexes, function (index) {
         var obj = {};
-        obj[settings.key] = index;
+
+        // omit undefined index
+        if (!_.isUndefined(index)) {
+          obj[settings.key] = index;
+        }
+
         // compute remaining keys in expression
         for (var key in expr) {
           if (expr.hasOwnProperty(key)) {
