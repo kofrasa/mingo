@@ -38,22 +38,27 @@
     _.isString, _.isBoolean, _.isNumber, _.isDate, _.isNull, _.isRegExp
   ];
 
+  function isPrimitive(value) {
+    for (var i = 0; i < primitives.length; i++) {
+      if (primitives[i](value)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   /**
    * Simplify expression for easy evaluation with query operators map
    * @param expr
    * @returns {*}
    */
   function normalize(expr) {
+
     // normalized primitives
-    for (var i = 0; i < primitives.length; i++) {
-      if (primitives[i](expr)) {
-        if (_.isRegExp(expr)) {
-          return {"$regex": expr};
-        } else {
-          return {"$eq": expr};
-        }
-      }
+    if (isPrimitive(expr)) {
+      return _.isRegExp(expr) ? {"$regex": expr} : {"$eq": expr};
     }
+
     // normalize object expression
     if (_.isObject(expr)) {
       var keys = _.keys(expr);
@@ -2179,10 +2184,8 @@
       }
     } else {
       // check and return value if already in a resolved state
-      for (var i = 0; i < primitives.length; i++) {
-        if (primitives[i](expr)) {
-          return expr;
-        }
+      if (isPrimitive(expr)) {
+        return expr;
       }
     }
 
