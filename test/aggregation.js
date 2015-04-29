@@ -1,11 +1,8 @@
 var test = require('tape'),
-  fs = require('fs'),
   _ = require('underscore'),
-  JSON = require('JSON'),
-  Mingo = require('../mingo');
+  Mingo = require('../mingo'),
+  students = require('./samples').students;
 
-
-var students = JSON.parse(fs.readFileSync(__dirname + '/data/students.json'));
 
 test("Aggregation Pipeline Operators", function (t) {
 

@@ -598,6 +598,15 @@
           }(newOperators[op], newOperators));
         });
         break;
+      default:
+        _.each(_.keys(newOperators), function (op) {
+          wrapped[op] = (function (f, ctx) {
+            return function () {
+              var args = Array.prototype.slice.call(arguments);
+              return f.apply(ctx, args);
+            }
+          }(newOperators[op], newOperators));
+        });
     }
 
     // update if wrapped

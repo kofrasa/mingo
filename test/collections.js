@@ -1,14 +1,12 @@
 var test = require('tape'),
-  fs = require('fs'),
   _ = require('underscore'),
   JSON = require('JSON'),
   Backbone = require('backbone'),
+  samples = require('./samples'),
   Mingo = require('../mingo');
 
 
-var gradesSimple = JSON.parse(fs.readFileSync(__dirname + '/data/grades_simple.json'));
-var gradesComplex = JSON.parse(fs.readFileSync(__dirname + '/data/grades_complex.json'));
-var MingoCollection =  Backbone.Collection.extend(Mingo.CollectionMixin);
+var MingoCollection = Backbone.Collection.extend(Mingo.CollectionMixin);
 
 test('Collections', function (t) {
 
@@ -16,7 +14,7 @@ test('Collections', function (t) {
     t.plan(5);
     // create a query with no criteria
     var query = new Mingo.Query();
-    var cursor = query.find(gradesSimple);
+    var cursor = query.find(samples.gradesSimple);
     t.ok(cursor.hasNext(), "can peek for an item with hasNext()");
     t.ok(cursor.next(), "can select next item with next()");
     t.ok(_.isObject(cursor.first()), "can retrieve first item with first()");
@@ -26,7 +24,7 @@ test('Collections', function (t) {
 
   t.test("Backbone integration", function (t) {
     t.plan(1);
-    var grades = new MingoCollection(gradesSimple);
+    var grades = new MingoCollection(samples.gradesSimple);
     // find students with grades less than 50 in homework or quiz
     // sort by score ascending and type descending
     var cursor = grades.query({
@@ -44,16 +42,20 @@ test('Collections', function (t) {
 
     var data = [
       {
-        user: { username: 'User1', projects: [
-          { name: "Project 1", rating: { complexity: 6 }},
-          { name: "Project 2", rating: { complexity: 2 }}
-        ] }
+        user: {
+          username: 'User1', projects: [
+            {name: "Project 1", rating: {complexity: 6}},
+            {name: "Project 2", rating: {complexity: 2}}
+          ]
+        }
       },
       {
-        user: { username: 'User2', projects: [
-          { name: "Project 1", rating: { complexity: 6 }},
-          { name: "Project 2", rating: { complexity: 8 }}
-        ] }
+        user: {
+          username: 'User2', projects: [
+            {name: "Project 1", rating: {complexity: 6}},
+            {name: "Project 2", rating: {complexity: 8}}
+          ]
+        }
       }
     ];
     var criteria = {
@@ -61,7 +63,7 @@ test('Collections', function (t) {
         "$all": [
           {
             "$elemMatch": {
-              'rating.complexity': { '$gt': 6 }
+              'rating.complexity': {'$gt': 6}
             }
           }
         ]
@@ -102,7 +104,7 @@ test("JSON Stream filtering", function (t) {
   var found2Keys = true;
   var cursor;
   var query = new Mingo.Query({
-    scores: { $elemMatch: {type: "exam", score: {$gt: 90}} }
+    scores: {$elemMatch: {type: "exam", score: {$gt: 90}}}
   }, {name: 1});
 
   var file = fs.createReadStream(__dirname + '/data/students.json');
