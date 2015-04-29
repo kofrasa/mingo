@@ -1,14 +1,14 @@
 var test = require('tape'),
   _ = require('underscore'),
   Mingo = require('../mingo'),
-  students = require('./samples').students;
+  samples = require('./samples');
 
 
 test("Aggregation Pipeline Operators", function (t) {
 
   t.test("$match operator", function (t) {
     t.plan(1);
-    var result = Mingo.aggregate(students, [
+    var result = Mingo.aggregate(samples.students, [
       {'$match': {_id: {$in: [0, 1, 2, 3, 4]}}}
     ]);
     t.ok(result.length === 5, "can filter collection with $match");
@@ -16,7 +16,7 @@ test("Aggregation Pipeline Operators", function (t) {
 
   t.test("$unwind operator", function (t) {
     t.plan(1)
-    var flattened = Mingo.aggregate(students, [
+    var flattened = Mingo.aggregate(samples.students, [
       {'$unwind': '$scores'}
     ]);
     t.ok(flattened.length === 800, "can unwind array value in collection");
@@ -25,7 +25,7 @@ test("Aggregation Pipeline Operators", function (t) {
   t.test("$project operator", function (t) {
     t.plan(13);
     var result = Mingo.aggregate(
-      students,
+      samples.students,
       [
         {'$unwind': '$scores'},
         {
@@ -94,15 +94,15 @@ test("Aggregation Pipeline Operators", function (t) {
     ], "can project with $cmp operator");
 
     result = Mingo.aggregate(
-        students,
-        [
-          {
-            '$project': {
-              'name': 0
-            }
-          },
-          {'$limit': 1}
-        ]
+      samples.students,
+      [
+        {
+          '$project': {
+            'name': 0
+          }
+        },
+        {'$limit': 1}
+      ]
     );
 
     fields = _.keys(result[0]);
@@ -112,15 +112,15 @@ test("Aggregation Pipeline Operators", function (t) {
     t.ok(fields.indexOf('scores') >= 0, "score is included");
 
     result = Mingo.aggregate(
-        students,
-        [
-          {
-            '$project': {
-              '_id': 0
-            }
-          },
-          {'$limit': 1}
-        ]
+      samples.students,
+      [
+        {
+          '$project': {
+            '_id': 0
+          }
+        },
+        {'$limit': 1}
+      ]
     );
 
     fields = _.keys(result[0]);
@@ -131,8 +131,8 @@ test("Aggregation Pipeline Operators", function (t) {
   });
 
   t.test("$group operator", function (t) {
-    t.plan(1);
-    var flattened = Mingo.aggregate(students, [
+    t.plan(2);
+    var flattened = Mingo.aggregate(samples.students, [
       {'$unwind': '$scores'}
     ]);
     var grouped = Mingo.aggregate(
@@ -147,11 +147,36 @@ test("Aggregation Pipeline Operators", function (t) {
       ]
     );
     t.ok(grouped.length === 3, "can group collection with $group");
+
+    grouped = Mingo.aggregate(samples.groupByObjectsData, [
+        {"$match": {}}, {
+          "$group": {
+            "_id": {
+              "hour": "$date_buckets.hour",
+              "keyword": "$Keyword"
+            }, "total": {"$sum": 1}
+          }
+        }, {"$sort": {"total": -1}}, {"$limit": 5}, {
+          "$project": {
+            "_id": 0,
+            //"hour": "$_id.hour",
+            "keyword": "$_id.keyword",
+            "total": 1
+          }
+        }]
+    );
+    t.deepEqual(grouped, [
+      {"total": 2, "keyword": "Bathroom Cleaning Tips"},
+      {"total": 1, "keyword": "Cleaning Bathroom Tips"},
+      {"total": 1, "keyword": "best way to clean a bathroom"},
+      {"total": 1, "keyword": "Drain Clogs"},
+      {"total": 1, "keyword": "unclog bathtub drain"}
+    ], "can group by object key");
   });
 
   t.test("$limit operator", function (t) {
     t.plan(1);
-    var result = Mingo.aggregate(students, [
+    var result = Mingo.aggregate(samples.students, [
       {'$limit': 100}
     ]);
     t.ok(result.length === 100, "can limit result with $limit");
@@ -159,15 +184,15 @@ test("Aggregation Pipeline Operators", function (t) {
 
   t.test("$skip operator", function (t) {
     t.plan(1);
-    var result = Mingo.aggregate(students, [
+    var result = Mingo.aggregate(samples.students, [
       {'$skip': 100}
     ]);
-    t.ok(result.length === students.length - 100, "can skip result with $skip");
+    t.ok(result.length === samples.students.length - 100, "can skip result with $skip");
   });
 
   t.test("$sort operator", function (t) {
     t.plan(1);
-    var result = Mingo.aggregate(students, [
+    var result = Mingo.aggregate(samples.students, [
       {'$sort': {'_id': -1}}
     ]);
     t.ok(result[0]['_id'] === 199, "can sort collection with $sort");
