@@ -614,13 +614,8 @@
         });
     }
 
-    // update if wrapped
-    if (!_.isEmpty(wrapped)) {
-      newOperators = wrapped;
-    }
-
     // toss the operator salad :)
-    _.extend(OPERATORS[type], newOperators);
+    _.extend(OPERATORS[type], wrapped);
 
   };
 
@@ -1712,9 +1707,9 @@
      * @param expr
      */
     $dateToString: function (obj, expr) {
-      var fmt = expr['format'];
-      var date = computeValue(obj, expr['date']);
-      // TODO: use python-style date formatting
+      //var fmt = expr['format'];
+      //var date = computeValue(obj, expr['date']);
+
       /*
        %Y	Year (4 digits, zero padded)	0000-9999
        %m	Month (2 digits, zero padded)	01-12
@@ -1728,7 +1723,7 @@
        %U	Week of year (2 digits, zero padded)	00-53
        %%	Percent Character as a Literal	%
        */
-      throw new Error("Not Implemented");
+      throw new Error("$dateToString is not implemented");
     }
   };
 
