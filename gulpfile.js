@@ -8,12 +8,13 @@ var gulp = require('gulp'),
   plumber = require('gulp-plumber'),
   exec = require('child_process').exec;
 
-gulp.task('build', function () {
-  gulp.src('mingo.js')
-    .pipe(plumber())
-    .pipe(uglify())
-    .pipe(rename('mingo.min.js'))
-    .pipe(gulp.dest('.'));
+gulp.task('build', function (cb) {
+  exec("npm run-script build", function (err) {
+    if (err) {
+      return cb(err);
+    }
+    cb();
+  })
 });
 
 gulp.task('test', function (cb) {
