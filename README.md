@@ -36,7 +36,7 @@ In browser
     - Boolean Operators (`$and`, `$or`, `$not`)
     - Comparisons Operators (`$cmp`, `$gt`, `$gte`, `$lt`, `$lte`, `$ne`, `$nin`, `$in`)
     - Conditional Operators (`$cond`, `$ifNull`)
-    - Date Operators (`$dayOfYear`, `$dayOfMonth`, `$dayOfWeek`, `$year`, `$month`, `$week`, `$hour`, `$minute`, `$second`, `$millisecond`)
+    - Date Operators (`$dayOfYear`, `$dayOfMonth`, `$dayOfWeek`, `$year`, `$month`, `$week`, `$hour`, `$minute`, `$second`, `$millisecond`, `dateToString`)
     - Literal Operators (`$literal`)
     - Set Operators (`$setEquals`, `$setIntersection`, `$setDifference`, `$setUnion`, `$setIsSubset`, `$anyElementTrue`, `$allElementsTrue`)
     - String Operators (`$strcasecmp`, `$concat`, `$substr`, `$toLower`, `$toUpper`)
@@ -157,7 +157,7 @@ cursor = grades.query({
 cursor.first();
 ```
 
-## Reference
+## Documentation
 - [API](https://github.com/kofrasa/mingo/wiki/API)
 - [Custom Operators](https://github.com/kofrasa/mingo/wiki/Custom-Operators)
 

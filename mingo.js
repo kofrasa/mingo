@@ -2,6 +2,7 @@
 // Copyright (c) 2015 Francis Asante <kofrasa@gmail.com>
 // MIT
 
+;
 (function (root, undefined) {
 
   "use strict";
@@ -1703,27 +1704,43 @@
 
     /**
      * Returns the date as a formatted string.
-     * @param obj
-     * @param expr
+     *
+     * %Y  Year (4 digits, zero padded)  0000-9999
+     * %m  Month (2 digits, zero padded)  01-12
+     * %d  Day of Month (2 digits, zero padded)  01-31
+     * %H  Hour (2 digits, zero padded, 24-hour clock)  00-23
+     * %M  Minute (2 digits, zero padded)  00-59
+     * %S  Second (2 digits, zero padded)  00-60
+     * %L  Millisecond (3 digits, zero padded)  000-999
+     * %j  Day of year (3 digits, zero padded)  001-366
+     * %w  Day of week (1-Sunday, 7-Saturday)  1-7
+     * %U  Week of year (2 digits, zero padded)  00-53
+     * %%  Percent Character as a Literal  %
+     *
+     * @param obj current object
+     * @param expr operator expression
      */
     $dateToString: function (obj, expr) {
-      //var fmt = expr['format'];
-      //var date = computeValue(obj, expr['date']);
 
-      /*
-       %Y	Year (4 digits, zero padded)	0000-9999
-       %m	Month (2 digits, zero padded)	01-12
-       %d	Day of Month (2 digits, zero padded)	01-31
-       %H	Hour (2 digits, zero padded, 24-hour clock)	00-23
-       %M	Minute (2 digits, zero padded)	00-59
-       %S	Second (2 digits, zero padded)	00-60
-       %L	Millisecond (3 digits, zero padded)	000-999
-       %j	Day of year (3 digits, zero padded)	001-366
-       %w	Day of week (1-Sunday, 7-Saturday)	1-7
-       %U	Week of year (2 digits, zero padded)	00-53
-       %%	Percent Character as a Literal	%
-       */
-      throw new Error("$dateToString is not implemented");
+      var fmt = expr['format'];
+      var date = computeValue(obj, expr['date'], null);
+      var matches = fmt.match(/(%%|%Y|%m|%d|%H|%M|%S|%L|%j|%w|%U)/g);
+
+      for (var i = 0, len = matches.length; i < len; i++) {
+        var hdlr = DATE_SYM_TABLE[matches[i]];
+        var value = hdlr;
+
+        if (_.isArray(hdlr)) {
+          // reuse date operators
+          var fn = this[hdlr[0]];
+          var pad = hdlr[1];
+          value = padDigits(fn.call(this, obj, date), pad);
+        }
+        // replace the match with resolved value
+        fmt = fmt.replace(matches[i], value);
+      }
+
+      return fmt;
     }
   };
 
@@ -2042,6 +2059,25 @@
     'query': queryOperators
   };
 
+  // used for formatting dates in $dateToString operator
+  var DATE_SYM_TABLE = {
+    '%Y': ['$year', 4],
+    '%m': ['$month', 2],
+    '%d': ['$dayOfMonth', 2],
+    '%H': ['$hour', 2],
+    '%M': ['$minute', 2],
+    '%S': ['$second', 2],
+    '%L': ['$millisecond', 3],
+    '%j': ['$dayOfYear', 3],
+    '%w': ['$dayOfWeek', 1],
+    '%U': ['$week', 2],
+    '%%': '%'
+  };
+
+  function padDigits(number, digits) {
+    return new Array(Math.max(digits - String(number).length + 1, 0)).join('0') + number;
+  }
+
   /**
    * Return the registered operators on the given operator category
    * @param type catgory of operators
@@ -2155,7 +2191,10 @@
 
     var result;
 
-    if (_.isArray(expr)) {
+    // check and return value if already in a resolved state
+    if (isPrimitive(expr)) {
+      return expr;
+    } else if (_.isArray(expr)) {
       result = _.map(expr, function (item) {
         return computeValue(obj, item, null);
       });
@@ -2176,11 +2215,6 @@
             break;
           }
         }
-      }
-    } else {
-      // check and return value if already in a resolved state
-      if (isPrimitive(expr)) {
-        return expr;
       }
     }
 

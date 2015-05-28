@@ -683,7 +683,7 @@ test("Array Operators", function (t) {
 });
 
 test("Date Operators", function (t) {
-  t.plan(10);
+  t.plan(12);
 
   var result = Mingo.aggregate([{
     "_id": 1, "item": "abc", "price": 10, "quantity": 2, "date": new Date("2014-01-01T08:15:39.736Z")
@@ -698,7 +698,9 @@ test("Date Operators", function (t) {
       milliseconds: {$millisecond: "$date"},
       dayOfYear: {$dayOfYear: "$date"},
       dayOfWeek: {$dayOfWeek: "$date"},
-      week: {$week: "$date"}
+      week: {$week: "$date"},
+      yearMonthDay: {$dateToString: {format: "%Y-%m-%d", date: "$date"}},
+      time: {$dateToString: {format: "%H:%M:%S:%L", date: "$date"}}
     }
   }]);
 
@@ -714,6 +716,8 @@ test("Date Operators", function (t) {
   t.ok(result.dayOfWeek == 4, "can apply $dayOfWeek");
   t.ok(result.dayOfYear == 1, "can apply $dayOfYear");
   t.ok(result.week == 0, "can apply $week");
+  t.ok(result.yearMonthDay == "2014-01-01", "formats date to string");
+  t.ok(result.time == "08:15:39:736", "formats time to string");
 
   t.end();
 
