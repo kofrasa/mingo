@@ -1,4 +1,4 @@
-// Mingo.js 0.6.0
+// Mingo.js 0.6.1
 // Copyright (c) 2015 Francis Asante <kofrasa@gmail.com>
 // MIT
 
@@ -10,6 +10,8 @@
   // global on the server, window in the browser
   var Mingo = {}, previousMingo;
   var _;
+
+  Mingo.VERSION = '0.6.1';
 
   // backup previous Mingo
   if (root != null) {
@@ -486,9 +488,7 @@
       if (isText && _.isArray(value)) {
         var res = [];
         _.each(value, function (item) {
-          if (_.isObject(item)) {
-            res.push(resolve(item, names[i]));
-          }
+          res.push(resolve(item, names[i]));
         });
         value = res;
       } else {
@@ -1007,7 +1007,8 @@
      * @returns {*}
      */
     $eq: function (a, b) {
-      a = _.isArray(a) ? a : [a];
+      // flatten to reach nested values. fix for https://github.com/kofrasa/mingo/issues/19
+      a = _.flatten(_.isArray(a) ? a : [a]);
       a = _.find(a, function (val) {
         return _.isEqual(val, b);
       });

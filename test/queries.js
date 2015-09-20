@@ -170,7 +170,7 @@ test("Logical Operators", function (t) {
 
 
 test("Array Operators", function (t) {
-  t.plan(1);
+  t.plan(2);
   var data = [
     {
       "_id": "5234ccb7687ea597eabee677",
@@ -206,5 +206,17 @@ test("Array Operators", function (t) {
   });
 
   t.ok(result, "can match object using $all with $elemMatch");
+
+  data = [{
+    key0: [{
+      key1: [[[{key2: [{a:"value2"}, {a: "dummy"}]}]], {"key2": "value"}],
+      key1a: {key2a: "value2a"}
+    }]
+  }];
+
+  result = Mingo.find(data, {"key0.key1.key2.a": "value2"}).all();
+  t.equal(1, result.length, "Match a Field Without Specifying Array Index");
+
+  t.end();
 
 });
