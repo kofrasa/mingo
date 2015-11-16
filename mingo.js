@@ -779,7 +779,7 @@
           }
 
           if (newValue !== undefined) {
-            cloneObj[key] = _.isObject(newValue) ? _.clone(newValue) : newValue;
+            cloneObj[key] = _.isObject(newValue) && !(newValue instanceof Date) ? _.clone(newValue) : newValue;
           }
         });
         // if projection included $slice operator
