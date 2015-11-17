@@ -1,4 +1,4 @@
-// Mingo.js 0.6.1
+// Mingo.js 0.6.2
 // Copyright (c) 2015 Francis Asante <kofrasa@gmail.com>
 // MIT
 
@@ -11,7 +11,7 @@
   var Mingo = {}, previousMingo;
   var _;
 
-  Mingo.VERSION = '0.6.1';
+  Mingo.VERSION = '0.6.2';
 
   // backup previous Mingo
   if (root != null) {
@@ -778,8 +778,8 @@
             dropKeys.push(key);
           }
 
-          if (newValue !== undefined) {
-            cloneObj[key] = _.isObject(newValue) ? _.clone(newValue) : newValue;
+          if (!_.isUndefined(newValue)) {
+            cloneObj[key] = newValue;
           }
         });
         // if projection included $slice operator
