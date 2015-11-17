@@ -3,6 +3,10 @@ Changelog
 
 Changes between releases are kept here beginning from v0.5.0
 
+v0.6.2 / 2015-11-17
+-------------------
+- Fixed erroneous cloning of objects. See [issue#20](https://github.com/kofrasa/mingo/issues/20)
+
 
 v0.6.1 / 2015-09-20
 -------------------
