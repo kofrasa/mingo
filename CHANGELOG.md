@@ -3,9 +3,13 @@ Changelog
 
 Changes between releases are kept here beginning from v0.5.0
 
+v0.6.3 / 2015-12-27
+-------------------
+- Fixed numeric aggregation over undefined values. See [issues#21](https://github.com/kofrasa/mingo/issues/21)
+
 v0.6.2 / 2015-11-17
 -------------------
-- Fixed erroneous cloning of objects. See [issue#20](https://github.com/kofrasa/mingo/issues/20)
+- Fixed erroneous cloning of objects. See [issue#20](https://github.com/kofrasa/mingo/pull/20)
 
 
 v0.6.1 / 2015-09-20

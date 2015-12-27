@@ -4,6 +4,15 @@ var test = require('tape'),
   samples = require('./samples');
 
 
+var SalesData = [
+  { "_id" : 1, "item" : "abc", "price" : 10, "quantity" : 2, "date" : new Date("2014-01-01T08:00:00Z") },
+  { "_id" : 2, "item" : "jkl", "price" : 20, "quantity" : 1, "date" : new Date("2014-02-03T09:00:00Z") },
+  { "_id" : 3, "item" : "xyz", "price": "5", "quantity" : 5, "date" : new Date("2014-02-03T09:05:00Z") },
+  { "_id" : 10, "item" : "xyz", "quantity" : 5, "date" : new Date("2014-02-03T09:05:00Z") },
+  { "_id" : 4, "item" : "abc", "price" : 10, "quantity" : 10, "date" : new Date("2014-02-15T08:00:00Z") },
+  { "_id" : 5, "item" : "xyz", "price" : 5, "quantity" : 10, "date" : new Date("2014-02-15T09:05:00Z") }
+];
+
 test("Aggregation Pipeline Operators", function (t) {
 
   t.test("$match operator", function (t) {
@@ -131,7 +140,7 @@ test("Aggregation Pipeline Operators", function (t) {
   });
 
   t.test("$group operator", function (t) {
-    t.plan(2);
+    t.plan(4);
     var flattened = Mingo.aggregate(samples.students, [
       {'$unwind': '$scores'}
     ]);
@@ -147,6 +156,12 @@ test("Aggregation Pipeline Operators", function (t) {
       ]
     );
     t.ok(grouped.length === 3, "can group collection with $group");
+    grouped = Mingo.aggregate(SalesData, [
+      {$group: {max: {$max: "$price"}, sum: {$sum: "$price"}}}
+    ]); 
+    console.log(grouped);
+    t.ok(grouped.length === 1 && grouped[0]['max'] === 20, "can compute $max");
+    t.ok(grouped.length === 1 && grouped[0]['sum'] === 45, "can compute $sum");
 
     grouped = Mingo.aggregate(samples.groupByObjectsData, [
         {"$match": {}}, {

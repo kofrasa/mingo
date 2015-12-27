@@ -1,7 +1,7 @@
 {
   "name": "mingo",
   "main": "mingo.js",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "homepage": "https://github.com/kofrasa/mingo",
   "authors": [
     "Francis Asante <kofrasa@gmail.com>"
@@ -13,7 +13,7 @@
     "node"
   ],
   "dependencies": {
-    "underscore": ">=1.5.2"
+    "underscore": ">=1.8.2"
   },
   "keywords": [
     "util",

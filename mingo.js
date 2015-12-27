@@ -1,4 +1,4 @@
-// Mingo.js 0.6.2
+// Mingo.js 0.6.3
 // Copyright (c) 2015 Francis Asante <kofrasa@gmail.com>
 // MIT
 
@@ -11,7 +11,7 @@
   var Mingo = {}, previousMingo;
   var _;
 
-  Mingo.VERSION = '0.6.2';
+  Mingo.VERSION = '0.6.3';
 
   // backup previous Mingo
   if (root != null) {
@@ -1353,10 +1353,11 @@
       }
       return _.reduce(collection, function (acc, obj) {
         // pass empty field to avoid naming conflicts with fields on documents
-        return acc + computeValue(obj, expr, null);
+        var n = computeValue(obj, expr, null);
+        return _.isNumber(n)? acc + n : acc;
       }, 0);
     },
-
+  
     /**
      * Returns the highest value in a group.
      *
@@ -1366,7 +1367,7 @@
      */
     $max: function (collection, expr) {
       var obj = _.max(collection, function (obj) {
-        return computeValue(obj, expr, null);
+          return computeValue(obj, expr, null); 
       });
       return computeValue(obj, expr, null);
     },

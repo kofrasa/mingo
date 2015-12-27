@@ -1,6 +1,6 @@
 {
   "name": "mingo",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "description": "JavaScript implementation of MongoDB query language",
   "main": "mingo.js",
   "directories": {
@@ -16,10 +16,10 @@
   },
   "files": ["mingo.js", "mingo.min.js", "README.md", "LICENSE"],
   "dependencies": {
-    "underscore": ">=1.5.2"
+    "underscore": ">=1.8.2"
   },
   "devDependencies": {
-    "underscore": ">=1.5.2",
+    "underscore": ">=1.8.2",
     "backbone": ">=1.1.2",
     "tape": ">=2.14.0",
     "JSON": ">=1.0.0",
