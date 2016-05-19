@@ -1,7 +1,7 @@
 # Mingo
 JavaScript implementation of MongoDB query language
 
-Mingo harnesses the power of MongoDB-style queries and allows direct querying of in-memory 
+Mingo harnesses the power of MongoDB-style queries and allows direct querying of in-memory
 javascript objects in both client and server-side environments.
 
 [![build status](https://secure.travis-ci.org/kofrasa/mingo.png)](http://travis-ci.org/kofrasa/mingo)
@@ -43,6 +43,7 @@ In browser
     - Variable Operators (`$map`, `$let`)
 - Support for custom operators
 - BackboneJS Integration
+- Match against user-defined types
 - JSON stream filtering and projection. *NodeJS only*
 
 For documentation on using query operators see [mongodb](http://docs.mongodb.org/manual/reference/operator/query/)
