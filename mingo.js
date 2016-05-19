@@ -38,7 +38,7 @@
 
   // quick reference for
   var primitives = [
-    _.isString, _.isBoolean, _.isNumber, _.isDate, _.isNull, _.isRegExp
+    _.isString, _.isBoolean, _.isNumber, _.isDate, _.isNull, _.isRegExp, _.isUndefined
   ];
 
   function isPrimitive(value) {
@@ -50,6 +50,12 @@
     return false;
   }
 
+  var NATIVE_CONSTRUCTORS = ["Object", "Array"];
+  // primitives and user-defined types
+  function isSimpleType(value) {
+    return isPrimitive(value) || !_.contains(NATIVE_CONSTRUCTORS, value.constructor.name);
+  }
+
   /**
    * Simplify expression for easy evaluation with query operators map
    * @param expr
@@ -58,7 +64,7 @@
   function normalize(expr) {
 
     // normalized primitives
-    if (isPrimitive(expr)) {
+    if (isSimpleType(expr)) {
       return _.isRegExp(expr) ? {"$regex": expr} : {"$eq": expr};
     }
 
@@ -132,7 +138,7 @@
       }
 
       for (var field in this._criteria) {
-        if (this._criteria.hasOwnProperty(field)) {
+        if (_.has(this._criteria, field)) {
           var expr = this._criteria[field];
           if (_.contains(['$and', '$or', '$nor', '$where'], field)) {
             this._processOperator(field, field, expr);
@@ -140,7 +146,7 @@
             // normalize expression
             expr = normalize(expr);
             for (var op in expr) {
-              if (expr.hasOwnProperty(op)) {
+              if (_.has(expr, op)) {
                 this._processOperator(field, op, expr[op]);
               }
             }
@@ -677,7 +683,7 @@
 
         // compute remaining keys in expression
         for (var key in expr) {
-          if (expr.hasOwnProperty(key)) {
+          if (_.has(expr, key)) {
             obj[key] = accumulate(partitions.groups[i], key, expr[key]);
           }
         }
@@ -757,7 +763,7 @@
           } else if (_.isString(subExpr)) {
             newValue = computeValue(obj, subExpr, key);
           } else if (subExpr === 1 || subExpr === true) {
-            newValue = _.result(obj, key);
+            newValue = getValue(obj, key);
           } else if (_.isObject(subExpr)) {
             var operator = _.keys(subExpr);
             operator = operator.length > 1 ? false : operator[0];
@@ -1008,7 +1014,7 @@
      */
     $eq: function (a, b) {
       // flatten to reach nested values. fix for https://github.com/kofrasa/mingo/issues/19
-      a = _.flatten(_.isArray(a) ? a : [a]);
+      a = _.flatten([a]);
       a = _.find(a, function (val) {
         return _.isEqual(val, b);
       });
@@ -1357,7 +1363,7 @@
         return _.isNumber(n)? acc + n : acc;
       }, 0);
     },
-  
+
     /**
      * Returns the highest value in a group.
      *
@@ -1367,7 +1373,7 @@
      */
     $max: function (collection, expr) {
       var obj = _.max(collection, function (obj) {
-          return computeValue(obj, expr, null); 
+          return computeValue(obj, expr, null);
       });
       return computeValue(obj, expr, null);
     },
@@ -2150,7 +2156,7 @@
     if (_.isObject(expr)) {
       var result = {};
       for (var key in expr) {
-        if (expr.hasOwnProperty(key)) {
+        if (_.has(expr, key)) {
           result[key] = accumulate(collection, key, expr[key]);
           // must run ONLY one group operator per expression
           // if so, return result of the computed value
@@ -2194,7 +2200,7 @@
     var result;
 
     // check and return value if already in a resolved state
-    if (isPrimitive(expr)) {
+    if (isSimpleType(expr)) {
       return expr;
     } else if (_.isArray(expr)) {
       result = _.map(expr, function (item) {
@@ -2203,7 +2209,7 @@
     } else if (_.isObject(expr)) {
       result = {};
       for (var key in expr) {
-        if (expr.hasOwnProperty(key)) {
+        if (_.has(expr, key)) {
           result[key] = computeValue(obj, expr[key], key);
 
           // must run ONLY one aggregate operator per expression
