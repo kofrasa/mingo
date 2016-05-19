@@ -7,11 +7,10 @@ function ObjectId(id) {
   this.id = id
 }
 
-var objectIdFirst = new ObjectId(100);
-var objectIdSecond = new ObjectId(100);
+var objectId = new ObjectId(100);
 
 var obj = {
-  _id: objectIdFirst,
+  _id: objectId,
   firstName: "Francis",
   lastName: "Asante",
   username: "kofrasa",
@@ -50,7 +49,7 @@ var obj = {
 test('Comparison, Evaluation, and Element Operators', function (t) {
   t.plan(25);
   var queries = [
-    [{_id: objectIdSecond}, "can match against user-defined type"],
+    [{_id: objectId}, "can match against user-defined types"],
     [{firstName: "Francis"}, "can check for equality with $eq"],
     [{lastName: /^a.+e/i}, "can check against regex with literal"],
     [{lastName: {$regex: "a.+e", $options: "i"}}, "can check against regex with $regex operator"],
