@@ -866,6 +866,12 @@
             indexes.push(value);
             return value;
           });
+          indexes = indexes.map(function (i) {
+            if (i && i instanceof Date) {
+              i = i.toString();
+            }
+            return i;
+          });
           indexes = _.sortBy(_.uniq(indexes), function (item) {
             return item;
           });
