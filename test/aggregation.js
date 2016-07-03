@@ -158,7 +158,7 @@ test("Aggregation Pipeline Operators", function (t) {
     t.ok(grouped.length === 3, "can group collection with $group");
     grouped = Mingo.aggregate(SalesData, [
       {$group: {max: {$max: "$price"}, sum: {$sum: "$price"}}}
-    ]); 
+    ]);
     console.log(grouped);
     t.ok(grouped.length === 1 && grouped[0]['max'] === 20, "can compute $max");
     t.ok(grouped.length === 1 && grouped[0]['sum'] === 45, "can compute $sum");
@@ -206,11 +206,26 @@ test("Aggregation Pipeline Operators", function (t) {
   });
 
   t.test("$sort operator", function (t) {
-    t.plan(1);
+    t.plan(2);
     var result = Mingo.aggregate(samples.students, [
       {'$sort': {'_id': -1}}
     ]);
     t.ok(result[0]['_id'] === 199, "can sort collection with $sort");
+
+    var data = [
+      { _id: 'c', date: new Date(2018, 01, 01) },
+      { _id: 'a', date: new Date(2017, 01, 01) },
+      { _id: 'b', date: new Date(2017, 01, 01) }
+    ];
+    var expected = [
+      { _id: 'a', date: new Date(2017, 01, 01) },
+      { _id: 'b', date: new Date(2017, 01, 01) },
+      { _id: 'c', date: new Date(2018, 01, 01) },
+    ];
+
+    result = Mingo.aggregate(data, [{"$sort": {"date": 1}}]);
+    t.deepEqual(result, expected, "can sort on complex fields");
+
   });
 });
 

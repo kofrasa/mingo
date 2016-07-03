@@ -1,7 +1,10 @@
 Changelog
 =========
 
-Changes between releases are kept here beginning from v0.5.0
+Changes starting from v0.5.0 are tracked here
+
+## v0.6.5 / 2016-07-04
+- Fix incorrect de-duping of Date types in $sort aggregate operator. See [issue#23](https://github.com/kofrasa/mingo/pull/23)
 
 ## v0.6.4 / 2016-05-19
 - Support matching against user-defined types. See [issue#22](https://github.com/kofrasa/mingo/issues/22)

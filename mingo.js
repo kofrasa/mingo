@@ -1,4 +1,4 @@
-// Mingo.js 0.6.4
+// Mingo.js 0.6.5
 // Copyright (c) 2016 Francis Asante <kofrasa@gmail.com>
 // MIT
 
@@ -11,7 +11,7 @@
   var Mingo = {}, previousMingo;
   var _;
 
-  Mingo.VERSION = '0.6.3';
+  Mingo.VERSION = '0.6.5';
 
   // backup previous Mingo
   if (root != null) {
@@ -860,21 +860,23 @@
       if (!_.isEmpty(sortKeys) && _.isObject(sortKeys)) {
         var modifiers = _.keys(sortKeys);
         modifiers.reverse().forEach(function (key) {
-          var indexes = [];
-          var grouped = _.groupBy(collection, function (obj) {
-            var value = resolve(obj, key);
-            indexes.push(value);
-            return value;
+          var grouped = groupBy(collection, function (obj) {
+            return resolve(obj, key);
           });
-          indexes = _.sortBy(_.uniq(indexes), function (item) {
+          var sortedIndex = {};
+          var findIndex = function (k) { return sortedIndex[hashcode(k)]; }
+
+          var indexKeys = _.sortBy(grouped.keys, function (item, i) {
+            sortedIndex[hashcode(item)] = i;
             return item;
           });
+
           if (sortKeys[key] === -1) {
-            indexes.reverse();
+            indexKeys.reverse();
           }
           collection = [];
-          _.each(indexes, function (item) {
-            Array.prototype.push.apply(collection, grouped[item]);
+          _.each(indexKeys, function (item) {
+            Array.prototype.push.apply(collection, grouped.groups[findIndex(item)]);
           });
         });
       }
@@ -2099,7 +2101,7 @@
    * Groups the collection into sets by the returned key
    *
    * @param collection
-   * @param fn
+   * @param fn {function} to compute the group key of an item in the collection
    */
   function groupBy(collection, fn) {
 
@@ -2108,28 +2110,22 @@
       'groups': []
     };
 
+    var lookup = {};
+
     _.each(collection, function (obj) {
 
       var key = fn(obj);
+      var h = hashcode(key);
       var index = -1;
 
-      if (_.isObject(key)) {
-        for (var i = 0; i < result.keys.length; i++) {
-          if (_.isEqual(key, result.keys[i])) {
-            index = i;
-            break;
-          }
-        }
-      } else {
-        index = _.indexOf(result.keys, key);
-      }
-
-      if (index > -1) {
-        result.groups[index].push(obj);
-      } else {
+      if (_.isUndefined(lookup[h])) {
+        index = result.keys.length;
+        lookup[h] = index;
         result.keys.push(key);
-        result.groups.push([obj]);
+        result.groups.push([]);
       }
+      index = lookup[h];
+      result.groups[index].push(obj);
     });
 
     // assert this
@@ -2138,6 +2134,48 @@
     }
 
     return result;
+  }
+
+  // encode value to a unique string form that is easily reversable
+  function encode(value) {
+    if (_.isNull(value)) {
+      return "null";
+    } else if (_.isUndefined(value)) {
+      return "undef";
+    } else {
+      var type = value.constructor.name;
+      switch (type) {
+        case "Boolean":
+          return "b|" + value.toString();
+        case "String":
+          return "s|" + value.toString();
+        case "RegExp":
+          return "r|" + value.toString();
+        case "Number":
+          return "n|" + value.toString();
+        case "Date":
+          return "d|" + value.toISOString();
+        case "Array":
+          return "a|" + JSON.stringify(_.map(value, function (v) { return encode(v); }));
+        case "Object":
+          return "o|" + JSON.stringify(_.mapObject(value, function (v) { return encode(v); }));
+        default:
+          return type + "|" + JSON.stringify(_.mapObject(value, function (v) { return encode(v); }));
+      }
+    }
+  }
+
+  // http://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript-jquery
+  // http://werxltd.com/wp/2010/05/13/javascript-implementation-of-javas-string-hashcode-method/
+  function hashcode(value) {
+    var hash = 0, i, chr, len, s = encode(value);
+    if (s.length === 0) return hash;
+    for (i = 0, len = s.length; i < len; i++) {
+      chr   = s.charCodeAt(i);
+      hash  = ((hash << 5) - hash) + chr;
+      hash |= 0; // Convert to 32bit integer
+    }
+    return hash.toString();
   }
 
   /**
