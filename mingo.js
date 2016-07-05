@@ -866,13 +866,11 @@
             indexes.push(value);
             return value;
           });
-          indexes = indexes.map(function (i) {
-            if (i && i instanceof Date) {
-              i = i.toString();
-            }
+          var groupedIndexes = groupBy(indexes, function (i) {
             return i;
           });
-          indexes = _.sortBy(_.uniq(indexes), function (item) {
+          indexes = groupedIndexes.keys;
+          indexes = _.sortBy(indexes, function (item) {
             return item;
           });
           if (sortKeys[key] === -1) {
