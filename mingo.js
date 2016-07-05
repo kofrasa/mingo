@@ -866,7 +866,11 @@
             indexes.push(value);
             return value;
           });
-          indexes = _.sortBy(_.uniq(indexes), function (item) {
+          var groupedIndexes = groupBy(indexes, function (i) {
+            return i;
+          });
+          indexes = groupedIndexes.keys;
+          indexes = _.sortBy(indexes, function (item) {
             return item;
           });
           if (sortKeys[key] === -1) {
