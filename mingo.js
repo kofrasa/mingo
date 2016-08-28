@@ -1,4 +1,4 @@
-// Mingo.js 0.6.5
+// Mingo.js 0.7.0
 // Copyright (c) 2016 Francis Asante <kofrasa@gmail.com>
 // MIT
 
@@ -11,7 +11,7 @@
   var Mingo = {}, previousMingo;
   var _;
 
-  Mingo.VERSION = '0.6.5';
+  Mingo.VERSION = '0.7.0';
 
   // backup previous Mingo
   if (root != null) {
@@ -463,6 +463,17 @@
     }
   };
 
+  function assert(condition, message) {
+    if (!condition) {
+        message = message || "Assertion failed";
+        throw new Error(message);
+    }
+  }
+
+  function assertExists(value) {
+    return assert(!_.isUndefined(value));
+  }
+
   /**
    * Retrieve the value of a given key on an object
    * @param obj
@@ -476,20 +487,16 @@
 
   /**
    * Resolve the value of the field (dot separated) on the given object
-   * @param obj
-   * @param field
+   * @param obj {Object} the object context
+   * @param selector {String} dot separated path to field
    * @returns {*}
    */
-  function resolve(obj, field) {
-    if (!field) {
-      return undefined;
-    }
-    var names = field.split(".");
+  function resolve(obj, selector) {
+    var names = selector.split(".");
     var value = obj;
-    var isText;
 
     for (var i = 0; i < names.length; i++) {
-      isText = names[i].match(/^\d+$/) === null;
+      var isText = names[i].match(/^\d+$/) === null;
 
       if (isText && _.isArray(value)) {
         var res = [];
@@ -507,6 +514,114 @@
     }
 
     return value;
+  }
+
+  /**
+   * Returns the full object to the resolved value given by the selector.
+   * This function excludes empty values as they aren't practically useful.
+   *
+   * @param obj {Object} the object context
+   * @param selector {String} dot separated path to field
+   */
+  function resolveObj(obj, selector) {
+    if (_.isUndefined(obj)) return obj;
+
+    var names = selector.split(".");
+    var key = names[0];
+    // get the next part of the selector
+    var next = names.length == 1 || names.slice(1).join(".");
+    var result;
+    var isIndex = key.match(/^\d+$/) !== null;
+
+    try {
+      if (names.length == 1) {
+        if (_.isArray(obj)) {
+          if (isIndex) {
+            result = getValue(obj, key);
+            assertExists(result);
+            result = [result];
+          } else {
+            result = [];
+            _.each(obj, function (item) {
+              var val = resolveObj(item, selector);
+              if (!_.isUndefined(val)) result.push(val);
+            });
+            assert(result.length > 0);
+          }
+        } else {
+          var val = getValue(obj, key);
+          assertExists(val);
+          result = {};
+          result[key] = val;
+        }
+      } else {
+        if (_.isArray(obj)) {
+          if (isIndex) {
+            result = getValue(obj, key);
+            result = resolveObj(result, next);
+            assertExists(result);
+            result = [result];
+          } else {
+            result = [];
+            _.each(obj, function (item) {
+              var val = resolveObj(item, selector);
+              if (!_.isUndefined(val)) result.push(val);
+            });
+            assert(result.length > 0);
+          }
+        } else {
+          var val = getValue(obj, key);
+          val = resolveObj(val, next);
+          assertExists(val);
+          result = {};
+          result[key] = val;
+        }
+      }
+    } catch (e) {
+      result = undefined;
+    }
+
+    return result;
+  }
+
+  /**
+   * Set the value of the given object field
+   *
+   * @param obj {Object|Array} the object context
+   * @param selector {String} path to field
+   * @param value {*} the value to set
+   */
+  function setValue(obj, selector, value) {
+    var names = selector.split(".");
+    var key = names[0];
+    var next = names.length == 1 || names.slice(1).join(".");
+    var isIndex = key.match(/^\d+$/) !== null;
+
+    if (names.length == 1) {
+      if (_.isArray(obj) && !isIndex) {
+        _.each(obj, function (item) {
+          setValue(item, key, value);
+        });
+      } else {
+        obj[key] = value;
+      }
+    } else { // nested objects
+      if (_.isArray(obj) && !isIndex) {
+        _.each(obj, function (item) {
+          setValue(item, selector, value);
+        });
+      } else {
+        setValue(obj[key], next, value);
+      }
+    }
+  }
+
+  Mingo._internal = function () {
+    return {
+      "resolve": resolve,
+      "resolveObj": resolveObj,
+      "setValue": setValue
+    };
   }
 
   /**
@@ -724,13 +839,25 @@
       var objKeys = _.keys(expr);
       var idOnlyExcludedExpression = false;
 
+      // validate inclusion and exclusion
+      var check = [false, false];
+      for (var i = 0; i < objKeys.length; i++) {
+        var k = objKeys[i];
+        var v = expr[k];
+        if (k === settings.key) continue;
+        if (v === 0 || v === false) {
+          check[0] = true;
+        } else {
+          check[1] = true;
+        }
+        assert(check[0] !== check[1],"Projection cannot have a mix of inclusion and exclusion.");
+      }
+
       if (_.contains(objKeys, settings.key)) {
         var id = expr[settings.key];
         if (id === 0 || id === false) {
           objKeys = _.without(objKeys, settings.key);
-          if (_.isEmpty(objKeys)) {
-            idOnlyExcludedExpression = true;
-          }
+          idOnlyExcludedExpression = _.isEmpty(objKeys);
         }
       } else {
         // if not specified the add the ID field
@@ -752,41 +879,49 @@
         _.each(objKeys, function (key) {
 
           var subExpr = expr[key];
-          var newValue;
+          var value; // final computed value of the key
+          var objValue; // full object graph to value of the key
+
           if (key !== settings.key && subExpr === 0) {
             foundExclusion = true;
           }
 
-          // tiny optimization here to skip over id
           if (key === settings.key && _.isEmpty(subExpr)) {
-            newValue = obj[key];
+            // tiny optimization here to skip over id
+            value = obj[key];
           } else if (_.isString(subExpr)) {
-            newValue = computeValue(obj, subExpr, key);
+            value = computeValue(obj, subExpr, key);
           } else if (subExpr === 1 || subExpr === true) {
-            newValue = getValue(obj, key);
+            // For direct projections, we use the resolved object value
           } else if (_.isObject(subExpr)) {
             var operator = _.keys(subExpr);
             operator = operator.length > 1 ? false : operator[0];
             if (operator !== false && _.contains(ops(OP_PROJECTION), operator)) {
               // apply the projection operator on the operator expression for the key
-              var temp = projectionOperators[operator](obj, subExpr[operator], key);
-              if (!_.isUndefined(temp)) {
-                newValue = temp;
-              }
+              value = projectionOperators[operator](obj, subExpr[operator], key);
               if (operator == '$slice') {
                 foundSlice = true;
               }
             } else {
               // compute the value for the sub expression for the key
-              newValue = computeValue(obj, subExpr, key);
+              value = computeValue(obj, subExpr, key);
             }
           } else {
             dropKeys.push(key);
+            return;
           }
 
-          if (!_.isUndefined(newValue)) {
-            cloneObj[key] = newValue;
+          objValue = resolveObj(obj, key);
+
+          if (!_.isUndefined(objValue)) {
+            if (!_.isUndefined(value)) {
+              setValue(objValue, key, value);
+            }
+            _.extend(cloneObj, objValue);
+          } else if (!_.isUndefined(value)) {
+            cloneObj[key] = value;
           }
+
         });
         // if projection included $slice operator
         // Also if exclusion fields are found or we want to exclude only the id field
@@ -1220,7 +1355,7 @@
     $type: function (a, b) {
       switch (b) {
         case 1:
-          return _.isNumeric(a) && (a + "").indexOf(".") !== -1;
+          return _.isNumber(a) && (a + "").indexOf(".") !== -1;
         case 2:
         case 5:
           return _.isString(a);
@@ -1237,9 +1372,9 @@
         case 11:
           return _.isRegExp(a);
         case 16:
-          return _.isNumeric(a) && a <= 2147483647 && (a + "").indexOf(".") === -1;
+          return _.isNumber(a) && a <= 2147483647 && (a + "").indexOf(".") === -1;
         case 18:
-          return _.isNumeric(a) && a > 2147483647 && a <= 9223372036854775807 && (a + "").indexOf(".") === -1;
+          return _.isNumber(a) && a > 2147483647 && a <= 9223372036854775807 && (a + "").indexOf(".") === -1;
         default:
           return false;
       }

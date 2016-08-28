@@ -51,7 +51,7 @@ test("Aggregation Pipeline Operators", function (t) {
     );
 
     var fields = _.keys(result[0]);
-    t.ok(fields.length === 4, "can project fields with $project");
+    t.equal(fields.length, 4, "can project fields with $project");
     t.ok(_.contains(fields, 'type'), "can rename fields with $project");
     var temp = result[0]['details'];
     t.ok(_.isObject(temp) && _.keys(temp).length === 1, "can create and populate sub-documents");
@@ -159,7 +159,7 @@ test("Aggregation Pipeline Operators", function (t) {
     grouped = Mingo.aggregate(SalesData, [
       {$group: {max: {$max: "$price"}, sum: {$sum: "$price"}}}
     ]);
-    console.log(grouped);
+
     t.ok(grouped.length === 1 && grouped[0]['max'] === 20, "can compute $max");
     t.ok(grouped.length === 1 && grouped[0]['sum'] === 45, "can compute $sum");
 

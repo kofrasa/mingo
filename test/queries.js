@@ -1,6 +1,7 @@
 var test = require('tape'),
   _ = require('underscore'),
-  Mingo = require('../mingo');
+  Mingo = require('../mingo'),
+  samples = require('./samples');
 
 
 function ObjectId(id) {
@@ -9,42 +10,10 @@ function ObjectId(id) {
 
 var objectId = new ObjectId(100);
 
-var obj = {
-  _id: objectId,
-  firstName: "Francis",
-  lastName: "Asante",
-  username: "kofrasa",
-  title: "Software Engineer",
-  degree: "Computer Science",
-  jobs: 6,
-  date: {
-    year: 2013,
-    month: 9,
-    day: 25
-  },
-  languages: {
-    spoken: ["english", 'french', 'spanish'],
-    programming: ["C", "Python", "Scala", "Java", "Javascript", "Bash", "C#"]
-  },
-  circles: {
-    school: ["Kobby", "Henry", "Kanba", "Nana", "Albert", "Yayra", "Linda", "Sophia"],
-    work: ["Kobby", "KT", "Evans", "Robert", "Ehi", "Ebo", "KO"],
-    family: ["Richard", "Roseline", "Michael", "Rachel"]
-  },
-  projects: {
-    "C": ["word_grid", "student_record", "calendar"],
-    "Java": ["Easy Programming Language", "SurveyMobile"],
-    "Python": ["Kasade", "Code Jam", "Flaskapp", "FlaskUtils"],
-    "Scala": [],
-    "Javascript": ["mingo", "Backapp", "BackboneApp", "Google Election Maps"]
-  },
-  grades: [
-    {grade: 92, mean: 88, std: 8},
-    {grade: 78, mean: 90, std: 5},
-    {grade: 88, mean: 85, std: 3}
-  ],
-  today: new Date()
-};
+var obj = samples.person;
+obj["_id"] = objectId;
+obj["today"] = new Date();
+
 
 test('Comparison, Evaluation, and Element Operators', function (t) {
   t.plan(25);
@@ -82,70 +51,35 @@ test('Comparison, Evaluation, and Element Operators', function (t) {
 });
 
 test("Projection Operators", function (t) {
-  t.plan(4);
-  var user = Mingo.find([obj], {}, {'languages.programming': {$slice: [-3, 2]}}).first();
-  var lang = user['languages.programming'];
-  t.ok(2 == lang.length && lang[1] == 'Bash', "can use $slice projection operator");
 
-  var school = [
-    {
-      _id: 1,
-      zipcode: 63109,
-      students: [
-        {name: "john", school: 102, age: 10},
-        {name: "jess", school: 102, age: 11},
-        {name: "jeff", school: 108, age: 15}
-      ]
-    },
-    {
-      _id: 2,
-      zipcode: 63110,
-      students: [
-        {name: "ajax", school: 100, age: 7},
-        {name: "achilles", school: 100, age: 8}
-      ]
-    },
+  var data = [obj];
+  var result = Mingo.find(data, {}, {'languages.programming': {$slice: [-3, 2]}}).first();
+  t.deepEqual(result['languages']['programming'], ['Javascript', 'Bash'], "should project with $slice operator");
 
-    {
-      _id: 3,
-      zipcode: 63109,
-      students: [
-        {name: "ajax", school: 100, age: 7},
-        {name: "achilles", school: 100, age: 8}
-      ]
-    },
+  // special tests
+  // https://github.com/kofrasa/mingo/issues/25
+  data = [{
+    key0: [{
+      key1: [[[{key2: [{a:"value2"}, {a: "dummy"}, {"b": 20}]}]], {"key2": "value"}],
+      key1a: {key2a: "value2a"}
+    }]
+  }];
+  expected = {"key0":[{"key1":[[[{"key2":[{"a":"value2"},{"a":"dummy"}]}]]]}]};
+  result = Mingo.find(data, {"key0.key1.key2": "value"}, {"key0.key1.key2.a": 1}).first();
+  t.deepEqual(result, expected, "should project only selected object graph from nested arrays");
 
-    {
-      _id: 4,
-      zipcode: 63109,
-      students: [
-        {name: "barney", school: 102, age: 7}
-      ]
-    }
-  ];
+  data = [{ "name": "Steve", "age": 15, "features": { "hair": "brown", "eyes": "brown" } } ];
+  result = Mingo.find(data, {}, { "features.hair": 1 }).first();
+  t.deepEqual(result, {"features":{hair: "brown"}}, "should project only selected object graph");
 
-  result = Mingo.find(
-    school,
-    {zipcode: 63109},
-    {students: {$elemMatch: {school: 102}}}
-  ).all();
+  t.throws(function () {
+    Mingo.find(data, {}, { "features.hair": 0, "name": 1 }).first();
+  }, Error, "should throw exception: Projection cannot have a mix of inclusion and exclusion");
 
-  t.ok(result[0].students.length == 1, "should return array from $elemMatch projection");
-  t.ok(result.length === 3 && !_.has(result[1], 'students'), "can project with $elemMatch operator");
+  // result = Mingo.find(data, {}, { "features.hair": 0}).first();
+  // t.deepEqual(result, {"name": "Steve", "age": 15, "features":{"eyes": "brown"}}, "should omit")
 
-  result = Mingo.find(
-    school,
-    {},
-    {students: {$slice: -1}}
-  ).first();
-
-  var matched = result.students.length === 1;
-  matched = matched && result.students[0]['name'] === 'jeff';
-  // ensure other fields are included. this is a special case for $slice
-  matched = matched && _.has(result, 'zipcode');
-
-  t.ok(matched, "can slice projected array elements with $slice");
-
+  t.end();
 });
 
 
@@ -218,14 +152,12 @@ test("Array Operators", function (t) {
 
   data = [{
     key0: [{
-      key1: [[[{key2: [{a:"value2"}, {a: "dummy"}]}]], {"key2": "value"}],
+      key1: [[[{key2: [{a:"value2"}, {a: "dummy"}, {b:20}]}]], {"key2": "value"}],
       key1a: {key2a: "value2a"}
     }]
   }];
 
   result = Mingo.find(data, {"key0.key1.key2.a": "value2"}).all();
-  t.equal(1, result.length, "Match a Field Without Specifying Array Index");
-
-  t.end();
+  t.deepEqual(result, data, "Match a Field Without Specifying Array Index");
 
 });
