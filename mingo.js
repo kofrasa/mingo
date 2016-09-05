@@ -36,9 +36,216 @@
     _ = root._; // get a reference to underscore
   }
 
+  function isType(value, type) { return value !== null && value !== undefined && value.constructor.name === type; }
+  function isBoolean(v) { return isType(v, "Boolean"); }
+  function isString(v) { return isType(v, "String"); }
+  function isNumber(v) { return isType(v, "Number"); }
+  function isArray(v) { return isType(v, "Array"); }
+  function isObject(v) { return isType(v, "Object"); }
+  function isDate(v) { return isType(v, "Date"); }
+  function isRegExp(v,t) { return isType(v, "RegExp"); }
+  function isFunction(v,t) { return isType(v, "Function"); }
+  function isNull(v) { return v === null; }
+  function isUndefined(v) { return v === undefined; }
+
+  var TYPES = [isBoolean, isString, isNumber, isNull, isUndefined, isArray, isObject, isDate, isFunction];
+
+  function getType(value) {
+    for (var i = 0; i < TYPES.length; i++) {
+      var check = TYPES[i];
+      if (check(value)) return check.name.substring(2).toLowerCase();
+    }
+    return null;
+  }
+
+  function assert(condition, message) {
+    if (!condition) {
+        message = message || "Assertion failed";
+        throw new Error(message);
+    }
+  }
+
+  function assertExists(value) {
+    return assert(!isUndefined(value));
+  }
+
+  /**
+   * Retrieve the value of a given key on an object
+   * @param obj
+   * @param field
+   * @returns {*}
+   * @private
+   */
+  function getValue(obj, field) {
+    return _.result(obj, field);
+  }
+
+  /**
+   * Resolve the value of the field (dot separated) on the given object
+   * @param obj {Object} the object context
+   * @param selector {String} dot separated path to field
+   * @returns {*}
+   */
+  function resolve(obj, selector) {
+    var names = selector.split(".");
+    var value = obj;
+
+    for (var i = 0; i < names.length; i++) {
+      var isText = names[i].match(/^\d+$/) === null;
+
+      if (isText && isArray(value)) {
+        var res = [];
+        _.each(value, function (item) {
+          res.push(resolve(item, names[i]));
+        });
+        value = res;
+      } else {
+        value = getValue(value, names[i]);
+      }
+
+      if (value === undefined) {
+        break;
+      }
+    }
+
+    return value;
+  }
+
+  /**
+   * Returns the full object to the resolved value given by the selector.
+   * This function excludes empty values as they aren't practically useful.
+   *
+   * @param obj {Object} the object context
+   * @param selector {String} dot separated path to field
+   */
+  function resolveObj(obj, selector) {
+    if (isUndefined(obj)) return obj;
+
+    var names = selector.split(".");
+    var key = names[0];
+    // get the next part of the selector
+    var next = names.length == 1 || names.slice(1).join(".");
+    var result;
+    var isIndex = key.match(/^\d+$/) !== null;
+
+    try {
+      if (names.length == 1) {
+        if (isArray(obj)) {
+          if (isIndex) {
+            result = getValue(obj, key);
+            assertExists(result);
+            result = [result];
+          } else {
+            result = [];
+            _.each(obj, function (item) {
+              var val = resolveObj(item, selector);
+              if (!isUndefined(val)) result.push(val);
+            });
+            assert(result.length > 0);
+          }
+        } else {
+          var val = getValue(obj, key);
+          assertExists(val);
+          result = {};
+          result[key] = val;
+        }
+      } else {
+        if (isArray(obj)) {
+          if (isIndex) {
+            result = getValue(obj, key);
+            result = resolveObj(result, next);
+            assertExists(result);
+            result = [result];
+          } else {
+            result = [];
+            _.each(obj, function (item) {
+              var val = resolveObj(item, selector);
+              if (!isUndefined(val)) result.push(val);
+            });
+            assert(result.length > 0);
+          }
+        } else {
+          var val = getValue(obj, key);
+          val = resolveObj(val, next);
+          assertExists(val);
+          result = {};
+          result[key] = val;
+        }
+      }
+    } catch (e) {
+      result = undefined;
+    }
+
+    return result;
+  }
+
+  function traverse(obj, selector, fn) {
+    var names = selector.split(".");
+    var key = names[0];
+    var next = names.length == 1 || names.slice(1).join(".");
+    var isIndex = key.match(/^\d+$/) !== null;
+
+    if (names.length == 1) {
+      if (isArray(obj) && !isIndex) {
+        _.each(obj, function (item) {
+          traverse(item, key, fn);
+        });
+      } else {
+        fn(obj, key);
+      }
+    } else { // nested objects
+      if (isArray(obj) && !isIndex) {
+        _.each(obj, function (item) {
+          traverse(item, selector, fn);
+        });
+      } else {
+        traverse(obj[key], next, fn);
+      }
+    }
+  }
+
+  /**
+   * Set the value of the given object field
+   *
+   * @param obj {Object|Array} the object context
+   * @param selector {String} path to field
+   * @param value {*} the value to set
+   */
+  function setValue(obj, selector, value) {
+    traverse(obj, selector, function (item, key) {
+      item[key] = value;
+    });
+  }
+
+  function removeValue(obj, selector) {
+    traverse(obj, selector, function (item, key) {
+      delete item[key];
+    });
+  }
+
+  /**
+   * Clone an object the old-fashion way.
+   */
+  function clone(value) {
+    switch (getType(value)) {
+      case "array":
+        return _.map(value, function (item) {
+          return clone(item);
+        });
+      case "object":
+        var o = {};
+        _.each(value, function (v,k) {
+          o[k] = clone(v);
+        });
+        return o;
+      default:
+        return value;
+    }
+  }
+
   // quick reference for
   var primitives = [
-    _.isString, _.isBoolean, _.isNumber, _.isDate, _.isNull, _.isRegExp, _.isUndefined
+    isString, isBoolean, isNumber, isDate, isNull, isRegExp, isUndefined
   ];
 
   function isPrimitive(value) {
@@ -50,10 +257,9 @@
     return false;
   }
 
-  var NATIVE_CONSTRUCTORS = ["Object", "Array"];
   // primitives and user-defined types
   function isSimpleType(value) {
-    return isPrimitive(value) || !_.contains(NATIVE_CONSTRUCTORS, value.constructor.name);
+    return isPrimitive(value) || (!isObject(value) && !isArray(value));
   }
 
   /**
@@ -65,11 +271,11 @@
 
     // normalized primitives
     if (isSimpleType(expr)) {
-      return _.isRegExp(expr) ? {"$regex": expr} : {"$eq": expr};
+      return isRegExp(expr) ? {"$regex": expr} : {"$eq": expr};
     }
 
     // normalize object expression
-    if (_.isObject(expr)) {
+    if (isObject(expr)) {
       var keys = _.keys(expr);
       var notQuery = _.intersection(ops(OP_QUERY), keys).length === 0;
 
@@ -83,7 +289,7 @@
         var regex = expr['$regex'];
         var options = expr['$options'] || "";
         var modifiers = "";
-        if (_.isString(regex)) {
+        if (isString(regex)) {
           modifiers += (regex.ignoreCase || options.indexOf("i") >= 0) ? "i" : "";
           modifiers += (regex.multiline || options.indexOf("m") >= 0) ? "m" : "";
           modifiers += (regex.global || options.indexOf("g") >= 0) ? "g" : "";
@@ -133,7 +339,7 @@
 
       if (_.isEmpty(this._criteria)) return;
 
-      if (_.isArray(this._criteria) || _.isFunction(this._criteria) || !_.isObject(this._criteria)) {
+      if (isArray(this._criteria) || isFunction(this._criteria) || !isObject(this._criteria)) {
         throw new Error("Invalid type for criteria");
       }
 
@@ -234,7 +440,7 @@
     util.inherits(Mingo.Stream, Transform);
 
     Mingo.Stream.prototype._transform = function (chunk, encoding, done) {
-      if (_.isObject(chunk) && this._query.test(chunk)) {
+      if (isObject(chunk) && this._query.test(chunk)) {
         if (_.isEmpty(this._query._projection)) {
           this.push(chunk);
         } else {
@@ -278,11 +484,11 @@
       }
 
       // inject projection operator
-      if (_.isObject(this._projection)) {
+      if (isObject(this._projection)) {
         _.extend(this._operators, {"$project": this._projection});
       }
 
-      if (!_.isArray(this._collection)) {
+      if (!isArray(this._collection)) {
         throw new Error("Input collection is not of valid type. Must be an Array.");
       }
 
@@ -463,167 +669,6 @@
     }
   };
 
-  function assert(condition, message) {
-    if (!condition) {
-        message = message || "Assertion failed";
-        throw new Error(message);
-    }
-  }
-
-  function assertExists(value) {
-    return assert(!_.isUndefined(value));
-  }
-
-  /**
-   * Retrieve the value of a given key on an object
-   * @param obj
-   * @param field
-   * @returns {*}
-   * @private
-   */
-  function getValue(obj, field) {
-    return _.result(obj, field);
-  }
-
-  /**
-   * Resolve the value of the field (dot separated) on the given object
-   * @param obj {Object} the object context
-   * @param selector {String} dot separated path to field
-   * @returns {*}
-   */
-  function resolve(obj, selector) {
-    var names = selector.split(".");
-    var value = obj;
-
-    for (var i = 0; i < names.length; i++) {
-      var isText = names[i].match(/^\d+$/) === null;
-
-      if (isText && _.isArray(value)) {
-        var res = [];
-        _.each(value, function (item) {
-          res.push(resolve(item, names[i]));
-        });
-        value = res;
-      } else {
-        value = getValue(value, names[i]);
-      }
-
-      if (value === undefined) {
-        break;
-      }
-    }
-
-    return value;
-  }
-
-  /**
-   * Returns the full object to the resolved value given by the selector.
-   * This function excludes empty values as they aren't practically useful.
-   *
-   * @param obj {Object} the object context
-   * @param selector {String} dot separated path to field
-   */
-  function resolveObj(obj, selector) {
-    if (_.isUndefined(obj)) return obj;
-
-    var names = selector.split(".");
-    var key = names[0];
-    // get the next part of the selector
-    var next = names.length == 1 || names.slice(1).join(".");
-    var result;
-    var isIndex = key.match(/^\d+$/) !== null;
-
-    try {
-      if (names.length == 1) {
-        if (_.isArray(obj)) {
-          if (isIndex) {
-            result = getValue(obj, key);
-            assertExists(result);
-            result = [result];
-          } else {
-            result = [];
-            _.each(obj, function (item) {
-              var val = resolveObj(item, selector);
-              if (!_.isUndefined(val)) result.push(val);
-            });
-            assert(result.length > 0);
-          }
-        } else {
-          var val = getValue(obj, key);
-          assertExists(val);
-          result = {};
-          result[key] = val;
-        }
-      } else {
-        if (_.isArray(obj)) {
-          if (isIndex) {
-            result = getValue(obj, key);
-            result = resolveObj(result, next);
-            assertExists(result);
-            result = [result];
-          } else {
-            result = [];
-            _.each(obj, function (item) {
-              var val = resolveObj(item, selector);
-              if (!_.isUndefined(val)) result.push(val);
-            });
-            assert(result.length > 0);
-          }
-        } else {
-          var val = getValue(obj, key);
-          val = resolveObj(val, next);
-          assertExists(val);
-          result = {};
-          result[key] = val;
-        }
-      }
-    } catch (e) {
-      result = undefined;
-    }
-
-    return result;
-  }
-
-  /**
-   * Set the value of the given object field
-   *
-   * @param obj {Object|Array} the object context
-   * @param selector {String} path to field
-   * @param value {*} the value to set
-   */
-  function setValue(obj, selector, value) {
-    var names = selector.split(".");
-    var key = names[0];
-    var next = names.length == 1 || names.slice(1).join(".");
-    var isIndex = key.match(/^\d+$/) !== null;
-
-    if (names.length == 1) {
-      if (_.isArray(obj) && !isIndex) {
-        _.each(obj, function (item) {
-          setValue(item, key, value);
-        });
-      } else {
-        obj[key] = value;
-      }
-    } else { // nested objects
-      if (_.isArray(obj) && !isIndex) {
-        _.each(obj, function (item) {
-          setValue(item, selector, value);
-        });
-      } else {
-        setValue(obj[key], next, value);
-      }
-    }
-  }
-
-  Mingo._internal = function () {
-    return {
-      "resolve": resolve,
-      "resolveObj": resolveObj,
-      "setValue": setValue
-    };
-  }
-
   /**
    * Performs a query on a collection and returns a cursor object.
    * @param collection
@@ -652,7 +697,7 @@
    * @returns {Array}
    */
   Mingo.aggregate = function (collection, pipeline) {
-    if (!_.isArray(pipeline)) {
+    if (!isArray(pipeline)) {
       throw new Error("Aggregation pipeline must be an array");
     }
     return (new Mingo.Aggregator(pipeline)).run(collection);
@@ -702,7 +747,7 @@
                   // value of field must be fully resolved.
                   var lhs = resolve(obj, selector);
                   var result = f.call(ctx, selector, lhs, value);
-                  if (_.isBoolean(result)) {
+                  if (isBoolean(result)) {
                     return result;
                   } else if (result instanceof Mingo.Query) {
                     return result.test(obj);
@@ -792,7 +837,7 @@
         var obj = {};
 
         // exclude undefined key value
-        if (!_.isUndefined(value)) {
+        if (!isUndefined(value)) {
           obj[settings.key] = value;
         }
 
@@ -889,11 +934,11 @@
           if (key === settings.key && _.isEmpty(subExpr)) {
             // tiny optimization here to skip over id
             value = obj[key];
-          } else if (_.isString(subExpr)) {
+          } else if (isString(subExpr)) {
             value = computeValue(obj, subExpr, key);
           } else if (subExpr === 1 || subExpr === true) {
             // For direct projections, we use the resolved object value
-          } else if (_.isObject(subExpr)) {
+          } else if (isObject(subExpr)) {
             var operator = _.keys(subExpr);
             operator = operator.length > 1 ? false : operator[0];
             if (operator !== false && _.contains(ops(OP_PROJECTION), operator)) {
@@ -911,14 +956,16 @@
             return;
           }
 
-          objValue = resolveObj(obj, key);
+          // clone resolved values
+          value = clone(value);
+          objValue = clone(resolveObj(obj, key));
 
-          if (!_.isUndefined(objValue)) {
-            if (!_.isUndefined(value)) {
+          if (!isUndefined(objValue)) {
+            if (!isUndefined(value)) {
               setValue(objValue, key, value);
             }
             _.extend(cloneObj, objValue);
-          } else if (!_.isUndefined(value)) {
+          } else if (!isUndefined(value)) {
             cloneObj[key] = value;
           }
 
@@ -927,7 +974,10 @@
         // Also if exclusion fields are found or we want to exclude only the id field
         // include keys that were not explicitly excluded
         if (foundSlice || foundExclusion || idOnlyExcludedExpression) {
-          cloneObj = _.defaults(cloneObj, _.omit(obj, dropKeys));
+          cloneObj = _.defaults(cloneObj, clone(obj));
+          _.each(dropKeys, function (key) {
+            removeValue(cloneObj, key);
+          });
         }
         projected.push(cloneObj);
       }
@@ -971,9 +1021,9 @@
         var obj = collection[i];
         // must throw an error if value is not an array
         var value = getValue(obj, field);
-        if (_.isArray(value)) {
+        if (isArray(value)) {
           _.each(value, function (item) {
-            var tmp = _.clone(obj);
+            var tmp = clone(obj);
             tmp[field] = item;
             result.push(tmp);
           });
@@ -992,7 +1042,7 @@
      * @returns {*}
      */
     $sort: function (collection, sortKeys) {
-      if (!_.isEmpty(sortKeys) && _.isObject(sortKeys)) {
+      if (!_.isEmpty(sortKeys) && isObject(sortKeys)) {
         var modifiers = _.keys(sortKeys);
         modifiers.reverse().forEach(function (key) {
           var grouped = groupBy(collection, function (obj) {
@@ -1032,7 +1082,7 @@
      * @returns {{test: Function}}
      */
     $and: function (selector, value) {
-      if (!_.isArray(value)) {
+      if (!isArray(value)) {
         throw new Error("Invalid expression for $and criteria");
       }
       var queries = [];
@@ -1060,7 +1110,7 @@
      * @returns {{test: Function}}
      */
     $or: function (selector, value) {
-      if (!_.isArray(value)) {
+      if (!isArray(value)) {
         throw new Error("Invalid expression for $or criteria");
       }
       var queries = [];
@@ -1088,7 +1138,7 @@
      * @returns {{test: Function}}
      */
     $nor: function (selector, value) {
-      if (!_.isArray(value)) {
+      if (!isArray(value)) {
         throw new Error("Invalid expression for $nor criteria");
       }
       var query = this.$or("$or", value);
@@ -1125,7 +1175,7 @@
      * @returns {{test: test}}
      */
     $where: function (selector, value) {
-      if (!_.isFunction(value)) {
+      if (!isFunction(value)) {
         value = new Function("return " + value + ";");
       }
       return {
@@ -1177,7 +1227,7 @@
      * @returns {*}
      */
     $in: function (a, b) {
-      a = _.isArray(a) ? a : [a];
+      a = isArray(a) ? a : [a];
       return _.intersection(a, b).length > 0;
     },
 
@@ -1189,7 +1239,7 @@
      * @returns {*|boolean}
      */
     $nin: function (a, b) {
-      return _.isUndefined(a) || !this.$in(a, b);
+      return isUndefined(a) || !this.$in(a, b);
     },
 
     /**
@@ -1200,7 +1250,7 @@
      * @returns {boolean}
      */
     $lt: function (a, b) {
-      a = _.isArray(a) ? a : [a];
+      a = isArray(a) ? a : [a];
       a = _.find(a, function (val) {
         return val < b
       });
@@ -1215,7 +1265,7 @@
      * @returns {boolean}
      */
     $lte: function (a, b) {
-      a = _.isArray(a) ? a : [a];
+      a = isArray(a) ? a : [a];
       a = _.find(a, function (val) {
         return val <= b
       });
@@ -1230,7 +1280,7 @@
      * @returns {boolean}
      */
     $gt: function (a, b) {
-      a = _.isArray(a) ? a : [a];
+      a = isArray(a) ? a : [a];
       a = _.find(a, function (val) {
         return val > b
       });
@@ -1245,7 +1295,7 @@
      * @returns {boolean}
      */
     $gte: function (a, b) {
-      a = _.isArray(a) ? a : [a];
+      a = isArray(a) ? a : [a];
       a = _.find(a, function (val) {
         return val >= b
       });
@@ -1260,9 +1310,9 @@
      * @returns {*|boolean|boolean}
      */
     $mod: function (a, b) {
-      a = _.isArray(a) ? a : [a];
+      a = isArray(a) ? a : [a];
       a = _.find(a, function (val) {
-        return _.isNumber(val) && _.isArray(b) && b.length === 2 && (val % b[0]) === b[1];
+        return isNumber(val) && isArray(b) && b.length === 2 && (val % b[0]) === b[1];
       });
       return a !== undefined;
     },
@@ -1275,9 +1325,9 @@
      * @returns {*|boolean}
      */
     $regex: function (a, b) {
-      a = _.isArray(a) ? a : [a];
+      a = isArray(a) ? a : [a];
       a = _.find(a, function (val) {
-        return _.isString(val) && _.isRegExp(b) && (!!val.match(b));
+        return isString(val) && isRegExp(b) && (!!val.match(b));
       });
       return a !== undefined;
     },
@@ -1290,7 +1340,7 @@
      * @returns {boolean|*|boolean}
      */
     $exists: function (a, b) {
-      return (b === false && _.isUndefined(a)) || (b === true && !_.isUndefined(a));
+      return (b === false && isUndefined(a)) || (b === true && !isUndefined(a));
     },
 
     /**
@@ -1303,9 +1353,9 @@
     $all: function (a, b) {
       var self = this;
       var matched = false;
-      if (_.isArray(a) && _.isArray(b)) {
+      if (isArray(a) && isArray(b)) {
         for (var i = 0; i < b.length; i++) {
-          if (_.isObject(b[i]) && _.contains(_.keys(b[i]), "$elemMatch")) {
+          if (isObject(b[i]) && _.contains(_.keys(b[i]), "$elemMatch")) {
             matched = matched || self.$elemMatch(a, b[i].$elemMatch);
           } else {
             // order of arguments matter. underscore maintains order after intersection
@@ -1324,7 +1374,7 @@
      * @returns {*|boolean}
      */
     $size: function (a, b) {
-      return _.isArray(a) && _.isNumber(b) && (a.length === b);
+      return isArray(a) && isNumber(b) && (a.length === b);
     },
 
     /**
@@ -1334,7 +1384,7 @@
      * @param b
      */
     $elemMatch: function (a, b) {
-      if (_.isArray(a) && !_.isEmpty(a)) {
+      if (isArray(a) && !_.isEmpty(a)) {
         var query = new Mingo.Query(b);
         for (var i = 0; i < a.length; i++) {
           if (query.test(a[i])) {
@@ -1355,26 +1405,26 @@
     $type: function (a, b) {
       switch (b) {
         case 1:
-          return _.isNumber(a) && (a + "").indexOf(".") !== -1;
+          return isNumber(a) && (a + "").indexOf(".") !== -1;
         case 2:
         case 5:
-          return _.isString(a);
+          return isString(a);
         case 3:
-          return _.isObject(a);
+          return isObject(a);
         case 4:
-          return _.isArray(a);
+          return isArray(a);
         case 8:
-          return _.isBoolean(a);
+          return isBoolean(a);
         case 9:
-          return _.isDate(a);
+          return isDate(a);
         case 10:
-          return _.isNull(a);
+          return isNull(a);
         case 11:
-          return _.isRegExp(a);
+          return isRegExp(a);
         case 16:
-          return _.isNumber(a) && a <= 2147483647 && (a + "").indexOf(".") === -1;
+          return isNumber(a) && a <= 2147483647 && (a + "").indexOf(".") === -1;
         case 18:
-          return _.isNumber(a) && a > 2147483647 && a <= 9223372036854775807 && (a + "").indexOf(".") === -1;
+          return isNumber(a) && a > 2147483647 && a <= 9223372036854775807 && (a + "").indexOf(".") === -1;
         default:
           return false;
       }
@@ -1420,7 +1470,7 @@
       var array = resolve(obj, field);
       var query = new Mingo.Query(expr);
 
-      if (_.isUndefined(array) || !_.isArray(array)) {
+      if (isUndefined(array) || !isArray(array)) {
         return undefined;
       }
 
@@ -1443,11 +1493,11 @@
     $slice: function (obj, expr, field) {
       var array = resolve(obj, field);
 
-      if (!_.isArray(array)) {
+      if (!isArray(array)) {
         return array;
       }
-      if (!_.isArray(expr)) {
-        if (!_.isNumber(expr)) {
+      if (!isArray(expr)) {
+        if (!isNumber(expr)) {
           throw new Error("Invalid type for $slice operator");
         }
         expr = expr < 0 ? [expr] : [0, expr];
@@ -1487,17 +1537,17 @@
      * @returns {*}
      */
     $sum: function (collection, expr) {
-      if (!_.isArray(collection)) {
+      if (!isArray(collection)) {
         return 0;
       }
-      if (_.isNumber(expr)) {
+      if (isNumber(expr)) {
         // take a short cut if expr is number literal
         return collection.length * expr;
       }
       return _.reduce(collection, function (acc, obj) {
         // pass empty field to avoid naming conflicts with fields on documents
         var n = computeValue(obj, expr, null);
-        return _.isNumber(n)? acc + n : acc;
+        return isNumber(n)? acc + n : acc;
       }, 0);
     },
 
@@ -1691,7 +1741,7 @@
      */
     $substr: function (obj, expr) {
       var args = computeValue(obj, expr, null);
-      if (_.isString(args[0])) {
+      if (isString(args[0])) {
         if (args[1] < 0) {
           return "";
         } else if (args[2] < 0) {
@@ -1736,7 +1786,7 @@
      */
     $dayOfYear: function (obj, expr) {
       var d = computeValue(obj, expr, null);
-      if (_.isDate(d)) {
+      if (isDate(d)) {
         var start = new Date(d.getFullYear(), 0, 0);
         var diff = d - start;
         var oneDay = 1000 * 60 * 60 * 24;
@@ -1752,7 +1802,7 @@
      */
     $dayOfMonth: function (obj, expr) {
       var d = computeValue(obj, expr, null);
-      return _.isDate(d) ? d.getDate() : undefined;
+      return isDate(d) ? d.getDate() : undefined;
     },
 
     /**
@@ -1762,7 +1812,7 @@
      */
     $dayOfWeek: function (obj, expr) {
       var d = computeValue(obj, expr, null);
-      return _.isDate(d) ? d.getDay() + 1 : undefined;
+      return isDate(d) ? d.getDay() + 1 : undefined;
     },
 
     /**
@@ -1772,7 +1822,7 @@
      */
     $year: function (obj, expr) {
       var d = computeValue(obj, expr, null);
-      return _.isDate(d) ? d.getFullYear() : undefined;
+      return isDate(d) ? d.getFullYear() : undefined;
     },
 
     /**
@@ -1782,7 +1832,7 @@
      */
     $month: function (obj, expr) {
       var d = computeValue(obj, expr, null);
-      return _.isDate(d) ? d.getMonth() + 1 : undefined;
+      return isDate(d) ? d.getMonth() + 1 : undefined;
     },
 
     /**
@@ -1814,7 +1864,7 @@
      */
     $hour: function (obj, expr) {
       var d = computeValue(obj, expr, null);
-      return _.isDate(d) ? d.getHours() : undefined;
+      return isDate(d) ? d.getHours() : undefined;
     },
 
     /**
@@ -1824,7 +1874,7 @@
      */
     $minute: function (obj, expr) {
       var d = computeValue(obj, expr, null);
-      return _.isDate(d) ? d.getMinutes() : undefined;
+      return isDate(d) ? d.getMinutes() : undefined;
     },
 
     /**
@@ -1834,7 +1884,7 @@
      */
     $second: function (obj, expr) {
       var d = computeValue(obj, expr, null);
-      return _.isDate(d) ? d.getSeconds() : undefined;
+      return isDate(d) ? d.getSeconds() : undefined;
     },
 
     /**
@@ -1844,7 +1894,7 @@
      */
     $millisecond: function (obj, expr) {
       var d = computeValue(obj, expr, null);
-      return _.isDate(d) ? d.getMilliseconds() : undefined;
+      return isDate(d) ? d.getMilliseconds() : undefined;
     },
 
     /**
@@ -1875,7 +1925,7 @@
         var hdlr = DATE_SYM_TABLE[matches[i]];
         var value = hdlr;
 
-        if (_.isArray(hdlr)) {
+        if (isArray(hdlr)) {
           // reuse date operators
           var fn = this[hdlr[0]];
           var pad = hdlr[1];
@@ -1987,14 +2037,14 @@
      */
     $cond: function (obj, expr) {
       var ifExpr, thenExpr, elseExpr;
-      if (_.isArray(expr)) {
+      if (isArray(expr)) {
         if (expr.length != 3) {
           throw new Error("Invalid arguments for $cond operator");
         }
         ifExpr = expr[0];
         thenExpr = expr[1];
         elseExpr = expr[2];
-      } else if (_.isObject(expr)) {
+      } else if (isObject(expr)) {
         ifExpr = expr['if'];
         thenExpr = expr['then'];
         elseExpr = expr['else'];
@@ -2012,7 +2062,7 @@
      * @returns {*}
      */
     $ifNull: function (obj, expr) {
-      if (!_.isArray(expr) || expr.length != 2) {
+      if (!isArray(expr) || expr.length != 2) {
         throw new Error("Invalid arguments for $ifNull operator");
       }
       var args = computeValue(obj, expr, null);
@@ -2052,7 +2102,7 @@
      */
     $size: function (obj, expr) {
       var value = computeValue(obj, expr, null);
-      return _.isArray(value) ? value.length : undefined;
+      return isArray(value) ? value.length : undefined;
     }
   };
 
@@ -2077,7 +2127,7 @@
      */
     $map: function (obj, expr) {
       var inputExpr = computeValue(obj, expr["input"], null);
-      if (!_.isArray(inputExpr)) {
+      if (!isArray(inputExpr)) {
         throw new Error("Input expression for $map must resolve to an array");
       }
       var asExpr = expr["as"];
@@ -2093,7 +2143,7 @@
         obj[tempKey] = item;
         var value = computeValue(obj, inExpr, null);
         // cleanup and restore
-        if (_.isUndefined(original)) {
+        if (isUndefined(original)) {
           delete obj[tempKey];
         } else {
           obj[tempKey] = original;
@@ -2129,7 +2179,7 @@
       // cleanup and restore
       _.each(varsKeys, function (key) {
         var tempKey = "$" + key;
-        if (_.isUndefined(originals[tempKey])) {
+        if (isUndefined(originals[tempKey])) {
           delete obj[tempKey];
         } else {
           obj[tempKey] = originals[tempKey];
@@ -2253,7 +2303,7 @@
       var h = hashcode(key);
       var index = -1;
 
-      if (_.isUndefined(lookup[h])) {
+      if (isUndefined(lookup[h])) {
         index = result.keys.length;
         lookup[h] = index;
         result.keys.push(key);
@@ -2271,33 +2321,9 @@
     return result;
   }
 
-  // encode value to a unique string form that is easily reversable
+  // encode value to a JSON string
   function encode(value) {
-    if (_.isNull(value)) {
-      return "null";
-    } else if (_.isUndefined(value)) {
-      return "undef";
-    } else {
-      var type = value.constructor.name;
-      switch (type) {
-        case "Boolean":
-          return "b|" + value.toString();
-        case "String":
-          return "s|" + value.toString();
-        case "RegExp":
-          return "r|" + value.toString();
-        case "Number":
-          return "n|" + value.toString();
-        case "Date":
-          return "d|" + value.toISOString();
-        case "Array":
-          return "a|" + JSON.stringify(_.map(value, function (v) { return encode(v); }));
-        case "Object":
-          return "o|" + JSON.stringify(_.mapObject(value, function (v) { return encode(v); }));
-        default:
-          return type + "|" + JSON.stringify(_.mapObject(value, function (v) { return encode(v); }));
-      }
-    }
+    return JSON.stringify({"encode":value});
   }
 
   // http://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript-jquery
@@ -2326,7 +2352,7 @@
       return groupOperators[field](collection, expr);
     }
 
-    if (_.isObject(expr)) {
+    if (isObject(expr)) {
       var result = {};
       for (var key in expr) {
         if (_.has(expr, key)) {
@@ -2366,40 +2392,38 @@
 
     // if expr is a variable for an object field
     // field not used in this case
-    if (_.isString(expr) && expr.length > 0 && expr[0] === "$") {
+    if (isString(expr) && expr.length > 0 && expr[0] === "$") {
       return resolve(obj, expr.slice(1));
     }
 
-    var result;
-
     // check and return value if already in a resolved state
-    if (isSimpleType(expr)) {
-      return expr;
-    } else if (_.isArray(expr)) {
-      result = _.map(expr, function (item) {
-        return computeValue(obj, item, null);
-      });
-    } else if (_.isObject(expr)) {
-      result = {};
-      for (var key in expr) {
-        if (_.has(expr, key)) {
-          result[key] = computeValue(obj, expr[key], key);
+    switch (getType(expr)) {
+      case "array":
+        return _.map(expr, function (item) {
+          return computeValue(obj, item, null);
+        });
+      case "object":
+        var result = {};
+        for (var key in expr) {
+          if (_.has(expr, key)) {
+            result[key] = computeValue(obj, expr[key], key);
 
-          // must run ONLY one aggregate operator per expression
-          // if so, return result of the computed value
-          if (_.contains(ops(OP_AGGREGATE), key)) {
-            result = result[key];
-            // if there are more keys in expression this is bad
-            if (_.keys(expr).length > 1) {
-              throw new Error("Invalid aggregation expression '" + JSON.stringify(expr) + "'");
+            // must run ONLY one aggregate operator per expression
+            // if so, return result of the computed value
+            if (_.contains(ops(OP_AGGREGATE), key)) {
+              result = result[key];
+              // if there are more keys in expression this is bad
+              if (_.keys(expr).length > 1) {
+                throw new Error("Invalid aggregation expression '" + JSON.stringify(expr) + "'");
+              }
+              break;
             }
-            break;
           }
         }
-      }
+        return result;
+      default:
+        return clone(expr);
     }
-
-    return result;
   }
 
 }(this));

@@ -76,8 +76,9 @@ test("Projection Operators", function (t) {
     Mingo.find(data, {}, { "features.hair": 0, "name": 1 }).first();
   }, Error, "should throw exception: Projection cannot have a mix of inclusion and exclusion");
 
-  // result = Mingo.find(data, {}, { "features.hair": 0}).first();
-  // t.deepEqual(result, {"name": "Steve", "age": 15, "features":{"eyes": "brown"}}, "should omit")
+  result = Mingo.find(data, {}, { "features.hair": 0}).first();
+  t.deepEqual(result, {"name": "Steve", "age": 15, "features":{"eyes": "brown"}}, "should omit");
+  t.notDeepEqual(data[0], result, "should not modify original");
 
   t.end();
 });

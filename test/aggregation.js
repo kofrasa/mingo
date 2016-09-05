@@ -144,17 +144,15 @@ test("Aggregation Pipeline Operators", function (t) {
     var flattened = Mingo.aggregate(samples.students, [
       {'$unwind': '$scores'}
     ]);
-    var grouped = Mingo.aggregate(
-      flattened,
-      [
-        {
-          '$group': {
-            '_id': '$scores.type', 'highest': {$max: '$scores.score'},
-            'lowest': {$min: '$scores.score'}, 'average': {$avg: '$scores.score'}, 'count': {$sum: 1}
-          }
+    var grouped = Mingo.aggregate(flattened, [{
+        '$group': {
+          '_id': '$scores.type', 'highest': {$max: '$scores.score'},
+          'lowest': {$min: '$scores.score'}, 'average': {$avg: '$scores.score'}, 'count': {$sum: 1}
         }
-      ]
-    );
+      }
+    ]);
+    // console.log(JSON.stringify(flattened));
+    console.log(JSON.stringify(grouped));
     t.ok(grouped.length === 3, "can group collection with $group");
     grouped = Mingo.aggregate(SalesData, [
       {$group: {max: {$max: "$price"}, sum: {$sum: "$price"}}}
