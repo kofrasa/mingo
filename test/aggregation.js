@@ -151,8 +151,6 @@ test("Aggregation Pipeline Operators", function (t) {
         }
       }
     ]);
-    // console.log(JSON.stringify(flattened));
-    console.log(JSON.stringify(grouped));
     t.ok(grouped.length === 3, "can group collection with $group");
     grouped = Mingo.aggregate(SalesData, [
       {$group: {max: {$max: "$price"}, sum: {$sum: "$price"}}}
