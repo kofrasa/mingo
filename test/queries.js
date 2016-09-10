@@ -67,17 +67,28 @@ test("Projection Operators", function (t) {
   expected = {"key0":[{"key1":[[[{"key2":[{"a":"value2"},{"a":"dummy"}]}]]]}]};
   result = Mingo.find(data, {"key0.key1.key2": "value"}, {"key0.key1.key2.a": 1}).first();
   t.deepEqual(result, expected, "should project only selected object graph from nested arrays");
+  t.notDeepEqual(data[0], result, "should not modify original");
 
   data = [{ "name": "Steve", "age": 15, "features": { "hair": "brown", "eyes": "brown" } } ];
   result = Mingo.find(data, {}, { "features.hair": 1 }).first();
   t.deepEqual(result, {"features":{hair: "brown"}}, "should project only selected object graph");
+  t.notDeepEqual(data[0], result, "should not modify original");
 
   t.throws(function () {
     Mingo.find(data, {}, { "features.hair": 0, "name": 1 }).first();
   }, Error, "should throw exception: Projection cannot have a mix of inclusion and exclusion");
 
   result = Mingo.find(data, {}, { "features.hair": 0}).first();
-  t.deepEqual(result, {"name": "Steve", "age": 15, "features":{"eyes": "brown"}}, "should omit");
+  t.deepEqual(result, {"name": "Steve", "age": 15, "features":{"eyes": "brown"}}, "should omit key");
+  t.notDeepEqual(data[0], result, "should not modify original");
+
+  data = [{ "name": "Steve", "age": 15, "features": ["hair", "eyes", "nose"]} ];
+  result = Mingo.find(data, {}, { "features.1": 0}).first();
+  t.deepEqual(result, {"name": "Steve", "age": 15, "features":["hair","nose"]}, "should omit second element in array");
+  t.notDeepEqual(data[0], result, "should not modify original");
+
+  result = Mingo.find(data, {}, { "features.1": 1}).first();
+  t.deepEqual(result, {"features":["eyes"]}, "should select only second element in array");
   t.notDeepEqual(data[0], result, "should not modify original");
 
   t.end();
