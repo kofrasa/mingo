@@ -36,7 +36,7 @@
     _ = root._; // get a reference to underscore
   }
 
-  function isType(value, type) { return value !== null && value !== undefined && value.constructor.name === type; }
+  function isType(value, type) { return Object.prototype.toString.call(value) == "[object " + type + "]" }
   function isBoolean(v) { return isType(v, "Boolean"); }
   function isString(v) { return isType(v, "String"); }
   function isNumber(v) { return isType(v, "Number"); }
@@ -45,8 +45,8 @@
   function isDate(v) { return isType(v, "Date"); }
   function isRegExp(v,t) { return isType(v, "RegExp"); }
   function isFunction(v,t) { return isType(v, "Function"); }
-  function isNull(v) { return v === null; }
-  function isUndefined(v) { return v === undefined; }
+  function isNull(v) { return isType(v, "Null"); }
+  function isUndefined(v) { return isType(v, "Undefined"); }
 
   var TYPES = [isBoolean, isString, isNumber, isNull, isUndefined, isArray, isObject, isDate, isFunction];
 
@@ -183,7 +183,7 @@
     var names = selector.split(".");
     var key = names[0];
     var next = names.length == 1 || names.slice(1).join(".");
-    var isIndex = key.match(/^\d+$/) !== null;
+    var isIndex = /^\d+$/.test(key);
 
     if (names.length == 1) {
       if (isArray(obj) && !isIndex) {
@@ -219,7 +219,11 @@
 
   function removeValue(obj, selector) {
     traverse(obj, selector, function (item, key) {
-      delete item[key];
+      if (isArray(item) && /^\d+$/.test(key)) {
+        item.splice(parseInt(key), 1);
+      } else if (isObject(item)) {
+        delete item[key];
+      }
     });
   }
 
