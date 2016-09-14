@@ -77,7 +77,7 @@
    * @private
    */
   function getValue(obj, field) {
-    return _.result(obj, field);
+    return _.get(obj, field);
   }
 
   /**
@@ -87,28 +87,29 @@
    * @returns {*}
    */
   function resolve(obj, selector) {
-    var names = selector.split(".");
-    var value = obj;
+    return _.get(obj, selector);
+    // var names = selector.split(".");
+    // var value = obj;
 
-    for (var i = 0; i < names.length; i++) {
-      var isText = names[i].match(/^\d+$/) === null;
+    // for (var i = 0; i < names.length; i++) {
+    //   var isText = names[i].match(/^\d+$/) === null;
 
-      if (isText && isArray(value)) {
-        var res = [];
-        _.each(value, function (item) {
-          res.push(resolve(item, names[i]));
-        });
-        value = res;
-      } else {
-        value = getValue(value, names[i]);
-      }
+    //   if (isText && isArray(value)) {
+    //     var res = [];
+    //     _.each(value, function (item) {
+    //       res.push(resolve(item, names[i]));
+    //     });
+    //     value = res;
+    //   } else {
+    //     value = getValue(value, names[i]);
+    //   }
 
-      if (value === undefined) {
-        break;
-      }
-    }
+    //   if (value === undefined) {
+    //     break;
+    //   }
+    // }
 
-    return value;
+    // return value;
   }
 
   /**
@@ -500,7 +501,7 @@
       this._result = _.filter(this._collection, this._query.test.bind(this._query));
       var pipeline = [];
 
-      console.warn('_result', this._result && this._result.length || null);
+      console.warn('_result1', this._result && this._result.length || null);
 
       _.each(['$sort', '$skip', '$limit', '$project'], function (op) {
         if (_.has(self._operators, op)) {
@@ -513,7 +514,7 @@
         var aggregator = new Mingo.Aggregator(pipeline);
         this._result = aggregator.run(this._result, this._query);
       }
-      console.warn('_result', this._result && this._result.length || null);
+      console.warn('_result2', this._result && this._result.length || null);
       return this._result;
     },
 
@@ -656,7 +657,7 @@
      * @returns {Array}
      */
     run: function (collection, query) {
-      console.warn('this._operators', this._operators);
+      // console.warn('this._operators', this._operators);
 
       if (!_.isEmpty(this._operators)) {
         // run aggregation pipeline
@@ -668,6 +669,7 @@
             if (query instanceof Mingo.Query) {
               console.warn('Mingo.Query', collection && collection.length || null, '\n\tkey=', key, '\n\tquery=', query);
               collection = pipelineOperators[key].call(query, collection, operator[key]);
+              console.warn('>>> method', key, 'returned', collection && collection.length || null);
             } else {
               console.warn('NOT Mingo.Query', collection && collection.length || null, '\n\tkey=', key, '\n\tquery=', query);
               collection = pipelineOperators[key](collection, operator[key]);
@@ -1005,7 +1007,7 @@
      * @returns {Object|*}
      */
     $limit: function (collection, value) {
-      return _.first(collection, value);
+      return _.take(collection, value);
     },
 
     /**
@@ -1016,7 +1018,7 @@
      * @returns {*}
      */
     $skip: function (collection, value) {
-      return _.rest(collection, value);
+      return _.drop(collection, value);
     },
 
     /**
@@ -1060,6 +1062,7 @@
           var grouped = groupBy(collection, function (obj) {
             return resolve(obj, key);
           });
+          console.warn('### GROUPED:', grouped && (grouped.groups && _.take(grouped.groups, 5)));
           var sortedIndex = {};
           var findIndex = function (k) { return sortedIndex[hashcode(k)]; }
 
@@ -1071,10 +1074,15 @@
           if (sortKeys[key] === -1) {
             indexKeys.reverse();
           }
+
+          console.warn('### INDEX.KEYS:', indexKeys && _.take(indexKeys, 5));
+
           collection = [];
           _.each(indexKeys, function (item) {
             Array.prototype.push.apply(collection, grouped.groups[findIndex(item)]);
           });
+          console.warn('### COLLECTION:', collection && collection.length);
+
         });
       }
       return collection;
@@ -1213,7 +1221,7 @@
      */
     $eq: function (a, b) {
       // flatten to reach nested values. fix for https://github.com/kofrasa/mingo/issues/19
-      a = _.flatten([a]);
+      a = _.flattenDeep([a]);
       a = _.find(a, function (val) {
         return _.isEqual(val, b);
       });
