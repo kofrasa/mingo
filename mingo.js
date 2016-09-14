@@ -501,20 +501,16 @@
       this._result = _.filter(this._collection, this._query.test.bind(this._query));
       var pipeline = [];
 
-      console.warn('_result1', this._result && this._result.length || null);
-
       _.each(['$sort', '$skip', '$limit', '$project'], function (op) {
         if (_.has(self._operators, op)) {
           pipeline.push(_.pick(self._operators, op));
         }
       });
 
-      console.warn('pipeline', pipeline);
       if (pipeline.length > 0) {
         var aggregator = new Mingo.Aggregator(pipeline);
         this._result = aggregator.run(this._result, this._query);
       }
-      console.warn('_result2', this._result && this._result.length || null);
       return this._result;
     },
 
@@ -657,7 +653,6 @@
      * @returns {Array}
      */
     run: function (collection, query) {
-      // console.warn('this._operators', this._operators);
 
       if (!_.isEmpty(this._operators)) {
         // run aggregation pipeline
@@ -667,11 +662,8 @@
           if (key.length == 1 && _.includes(ops(OP_PIPELINE), key[0])) {
             key = key[0];
             if (query instanceof Mingo.Query) {
-              console.warn('Mingo.Query', collection && collection.length || null, '\n\tkey=', key, '\n\tquery=', query);
               collection = pipelineOperators[key].call(query, collection, operator[key]);
-              console.warn('>>> method', key, 'returned', collection && collection.length || null);
             } else {
-              console.warn('NOT Mingo.Query', collection && collection.length || null, '\n\tkey=', key, '\n\tquery=', query);
               collection = pipelineOperators[key](collection, operator[key]);
             }
           } else {
@@ -1062,12 +1054,12 @@
           var grouped = groupBy(collection, function (obj) {
             return resolve(obj, key);
           });
-          console.warn('### GROUPED:', grouped && (grouped.groups && _.take(grouped.groups, 5)));
           var sortedIndex = {};
           var findIndex = function (k) { return sortedIndex[hashcode(k)]; }
-
-          var indexKeys = _.sortBy(grouped.keys, function (item, i) {
+          var i = 0;
+          var indexKeys = _.sortBy(grouped.keys, function (item) {
             sortedIndex[hashcode(item)] = i;
+            i++;
             return item;
           });
 
@@ -1075,13 +1067,10 @@
             indexKeys.reverse();
           }
 
-          console.warn('### INDEX.KEYS:', indexKeys && _.take(indexKeys, 5));
-
           collection = [];
           _.each(indexKeys, function (item) {
             Array.prototype.push.apply(collection, grouped.groups[findIndex(item)]);
           });
-          console.warn('### COLLECTION:', collection && collection.length);
 
         });
       }
