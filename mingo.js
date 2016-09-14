@@ -87,29 +87,29 @@
    * @returns {*}
    */
   function resolve(obj, selector) {
-    return _.get(obj, selector);
-    // var names = selector.split(".");
-    // var value = obj;
+    // return _.get(obj, selector);
+    var names = selector.split(".");
+    var value = obj;
 
-    // for (var i = 0; i < names.length; i++) {
-    //   var isText = names[i].match(/^\d+$/) === null;
+    for (var i = 0; i < names.length; i++) {
+      var isText = names[i].match(/^\d+$/) === null;
 
-    //   if (isText && isArray(value)) {
-    //     var res = [];
-    //     _.each(value, function (item) {
-    //       res.push(resolve(item, names[i]));
-    //     });
-    //     value = res;
-    //   } else {
-    //     value = getValue(value, names[i]);
-    //   }
+      if (isText && isArray(value)) {
+        var res = [];
+        _.each(value, function (item) {
+          res.push(resolve(item, names[i]));
+        });
+        value = res;
+      } else {
+        value = getValue(value, names[i]);
+      }
 
-    //   if (value === undefined) {
-    //     break;
-    //   }
-    // }
+      if (value === undefined) {
+        break;
+      }
+    }
 
-    // return value;
+    return value;
   }
 
   /**
