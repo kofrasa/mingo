@@ -1,5 +1,5 @@
 var test = require('tape'),
-  _ = require('underscore'),
+  _ = require('lodash'),
   JSON = require('JSON'),
   Backbone = require('backbone'),
   samples = require('./samples'),
