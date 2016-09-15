@@ -156,7 +156,6 @@ test("Aggregation Pipeline Operators", function (t) {
       {$group: {max: {$max: "$price"}, sum: {$sum: "$price"}}}
     ]);
 
-    console.warn('\n>###> grouped[0]', grouped[0]);
     t.ok(grouped.length === 1 && grouped[0]['max'] === 20, "can compute $max");
     t.ok(grouped.length === 1 && grouped[0]['sum'] === 45, "can compute $sum");
 

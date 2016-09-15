@@ -20,8 +20,6 @@ test("10gen Education: M101P", function (t) {
       type: "exam",
       score: {$gte: 65}
     });
-    var studentSorted = cursor.sort({'score': 1}).limit(1);
-    console.warn('\n\n****#### studentSorted', studentSorted && studentSorted._result);
     var student = cursor.sort({'score': 1}).limit(1).first();
     t.equal(student.student_id, 22, "Student ID with lowest exam score is 22");
   });

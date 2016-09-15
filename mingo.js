@@ -1568,10 +1568,11 @@
      * @returns {*}
      */
     $max: function (collection, expr) {
-      var obj = _.max(collection, function (obj) {
-          return computeValue(obj, expr, null);
+      var mapped = _.map(collection, function (obj) {
+        return computeValue(obj, expr, null);
       });
-      return computeValue(obj, expr, null);
+
+      return _.max(mapped);
     },
 
     /**
