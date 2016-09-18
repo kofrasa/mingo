@@ -996,7 +996,7 @@
      * @returns {Object|*}
      */
     $limit: function (collection, value) {
-      return _.take(collection, value);
+      return collection && collection.length > value ? collection.slice(0, value) : collection;
     },
 
     /**
@@ -1550,7 +1550,7 @@
         // take a short cut if expr is number literal
         return collection.length * expr;
       }
-      return _.reduce(collection, function (acc, obj) {
+      return collection && collection.reduce(function(acc, obj) {
         // pass empty field to avoid naming conflicts with fields on documents
         var n = computeValue(obj, expr, null);
         return isNumber(n)? acc + n : acc;
@@ -1685,7 +1685,7 @@
      */
     $multiply: function (obj, expr) {
       var args = computeValue(obj, expr, null);
-      return _.reduce(args, function (memo, num) {
+      return args && args.reduce(function (memo, num) {
         return memo * num;
       }, 1);
     },
