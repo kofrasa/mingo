@@ -1954,13 +1954,13 @@
      * @param expr
      */
     $setEquals: function (obj, expr) {
-      var args = computeValue(obj, expr, null);
-      var first = _.uniq(args[0]);
-      var second = _.uniq(args[1]);
+      var [a, b] = computeValue(obj, expr, null);
+      var first = _.uniq(a);
+      var second = _.uniq(b);
       if (first.length !== second.length) {
         return false;
       }
-      return _.difference(first, second).length === 0;
+      return first.filter(a => !second.includes(a)).length === 0;
     },
 
     /**
@@ -1990,7 +1990,7 @@
      */
     $setUnion: function (obj, expr) {
       var [a, b] = computeValue(obj, expr, null);
-      return a.concat(b);
+      return _.union(a, b);
     },
 
     /**
@@ -2000,7 +2000,7 @@
      */
     $setIsSubset: function (obj, expr) {
       var [a, b] = computeValue(obj, expr, null);
-      return a.filter(a => b.includes(a)).length === a.length;
+      return a.filter(a => b && b.includes(a)).length === a.length;
     },
 
     /**
@@ -2011,7 +2011,7 @@
     $anyElementTrue: function (obj, expr) {
       // mongodb nests the array expression in another
       var args = computeValue(obj, expr, null)[0];
-      return args.some(arg => arg)
+      return args.some(arg => !!arg)
     },
 
     /**
