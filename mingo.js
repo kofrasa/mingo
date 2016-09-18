@@ -352,7 +352,7 @@
       for (var field in this._criteria) {
         if (_.has(this._criteria, field)) {
           var expr = this._criteria[field];
-          if (['$and', '$or', '$nor', '$where'].indexOf(field) !== -1) {
+          if (['$and', '$or', '$nor', '$where'].indexOf(field) > -1) {
             this._processOperator(field, field, expr);
           } else {
             // normalize expression
@@ -368,6 +368,7 @@
     },
 
     _processOperator: function (field, operator, value) {
+
       if (ops(OP_QUERY).indexOf(operator) !== -1) {
         this._compiled.push(queryOperators[operator](field, value));
       } else {
@@ -381,12 +382,8 @@
      * @returns {boolean}
      */
     test: function (obj) {
-      for (var i = 0; i < this._compiled.length; i++) {
-        if (!this._compiled[i].test(obj)) {
-          return false;
-        }
-      }
-      return true;
+      return this._compiled && this._compiled.length > 0
+       && this._compiled.every(function({test}) {return test(obj);});
     },
 
     /**
@@ -1019,7 +1016,7 @@
      */
     $unwind: function (collection, expr) {
       var field = expr.substr(1);
-      return collection.reduce(function(result, obj) {
+      return collection && collection.reduce(function(result, obj) {
         var value = getValue(obj, field);
         if (isArray(value)) {
           value.forEach(function (item) {
@@ -1088,16 +1085,11 @@
       if (!isArray(value)) {
         throw new Error("Invalid expression for $and criteria");
       }
-      var queries = value.map(expr => new Mingo.Query(expr));
+      var queries = value.map(function(expr) { return new Mingo.Query(expr); });
 
       return {
-        test: function (obj) {
-          for (var i = 0; i < queries.length; i++) {
-            if (!queries[i].test(obj)) {
-              return false;
-            }
-          }
-          return true;
+        test: function(obj) {
+          return queries.every(function({test}) { return test(obj); });
         }
       };
     },
@@ -1113,17 +1105,13 @@
       if (!isArray(value)) {
         throw new Error("Invalid expression for $or criteria");
       }
-      var queries = value.map(expr => new Mingo.Query(expr));
+      var queries = value.map(function(expr) { return new Mingo.Query(expr); });
 
       return {
-        test: function (obj) {
-          for (var i = 0; i < queries.length; i++) {
-            if (queries[i].test(obj)) {
-              return true;
-            }
-          }
-          return false;
+        test: function(obj) {
+          return queries.every(function({test}) { return test(obj); });
         }
+        // test: obj => queries.every(function({test}) {return test(obj);})
       };
     },
 
@@ -1707,7 +1695,7 @@
       var args = computeValue(obj, expr, null);
       // does not allow concatenation with nulls
 
-      if (args.every(arg => arg !== null && arg !== undefined)) {
+      if (!isArray(args) || args.every(arg => arg !== null && arg !== undefined)) {
         return null;
       }
       return args.join("");
