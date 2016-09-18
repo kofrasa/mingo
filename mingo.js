@@ -283,7 +283,7 @@
     // normalize object expression
     if (isObject(expr)) {
       var keys = Object.keys(expr);
-      var notQuery = _.intersection(ops(OP_QUERY), keys).length === 0;
+      var notQuery = ops(OP_QUERY).every(key => !keys.includes(key));
 
       // no valid query operator found, so we do simple comparison
       if (notQuery) {
@@ -1234,7 +1234,7 @@
      */
     $in: function (a, b) {
       a = isArray(a) ? a : [a];
-      return _.intersection(a, b).length > 0;
+      return a && a.some(a => b.includes(a));
     },
 
     /**
@@ -1365,7 +1365,7 @@
             matched = matched || self.$elemMatch(a, b[i].$elemMatch);
           } else {
             // order of arguments matter. lodash maintains order after intersection
-            return _.intersection(b, a).length === b.length;
+            return b && b.every(b => a.includes(b));
           }
         }
       }
@@ -1969,8 +1969,8 @@
      * @param expr
      */
     $setIntersection: function (obj, expr) {
-      var args = computeValue(obj, expr, null);
-      return _.intersection(args[0], args[1]);
+      var [a, b] = computeValue(obj, expr, null);
+      return a.filter(a => b.includes(a));
     },
 
     /**
@@ -1979,8 +1979,8 @@
      * @param expr
      */
     $setDifference: function (obj, expr) {
-      var args = computeValue(obj, expr, null);
-      return _.difference(args[0], args[1]);
+      var [a, b] = computeValue(obj, expr, null);
+      return a.filter(a => !b.includes(a));
     },
 
     /**
@@ -1989,8 +1989,8 @@
      * @param expr
      */
     $setUnion: function (obj, expr) {
-      var args = computeValue(obj, expr, null);
-      return _.union(args[0], args[1]);
+      var [a, b] = computeValue(obj, expr, null);
+      return a.concat(b);
     },
 
     /**
@@ -1999,8 +1999,8 @@
      * @param expr
      */
     $setIsSubset: function (obj, expr) {
-      var args = computeValue(obj, expr, null);
-      return _.intersection(args[0], args[1]).length === args[0].length;
+      var [a, b] = computeValue(obj, expr, null);
+      return a.filter(a => b.includes(a)).length === a.length;
     },
 
     /**
@@ -2011,11 +2011,7 @@
     $anyElementTrue: function (obj, expr) {
       // mongodb nests the array expression in another
       var args = computeValue(obj, expr, null)[0];
-      for (var i = 0; i < args.length; i++) {
-        if (!!args[i])
-          return true;
-      }
-      return false;
+      return args.some(arg => arg)
     },
 
     /**
