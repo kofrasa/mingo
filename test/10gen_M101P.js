@@ -1,6 +1,6 @@
 var test = require('tape'),
   fs = require('fs'),
-  _ = require('underscore'),
+  _ = require('lodash'),
   JSON = require('JSON'),
   Backbone = require('backbone'),
   Mingo = require('../mingo');

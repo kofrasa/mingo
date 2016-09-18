@@ -30,10 +30,10 @@
     if (typeof module !== 'undefined') {
       module.exports = Mingo;
     }
-    _ = require("underscore"); // get a reference to underscore
+    _ = require("lodash"); // get a reference to lodash
   } else {
     root.Mingo = Mingo;
-    _ = root._; // get a reference to underscore
+    _ = root._; // get a reference to lodash
   }
 
   function isType(value, type) { return Object.prototype.toString.call(value) == "[object " + type + "]" }
@@ -77,7 +77,7 @@
    * @private
    */
   function getValue(obj, field) {
-    return _.result(obj, field);
+    return _.get(obj, field);
   }
 
   /**
@@ -87,6 +87,7 @@
    * @returns {*}
    */
   function resolve(obj, selector) {
+    // return _.get(obj, selector);
     var names = selector.split(".");
     var value = obj;
 
@@ -289,7 +290,7 @@
       }
 
       // ensure valid regex
-      if (_.contains(keys, "$regex")) {
+      if (_.includes(keys, "$regex")) {
         var regex = expr['$regex'];
         var options = expr['$options'] || "";
         var modifiers = "";
@@ -350,7 +351,7 @@
       for (var field in this._criteria) {
         if (_.has(this._criteria, field)) {
           var expr = this._criteria[field];
-          if (_.contains(['$and', '$or', '$nor', '$where'], field)) {
+          if (_.includes(['$and', '$or', '$nor', '$where'], field)) {
             this._processOperator(field, field, expr);
           } else {
             // normalize expression
@@ -366,7 +367,7 @@
     },
 
     _processOperator: function (field, operator, value) {
-      if (_.contains(ops(OP_QUERY), operator)) {
+      if (_.includes(ops(OP_QUERY), operator)) {
         this._compiled.push(queryOperators[operator](field, value));
       } else {
         throw new Error("Invalid query operator '" + operator + "' detected");
@@ -497,7 +498,7 @@
       }
 
       // filter collection
-      this._result = _.filter(this._collection, this._query.test, this._query);
+      this._result = _.filter(this._collection, this._query.test.bind(this._query));
       var pipeline = [];
 
       _.each(['$sort', '$skip', '$limit', '$project'], function (op) {
@@ -652,12 +653,13 @@
      * @returns {Array}
      */
     run: function (collection, query) {
+
       if (!_.isEmpty(this._operators)) {
         // run aggregation pipeline
         for (var i = 0; i < this._operators.length; i++) {
           var operator = this._operators[i];
           var key = _.keys(operator);
-          if (key.length == 1 && _.contains(ops(OP_PIPELINE), key[0])) {
+          if (key.length == 1 && _.includes(ops(OP_PIPELINE), key[0])) {
             key = key[0];
             if (query instanceof Mingo.Query) {
               collection = pipelineOperators[key].call(query, collection, operator[key]);
@@ -723,7 +725,7 @@
     });
 
     // ensure correct type specified
-    if (!_.contains([OP_AGGREGATE, OP_GROUP, OP_PIPELINE, OP_PROJECTION, OP_QUERY], type)) {
+    if (!_.includes([OP_AGGREGATE, OP_GROUP, OP_PIPELINE, OP_PROJECTION, OP_QUERY], type)) {
       throw new Error("Could not identify type '" + type + "'");
     }
 
@@ -734,7 +736,7 @@
       if (!/^\$\w+$/.test(op)) {
         throw new Error("Invalid operator name '" + op + "'");
       }
-      if (_.contains(operators, op)) {
+      if (_.includes(operators, op)) {
         throw new Error("Operator " + op + " is already defined for " + type + " operators");
       }
     });
@@ -902,7 +904,7 @@
         assert(check[0] !== check[1],"Projection cannot have a mix of inclusion and exclusion.");
       }
 
-      if (_.contains(objKeys, settings.key)) {
+      if (_.includes(objKeys, settings.key)) {
         var id = expr[settings.key];
         if (id === 0 || id === false) {
           objKeys = _.without(objKeys, settings.key);
@@ -945,7 +947,7 @@
           } else if (isObject(subExpr)) {
             var operator = _.keys(subExpr);
             operator = operator.length > 1 ? false : operator[0];
-            if (operator !== false && _.contains(ops(OP_PROJECTION), operator)) {
+            if (operator !== false && _.includes(ops(OP_PROJECTION), operator)) {
               // apply the projection operator on the operator expression for the key
               value = projectionOperators[operator](obj, subExpr[operator], key);
               if (operator == '$slice') {
@@ -997,7 +999,7 @@
      * @returns {Object|*}
      */
     $limit: function (collection, value) {
-      return _.first(collection, value);
+      return _.take(collection, value);
     },
 
     /**
@@ -1008,7 +1010,7 @@
      * @returns {*}
      */
     $skip: function (collection, value) {
-      return _.rest(collection, value);
+      return _.drop(collection, value);
     },
 
     /**
@@ -1054,19 +1056,22 @@
           });
           var sortedIndex = {};
           var findIndex = function (k) { return sortedIndex[hashcode(k)]; }
-
-          var indexKeys = _.sortBy(grouped.keys, function (item, i) {
+          var i = 0;
+          var indexKeys = _.sortBy(grouped.keys, function (item) {
             sortedIndex[hashcode(item)] = i;
+            i++;
             return item;
           });
 
           if (sortKeys[key] === -1) {
             indexKeys.reverse();
           }
+
           collection = [];
           _.each(indexKeys, function (item) {
             Array.prototype.push.apply(collection, grouped.groups[findIndex(item)]);
           });
+
         });
       }
       return collection;
@@ -1205,7 +1210,7 @@
      */
     $eq: function (a, b) {
       // flatten to reach nested values. fix for https://github.com/kofrasa/mingo/issues/19
-      a = _.flatten([a]);
+      a = _.flattenDeep([a]);
       a = _.find(a, function (val) {
         return _.isEqual(val, b);
       });
@@ -1359,10 +1364,10 @@
       var matched = false;
       if (isArray(a) && isArray(b)) {
         for (var i = 0; i < b.length; i++) {
-          if (isObject(b[i]) && _.contains(_.keys(b[i]), "$elemMatch")) {
+          if (isObject(b[i]) && _.includes(_.keys(b[i]), "$elemMatch")) {
             matched = matched || self.$elemMatch(a, b[i].$elemMatch);
           } else {
-            // order of arguments matter. underscore maintains order after intersection
+            // order of arguments matter. lodash maintains order after intersection
             return _.intersection(b, a).length === b.length;
           }
         }
@@ -1563,10 +1568,11 @@
      * @returns {*}
      */
     $max: function (collection, expr) {
-      var obj = _.max(collection, function (obj) {
-          return computeValue(obj, expr, null);
+      var mapped = _.map(collection, function (obj) {
+        return computeValue(obj, expr, null);
       });
-      return computeValue(obj, expr, null);
+
+      return _.max(mapped);
     },
 
     /**
@@ -1712,7 +1718,7 @@
     $concat: function (obj, expr) {
       var args = computeValue(obj, expr, null);
       // does not allow concatenation with nulls
-      if (_.contains(args, null) || _.contains(args, undefined)) {
+      if (_.includes(args, null) || _.includes(args, undefined)) {
         return null;
       }
       return args.join("");
@@ -2352,7 +2358,7 @@
    * @returns {*}
    */
   function accumulate(collection, field, expr) {
-    if (_.contains(ops(OP_GROUP), field)) {
+    if (_.includes(ops(OP_GROUP), field)) {
       return groupOperators[field](collection, expr);
     }
 
@@ -2363,7 +2369,7 @@
           result[key] = accumulate(collection, key, expr[key]);
           // must run ONLY one group operator per expression
           // if so, return result of the computed value
-          if (_.contains(ops(OP_GROUP), key)) {
+          if (_.includes(ops(OP_GROUP), key)) {
             result = result[key];
             // if there are more keys in expression this is bad
             if (_.keys(expr).length > 1) {
@@ -2390,7 +2396,7 @@
   function computeValue(obj, expr, field) {
 
     // if the field of the object is a valid operator
-    if (_.contains(ops(OP_AGGREGATE), field)) {
+    if (_.includes(ops(OP_AGGREGATE), field)) {
       return aggregateOperators[field](obj, expr);
     }
 
@@ -2414,7 +2420,7 @@
 
             // must run ONLY one aggregate operator per expression
             // if so, return result of the computed value
-            if (_.contains(ops(OP_AGGREGATE), key)) {
+            if (_.includes(ops(OP_AGGREGATE), key)) {
               result = result[key];
               // if there are more keys in expression this is bad
               if (_.keys(expr).length > 1) {

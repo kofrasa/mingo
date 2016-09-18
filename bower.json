@@ -13,7 +13,7 @@
     "node"
   ],
   "dependencies": {
-    "underscore": ">=1.8.2"
+    "lodash": ">=4.15.0"
   },
   "keywords": [
     "util",

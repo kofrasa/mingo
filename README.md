@@ -7,15 +7,15 @@ javascript objects in both client and server-side environments.
 [![build status](https://secure.travis-ci.org/kofrasa/mingo.png)](http://travis-ci.org/kofrasa/mingo)
 
 ## Dependencies
-[underscore](https://github.com/jashkenas/underscore)
+[lodash](https://github.com/lodash/lodash/)
 
 ## Installing
 ```$ npm install mingo```
 
 In browser
 ```html
-<!-- DO NOT FORGET Underscore -->
-<script type="text/javascript" src="./underscore-min.js"></script>
+<!-- DO NOT FORGET LODASH -->
+<script type="text/javascript" src="./lodash.min.js"></script>
 <script type="text/javascript" src="./mingo.min.js"></script>
 ```
 
