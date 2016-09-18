@@ -889,7 +889,7 @@
 
       // validate inclusion and exclusion
       var check = [false, false];
-      for (var i = 0; i < objKeys.length; i++) {
+      for (let i = 0; i < objKeys.length; i++) {
         var k = objKeys[i];
         var v = expr[k];
         if (k === settings.key) continue;
@@ -912,7 +912,7 @@
         objKeys.push(settings.key);
       }
 
-      for (var i = 0; i < collection.length; i++) {
+      for (let i = 0; i < collection.length; i++) {
 
         var obj = collection[i];
         var cloneObj = {};
@@ -1018,11 +1018,8 @@
      * @returns {Array}
      */
     $unwind: function (collection, expr) {
-      var result = [];
       var field = expr.substr(1);
-      for (var i = 0; i < collection.length; i++) {
-        var obj = collection[i];
-        // must throw an error if value is not an array
+      return collection.reduce(function(result, obj) {
         var value = getValue(obj, field);
         if (isArray(value)) {
           value.forEach(function (item) {
@@ -1031,10 +1028,10 @@
             result.push(tmp);
           });
         } else {
-          throw new Error("Target field '" + field + "' is not of type Array.");
+          throw new Error(`Target field ${field} is not of type Array.`);
         }
-      }
-      return result;
+        return result;
+      }, []);
     },
 
     /**
@@ -1091,10 +1088,7 @@
       if (!isArray(value)) {
         throw new Error("Invalid expression for $and criteria");
       }
-      var queries = [];
-      value.forEach(function (expr) {
-        queries.push(new Mingo.Query(expr));
-      });
+      var queries = value.map(expr => new Mingo.Query(expr));
 
       return {
         test: function (obj) {
@@ -1119,10 +1113,7 @@
       if (!isArray(value)) {
         throw new Error("Invalid expression for $or criteria");
       }
-      var queries = [];
-      value.forEach(function (expr) {
-        queries.push(new Mingo.Query(expr));
-      });
+      var queries = value.map(expr => new Mingo.Query(expr));
 
       return {
         test: function (obj) {
@@ -1208,7 +1199,7 @@
     $eq: function (a, b) {
       // flatten to reach nested values. fix for https://github.com/kofrasa/mingo/issues/19
       a = _.flattenDeep([a]);
-      a = _.find(a, function (val) {
+      a = a.find(function (val) {
         return _.isEqual(val, b);
       });
       return a !== undefined;
@@ -1257,7 +1248,7 @@
      */
     $lt: function (a, b) {
       a = isArray(a) ? a : [a];
-      a = _.find(a, function (val) {
+      a = a.find(function (val) {
         return val < b
       });
       return a !== undefined;
@@ -1272,7 +1263,7 @@
      */
     $lte: function (a, b) {
       a = isArray(a) ? a : [a];
-      a = _.find(a, function (val) {
+      a = a.find(function (val) {
         return val <= b
       });
       return a !== undefined;
@@ -1287,7 +1278,7 @@
      */
     $gt: function (a, b) {
       a = isArray(a) ? a : [a];
-      a = _.find(a, function (val) {
+      a = a.find(function (val) {
         return val > b
       });
       return a !== undefined;
@@ -1302,7 +1293,7 @@
      */
     $gte: function (a, b) {
       a = isArray(a) ? a : [a];
-      a = _.find(a, function (val) {
+      a = a.find(function (val) {
         return val >= b
       });
       return a !== undefined;
@@ -1317,7 +1308,7 @@
      */
     $mod: function (a, b) {
       a = isArray(a) ? a : [a];
-      a = _.find(a, function (val) {
+      a = a.find(function (val) {
         return isNumber(val) && isArray(b) && b.length === 2 && (val % b[0]) === b[1];
       });
       return a !== undefined;
@@ -1332,7 +1323,7 @@
      */
     $regex: function (a, b) {
       a = isArray(a) ? a : [a];
-      a = _.find(a, function (val) {
+      a = a.find(function (val) {
         return isString(val) && isRegExp(b) && (!!val.match(b));
       });
       return a !== undefined;
@@ -1550,7 +1541,7 @@
         // take a short cut if expr is number literal
         return collection.length * expr;
       }
-      return _.reduce(collection, function (acc, obj) {
+      return collection && collection.reduce(function (acc, obj) {
         // pass empty field to avoid naming conflicts with fields on documents
         var n = computeValue(obj, expr, null);
         return isNumber(n)? acc + n : acc;
@@ -1685,7 +1676,7 @@
      */
     $multiply: function (obj, expr) {
       var args = computeValue(obj, expr, null);
-      return _.reduce(args, function (memo, num) {
+      return args.reduce(function(memo, num) {
         return memo * num;
       }, 1);
     },
