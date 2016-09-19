@@ -1,5 +1,5 @@
 var test = require('tape'),
-  _ = require('underscore'),
+  _ = require('lodash'),
   samples = require('./samples'),
   Mingo = require('../mingo');
 

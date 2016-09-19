@@ -8,27 +8,45 @@
   },
   "scripts": {
     "test": "tape test/*.js",
-    "build": "uglifyjs mingo.js -c -m -o mingo.min.js --source-map mingo.min.map"
+    "build-old": "uglifyjs mingo.js -c -m -o mingo.min.js --source-map mingo.min.map",
+    "start": "npm run build && http-server -p 1997",
+    "build": "NODE_ENV=development webpack --config ./webpack.config.js",
+    "release": "NODE_ENV=production  webpack --config ./webpack.config.js",
+    "watch": "webpack --watch --config ./webpack.config.js"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/kofrasa/mingo.git"
   },
-  "files": ["mingo.js", "mingo.min.js", "README.md", "LICENSE"],
+  "files": [
+    "mingo.js",
+    "mingo.min.js",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=6.0.0"
+  },
   "dependencies": {
-    "underscore": ">=1.8.2"
+    "lodash": ">=4.15.0"
   },
   "devDependencies": {
-    "underscore": ">=1.8.2",
-    "backbone": ">=1.3.0",
-    "tape": ">=4.5.1",
     "JSON": ">=1.0.0",
-    "uglify-js": "2.6.2",
+    "babel-core": "^6.14.0",
+    "babel-loader": "^6.2.5",
+    "babel-plugin-lodash": "^3.2.8",
+    "babel-preset-es2015": "^6.14.0",
+    "backbone": ">=1.3.0",
     "gulp": ">=3.9.x",
     "gulp-cli": ">=1.2.x",
-    "gulp-uglify": ">=1.5.x",
+    "gulp-plumber": ">=1.1.x",
     "gulp-rename": ">=1.2.x",
-    "gulp-plumber": ">=1.1.x"
+    "gulp-uglify": ">=1.5.x",
+    "lodash": ">=4.15.0",
+    "lodash-webpack-plugin": "^0.10.0",
+    "tape": ">=4.5.1",
+    "uglify-js": "2.6.2",
+    "webpack": "^1.13.2"
   },
   "keywords": [
     "util",

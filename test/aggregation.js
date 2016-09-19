@@ -1,5 +1,5 @@
 var test = require('tape'),
-  _ = require('underscore'),
+  _ = require('lodash'),
   Mingo = require('../mingo'),
   samples = require('./samples');
 
@@ -52,7 +52,7 @@ test("Aggregation Pipeline Operators", function (t) {
 
     var fields = _.keys(result[0]);
     t.equal(fields.length, 4, "can project fields with $project");
-    t.ok(_.contains(fields, 'type'), "can rename fields with $project");
+    t.ok(_.includes(fields, 'type'), "can rename fields with $project");
     var temp = result[0]['details'];
     t.ok(_.isObject(temp) && _.keys(temp).length === 1, "can create and populate sub-documents");
 
