@@ -14,8 +14,6 @@ javascript objects in both client and server-side environments.
 
 In browser
 ```html
-<!-- DO NOT FORGET LODASH -->
-<script type="text/javascript" src="./lodash.min.js"></script>
 <script type="text/javascript" src="./mingo.min.js"></script>
 ```
 
