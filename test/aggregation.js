@@ -1,8 +1,8 @@
 var test = require('tape'),
-  _ = require('underscore'),
   Mingo = require('../mingo'),
   samples = require('./samples');
 
+var _ = Mingo._internal();
 
 var SalesData = [
   { "_id" : 1, "item" : "abc", "price" : 10, "quantity" : 2, "date" : new Date("2014-01-01T08:00:00Z") },
@@ -50,11 +50,11 @@ test("Aggregation Pipeline Operators", function (t) {
       ]
     );
 
-    var fields = _.keys(result[0]);
+    var fields = Object.keys(result[0]);
     t.equal(fields.length, 4, "can project fields with $project");
-    t.ok(_.contains(fields, 'type'), "can rename fields with $project");
+    t.ok(fields.includes('type'), "can rename fields with $project");
     var temp = result[0]['details'];
-    t.ok(_.isObject(temp) && _.keys(temp).length === 1, "can create and populate sub-documents");
+    t.ok(_.isObject(temp) && Object.keys(temp).length === 1, "can create and populate sub-documents");
 
     // examples from mongoDB website
 
@@ -114,7 +114,7 @@ test("Aggregation Pipeline Operators", function (t) {
       ]
     );
 
-    fields = _.keys(result[0]);
+    fields = Object.keys(result[0]);
     t.ok(fields.length === 2, "2/3 fields are included. Instead: " + fields.length);
     t.ok(fields.indexOf('name') === -1, "name is excluded");
     t.ok(fields.indexOf('_id') >= 0, "_id is included");
@@ -132,7 +132,7 @@ test("Aggregation Pipeline Operators", function (t) {
       ]
     );
 
-    fields = _.keys(result[0]);
+    fields = Object.keys(result[0]);
     t.ok(fields.length === 2, "2/3 fields are included. Instead: " + fields.length);
     t.ok(fields.indexOf('name') >= 0, "name is included");
     t.ok(fields.indexOf('_id') === -1, "_id is excluded");

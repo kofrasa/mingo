@@ -1,10 +1,9 @@
 var test = require('tape'),
-  _ = require('underscore'),
-  JSON = require('JSON'),
   Backbone = require('backbone'),
   samples = require('./samples'),
   Mingo = require('../mingo');
 
+var _ = Mingo._internal();
 
 var MingoCollection = Backbone.Collection.extend(Mingo.CollectionMixin);
 
@@ -106,7 +105,7 @@ test("JSON Stream filtering", function (t) {
   var count = 0;
   qs.on('data', function (data) {
     // projecting only {name, _id}
-    found2Keys = _.keys(data).length == 2 && found2Keys;
+    found2Keys = Object.keys(data).length == 2 && found2Keys;
     count++;
   });
 

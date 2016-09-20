@@ -1,5 +1,4 @@
 var test = require('tape'),
-  _ = require('underscore'),
   Mingo = require('../mingo'),
   samples = require('./samples');
 
@@ -45,7 +44,7 @@ test('Comparison, Evaluation, and Element Operators', function (t) {
     [{$where: "this.jobs === 6 && this.grades.length < 10"}, "can match with $where expression"]
   ];
 
-  _.each(queries, function (q) {
+  queries.forEach(function (q) {
     t.ok(Mingo.Query(q[0]).test(obj), q[1]);
   });
 });
@@ -114,7 +113,7 @@ test("Logical Operators", function (t) {
     [{$nor: [{firstName: "Enoch"}, {age: {$exists: true}}]}, "can use conjunction false NOR false"]
   ];
 
-  _.each(queries, function (q) {
+  queries.forEach(function (q) {
     if (q.length === 2) {
       t.ok(new Mingo.Query(q[0]).test(obj), q[1]);
     } else if (q.length === 3) {
@@ -156,7 +155,7 @@ test("Array Operators", function (t) {
   });
 
   var result = true;
-  _.each(data, function (obj) {
+  data.forEach(function (obj) {
     result = result && q.test(obj);
   });
 

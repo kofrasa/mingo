@@ -7,28 +7,29 @@
     "test": "test"
   },
   "scripts": {
-    "test": "tape test/*.js",
-    "build": "uglifyjs mingo.js -c -m -o mingo.min.js --source-map mingo.min.map"
+    "test": "make test",
+    "build": "make build"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/kofrasa/mingo.git"
   },
-  "files": ["mingo.js", "mingo.min.js", "README.md", "LICENSE"],
-  "dependencies": {
-    "underscore": ">=1.8.2"
-  },
+  "files": [
+    "mingo.js",
+    "dist/mingo.min.js",
+    "dist/mingo.min.js.gz",
+    "dist/mingo.min.map",
+    "Makefile",
+    "LICENSE",
+    "README.md",
+    "CONTRIBUTORS.md",
+    "CHANGELOG.md"
+  ],
   "devDependencies": {
-    "underscore": ">=1.8.2",
-    "backbone": ">=1.3.0",
-    "tape": ">=4.5.1",
-    "JSON": ">=1.0.0",
-    "uglify-js": "2.6.2",
+    "backbone": ">=1.3.x",
     "gulp": ">=3.9.x",
-    "gulp-cli": ">=1.2.x",
-    "gulp-uglify": ">=1.5.x",
-    "gulp-rename": ">=1.2.x",
-    "gulp-plumber": ">=1.1.x"
+    "tape": ">=4.x.x",
+    "uglify-js": "2.x.x"
   },
   "keywords": [
     "util",

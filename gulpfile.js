@@ -2,32 +2,25 @@
  * Created by francis on 3/27/15.
  */
 
-var gulp = require('gulp'),
-  uglify = require('gulp-uglify'),
-  rename = require('gulp-rename'),
-  plumber = require('gulp-plumber'),
+var gulp = require('gulp')
   exec = require('child_process').exec;
 
 gulp.task('build', function (cb) {
-  exec("npm run-script build", function (err) {
-    if (err) {
-      return cb(err);
-    }
+  exec("npm run build", function (err) {
+    if (err) return cb(err);
     cb();
-  })
+  });
 });
 
 gulp.task('test', function (cb) {
   exec("npm test", function (err) {
-    if (err) {
-      return cb(err);
-    }
+    if (err) return cb(err);
     cb();
   })
 });
 
 gulp.task('watch', function (){
-  gulp.watch('mingo.js', ['build', 'test']);
+  gulp.watch('mingo.js', ['test', 'build']);
   gulp.watch('test/*.js', ['test']);
 });
 

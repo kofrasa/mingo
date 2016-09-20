@@ -3,6 +3,8 @@ var test = require('tape'),
   samples = require('./samples'),
   Mingo = require('../mingo');
 
+
+
 test("Custom Operators", function (t) {
   t.test("custom pipeline operator", function (t) {
     t.plan(1);
@@ -18,7 +20,7 @@ test("Custom Operators", function (t) {
     });
 
     var result = Mingo.aggregate(samples.gradesComplex, [{$unwind: "$scores"}, {$pluck: "scores.score"}]);
-    t.ok(_.isNumber(result[0]), "can add new pipeline operator");
+    t.ok(typeof result[0] === "number", "can add new pipeline operator");
   });
 
   t.test("custom query operator", function (t) {
@@ -58,11 +60,11 @@ test("Custom Operators", function (t) {
         '$stddev': function (collection, expr) {
           var result = Mingo.aggregate(collection, [{$group: {avg: {$avg: expr}}}]);
           var avg = result[0].avg;
-          var diffs = _.map(collection, function (item) {
+          var diffs = collection.map(function (item) {
             var v = m.computeValue(item, expr) - avg;
             return v * v
           });
-          var variance = _.reduce(diffs, function (memo, val) {
+          var variance = diffs.reduce(function (memo, val) {
               return memo + val
             }, 0) / diffs.length;
           return Math.sqrt(variance);
