@@ -515,7 +515,7 @@
 
       ['$sort', '$skip', '$limit', '$project'].forEach(function (op) {
         if (_.has(self._operators, op)) {
-          pipeline.push(_.pick(self._operators, op));
+          pipeline.push({[op]: self._operators[op]});
         }
       });
 
@@ -918,7 +918,7 @@
       if (objKeys && objKeys.includes(settings.key)) {
         var id = expr[settings.key];
         if (id === 0 || id === false) {
-          objKeys = _.without(objKeys, settings.key);
+          objKeys = objKeys.filter(key => !key.includes(settings.key));
           idOnlyExcludedExpression = isEmpty(objKeys);
         }
       } else {
@@ -991,7 +991,7 @@
         // Also if exclusion fields are found or we want to exclude only the id field
         // include keys that were not explicitly excluded
         if (foundSlice || foundExclusion || idOnlyExcludedExpression) {
-          cloneObj = _.defaults(cloneObj, clone(obj));
+          cloneObj = Object.assign({}, clone(obj), cloneObj);
           dropKeys && dropKeys.forEach(function (key) {
             removeValue(cloneObj, key);
           });
@@ -1245,7 +1245,7 @@
      */
     $in: function (a, b) {
       a = isArray(a) ? a : [a];
-      return _.intersection(a, b).length > 0;
+      return a.some(inArray.bind(null, b));
     },
 
     /**
@@ -1376,7 +1376,7 @@
             matched = matched || self.$elemMatch(a, b[i].$elemMatch);
           } else {
             // order of arguments matter. underscore maintains order after intersection
-            return _.intersection(b, a).length === b.length;
+            return b.every(inArray.bind(null, a));
           }
         }
       }
@@ -1543,7 +1543,7 @@
       var result = collection && collection.map(function (obj) {
         return computeValue(obj, expr, null);
       });
-      return _.uniq(result);
+      return Array.from(new Set(result));
     },
 
     /**
@@ -1561,7 +1561,7 @@
         // take a short cut if expr is number literal
         return collection.length * expr;
       }
-      return _.reduce(collection, function (acc, obj) {
+      return collection.reduce(function (acc, obj) {
         // pass empty field to avoid naming conflicts with fields on documents
         var n = computeValue(obj, expr, null);
         return isNumber(n)? acc + n : acc;
@@ -1576,6 +1576,13 @@
      * @returns {*}
      */
     $max: function (collection, expr) {
+      // var obj = collection
+      //   .map(obj => computeValue(obj, expr, null))
+      //   // .filter(n => !isUndefined(n))
+      //   // .sort()
+
+      //   // .reduce((lastMin, obj) => Math.max(lastMin || -Infinity, computeValue(obj, expr, null) || -Infinity))
+      // console.warn('OBJ', obj && obj.length >= 1 && obj[obj.length - 1]);
       var obj = _.max(collection, function (obj) {
           return computeValue(obj, expr, null);
       });
@@ -1590,9 +1597,8 @@
      * @returns {*}
      */
     $min: function (collection, expr) {
-      var obj = _.min(collection, function (obj) {
-        return computeValue(obj, expr, null);
-      });
+      var obj = collection
+        .reduce((lastMin, obj) => Math.min(lastMin || Infinity, computeValue(obj, expr, null)))
       return computeValue(obj, expr, null);
     },
 
@@ -1964,8 +1970,8 @@
      */
     $setEquals: function (obj, expr) {
       var args = computeValue(obj, expr, null);
-      var first = _.uniq(args[0]);
-      var second = _.uniq(args[1]);
+      var first = Array.from(new Set(args[0]));
+      var second = Array.from(new Set(args[1]));
       if (first.length !== second.length) {
         return false;
       }
@@ -1999,6 +2005,7 @@
      */
     $setUnion: function (obj, expr) {
       var args = computeValue(obj, expr, null);
+      // return args[0] && args[0].filter(inArray.bind(null, args[1]));
       return _.union(args[0], args[1]);
     },
 
