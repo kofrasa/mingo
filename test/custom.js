@@ -1,8 +1,9 @@
 var test = require('tape'),
-  _ = require('underscore'),
   samples = require('./samples'),
   Mingo = require('../mingo');
 
+
+var _ = Mingo._internal();
 
 
 test("Custom Operators", function (t) {

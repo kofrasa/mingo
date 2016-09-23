@@ -1,10 +1,9 @@
 var test = require('tape'),
   fs = require('fs'),
-  _ = require('underscore'),
-  JSON = require('JSON'),
   Backbone = require('backbone'),
   Mingo = require('../mingo');
 
+var _ = Mingo._internal();
 
 var students = JSON.parse(fs.readFileSync(__dirname + '/data/students.json'));
 var gradesSimple = JSON.parse(fs.readFileSync(__dirname + '/data/grades_simple.json'));

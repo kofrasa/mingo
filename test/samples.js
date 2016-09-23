@@ -1,5 +1,4 @@
-var fs = require('fs'),
-  JSON = require('JSON');
+var fs = require('fs');
 
 
 exports.person = JSON.parse(fs.readFileSync(__dirname + "/data/person.json"));

@@ -2,21 +2,16 @@
 JavaScript implementation of MongoDB query language
 
 Mingo harnesses the power of MongoDB-style queries and allows direct querying of in-memory
-javascript objects in both client and server-side environments.
+javascript objects in both client and server-side environments. This library is self-contained and has zero-dependencies
 
 [![build status](https://secure.travis-ci.org/kofrasa/mingo.png)](http://travis-ci.org/kofrasa/mingo)
-
-## Dependencies
-[underscore](https://github.com/jashkenas/underscore)
 
 ## Installing
 ```$ npm install mingo```
 
 In browser
 ```html
-<!-- DO NOT FORGET Underscore -->
-<script type="text/javascript" src="./underscore-min.js"></script>
-<script type="text/javascript" src="./mingo.min.js"></script>
+<script type="text/javascript" src="./dist/mingo.min.js"></script>
 ```
 
 ## Features
