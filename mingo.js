@@ -1037,7 +1037,7 @@
       if (objKeys.includes(settings.key)) {
         var id = expr[settings.key];
         if (id === 0 || id === false) {
-          objKeys = objKeys.filter(notInArray.bind(null, settings.key));
+          objKeys = objKeys.filter(notInArray.bind(null, [settings.key]));
           assert(!objKeys.includes(settings.key), "Must not contain collections _id");
           idOnlyExcludedExpression = isEmpty(objKeys);
         }
