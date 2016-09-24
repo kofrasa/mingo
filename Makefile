@@ -2,7 +2,7 @@
 all: clean test build
 
 test:
-	@tape test/*.js
+	@tape test/*.js | tap-summary
 
 clean:
 	@rm -fr dist/*
