@@ -146,13 +146,13 @@
     if(!Object.values) {
       Object.values = function (o) {
         assertObjectLike(o, 'Object.values called on a non-object')
-      	var result = [];
-      	for (var k in o) {
-      		if (has(o, k)) {
-      			result.push(o[k]);
-      		}
-      	}
-      	return result;
+        var result = [];
+        for (var k in o) {
+          if (has(o, k)) {
+            result.push(o[k]);
+          }
+        }
+        return result;
       };
     }
 
