@@ -1,4 +1,4 @@
-// Mingo.js 0.7.0
+// Mingo.js 0.8.0
 // Copyright (c) 2016 Francis Asante <kofrasa@gmail.com>
 // MIT
 
@@ -10,7 +10,7 @@
   // global on the server, window in the browser
   var Mingo = {}, previousMingo;
 
-  Mingo.VERSION = '0.7.0';
+  Mingo.VERSION = '0.8.0';
 
   // backup previous Mingo
   if (root != null) {
