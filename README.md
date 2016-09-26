@@ -158,9 +158,8 @@ cursor.first();
 - [API](https://github.com/kofrasa/mingo/wiki/API)
 - [Custom Operators](https://github.com/kofrasa/mingo/wiki/Custom-Operators)
 
-## TODO
- - Geospatial Query Operators (`$geoWithin`, `$geoIntersects`, `$near`, `$nearSphere`)
- - Geometry Specifiers (`$geometry`, `$maxDistance`, `$center`, `$centerSphere`, `$box`, `$polygon`)
+## Contributing
+- Submit pull requests to the [development](https://github.com/kofrasa/mingo/tree/development) branch
 
 ## License
 MIT
