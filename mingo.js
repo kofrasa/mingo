@@ -220,21 +220,8 @@
    || !x;
   }
   function coerceArray(x) { return isArray(x)? x : [x]; }
-
-  var TYPES = ["Boolean", "String", "Number", "Null", "Undefined", "Array", "Object", "Date", "Function", "RegExp"];
-
-  function getType(value) {
-    for (var i = 0; i < TYPES.length; i++) {
-      var type = "[object " + TYPES[i] + "]";
-      var actual = Object.prototype.toString.call(value);
-      if (type === actual) return TYPES[i].toLowerCase();
-    }
-    return typeof(value);
-  }
-
-  function has(obj, prop) {
-    return Object.prototype.hasOwnProperty.call(obj, prop);
-  }
+  function getType(value) { return Object.prototype.toString.call(value).match(/\s(\w+)/)[1].toLowerCase(); }
+  function has(obj, prop) { return Object.prototype.hasOwnProperty.call(obj, prop); }
 
   //////////////////// UTILS ////////////////////
 
