@@ -124,7 +124,7 @@ test("Logical Operators", function (t) {
 
 
 test("Array Operators", function (t) {
-  t.plan(2);
+
   var data = [
     {
       "_id": "5234ccb7687ea597eabee677",
@@ -168,7 +168,39 @@ test("Array Operators", function (t) {
     }]
   }];
 
-  result = Mingo.find(data, {"key0.key1.key2.a": "value2"}).all();
-  t.deepEqual(result, data, "Match a Field Without Specifying Array Index");
+  var fixtures = [
+    [{"key0.key1.key2.a": "value2"}, [], "should not match without array index selector to nested value "],
+    [{"key0.key1.0.key2.a": "value2"}, [], "should not match without enough depth for array index selector to nested value"],
+    [{"key0.key1.0.0.key2.a": "value2"}, data, "should match with full array index selector to deeply nested value"],
+    [{"key0.key1.0.0.key2": {b:20}}, data, "should match with array index selector to nested value at depth 1"],
+    [{"key0.key1.1.key2": "value"}, data, "should match with full array index selector to nested value"],
+    [{"key0.key1.key2": "value"}, data, "should match without array index selector to nested value at depth 1"],
+    [{"key0.key1.1.key2": "value"}, data, "should match shallow nested value with array index selector"]
+  ];
+
+  fixtures.forEach(function(row) {
+    var query = row[0],
+      expected = row[1],
+      message = row[2];
+
+    var result = Mingo.find(data, query).all();
+    t.deepEqual(result, expected, message);
+  })
+
+  fixtures = [
+    [{"key0.key1": [[{key2: [{a:"value2"}, {a: "dummy"}, {b:20}]}]]}, "should match full key selector"],
+    [{"key0.key1.0": [[{key2: [{a:"value2"}, {a: "dummy"}, {b:20}]}]]}, "should match with key<-->index selector"],
+    [{"key0.key1.0.0": [{key2: [{a:"value2"}, {a: "dummy"}, {b:20}]}]}, "should match with key<-->multi-index selector"],
+    [{"key0.key1.0.0.key2": [{a:"value2"}, {a: "dummy"}, {b:20}]}, "should match with key<-->multi-index<-->key selector"]
+  ];
+
+  // should match whole objects
+  fixtures.forEach(function(row) {
+    var query = row[0], message = row[1];
+    var result = Mingo.find(data, query).all();
+    t.deepEqual(result, data, message);
+  });
+
+  t.end();
 
 });

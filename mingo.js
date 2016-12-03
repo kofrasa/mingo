@@ -2,8 +2,7 @@
 // Copyright (c) 2016 Francis Asante <kofrasa@gmail.com>
 // MIT
 
-;
-(function (root, undefined) {
+;(function (root, undefined) {
 
   "use strict";
 
@@ -13,7 +12,7 @@
   Mingo.VERSION = '0.8.0';
 
   // backup previous Mingo
-  if (root != null) {
+  if (root !== null) {
     previousMingo = root.Mingo;
   }
 
@@ -22,11 +21,11 @@
     return Mingo;
   };
 
-  var nodeEnabled = ('undefined' !== typeof module && 'undefined' !== typeof require);
+  var nodeEnabled = (undefined !== module && undefined !== require);
 
   // Export the Mingo object for Node.js
   if (nodeEnabled) {
-    if (typeof module !== 'undefined') {
+    if (module !== undefined) {
       module.exports = Mingo;
     }
   } else {
@@ -126,6 +125,35 @@
         }
         return undefined;
       };
+    }
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/findIndex
+    if (!Array.prototype.findIndex) {
+      Object.defineProperty(Array.prototype, 'findIndex', {
+        value: function(predicate) {
+          'use strict';
+          if (this == null) {
+            throw new TypeError('Array.prototype.findIndex called on null or undefined');
+          }
+          if (typeof predicate !== 'function') {
+            throw new TypeError('predicate must be a function');
+          }
+          var list = Object(this);
+          var length = list.length >>> 0;
+          var thisArg = arguments[1];
+          var value;
+
+          for (var i = 0; i < length; i++) {
+            value = list[i];
+            if (predicate.call(thisArg, value, i, list)) {
+              return i;
+            }
+          }
+          return -1;
+        },
+        enumerable: false,
+        configurable: false,
+        writable: false
+      });
     }
 
     // http://tokenposts.blogspot.co.za/2012/04/javascript-objectkeys-browser.html
@@ -299,19 +327,19 @@
    * @param  {Array} xs The array to flatten
    * @return {Array}
    */
-  function flatten(xs) {
+  function flatten(xs, depth) {
     assertType(isArray(xs), "Input must be an Array");
     var arr = [];
-    var unwrap = function (ys) {
+    var unwrap = function (ys, iter) {
       for (var i = 0, len = ys.length; i < len; i++) {
-        if (isArray(ys[i])) {
-          unwrap(ys[i]);
+        if (isArray(ys[i]) && (iter > 0 || iter < 0)) {
+          unwrap(ys[i], Math.max(-1, iter - 1));
         } else {
           arrayPush.call(arr, ys[i]);
         }
       }
     };
-    unwrap(xs);
+    unwrap(xs, depth || -1);
     return arr;
   }
 
@@ -1317,15 +1345,12 @@
     /**
      * Checks that two values are equal. Pseudo operator introduced for convenience and consistency
      *
-     * @param a
-     * @param b
+     * @param a         The lhs operand as resolved from the object by the given selector
+     * @param b         The rhs operand provided by the user
      * @returns {*}
      */
     $eq: function (a, b) {
-      // flatten to reach nested values. fix for https://github.com/kofrasa/mingo/issues/19
-      a = flatten(coerceArray(a));
-      a = a.find(isEqual.bind(null, b));
-      return a !== undefined;
+      return isEqual(a, b) || (isArray(a) && -1 !== a.findIndex(isEqual.bind(null, b)));
     },
 
     /**
@@ -1423,7 +1448,7 @@
      *
      * @param a
      * @param b
-     * @returns {*|boolean|boolean}
+     * @returns {boolean}
      */
     $mod: function (a, b) {
       a = coerceArray(a).find(function (val) {
@@ -1437,7 +1462,7 @@
      *
      * @param a
      * @param b
-     * @returns {*|boolean}
+     * @returns {boolean}
      */
     $regex: function (a, b) {
       a = coerceArray(a).find(function (val) {
@@ -1451,7 +1476,7 @@
      *
      * @param a
      * @param b
-     * @returns {boolean|*|boolean}
+     * @returns {boolean}
      */
     $exists: function (a, b) {
       return (b === false && isUndefined(a)) || (b === true && !isUndefined(a));
@@ -2398,26 +2423,38 @@
    * @param selector {String} dot separated path to field
    * @returns {*}
    */
-  function resolve(obj, selector) {
+  function resolve(obj, selector, deepFlag) {
     var names = selector.split(".");
     var value = obj;
 
     for (var i = 0; i < names.length; i++) {
-      var isText = names[i].match(/^\d+$/) === null;
+      var isText = isNull(names[i].match(/^\d+$/));
 
       if (isText && isArray(value)) {
-        var res = [];
-        value.forEach(function (item) {
-          res.push(resolve(item, names[i]));
+
+        // On the first iteration, we check if we received a stop flag.
+        // If so, we stop to prevent iterating over a nested array value
+        // on consecutive object keys in the selector.
+        if (deepFlag === true && i === 0) {
+          return value;
+        }
+
+        value = value.map(function (item) {
+          return resolve(item, names[i], true);
         });
-        value = res;
+
+        // we unwrap for arrays of unit length
+        // this avoids excess wrapping when resolving deeply nested arrays
+        if (value.length === 1) {
+          value = value[0];
+        }
+
       } else {
         value = getValue(value, names[i]);
+        deepFlag = false; // reset stop flag when we do a direct lookup
       }
 
-      if (value === undefined) {
-        break;
-      }
+      if (isUndefined(value)) break;
     }
 
     return value;
@@ -2431,7 +2468,7 @@
    * @param selector {String} dot separated path to field
    */
   function resolveObj(obj, selector) {
-    if (isUndefined(obj)) return obj;
+    if (isUndefined(obj)) return;
 
     var names = selector.split(".");
     var key = names[0];
@@ -2495,7 +2532,8 @@
    * Walk the object graph and execute the given transform function
    * @param  {Object|Array} obj   The object to traverse
    * @param  {String} selector    The selector
-   * @param  {Function} fn        Transform function to execute for path
+   * @param  {Function} transformFn Function to execute for value at the end the traversal
+   * @param  {Function} stepFn  Function to call at each step of the traversal
    * @return {*}
    */
   function traverse(obj, selector, fn) {
@@ -2505,13 +2543,7 @@
     var isIndex = /^\d+$/.test(key);
 
     if (names.length === 1) {
-      if (isArray(obj) && !isIndex) {
-        obj.forEach(function (item) {
-          traverse(item, key, fn);
-        });
-      } else {
         fn(obj, key);
-      }
     } else { // nested objects
       if (isArray(obj) && !isIndex) {
         obj.forEach(function (item) {
@@ -2580,7 +2612,7 @@
 
   // primitives and user-defined types
   function isSimpleType(value) {
-    return isPrimitive(value) || (!isObject(value) && !isArray(value));
+    return isPrimitive(value) || !isObjectLike(value);
   }
 
   /**
@@ -2589,14 +2621,13 @@
    * @returns {*}
    */
   function normalize(expr) {
-
     // normalized primitives
     if (isSimpleType(expr)) {
       return isRegExp(expr) ? {"$regex": expr} : {"$eq": expr};
     }
 
     // normalize object expression
-    if (isObject(expr)) {
+    if (isObjectLike(expr)) {
       var keys = Object.keys(expr);
       var notQuery = intersection(ops(OP_QUERY), keys).length === 0;
 
@@ -2677,7 +2708,6 @@
    * @param fn {function} to compute the group key of an item in the collection
    */
   function groupBy(collection, fn, ctx) {
-
     var result = {
       'keys': [],
       'groups': []
@@ -2686,7 +2716,6 @@
     var lookup = {};
 
     collection.forEach(function (obj) {
-
       var key = fn.call(ctx, obj);
       var hash = hashcode(key);
       var index = -1;
