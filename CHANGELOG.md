@@ -3,6 +3,12 @@ Changelog
 
 Changes starting from v0.5.0 are tracked here
 
+## v0.8.1 / 2016-12-08
+- Fix querying deeply nested nested arrays and object equality matching. See [issue#36](https://github.com/kofrasa/mingo/issues/36)
+
+## v0.8.0 / 2016-09-26
+- Make this library zero-dependent
+
 ## v0.7.0 / 2016-09-10
 - Fix nested projections for objects and arrays. See [issue#25](https://github.com/kofrasa/mingo/issues/25)
 
