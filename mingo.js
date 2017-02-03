@@ -1218,8 +1218,68 @@
         });
       }
       return collection;
+    },
+
+    /**
+     * Restricts the contents of the documents based on information stored in the documents themselves.
+     *
+     * https://docs.mongodb.com/manual/reference/operator/aggregation/redact/
+     */
+    $redact: function (collection, expr) {
+      var result = [];
+      collection.forEach(function (obj) {
+        var val = redactObj(obj, clone(obj), expr);
+        result.push(val);
+      });
+      return result;
     }
   };
+
+  function redactObj(root, obj, expr) {
+    var action = computeValue(obj, expr, null);
+    var result;
+
+    switch (action) {
+      case "$$ROOT":
+        return root;
+      case "$$CURRENT":
+      case "$$KEEP":
+        return obj;
+      case "$$DESCEND":
+        // traverse nested documents iff there is a $cond
+        if (!has(expr, "$cond")) return obj;
+
+        each(obj, function(current, key) {
+          if (isObjectLike(current)) {
+            if (isArray(current)) {
+              result = [];
+              current.forEach(function (elem, index) {
+                if (isObject(elem)) {
+                  elem = redactObj(root, elem, expr);
+                }
+                if (!isUndefined(elem)) result.push(elem);
+              });
+            } else {
+              result = redactObj(root, current, expr);
+            }
+
+            // undefined means value must be pruned
+            if (isUndefined(result)) {
+              delete obj[key];
+            } else {
+              obj[key] = result;
+            }
+          }
+        });
+        return obj;
+      case "$$PRUNE":
+        return undefined;
+      default:
+        throw new Error(
+          "Invalid $redact expression. " +
+          "See https://docs.mongodb.com/manual/reference/operator/aggregation/redact/");
+    }
+  }
 
   ////////// QUERY OPERATORS //////////
   var queryOperators = {};
@@ -1783,6 +1843,18 @@
   var arithmeticOperators = {
 
     /**
+     * Returns the absolute value of a number.
+     * https://docs.mongodb.com/manual/reference/operator/aggregation/abs/#exp._S_abs
+     * @param obj
+     * @param expr
+     * @return {Number|null|NaN}
+     */
+    $abs: function (obj, expr) {
+      var val = computeValue(obj, expr, null);
+      return (val === null || val === undefined)? null : Math.abs(val);
+    },
+
+    /**
      * Computes the sum of an array of numbers.
      *
      * @param obj
@@ -2193,7 +2265,7 @@
       return condition ? computeValue(obj, thenExpr, null) : computeValue(obj, elseExpr, null);
     },
 
-    /**
+    /**r
      * Evaluates an expression and returns the first expression if it evaluates to a non-null value.
      * Otherwise, $ifNull returns the second expression's value.
      *
@@ -2375,6 +2447,8 @@
     stringOperators,
     variableOperators
   );
+
+  var SYS_VARS = ["$$ROOT", "$$CURRENT", "$$DESCEND", "$$PRUNE", "$$KEEP"];
 
   var OP_QUERY = Mingo.OP_QUERY = 'query',
     OP_GROUP = Mingo.OP_GROUP = 'group',
@@ -2801,6 +2875,11 @@
     // if the field of the object is a valid operator
     if (ops(OP_AGGREGATE).includes(field)) {
       return aggregateOperators[field](obj, expr);
+    }
+
+    // we do not process system variables here
+    if (SYS_VARS.includes(expr)) {
+      return expr;
     }
 
     // if expr is a variable for an object field
