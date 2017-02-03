@@ -21,7 +21,7 @@
     return Mingo;
   };
 
-  var nodeEnabled = (undefined !== module && undefined !== require);
+  var nodeEnabled = (undefined !== module && typeof require !== 'undefined');
 
   // Export the Mingo object for Node.js
   if (nodeEnabled) {
