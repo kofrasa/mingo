@@ -1221,6 +1221,24 @@
     },
 
     /**
+     * Randomly selects the specified number of documents from its input.
+     * https://docs.mongodb.com/manual/reference/operator/aggregation/sample/
+     * 
+     * @param  {Array} collection
+     * @param  {Object} expr
+     * @return {*}
+     */
+    $sample: function (collection, expr) {
+      var size = expr["size"];
+      var result = [];
+      for (var i = 0; i < size; i++) {
+        var n = Math.floor(Math.random() * collection.length);
+        result.push(collection[n]);
+      }
+      return result;
+    },
+
+    /**
      * Restricts the contents of the documents based on information stored in the documents themselves.
      *
      * https://docs.mongodb.com/manual/reference/operator/aggregation/redact/
@@ -1708,6 +1726,28 @@
       }
 
       return arraySlice.apply(array, expr);
+    },
+
+    /**
+     * Returns the population standard deviation of the input values.
+     * @param  {Array} collection
+     * @param  {Object} expr
+     * @return {Number}
+     */
+    $stdDevPop: function (obj, expr, field) {
+      var dataset = computeValue(obj, expr, field);
+      return stddev({ dataset: dataset, sampled: false });
+    },
+
+    /**
+     * Returns the sample standard deviation of the input values.
+     * @param  {Array} collection
+     * @param  {Object} expr
+     * @return {Number|null}
+     */
+    $stdDevSamp: function (obj, expr, field) {
+      var dataset = computeValue(obj, expr, field);
+      return stddev({ dataset: dataset, sampled: true });
     }
   };
 
@@ -1741,10 +1781,8 @@
         // take a short cut if expr is number literal
         return collection.length * expr;
       }
-      return collection.reduce(function (acc, obj) {
-        // pass empty field to avoid naming conflicts with fields on documents
-        var n = computeValue(obj, expr, null);
-        return isNumber(n)? acc + n : acc;
+      return this.$push(collection, expr).filter(isNumber).reduce(function (acc, n) {
+        return acc + n;
       }, 0);
     },
 
@@ -1756,9 +1794,7 @@
      * @returns {*}
      */
     $max: function (collection, expr) {
-      var mapped = collection.map(function (obj) {
-        return computeValue(obj, expr, null);
-      });
+      var mapped = this.$push(collection, expr);
       var max;
       if (mapped.length > 0) {
         max = mapped[0];
@@ -1777,9 +1813,7 @@
      * @returns {*}
      */
     $min: function (collection, expr) {
-      var mapped = collection.map(function (obj) {
-        return computeValue(obj, expr, null);
-      });
+      var mapped = this.$push(collection, expr);
       var min;
       if (mapped.length > 0) {
         min = mapped[0];
@@ -1798,7 +1832,9 @@
      * @returns {number}
      */
     $avg: function (collection, expr) {
-      return this.$sum(collection, expr) / (collection.length || 1);
+      var dataset = this.$push(collection, expr).filter(isNumber);
+      var sum = dataset.reduce(function (acc, n) { return acc + n; }, 0);
+      return sum / (dataset.length || 1);
     },
 
     /**
@@ -1834,6 +1870,28 @@
      */
     $last: function (collection, expr) {
       return (collection.length > 0) ? computeValue(collection[collection.length - 1], expr) : undefined;
+    },
+
+    /**
+     * Returns the population standard deviation of the input values.
+     * @param  {Array} collection
+     * @param  {Object} expr
+     * @return {Number}
+     */
+    $stdDevPop: function (collection, expr) {
+      var dataset = this.$push(collection, expr).filter(isNumber);
+      return stddev({ dataset: dataset, sampled: false });
+    },
+
+    /**
+     * Returns the sample standard deviation of the input values.
+     * @param  {Array} collection
+     * @param  {Object} expr
+     * @return {Number|null}
+     */
+    $stdDevSamp: function (collection, expr) {
+      var dataset = this.$push(collection, expr).filter(isNumber);
+      return stddev({ dataset: dataset, sampled: true });
     }
   };
 
@@ -2913,6 +2971,16 @@
       default:
         return clone(expr);
     }
+  }
+
+  function stddev(ctx) {
+    var sum = ctx.dataset.reduce(function (acc, n) { return acc + n; }, 0);
+    var N = ctx.dataset.length || 1;
+    var err = ctx.sampled === true? 1 : 0;
+    var avg = sum / (N - err);
+    return Math.sqrt(
+      ctx.dataset.reduce(function (acc, n) { return acc + Math.pow(n - avg, 2); }, 0) / N
+    );
   }
 
 }(this));
