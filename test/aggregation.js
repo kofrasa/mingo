@@ -347,6 +347,216 @@ test("Aggregation Pipeline Operators", function (t) {
 
     t.end();
   });
+
+  /**
+   * Tests for $count pipeline operator
+   */
+  t.test("$count operator", function (t) {
+
+    var scores = [
+      { "_id" : 1, "subject" : "History", "score" : 88 },
+      { "_id" : 2, "subject" : "History", "score" : 92 },
+      { "_id" : 3, "subject" : "History", "score" : 97 },
+      { "_id" : 4, "subject" : "History", "score" : 71 },
+      { "_id" : 5, "subject" : "History", "score" : 79 },
+      { "_id" : 6, "subject" : "History", "score" : 83 }
+    ];
+
+    var result = Mingo.aggregate(scores,
+      [
+        {
+          $match: {
+            score: {
+              $gt: 80
+            }
+          }
+        },
+        {
+          $count: "passing_scores"
+        }
+      ]
+    );
+
+    t.deepEqual(result, { "passing_scores" : 4 }, "can $count pipeline results");
+
+    t.end();
+  });
+
+  /**
+   * Tests for $sample operator
+   */
+  t.test("$sample operator", function (t) {
+    var users = [
+      { "_id" : 1, "name" : "dave123", "q1" : true, "q2" : true },
+      { "_id" : 2, "name" : "dave2", "q1" : false, "q2" : false  },
+      { "_id" : 3, "name" : "ahn", "q1" : true, "q2" : true  },
+      { "_id" : 4, "name" : "li", "q1" : true, "q2" : false  },
+      { "_id" : 5, "name" : "annT", "q1" : false, "q2" : true  },
+      { "_id" : 6, "name" : "li", "q1" : true, "q2" : true  },
+      { "_id" : 7, "name" : "ty", "q1" : false, "q2" : true  }
+    ];
+
+    var result = Mingo.aggregate(users,
+       [ { $sample: { size: 3 } } ]
+    );
+
+    t.equals(result.length, 3, "can $sample pipeline input");
+    t.end();
+  });
+
+  /**
+   * Tests for $addFields operator
+   */
+   t.test("$addFields operator", function (t) {
+     var scores = [
+       {
+         _id: 1,
+         student: "Maya",
+         homework: [ 10, 5, 10 ],
+         quiz: [ 10, 8 ],
+         extraCredit: 0
+       },
+       {
+         _id: 2,
+         student: "Ryan",
+         homework: [ 5, 6, 5 ],
+         quiz: [ 8, 8 ],
+         extraCredit: 8
+       }
+     ];
+
+     var result = Mingo.aggregate(scores, [
+        {
+          $addFields: {
+            totalHomework: { $sum: "$homework" } ,
+            totalQuiz: { $sum: "$quiz" }
+          }
+        },
+        {
+          $addFields: {
+            totalScore: { $add: [ "$totalHomework", "$totalQuiz", "$extraCredit" ] }
+          }
+        }
+     ]);
+
+     t.deepEqual(result, [
+       {
+         "_id" : 1,
+         "student" : "Maya",
+         "homework" : [ 10, 5, 10 ],
+         "quiz" : [ 10, 8 ],
+         "extraCredit" : 0,
+         "totalHomework" : 25,
+         "totalQuiz" : 18,
+         "totalScore" : 43
+       },
+       {
+         "_id" : 2,
+         "student" : "Ryan",
+         "homework" : [ 5, 6, 5 ],
+         "quiz" : [ 8, 8 ],
+         "extraCredit" : 8,
+         "totalHomework" : 16,
+         "totalQuiz" : 16,
+         "totalScore" : 40
+       }
+     ], "Using Two $addFields Stages");
+
+     var vehicles = [
+       { _id: 1, type: "car", specs: { doors: 4, wheels: 4 } },
+       { _id: 2, type: "motorcycle", specs: { doors: 0, wheels: 2 } },
+       { _id: 3, type: "jet ski" }
+     ];
+
+     result = Mingo.aggregate(vehicles, [
+       {
+          $addFields: {
+             "specs.fuel_type": "unleaded"
+          }
+       }
+     ]);
+
+     t.deepEqual(result, [
+       { _id: 1, type: "car", specs: { doors: 4, wheels: 4, fuel_type: "unleaded" } },
+       { _id: 2, type: "motorcycle", specs: { doors: 0, wheels: 2, fuel_type: "unleaded" } },
+       { _id: 3, type: "jet ski", specs: { fuel_type: "unleaded" } }
+     ], "Adding Fields to an Embedded Document");
+
+
+     var animals = [{ _id: 1, dogs: 10, cats: 15 }];
+
+     result = Mingo.aggregate(animals, [
+       {
+         $addFields: { "cats": 20 }
+       }
+     ]);
+
+     t.deepEqual(result, [{ _id: 1, dogs: 10, cats: 20 }], "Overwriting an existing field");
+
+     var fruit = [
+       { "_id" : 1, "item" : "tangerine", "type" : "citrus" },
+       { "_id" : 2, "item" : "lemon", "type" : "citrus" },
+       { "_id" : 3, "item" : "grapefruit", "type" : "citrus" }
+     ];
+
+     result = Mingo.aggregate(fruit, [
+       {
+         $addFields: {
+           _id : "$item",
+           item: "fruit"
+         }
+       }
+     ]);
+
+     t.deepEqual(result, [
+       { "_id" : "tangerine", "item" : "fruit", "type" : "citrus" },
+       { "_id" : "lemon", "item" : "fruit", "type" : "citrus" },
+       { "_id" : "grapefruit", "item" : "fruit", "type" : "citrus" }
+     ], "Replace one field with another");
+
+     t.end();
+   });
+
+   /**
+    * Tests for $sortByCount operator
+    */
+   t.test("$sortByCount operator", function (t) {
+     var exhibits = [
+       { "_id" : 1, "title" : "The Pillars of Society", "artist" : "Grosz", "year" : 1926, "tags" : [ "painting", "satire", "Expressionism", "caricature" ] },
+       { "_id" : 2, "title" : "Melancholy III", "artist" : "Munch", "year" : 1902, "tags" : [ "woodcut", "Expressionism" ] },
+       { "_id" : 3, "title" : "Dancer", "artist" : "Miro", "year" : 1925, "tags" : [ "oil", "Surrealism", "painting" ] },
+       { "_id" : 4, "title" : "The Great Wave off Kanagawa", "artist" : "Hokusai", "tags" : [ "woodblock", "ukiyo-e" ] },
+       { "_id" : 5, "title" : "The Persistence of Memory", "artist" : "Dali", "year" : 1931, "tags" : [ "Surrealism", "painting", "oil" ] },
+       { "_id" : 6, "title" : "Composition VII", "artist" : "Kandinsky", "year" : 1913, "tags" : [ "oil", "painting", "abstract" ] },
+       { "_id" : 7, "title" : "The Scream", "artist" : "Munch", "year" : 1893, "tags" : [ "Expressionism", "painting", "oil" ] },
+       { "_id" : 8, "title" : "Blue Flower", "artist" : "O'Keefe", "year" : 1918, "tags" : [ "abstract", "painting" ] }
+     ];
+
+     var result = Mingo.aggregate(exhibits, [ { $unwind: "$tags" },  { $sortByCount: "$tags" } ] );
+
+     t.equals(result.every(function (o) {
+       return Object.keys(o).length === 2
+     }), true, "validate result return only 2 keys");
+
+     t.equals(result[0]["count"], 6, "validate sorted max first");
+     t.equals(result[7]["count"], 1, "validate sorted min last");
+
+     // cannot enable below due to sort order variance
+     // t.deepEqual(Object.keys(result[0])["count"], 6[
+     //   { "_id" : "painting", "count" : 6 },
+     //   { "_id" : "oil", "count" : 4 },
+     //   { "_id" : "Expressionism", "count" : 3 },
+     //   { "_id" : "Surrealism", "count" : 2 },
+     //   { "_id" : "abstract", "count" : 2 },
+     //   { "_id" : "woodblock", "count" : 1 },
+     //   { "_id" : "woodcut", "count" : 1 },
+     //   { "_id" : "ukiyo-e", "count" : 1 },
+     //   { "_id" : "satire", "count" : 1 },
+     //   { "_id" : "caricature", "count" : 1 }
+     // ], "can apply $sortByCount pipeline operator");
+
+     t.end();
+   });
 });
 
 test("Group Accumulator Operators", function (t) {
@@ -851,10 +1061,10 @@ test("Conditional Operators", function (t) {
   var result = Mingo.aggregate(products, [{
     $project: {
       item: 1,
-      stock: { 
+      stock: {
         $cond: {
-          if: {$lte: ["$qty", 200]}, 
-          then: "low", 
+          if: {$lte: ["$qty", 200]},
+          then: "low",
           else: "high"
         }
       }

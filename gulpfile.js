@@ -20,7 +20,7 @@ gulp.task('test', function (cb) {
 });
 
 gulp.task('watch', function (){
-  gulp.watch('mingo.js', ['test', 'build']);
+  gulp.watch('mingo.js', ['test']);
   gulp.watch('test/*.js', ['test']);
 });
 

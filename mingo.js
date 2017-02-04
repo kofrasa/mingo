@@ -965,6 +965,50 @@
   var pipelineOperators = {
 
     /**
+     * Adds new fields to documents.
+     * Outputs documents that contain all existing fields from the input documents and newly added fields.
+     *
+     * @param {Array} collection
+     * @param {*} expr
+     */
+    $addFields: function (collection, expr) {
+      var newFields = Object.keys(expr);
+
+      return collection.map(function (obj) {
+        obj = clone(obj);
+
+        newFields.forEach(function(selector) {
+          var subExpr = expr[selector];
+          var newValue;
+
+          if (isObject(subExpr)) {
+            var subKeys = Object.keys(subExpr);
+
+            // check for any operators first
+            var operator = subKeys.filter(function (k) {
+              return k.indexOf("$") === 0;
+            });
+
+            if (!isEmpty(operator)) {
+              assert(subKeys.length === 1, "Can have only one root operator in $addFields");
+              operator = operator[0];
+              subExpr = subExpr[operator];
+              newValue = computeValue(obj, subExpr, operator);
+            }
+          } else {
+            newValue = computeValue(obj, subExpr, null);
+          }
+
+          traverse(obj, selector, function (o, key) {
+            o[key] = newValue;
+          }, true);
+        });
+
+        return obj;
+      });
+    },
+
+    /**
      * Groups documents together for the purpose of calculating aggregate values based on a collection of documents.
      *
      * @param collection
@@ -1221,6 +1265,26 @@
     },
 
     /**
+     * Groups incoming documents based on the value of a specified expression,
+     * then computes the count of documents in each distinct group.
+     * 
+     * https://docs.mongodb.com/manual/reference/operator/aggregation/sortByCount/
+     *
+     * @param  {Array} collection
+     * @param  {Object} expr
+     * @return {*}
+     */
+    $sortByCount: function (collection, expr) {
+      var newExpr = { count: { $sum: 1 } };
+      newExpr[settings.key] = expr;
+
+      return this.$sort(
+        this.$group(collection, newExpr),
+        { count: -1 }
+      );
+    },
+
+    /**
      * Randomly selects the specified number of documents from its input.
      * https://docs.mongodb.com/manual/reference/operator/aggregation/sample/
      *
@@ -1230,11 +1294,31 @@
      */
     $sample: function (collection, expr) {
       var size = expr["size"];
+      assertType(isNumber(size),
+      "$sample size must be a positive integer. See https://docs.mongodb.com/manual/reference/operator/aggregation/sample/");
+
       var result = [];
       for (var i = 0; i < size; i++) {
         var n = Math.floor(Math.random() * collection.length);
         result.push(collection[n]);
       }
+      return result;
+    },
+
+    /**
+     * Returns a document that contains a count of the number of documents input to the stage.
+     * @param  {Array} collection
+     * @param  {String} expr
+     * @return {Object}
+     */
+    $count: function (collection, expr) {
+      assert(
+        isString(expr) && expr.trim() !== "" && expr.indexOf(".") === -1 && expr.trim()[0] !== "$",
+        "Invalid expression value for $count. See https://docs.mongodb.com/manual/reference/operator/aggregation/count/"
+      );
+
+      var result = {};
+      result[expr] = collection.length;
       return result;
     },
 
@@ -1726,10 +1810,7 @@
      * @returns {*}
      */
     $addToSet: function (collection, expr) {
-      var result = collection.map(function (obj) {
-        return computeValue(obj, expr, null);
-      });
-      return unique(result);
+      return unique(this.$push(collection, expr));
     },
 
     /**
@@ -1810,6 +1891,8 @@
      * @returns {Array|*}
      */
     $push: function (collection, expr) {
+      if (isNull(expr)) return clone(collection);
+
       return collection.map(function (obj) {
         return computeValue(obj, expr, null);
       });
@@ -2701,10 +2784,10 @@
    * @param  {Object|Array} obj   The object to traverse
    * @param  {String} selector    The selector
    * @param  {Function} transformFn Function to execute for value at the end the traversal
-   * @param  {Function} stepFn  Function to call at each step of the traversal
+   * @param  {Boolean} force Force generating missing parts of object graph
    * @return {*}
    */
-  function traverse(obj, selector, fn) {
+  function traverse(obj, selector, fn, force) {
     var names = selector.split(".");
     var key = names[0];
     var next = names.length === 1 || names.slice(1).join(".");
@@ -2715,10 +2798,17 @@
     } else { // nested objects
       if (isArray(obj) && !isIndex) {
         obj.forEach(function (item) {
-          traverse(item, selector, fn);
+          traverse(item, selector, fn, force);
         });
       } else {
-        traverse(obj[key], next, fn);
+        // force the rest of the graph while traversing
+        if (force === true) {
+          var exists = has(obj, key);
+          if (!exists || isUndefined(obj[key]) || isNull(obj[key])) {
+            obj[key] = {};
+          }
+        }
+        traverse(obj[key], next, fn, force);
       }
     }
   }
@@ -2971,6 +3061,15 @@
       return aggregateOperators[field](obj, expr);
     }
 
+    // we also handle $group accumulator operators
+    if (ops(OP_GROUP).includes(field)) {
+      // we first fully resolve the expression
+      obj = computeValue(obj, expr, null);
+      assertType(isArray(obj), "Must use collection type with " + field + " operator");
+      // we pass a null expression because all values have been resolved
+      return groupOperators[field](obj, null);
+    }
+
     // if expr is a variable for an object field
     // field not used in this case
     if (isString(expr) && expr.length > 0 && expr[0] === "$") {
@@ -3012,10 +3111,15 @@
     }
   }
 
+  /**
+   * Compute the standard deviation of the dataset
+   * @param  {Object} ctx An object of the context. Includes "dataset:Array" and "sampled:Boolean".
+   * @return {Number}
+   */
   function stddev(ctx) {
     var sum = ctx.dataset.reduce(function (acc, n) { return acc + n; }, 0);
     var N = ctx.dataset.length || 1;
-    var err = ctx.sampled === true? 1 : 0;
+    var err = ctx.sampled === true ? 1 : 0;
     var avg = sum / (N - err);
     return Math.sqrt(
       ctx.dataset.reduce(function (acc, n) { return acc + Math.pow(n - avg, 2); }, 0) / N
