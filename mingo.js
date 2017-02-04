@@ -2977,6 +2977,11 @@
       // we return system variables as literals
       if (SYS_VARIABLES.includes(expr)) return expr;
 
+      var sysCurrent = "$$CURRENT.";
+      if (expr.indexOf(sysCurrent) === 0) {
+        return resolve(obj, expr.slice(sysCurrent.length + 1));
+      }
+
       return resolve(obj, expr.slice(1));
     }
 
