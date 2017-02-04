@@ -1267,7 +1267,7 @@
     /**
      * Groups incoming documents based on the value of a specified expression,
      * then computes the count of documents in each distinct group.
-     * 
+     *
      * https://docs.mongodb.com/manual/reference/operator/aggregation/sortByCount/
      *
      * @param  {Array} collection
@@ -1319,6 +1319,29 @@
 
       var result = {};
       result[expr] = collection.length;
+      return result;
+    },
+
+    /**
+     * Replaces a document with the specified embedded document or new one.
+     * The replacement document can be any valid expression that resolves to a document.
+     *
+     * https://docs.mongodb.com/manual/reference/operator/aggregation/replaceRoot/
+     *
+     * @param  {Array} collection
+     * @param  {Object} expr
+     * @return {*}
+     */
+    $replaceRoot: function (collection, expr) {
+      var newRoot = expr["newRoot"];
+      var result = [];
+      collection.forEach(function (obj) {
+        obj = computeValue(obj, newRoot, null);
+        assertType(isObject(obj),
+          "$replaceRoot expression must return a valid JS object. " +
+          "See https://docs.mongodb.com/manual/reference/operator/aggregation/replaceRoot/");
+          result.push(obj);
+      });
       return result;
     },
 
