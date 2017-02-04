@@ -1239,6 +1239,22 @@
     },
 
     /**
+     * Returns a document that contains a count of the number of documents input to the stage.
+     * @param  {Array} collection
+     * @param  {String} expr
+     * @return {Object}
+     */
+    $count: function (collection, expr) {
+      assert(
+        isString(expr) && expr.trim() !== "" && expr.indexOf(".") === -1 && expr.trim()[0] !== "$",
+        "Invalid expression value. See https://docs.mongodb.com/manual/reference/operator/aggregation/count/");
+
+      var result = {};
+      result[expr] = collection.length;
+      return result;
+    },
+
+    /**
      * Restricts the contents of the documents based on information stored in the documents themselves.
      *
      * https://docs.mongodb.com/manual/reference/operator/aggregation/redact/
