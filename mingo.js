@@ -21,7 +21,7 @@
     return Mingo;
   };
 
-  var nodeEnabled = (undefined !== module && undefined !== require);
+  var nodeEnabled = (undefined !== module && typeof require !== 'undefined');
 
   // Export the Mingo object for Node.js
   if (nodeEnabled) {
@@ -2288,7 +2288,36 @@
       return condition ? computeValue(obj, thenExpr, null) : computeValue(obj, elseExpr, null);
     },
 
-    /**r
+    /**
+     * An operator that evaluates a series of case expressions. When it finds an expression which
+     * evaluates to true, it returns the resulting expression for that case. If none of the cases
+     * evaluate to true, it returns the default expression.
+     *
+     * @param obj
+     * @param expr
+     */
+    $switch: function (obj, expr) {
+      if (!expr.branches) {
+        throw new Error("Invalid arguments for $switch operator");
+      }
+
+      var validBranch = expr.branches.find(function (branch) {
+        if (!(branch.case && branch.then)) {
+          throw new Error("Invalid arguments for $switch operator");
+        }
+        return computeValue(obj, branch.case, null)
+      })
+
+      if (validBranch) {
+        return computeValue(obj, validBranch.then, null)
+      } else if (!expr.default) {
+        throw new Error("Invalid arguments for $switch operator");
+      } else {
+        return computeValue(obj, expr.default, null)
+      }
+    },
+
+    /**
      * Evaluates an expression and returns the first expression if it evaluates to a non-null value.
      * Otherwise, $ifNull returns the second expression's value.
      *
@@ -2319,7 +2348,7 @@
     }
   };
   // mixin comparison operators
-  ["$eq", "$ne", "$gt", "$gte", "$lt", "$lte"].forEach(function (op) {
+  ["$eq", "$ne", "$gt", "$gte", "$lt", "$lte", "$in", "$nin"].forEach(function (op) {
     comparisonOperators[op] = function (obj, expr) {
       var args = computeValue(obj, expr, null);
       return simpleOperators[op](args[0], args[1]);
