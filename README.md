@@ -31,7 +31,7 @@ In browser
     - Array Operators (`$size`)
     - Boolean Operators (`$and`, `$or`, `$not`)
     - Comparisons Operators (`$cmp`, `$gt`, `$gte`, `$lt`, `$lte`, `$ne`, `$nin`, `$in`)
-    - Conditional Operators (`$cond`, `$ifNull`)
+    - Conditional Operators (`$cond`, `$switch`, `$ifNull`)
     - Date Operators (`$dayOfYear`, `$dayOfMonth`, `$dayOfWeek`, `$year`, `$month`, `$week`, `$hour`, `$minute`, `$second`, `$millisecond`, `$dateToString`)
     - Literal Operators (`$literal`)
     - Set Operators (`$setEquals`, `$setIntersection`, `$setDifference`, `$setUnion`, `$setIsSubset`, `$anyElementTrue`, `$allElementsTrue`)
