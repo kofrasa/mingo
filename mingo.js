@@ -2346,7 +2346,7 @@
      * @returns {*}
      */
     $ifNull: function (obj, expr) {
-      assert(!isArray(expr) || expr.length != 2, "Invalid arguments for $ifNull operator");
+      assert(isArray(expr) && expr.length === 2, "Invalid arguments for $ifNull operator");
       var args = computeValue(obj, expr, null);
       return (args[0] === null || args[0] === undefined) ? args[1] : args[0];
     }
