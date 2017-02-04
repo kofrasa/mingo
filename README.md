@@ -24,7 +24,7 @@ In browser
     - Evaluation Operators (`$regex`, `$mod`, `$where`)
     - Logical Operators (`$and`, `$or`, `$nor`, `$not`)
 - Aggregation Framework Operators
-    - Pipeline Operators (`$group`, `$match`, `$project`, `$sort`, `$limit`, `$unwind`, `$skip`)
+    - Pipeline Operators (`$group`,`$match`,`$project`,`$sort`,`$limit`,`$unwind`,`$skip`,`$count`,`$replaceRoot`,`$redact`,`$sample`,`$sortByCount`,`$addFields`)
     - Group Operators (`$addToSet`, `$sum`, `$max`, `$min`, `$avg`, `$push`, `$first`, `$last`)
     - Projection Operators (`$elemMatch`, `$slice`)
     - Arithmetic Operators (`$add`, `$divide`, `$mod`, `$multiply`, `$subtract`)
@@ -32,14 +32,17 @@ In browser
     - Boolean Operators (`$and`, `$or`, `$not`)
     - Comparisons Operators (`$cmp`, `$gt`, `$gte`, `$lt`, `$lte`, `$ne`, `$nin`, `$in`)
     - Conditional Operators (`$cond`, `$switch`, `$ifNull`)
-    - Date Operators (`$dayOfYear`, `$dayOfMonth`, `$dayOfWeek`, `$year`, `$month`, `$week`, `$hour`, `$minute`, `$second`, `$millisecond`, `$dateToString`)
+    - Date Operators
+    (`$dayOfYear`, `$dayOfMonth`, `$dayOfWeek`, `$year`, `$month`, `$week`, `$hour`, `$minute`, `$second`, `$millisecond`, `$dateToString`)
     - Literal Operators (`$literal`)
-    - Set Operators (`$setEquals`, `$setIntersection`, `$setDifference`, `$setUnion`, `$setIsSubset`, `$anyElementTrue`, `$allElementsTrue`)
+    - Set Operators
+    (`$setEquals`, `$setIntersection`, `$setDifference`, `$setUnion`, `$setIsSubset`, `$anyElementTrue`, `$allElementsTrue`)
     - String Operators (`$strcasecmp`, `$concat`, `$substr`, `$toLower`, `$toUpper`)
     - Variable Operators (`$map`, `$let`)
 - Support for custom operators
 - BackboneJS Integration
 - Match against user-defined types
+- Support for system variables (`$$ROOT`,`$$CURRENT`,`$$DESCEND`,`$$PRUNE`,`$$KEEP`)
 - JSON stream filtering and projection. *NodeJS only*
 
 For documentation on using query operators see [mongodb](http://docs.mongodb.org/manual/reference/operator/query/)
