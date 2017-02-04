@@ -1230,6 +1230,9 @@
      */
     $sample: function (collection, expr) {
       var size = expr["size"];
+      assertType(isNumber(size),
+      "$sample size must be a positive integer. See https://docs.mongodb.com/manual/reference/operator/aggregation/sample/");
+
       var result = [];
       for (var i = 0; i < size; i++) {
         var n = Math.floor(Math.random() * collection.length);
@@ -1247,7 +1250,8 @@
     $count: function (collection, expr) {
       assert(
         isString(expr) && expr.trim() !== "" && expr.indexOf(".") === -1 && expr.trim()[0] !== "$",
-        "Invalid expression value. See https://docs.mongodb.com/manual/reference/operator/aggregation/count/");
+        "Invalid expression value for $count. See https://docs.mongodb.com/manual/reference/operator/aggregation/count/"
+      );
 
       var result = {};
       result[expr] = collection.length;

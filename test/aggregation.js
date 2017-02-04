@@ -377,8 +377,30 @@ test("Aggregation Pipeline Operators", function (t) {
       ]
     );
 
-    t.deepEqual(result, { "passing_scores" : 4 });
+    t.deepEqual(result, { "passing_scores" : 4 }, "can $count pipeline results");
 
+    t.end();
+  });
+
+  /**
+   * Tests for $sample operator
+   */
+  t.test("$sample operator", function (t) {
+    var users = [
+      { "_id" : 1, "name" : "dave123", "q1" : true, "q2" : true },
+      { "_id" : 2, "name" : "dave2", "q1" : false, "q2" : false  },
+      { "_id" : 3, "name" : "ahn", "q1" : true, "q2" : true  },
+      { "_id" : 4, "name" : "li", "q1" : true, "q2" : false  },
+      { "_id" : 5, "name" : "annT", "q1" : false, "q2" : true  },
+      { "_id" : 6, "name" : "li", "q1" : true, "q2" : true  },
+      { "_id" : 7, "name" : "ty", "q1" : false, "q2" : true  }
+    ];
+
+    var result = Mingo.aggregate(users,
+       [ { $sample: { size: 3 } } ]
+    );
+
+    t.equals(result.length, 3, "can $sample pipeline input");
     t.end();
   });
 });
