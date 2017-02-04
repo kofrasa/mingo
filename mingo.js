@@ -1223,7 +1223,7 @@
     /**
      * Randomly selects the specified number of documents from its input.
      * https://docs.mongodb.com/manual/reference/operator/aggregation/sample/
-     * 
+     *
      * @param  {Array} collection
      * @param  {Object} expr
      * @return {*}
@@ -1255,48 +1255,13 @@
 
   function redactObj(root, obj, expr) {
     var action = computeValue(obj, expr, null);
-    var result;
 
-    switch (action) {
-      case "$$ROOT":
-        return root;
-      case "$$CURRENT":
-      case "$$KEEP":
-        return obj;
-      case "$$DESCEND":
-        // traverse nested documents iff there is a $cond
-        if (!has(expr, "$cond")) return obj;
-
-        each(obj, function(current, key) {
-          if (isObjectLike(current)) {
-            if (isArray(current)) {
-              result = [];
-              current.forEach(function (elem, index) {
-                if (isObject(elem)) {
-                  elem = redactObj(root, elem, expr);
-                }
-                if (!isUndefined(elem)) result.push(elem);
-              });
-            } else {
-              result = redactObj(root, current, expr);
-            }
-
-            // undefined means value must be pruned
-            if (isUndefined(result)) {
-              delete obj[key];
-            } else {
-              obj[key] = result;
-            }
-          }
-        });
-        return obj;
-      case "$$PRUNE":
-        return undefined;
-      default:
-        throw new Error(
-          "Invalid $redact expression. " +
-          "See https://docs.mongodb.com/manual/reference/operator/aggregation/redact/");
+    if (!SYS_VARIABLES.includes(action)) {
+      throw new Error(
+        "Invalid $redact expression. " +
+        "See https://docs.mongodb.com/manual/reference/operator/aggregation/redact/");
     }
+    return systemVariables[action](root, obj, expr);
   }
 
   ////////// QUERY OPERATORS //////////
@@ -2506,7 +2471,49 @@
     variableOperators
   );
 
-  var SYS_VARS = ["$$ROOT", "$$CURRENT", "$$DESCEND", "$$PRUNE", "$$KEEP"];
+  /**
+   * Implementation of system variables
+   * @type {Object}
+   */
+  var systemVariables = {
+    "$$ROOT": function (root, obj, expr) { return root; },
+    "$$KEEP": function (root, obj, expr) { return obj; },
+    "$$PRUNE": function (root, obj, expr) { return undefined; },
+    "$$CURRENT": function (root, obj, expr) { return obj; },
+    "$$DESCEND": function (root, obj, expr) {
+      // traverse nested documents iff there is a $cond
+      if (!has(expr, "$cond")) return obj;
+
+      var result;
+
+      each(obj, function(current, key) {
+        if (isObjectLike(current)) {
+          if (isArray(current)) {
+            result = [];
+            current.forEach(function (elem, index) {
+              if (isObject(elem)) {
+                elem = redactObj(root, elem, expr);
+              }
+              if (!isUndefined(elem)) result.push(elem);
+            });
+          } else {
+            result = redactObj(root, current, expr);
+          }
+
+          // undefined means value must be pruned
+          if (isUndefined(result)) {
+            delete obj[key];
+          } else {
+            obj[key] = result;
+          }
+        }
+      });
+      return obj;
+    }
+  };
+
+  // system varibiable names
+  var SYS_VARIABLES = Object.keys(systemVariables);
 
   var OP_QUERY = Mingo.OP_QUERY = 'query',
     OP_GROUP = Mingo.OP_GROUP = 'group',
@@ -2935,14 +2942,12 @@
       return aggregateOperators[field](obj, expr);
     }
 
-    // we do not process system variables here
-    if (SYS_VARS.includes(expr)) {
-      return expr;
-    }
-
     // if expr is a variable for an object field
     // field not used in this case
     if (isString(expr) && expr.length > 0 && expr[0] === "$") {
+      // we return system variables as literals
+      if (SYS_VARIABLES.includes(expr)) return expr;
+
       return resolve(obj, expr.slice(1));
     }
 
