@@ -2224,7 +2224,7 @@
     }
   };
   // mixin comparison operators
-  ["$eq", "$ne", "$gt", "$gte", "$lt", "$lte"].forEach(function (op) {
+  ["$eq", "$ne", "$gt", "$gte", "$lt", "$lte", "$in", "$nin"].forEach(function (op) {
     comparisonOperators[op] = function (obj, expr) {
       var args = computeValue(obj, expr, null);
       return simpleOperators[op](args[0], args[1]);
