@@ -3,6 +3,13 @@ Changelog
 
 Changes starting from v0.5.0 are tracked here
 
+## v0.9.0 / 2017-02-06
+- Added support for system variables (`$$ROOT`,`$$CURRENT`). Fixes [issue#41](https://github.com/kofrasa/mingo/issues/41)
+- Implemented more pipeline operators (`$redact`,`$addFields`,`$sample`,`$sortByCount`,`$count`,`$replaceRoot`)
+- Added `$switch` conditional operator
+- Fixed `$ifNull` conditional operator
+- Allow use of `$in` and `$nin` as aggregation comparison operators
+
 ## v0.8.1 / 2016-12-08
 - Fix querying deeply nested nested arrays and object equality matching. See [issue#36](https://github.com/kofrasa/mingo/issues/36)
 
