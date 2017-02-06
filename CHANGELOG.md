@@ -4,7 +4,7 @@ Changelog
 Changes starting from v0.5.0 are tracked here
 
 ## v0.9.0 / 2017-02-06
-- Added support for system variables (`$$ROOT`,`$$CURRENT`). Fixes [issue#41](https://github.com/kofrasa/mingo/issues/41)
+- Added support for system variables (`$$ROOT`,`$$CURRENT`)
 - Implemented more pipeline operators (`$redact`,`$addFields`,`$sample`,`$sortByCount`,`$count`,`$replaceRoot`)
 - Added `$switch` conditional operator
 - Fixed `$ifNull` conditional operator
