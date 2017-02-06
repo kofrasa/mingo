@@ -810,10 +810,11 @@
           var key = Object.keys(operator);
           if (key.length === 1 && ops(OP_PIPELINE).includes(key[0])) {
             key = key[0];
+            var opt = { pipelineOp: key };
             if (query instanceof Mingo.Query) {
-              collection = pipelineOperators[key].call(query, collection, operator[key]);
+              collection = pipelineOperators[key].call(query, collection, operator[key], opt);
             } else {
-              collection = pipelineOperators[key](collection, operator[key]);
+              collection = pipelineOperators[key](collection, operator[key], opt);
             }
           } else {
             throw new Error("Invalid aggregation operator '" + key + "'");
@@ -1351,25 +1352,11 @@
      * https://docs.mongodb.com/manual/reference/operator/aggregation/redact/
      */
     $redact: function (collection, expr) {
-      var result = [];
-      collection.forEach(function (obj) {
-        var val = redactObj(obj, clone(obj), expr);
-        result.push(val);
+      return collection.map(function (obj) {
+        return redactObj(clone(obj), expr);
       });
-      return result;
     }
   };
-
-  function redactObj(root, obj, expr) {
-    var action = computeValue(obj, expr, null);
-
-    if (!SYS_VARIABLES.includes(action)) {
-      throw new Error(
-        "Invalid $redact expression. " +
-        "See https://docs.mongodb.com/manual/reference/operator/aggregation/redact/");
-    }
-    return systemVariables[action](root, obj, expr);
-  }
 
   ////////// QUERY OPERATORS //////////
   var queryOperators = {};
@@ -2611,11 +2598,18 @@
    * @type {Object}
    */
   var systemVariables = {
-    "$$ROOT": function (root, obj, expr) { return root; },
-    "$$KEEP": function (root, obj, expr) { return obj; },
-    "$$PRUNE": function (root, obj, expr) { return undefined; },
-    "$$CURRENT": function (root, obj, expr) { return obj; },
-    "$$DESCEND": function (root, obj, expr) {
+    "$$ROOT": function (obj, expr, opt) { return opt.root; },
+    "$$CURRENT": function (obj, expr, opt) { return obj; }
+  };
+
+  /**
+   * Implementation of $redact variables
+   * @type {Object}
+   */
+  var redactVariables = {
+    "$$KEEP": function (obj, expr, opt) { return obj; },
+    "$$PRUNE": function (obj, expr, opt) { return undefined; },
+    "$$DESCEND": function (obj, expr, opt) {
       // traverse nested documents iff there is a $cond
       if (!has(expr, "$cond")) return obj;
 
@@ -2627,17 +2621,16 @@
             result = [];
             current.forEach(function (elem, index) {
               if (isObject(elem)) {
-                elem = redactObj(root, elem, expr);
+                elem = redactObj(elem, expr, opt);
               }
               if (!isUndefined(elem)) result.push(elem);
             });
           } else {
-            result = redactObj(root, current, expr);
+            result = redactObj(current, expr, opt);
           }
 
-          // undefined means value must be pruned
           if (isUndefined(result)) {
-            delete obj[key];
+            delete obj[key]; // pruned result
           } else {
             obj[key] = result;
           }
@@ -2647,14 +2640,15 @@
     }
   };
 
-  // system varibiable names
-  var SYS_VARIABLES = Object.keys(systemVariables);
+  // system varibiables
+  var SYS_VARS = Object.keys(systemVariables);
+  var REDACT_VARS = Object.keys(redactVariables);
 
   var OP_QUERY = Mingo.OP_QUERY = 'query',
-    OP_GROUP = Mingo.OP_GROUP = 'group',
-    OP_AGGREGATE = Mingo.OP_AGGREGATE = 'aggregate',
-    OP_PIPELINE = Mingo.OP_PIPELINE = 'pipeline',
-    OP_PROJECTION = Mingo.OP_PROJECTION = 'projection';
+      OP_GROUP = Mingo.OP_GROUP = 'group',
+      OP_AGGREGATE = Mingo.OP_AGGREGATE = 'aggregate',
+      OP_PIPELINE = Mingo.OP_PIPELINE = 'pipeline',
+      OP_PROJECTION = Mingo.OP_PROJECTION = 'projection';
 
   // operator definitions
   var OPERATORS = {
@@ -2679,6 +2673,23 @@
     '%U': ['$week', 2],
     '%%': '%'
   };
+
+  /**
+   * Redact an object
+   * @param  {Object} obj The object to redact
+   * @param  {*} expr The redact expression
+   * @param  {*} opt  Options for value
+   * @return {*} Returns the redacted value
+   */
+  function redactObj(obj, expr, opt) {
+    opt = opt || {};
+    opt.root = opt.root || clone(obj);
+
+    var result = computeValue(obj, expr, null, opt);
+    return REDACT_VARS.includes(result)
+      ? redactVariables[result](obj, expr, opt)
+      : result;
+  }
 
   /**
    * Retrieve the value of a given key on an object
@@ -3077,31 +3088,40 @@
    * @param field the field name (may also be an aggregate operator)
    * @returns {*}
    */
-  function computeValue(obj, expr, field) {
+  function computeValue(obj, expr, field, opt) {
+
+    opt = opt || {};
+    opt.root = opt.root || clone(obj);
 
     // if the field of the object is a valid operator
     if (ops(OP_AGGREGATE).includes(field)) {
-      return aggregateOperators[field](obj, expr);
+      return aggregateOperators[field](obj, expr, opt);
     }
 
     // we also handle $group accumulator operators
     if (ops(OP_GROUP).includes(field)) {
       // we first fully resolve the expression
-      obj = computeValue(obj, expr, null);
+      obj = computeValue(obj, expr, null, opt);
       assertType(isArray(obj), "Must use collection type with " + field + " operator");
       // we pass a null expression because all values have been resolved
-      return groupOperators[field](obj, null);
+      return groupOperators[field](obj, null, opt);
     }
 
     // if expr is a variable for an object field
     // field not used in this case
     if (isString(expr) && expr.length > 0 && expr[0] === "$") {
       // we return system variables as literals
-      if (SYS_VARIABLES.includes(expr)) return expr;
+      if (SYS_VARS.includes(expr)) {
+        return systemVariables[expr](obj, null, opt);
+      } else if (REDACT_VARS.includes(expr)) {
+        console.log(opt);
+        return expr;
+      }
 
-      var sysCurrent = "$$CURRENT.";
-      if (expr.indexOf(sysCurrent) === 0) {
-        return resolve(obj, expr.slice(sysCurrent.length + 1));
+      // handle selectors with explicit prefix
+      var sysCurrent = "$$CURRENT";
+      if (expr.indexOf(sysCurrent + ".") === 0) {
+        return resolve(obj, expr.slice(sysCurrent.length + 2));
       }
 
       return resolve(obj, expr.slice(1));
@@ -3117,7 +3137,7 @@
         var result = {};
         for (var key in expr) {
           if (has(expr, key)) {
-            result[key] = computeValue(obj, expr[key], key);
+            result[key] = computeValue(obj, expr[key], key, opt);
             // must run ONLY one aggregate operator per expression
             // if so, return result of the computed value
             if (ops(OP_AGGREGATE).includes(key)) {

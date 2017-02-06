@@ -140,7 +140,7 @@ test("Aggregation Pipeline Operators", function (t) {
   });
 
   t.test("$group operator", function (t) {
-    t.plan(4);
+
     var flattened = Mingo.aggregate(samples.students, [
       {'$unwind': '$scores'}
     ]);
@@ -176,6 +176,7 @@ test("Aggregation Pipeline Operators", function (t) {
           }
         }]
     );
+
     t.deepEqual(grouped, [
       {"total": 2, "keyword": "Bathroom Cleaning Tips"},
       {"total": 1, "keyword": "Cleaning Bathroom Tips"},
@@ -183,6 +184,52 @@ test("Aggregation Pipeline Operators", function (t) {
       {"total": 1, "keyword": "Drain Clogs"},
       {"total": 1, "keyword": "unclog bathtub drain"}
     ], "can group by object key");
+
+    var books = [
+      { "_id" : 8751, "title" : "The Banquet", "author" : "Dante", "copies" : 2 },
+      { "_id" : 8752, "title" : "Divine Comedy", "author" : "Dante", "copies" : 1 },
+      { "_id" : 8645, "title" : "Eclogues", "author" : "Dante", "copies" : 2 },
+      { "_id" : 7000, "title" : "The Odyssey", "author" : "Homer", "copies" : 10 },
+      { "_id" : 7020, "title" : "Iliad", "author" : "Homer", "copies" : 10 }
+    ];
+
+    result = Mingo.aggregate(books, [
+       { $group : { _id : "$author", books: { $push: "$title" } } },
+       { $sort: { _id: -1 } }
+     ]
+    );
+
+    t.deepEqual(result, [
+      { "_id" : "Homer", "books" : [ "The Odyssey", "Iliad" ] },
+      { "_id" : "Dante", "books" : [ "The Banquet", "Divine Comedy", "Eclogues" ] }
+    ], "Group title by author");
+
+    result = Mingo.aggregate(books, [
+        { $group : { _id : "$author", books: { $push: "$$ROOT" } } },
+        { $sort: { _id: -1 } }
+      ]
+    );
+
+    t.deepEqual(result, [
+     {
+        "_id" : "Homer",
+        "books" : [
+          { "_id" : 7000, "title" : "The Odyssey", "author" : "Homer", "copies" : 10 },
+          { "_id" : 7020, "title" : "Iliad", "author" : "Homer", "copies" : 10 }
+        ]
+     },
+     {
+        "_id" : "Dante",
+        "books" : [
+           { "_id" : 8751, "title" : "The Banquet", "author" : "Dante", "copies" : 2 },
+           { "_id" : 8752, "title" : "Divine Comedy", "author" : "Dante", "copies" : 1 },
+           { "_id" : 8645, "title" : "Eclogues", "author" : "Dante", "copies" : 2 }
+         ]
+     }
+    ], "Group Documents by author");
+
+    t.end();
+
   });
 
   t.test("$limit operator", function (t) {
@@ -541,7 +588,7 @@ test("Aggregation Pipeline Operators", function (t) {
      t.equals(result[0]["count"], 6, "validate sorted max first");
      t.equals(result[7]["count"], 1, "validate sorted min last");
 
-     // cannot enable below due to sort order variance
+     // cannot enable below due to sort order variation
      // t.deepEqual(Object.keys(result[0])["count"], 6[
      //   { "_id" : "painting", "count" : 6 },
      //   { "_id" : "oil", "count" : 4 },
@@ -1228,7 +1275,7 @@ test("Conditional Operators", function (t) {
         description: {$ifNull: [ "$description", "Unspecified", "" ]}
       }
     }])
-  }, /Invalid arguments for \$ifNull operator/, 
+  }, /Invalid arguments for \$ifNull operator/,
   '$ifNull throws with wrong arguments')
 
   t.end();
