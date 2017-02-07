@@ -1419,6 +1419,7 @@ test("Array Operators", function (t) {
   ], "can apply $arrayElemAt operator");
 
 
+  // $concatArrays
   result = Mingo.aggregate([
     { "_id" : 1, instock: [ "chocolate" ], ordered: [ "butter", "apples" ] },
     { "_id" : 2, instock: [ "apples", "pudding", "pie" ] },
@@ -1434,6 +1435,62 @@ test("Array Operators", function (t) {
     { "_id" : 3, "items" : [ "pears", "pecans", "cherries" ] },
     { "_id" : 4, "items" : [ "ice cream" ] }
   ], "can apply $concatArrays opertator");
+
+  // $filter
+  data = [
+    {
+       _id: 0,
+       items: [
+         { item_id: 43, quantity: 2, price: 10 },
+         { item_id: 2, quantity: 1, price: 240 }
+       ]
+    },
+    {
+       _id: 1,
+       items: [
+         { item_id: 23, quantity: 3, price: 110 },
+         { item_id: 103, quantity: 4, price: 5 },
+         { item_id: 38, quantity: 1, price: 300 }
+       ]
+    },
+    {
+        _id: 2,
+        items: [
+           { item_id: 4, quantity: 1, price: 23 }
+        ]
+    }
+  ];
+
+  result = Mingo.aggregate(data, [
+    {
+        $project: {
+           items: {
+              $filter: {
+                 input: "$items",
+                 as: "item",
+                 cond: { $gte: [ "$$item.price", 100 ] }
+              }
+           }
+        }
+     }
+  ]);
+
+  t.deepEqual(result, [
+    {
+       "_id" : 0,
+       "items" : [
+          { "item_id" : 2, "quantity" : 1, "price" : 240 }
+       ]
+    },
+    {
+       "_id" : 1,
+       "items" : [
+          { "item_id" : 23, "quantity" : 3, "price" : 110 },
+          { "item_id" : 38, "quantity" : 1, "price" : 300 }
+       ]
+    },
+    { "_id" : 2, "items" : [ ] }
+  ], "can apply $filter array operator");
 
 
   t.end();

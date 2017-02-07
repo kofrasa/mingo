@@ -2452,6 +2452,7 @@
 
     /**
      * Returns the element at the specified array index.
+     *
      * @param  {Object} obj
      * @param  {*} expr
      * @return {*}
@@ -2473,6 +2474,7 @@
 
     /**
      * Concatenates arrays to return the concatenated array.
+     *
      * @param  {Object} obj
      * @param  {*} expr
      * @return {*}
@@ -2487,7 +2489,30 @@
     },
 
     /**
+     * Selects a subset of the array to return an array with only the elements that match the filter condition.
+     *
+     * @param  {Object} obj  [description]
+     * @param  {*} expr [description]
+     * @return {*}      [description]
+     */
+    $filter: function (obj, expr) {
+      var input = computeValue(obj, expr["input"], null),
+          as = expr["as"],
+          cond = expr["cond"];
+
+      assertType(isArray(input), "input expression for $filter must resolve to an array");
+
+      return input.filter(function (o) {
+        // inject variable
+        var tempObj = {};
+        tempObj["$" + as] = o;
+        return computeValue(tempObj, cond, null) === true;
+      });
+    },
+
+    /**
      * Counts and returns the total the number of items in an array.
+     *
      * @param obj
      * @param expr
      */
