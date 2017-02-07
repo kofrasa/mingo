@@ -1437,7 +1437,7 @@ test("Array Operators", function (t) {
   ], "can apply $concatArrays opertator");
 
   // $filter
-  data = [
+  var data = [
     {
        _id: 0,
        items: [
@@ -1491,6 +1491,33 @@ test("Array Operators", function (t) {
     },
     { "_id" : 2, "items" : [ ] }
   ], "can apply $filter array operator");
+
+  // $indexOfArray
+  data = [
+    { "_id" : 1, "items" : ["one", "two", "three"] },
+    { "_id" : 2, "items" : [1, 2, 3] },
+    { "_id" : 3, "items" : [null, null, 2] },
+    { "_id" : 4, "items" : null },
+    { "_id" : 5, "amount" : 3 }
+  ];
+
+  result = Mingo.aggregate(data,
+   [
+     {
+       $project:
+          {
+            index: { $indexOfArray: [ "$items", 2 ] },
+          }
+      }
+  ]);
+
+  t.deepEqual(result, [
+    { "_id" : 1, "index" : -1 },
+    { "_id" : 2, "index" : 1 },
+    { "_id" : 3, "index" : 2 },
+    { "_id" : 4, "index" : null },
+    { "_id" : 5, "index" : null }
+  ], "can apply $indexOfArray array operator");
 
 
   t.end();

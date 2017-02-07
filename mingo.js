@@ -2500,7 +2500,7 @@
           as = expr["as"],
           cond = expr["cond"];
 
-      assertType(isArray(input), "input expression for $filter must resolve to an array");
+      assertType(isArray(input), "'input' expression for $filter must resolve to an array");
 
       return input.filter(function (o) {
         // inject variable
@@ -2508,6 +2508,36 @@
         tempObj["$" + as] = o;
         return computeValue(tempObj, cond, null) === true;
       });
+    },
+
+    /**
+     * Searches an array for an occurence of a specified value and returns the array index of the first occurence.
+     * If the substring is not found, returns -1.
+     *
+     * @param  {Object} obj
+     * @param  {*} expr
+     * @return {*}
+     */
+    $indexOfArray: function (obj, expr) {
+      var arr = computeValue(obj, expr, null);
+      if (isNull(arr)) return null;
+
+      var array = arr[0];
+      if (isNull(array) || isUndefined(array)) return null;
+
+      assertType(isArray(array), "First operand for $indexOfArray must resolve to an array.");
+
+      var searchValue = arr[1];
+      if (isNull(searchValue) || isUndefined(searchValue)) return null;
+
+      var start = arr[2] || 0;
+      var end = arr[3] || array.length;
+
+      if (end < array.length) {
+        array = array.slice(start, end);
+      }
+
+      return array.indexOf(searchValue, start);
     },
 
     /**
