@@ -2449,6 +2449,43 @@
   });
 
   var arrayOperators = {
+
+    /**
+     * Returns the element at the specified array index.
+     * @param  {Object} obj
+     * @param  {*} expr
+     * @return {*}
+     */
+    $arrayElemAt: function (obj, expr) {
+      var arr = computeValue(obj, expr, null);
+      assert(isArray(arr) && arr.length === 2, "$arrayElemAt expression must resolve to an array of 2 elements");
+      assertType(isArray(arr[0]), "First operand to $arrayElemAt must resolve to an array");
+      assertType(isNumber(arr[1]), "Second operand to $arrayElemAt must resolve to an integer");
+      var idx = arr[1];
+      arr = arr[0];
+      if (idx < 0 && Math.abs(idx) <= arr.length) {
+        return arr[idx + arr.length];
+      } else if (idx >= 0 && idx < arr.length) {
+        return arr[idx];
+      }
+      return undefined;
+    },
+
+    /**
+     * Concatenates arrays to return the concatenated array.
+     * @param  {Object} obj
+     * @param  {*} expr
+     * @return {*}
+     */
+    $concatArrays: function (obj, expr) {
+      var arr = computeValue(obj, expr, null);
+      assert(isArray(arr) && arr.length === 2, "$concatArrays expression must resolve to an array of 2 elements");
+
+      if (isNull(arr[0]) || isNull(arr[1]) || isUndefined(arr[0]) || isUndefined(arr[1])) return null;
+
+      return arr[0].concat(arr[1]);
+    },
+
     /**
      * Counts and returns the total the number of items in an array.
      * @param obj

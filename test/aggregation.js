@@ -1377,7 +1377,7 @@ test("Literal Operators", function (t) {
 });
 
 test("Array Operators", function (t) {
-  t.plan(1);
+
   var result = Mingo.aggregate([
     {"_id": 1, "item": "ABC1", "description": "product 1", colors: ["blue", "black", "red"]},
     {"_id": 2, "item": "ABC2", "description": "product 2", colors: ["purple"]},
@@ -1394,6 +1394,47 @@ test("Array Operators", function (t) {
     {"_id": 2, "item": "ABC2", "numberOfColors": 1},
     {"_id": 3, "item": "XYZ1", "numberOfColors": 0}
   ], result, "can apply $size operator");
+
+  result = Mingo.aggregate([
+    { "_id" : 1, "name" : "dave123", favorites: [ "chocolate", "cake", "butter", "apples" ] },
+    { "_id" : 2, "name" : "li", favorites: [ "apples", "pudding", "pie" ] },
+    { "_id" : 3, "name" : "ahn", favorites: [ "pears", "pecans", "chocolate", "cherries" ] },
+    { "_id" : 4, "name" : "ty", favorites: [ "ice cream" ] }
+    ], [
+     {
+       $project:
+        {
+           name: 1,
+           first: { $arrayElemAt: [ "$favorites", 0 ] },
+           last: { $arrayElemAt: [ "$favorites", -1 ] }
+        }
+     }
+  ]);
+
+  t.deepEqual(result, [
+    { "_id" : 1, "name" : "dave123", "first" : "chocolate", "last" : "apples" },
+    { "_id" : 2, "name" : "li", "first" : "apples", "last" : "pie" },
+    { "_id" : 3, "name" : "ahn", "first" : "pears", "last" : "cherries" },
+    { "_id" : 4, "name" : "ty", "first" : "ice cream", "last" : "ice cream" }
+  ], "can apply $arrayElemAt operator");
+
+
+  result = Mingo.aggregate([
+    { "_id" : 1, instock: [ "chocolate" ], ordered: [ "butter", "apples" ] },
+    { "_id" : 2, instock: [ "apples", "pudding", "pie" ] },
+    { "_id" : 3, instock: [ "pears", "pecans"], ordered: [ "cherries" ] },
+    { "_id" : 4, instock: [ "ice cream" ], ordered: [ ] }
+  ], [
+   { $project: { items: { $concatArrays: [ "$instock", "$ordered" ] } } }
+  ]);
+
+  t.deepEqual(result, [
+    { "_id" : 1, "items" : [ "chocolate", "butter", "apples" ] },
+    { "_id" : 2, "items" : null },
+    { "_id" : 3, "items" : [ "pears", "pecans", "cherries" ] },
+    { "_id" : 4, "items" : [ "ice cream" ] }
+  ], "can apply $concatArrays opertator");
+
 
   t.end();
 });
