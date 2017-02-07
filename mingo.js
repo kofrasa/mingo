@@ -433,6 +433,7 @@
     // We need exlicit naming to survive minification
     return {
       "assert": assert.bind(null),
+      "computeValue": computeValue.bind(null),
       "each": each.bind(null),
       "falsey": falsey.bind(null),
       "flatten": flatten.bind(null),
@@ -2538,6 +2539,41 @@
       }
 
       return array.indexOf(searchValue, start);
+    },
+
+    /**
+     * Determines if the operand is an array. Returns a boolean.
+     *
+     * @param  {Object}  obj
+     * @param  {*}  expr
+     * @return {Boolean}
+     */
+    $isArray: function (obj, expr) {
+      return isArray(computeValue(obj, expr, null));
+    },
+
+    /**
+     * Outputs an array containing a sequence of integers according to user-defined inputs.
+     * Returns an array whose elements are a generated sequence of numbers.
+     *
+     * @param  {Object} obj
+     * @param  {*} expr
+     * @return {*}
+     */
+    $range: function (obj, expr) {
+      var arr = computeValue(obj, expr, null);
+      var start = arr[0],
+          end = arr[1],
+          step = arr[2] || 1;
+
+      var result = [];
+      
+      while ((start < end && step > 0) || (start > end && step < 0)) {
+        result.push(start);
+        start += step;
+      }
+
+      return result;
     },
 
     /**
