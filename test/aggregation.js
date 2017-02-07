@@ -14,6 +14,7 @@ var SalesData = [
 ];
 
 test("Aggregation Pipeline Operators", function (t) {
+  var expected;
 
   t.test("$match operator", function (t) {
     t.plan(1);
@@ -199,18 +200,13 @@ test("Aggregation Pipeline Operators", function (t) {
      ]
     );
 
+
     t.deepEqual(result, [
       { "_id" : "Homer", "books" : [ "The Odyssey", "Iliad" ] },
       { "_id" : "Dante", "books" : [ "The Banquet", "Divine Comedy", "Eclogues" ] }
     ], "Group title by author");
 
-    result = Mingo.aggregate(books, [
-        { $group : { _id : "$author", books: { $push: "$$ROOT" } } },
-        { $sort: { _id: -1 } }
-      ]
-    );
-
-    t.deepEqual(result, [
+    expected = [
      {
         "_id" : "Homer",
         "books" : [
@@ -226,7 +222,44 @@ test("Aggregation Pipeline Operators", function (t) {
            { "_id" : 8645, "title" : "Eclogues", "author" : "Dante", "copies" : 2 }
          ]
      }
-    ], "Group Documents by author");
+    ];
+
+    result = Mingo.aggregate(books, [
+        { $group : { _id : "$author", books: { $push: "$$ROOT" } } },
+        { $sort: { _id: -1 } }
+      ]
+    );
+
+    t.deepEqual(result, expected, "Group Documents by author - $$ROOT");
+
+    result = Mingo.aggregate(books, [
+        { $group : { _id : "$author", books: { $push: "$$CURRENT" } } },
+        { $sort: { _id: -1 } }
+      ]
+    );
+
+    t.deepEqual(result, expected, "Group Documents by author - $$CURRENT");
+
+    expected = [
+      { "_id" : "Homer", "books" : [ "The Odyssey", "Iliad" ] },
+      { "_id" : "Dante", "books" : [ "The Banquet", "Divine Comedy", "Eclogues" ] }
+    ];
+
+    result = Mingo.aggregate(books, [
+        { $group : { _id : "$author", books: { $push: "$$ROOT.title" } } },
+        { $sort: { _id: -1 } }
+      ]
+    );
+
+    t.deepEqual(result, expected, "Group title by author - $$ROOT.field");
+
+    result = Mingo.aggregate(books, [
+        { $group : { _id : "$author", books: { $push: "$$CURRENT.title" } } },
+        { $sort: { _id: -1 } }
+      ]
+    );
+
+    t.deepEqual(result, expected, "Group title by author - $$CURRENT.title");
 
     t.end();
 
