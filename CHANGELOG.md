@@ -3,6 +3,9 @@ Changelog
 
 Changes starting from v0.5.0 are tracked here
 
+## v0.9.1 / 2017-02-08
+- Fix resolving system variables with subpaths. See [issue#41](https://github.com/kofrasa/mingo/issues/41)
+
 ## v0.9.0 / 2017-02-06
 - Added support for system variables (`$$ROOT`,`$$CURRENT`)
 - Implemented more pipeline operators (`$redact`,`$addFields`,`$sample`,`$sortByCount`,`$count`,`$replaceRoot`)
