@@ -284,5 +284,222 @@ test("Array Operators", function (t) {
 
   tryExamples(examples, "$slice");
 
+  // $reduce
+  data = [
+    {_id:1, "type":"die", "experimentId":"r5", "description":"Roll a 5", "eventNum":1, "probability":0.16666666666667},
+    {_id:2, "type":"card", "experimentId":"d3rc", "description":"Draw 3 red cards", "eventNum":1, "probability":0.5},
+    {_id:3, "type":"card", "experimentId":"d3rc", "description":"Draw 3 red cards", "eventNum":2, "probability":0.49019607843137},
+    {_id:4, "type":"card", "experimentId":"d3rc", "description":"Draw 3 red cards", "eventNum":3, "probability":0.48},
+    {_id:5, "type":"die", "experimentId":"r16", "description":"Roll a 1 then a 6", "eventNum":1, "probability":0.16666666666667},
+    {_id:6, "type":"die", "experimentId":"r16", "description":"Roll a 1 then a 6", "eventNum":2, "probability":0.16666666666667},
+    {_id:7, "type":"card", "experimentId":"dak", "description":"Draw an ace, then a king", "eventNum":1, "probability":0.07692307692308},
+    {_id:8, "type":"card", "experimentId":"dak", "description":"Draw an ace, then a king", "eventNum":2, "probability":0.07843137254902}
+  ];
+
+  result = Mingo.aggregate(data,
+    [
+      {
+        $group: {
+          _id: "$experimentId",
+          "probabilityArr": { $push: "$probability" }
+        }
+      },
+      {
+        $project: {
+          "description": 1,
+          "results": {
+            $reduce: {
+              input: "$probabilityArr",
+              initialValue: 1,
+              in: { $multiply: [ "$$value", "$$this" ] }
+            }
+          }
+        }
+      },
+      {
+        $sort: { _id: 1 }
+      }
+    ]
+  );
+
+  t.deepEqual(result, [
+    { "_id" : "d3rc", "results" : 0.11764705882352879 },
+    { "_id" : "dak", "results" : 0.00603318250377101 },
+    { "_id" : "r16", "results" : 0.027777777777778886 },
+    { "_id" : "r5", "results" : 0.16666666666667 }
+  ], "$reduce: Probability example");
+
+  data = [
+    { "_id" : 1, "productId" : "ts1", "description" : "T-Shirt", "color" : "black", "size" : "M", "price" : 20, "discounts" : [ 0.5, 0.1 ] },
+    { "_id" : 2, "productId" : "j1", "description" : "Jeans", "color" : "blue", "size" : "36", "price" : 40, "discounts" : [ 0.25, 0.15, 0.05 ] },
+    { "_id" : 3, "productId" : "s1", "description" : "Shorts", "color" : "beige", "size" : "32", "price" : 30, "discounts" : [ 0.15, 0.05 ] },
+    { "_id" : 4, "productId" : "ts2", "description" : "Cool T-Shirt", "color" : "White", "size" : "L", "price" : 25, "discounts" : [ 0.3 ] },
+    { "_id" : 5, "productId" : "j2", "description" : "Designer Jeans", "color" : "blue", "size" : "30", "price" : 80, "discounts" : [ 0.1, 0.25 ] }
+  ];
+
+  result = Mingo.aggregate(data,
+    [
+      {
+        $project: {
+          "discountedPrice": {
+            $reduce: {
+              input: "$discounts",
+              initialValue: "$price",
+              in: { $multiply: [ "$$value", { $subtract: [ 1, "$$this" ] } ] }
+            }
+          }
+        }
+      }
+    ]
+  );
+
+  t.deepEqual(result, [
+    { "_id" : 1, "discountedPrice" : 9 },
+    { "_id" : 2, "discountedPrice" : 24.224999999999998 },
+    { "_id" : 3, "discountedPrice" : 24.224999999999998 },
+    { "_id" : 4, "discountedPrice" : 17.5 },
+    { "_id" : 5, "discountedPrice" : 54 }
+  ], "$reduce: Discounted Merchandise example");
+
+  data = [
+    { "_id" : 1, "name" : "Melissa", "hobbies" : [ "softball", "drawing", "reading" ] },
+    { "_id" : 2, "name" : "Brad", "hobbies" : [ "gaming", "skateboarding" ] },
+    { "_id" : 3, "name" : "Scott", "hobbies" : [ "basketball", "music", "fishing" ] },
+    { "_id" : 4, "name" : "Tracey", "hobbies" : [ "acting", "yoga" ] },
+    { "_id" : 5, "name" : "Josh", "hobbies" : [ "programming" ] },
+    { "_id" : 6, "name" : "Claire" }
+  ];
+
+  result = Mingo.aggregate(data,
+     [
+       // Filter to return only non-empty arrays
+       { $match: { "hobbies": { $gt: [ ] } } },
+       {
+         $project: {
+           "name": 1,
+           "bio": {
+             $reduce: {
+               input: "$hobbies",
+               initialValue: "My hobbies include:",
+               in: {
+                 $concat: [
+                   "$$value",
+                   {
+                     $cond: {
+                       if: { $eq: [ "$$value", "My hobbies include:" ] },
+                       then: " ",
+                       else: ", "
+                     }
+                   },
+                   "$$this"
+                 ]
+               }
+             }
+           }
+         }
+       }
+     ]
+  );
+
+  t.deepEqual(result, [
+    { "_id" : 1, "name" : "Melissa", "bio" : "My hobbies include: softball, drawing, reading" },
+    { "_id" : 2, "name" : "Brad", "bio" : "My hobbies include: gaming, skateboarding" },
+    { "_id" : 3, "name" : "Scott", "bio" : "My hobbies include: basketball, music, fishing" },
+    { "_id" : 4, "name" : "Tracey", "bio" : "My hobbies include: acting, yoga" },
+    { "_id" : 5, "name" : "Josh", "bio" : "My hobbies include: programming" }
+  ], "$reduce: String Concatenation example");
+
+  var matrices = [
+    { "_id" : 1, "arr" : [ [ 24, 55, 79 ], [ 14, 78, 35 ], [ 84, 90, 3 ], [ 50, 89, 70 ] ] },
+    { "_id" : 2, "arr" : [ [ 39, 32, 43, 7 ], [ 62, 17, 80, 64 ], [ 17, 88, 11, 73 ] ] },
+    { "_id" : 3, "arr" : [ [ 42 ], [ 26, 59 ], [ 17 ], [ 72, 19, 35 ] ] },
+    { "_id" : 4 }
+  ];
+
+  result = Mingo.aggregate(matrices,
+    [
+      {
+        $project: {
+          "collapsed": {
+            $reduce: {
+              input: "$arr",
+              initialValue: [ ],
+              in: { $concatArrays: [ "$$value", "$$this" ] }
+            }
+          }
+        }
+      }
+    ]
+  );
+
+  t.deepEqual(result, [
+    { "_id" : 1, "collapsed" : [ 24, 55, 79, 14, 78, 35, 84, 90, 3, 50, 89, 70 ] },
+    { "_id" : 2, "collapsed" : [ 39, 32, 43, 7, 62, 17, 80, 64, 17, 88, 11, 73 ] },
+    { "_id" : 3, "collapsed" : [ 42, 26, 59, 17, 72, 19, 35 ] },
+    { "_id" : 4, "collapsed" : null }
+  ], "$reduce: Array Concatenation example - Computing a Single Reduction");
+
+  result = Mingo.aggregate(matrices,
+    [
+      {
+        $project: {
+          "results": {
+            $reduce: {
+              input: "$arr",
+              initialValue: [ ],
+              in: {
+                "collapsed": {
+                  $concatArrays: [ "$$value.collapsed", "$$this" ]
+                },
+                "firstValues": {
+                  $concatArrays: [ "$$value.firstValues", { $slice: [ "$$this", 1 ] } ]
+                }
+              }
+            }
+          }
+        }
+      }
+    ]
+  );
+
+  t.deepEqual(result, [
+    { "_id" : 1, "results" : { "collapsed" : [ 24, 55, 79, 14, 78, 35, 84, 90, 3, 50, 89, 70 ], "firstValues" : [ 24, 14, 84, 50 ] } },
+    { "_id" : 2, "results" : { "collapsed" : [ 39, 32, 43, 7, 62, 17, 80, 64, 17, 88, 11, 73 ], "firstValues" : [ 39, 62, 17 ] } },
+    { "_id" : 3, "results" : { "collapsed" : [ 42, 26, 59, 17, 72, 19, 35 ], "firstValues" : [ 42, 26, 17, 72 ] } },
+    { "_id" : 4, "results" : null }
+  ], "$reduce: Array Concatenation example - Computing a Single Reduction");
+
+  examples = [
+    [
+      {
+        input: ["a", "b", "c"],
+        initialValue: "",
+        in: { $concat : ["$$value", "$$this"] }
+      },
+      "abc"
+    ],
+    [
+      {
+        input: [ 1, 2, 3, 4 ],
+        initialValue: { sum: 5, product: 2 },
+        in: {
+           sum: { $add : ["$$value.sum", "$$this"] },
+           product: { $multiply: [ "$$value.product", "$$this" ] }
+        }
+      },
+      { "sum" : 15, "product" : 48 }
+    ],
+    [
+      {
+        input: [ [ 3, 4 ], [ 5, 6 ] ],
+        initialValue: [ 1, 2 ],
+        in: { $concatArrays : ["$$value", "$$this"] }
+      },
+      [ 1, 2, 3, 4, 5, 6 ]
+    ]
+  ];
+
+  tryExamples(examples, "$reduce");
+
   t.end();
 });

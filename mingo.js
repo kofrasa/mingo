@@ -2604,6 +2604,25 @@
     },
 
     /**
+     * Applies an expression to each element in an array and combines them into a single value.
+     *
+     * @param {Object} obj
+     * @param {*} expr
+     */
+    $reduce: function (obj, expr) {
+      var input = computeValue(obj, expr["input"], null),
+          initialValue = computeValue(obj, expr["initialValue"], null),
+          in_expr = expr["in"];
+
+      if (isUnknown(input)) return null;
+      assertType(isArray(input), "'input' expression for $reduce must resolve to an array");
+
+      return input.reduce(function (acc, n) {
+        return computeValue({ "$value": acc, "$this": n }, in_expr, null);
+      }, initialValue);
+    },
+
+    /**
      * Counts and returns the total the number of items in an array.
      *
      * @param obj
