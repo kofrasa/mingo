@@ -3114,14 +3114,17 @@
       if (SYS_VARS.includes(expr)) {
         return systemVariables[expr](obj, null, opt);
       } else if (REDACT_VARS.includes(expr)) {
-        console.log(opt);
         return expr;
       }
 
       // handle selectors with explicit prefix
-      var sysCurrent = "$$CURRENT";
-      if (expr.indexOf(sysCurrent + ".") === 0) {
-        return resolve(obj, expr.slice(sysCurrent.length + 2));
+      var sysVar = SYS_VARS.filter(function (v) { return expr.indexOf(v + ".") === 0; });
+      if (sysVar.length === 1) {
+        sysVar = sysVar[0];
+        if (sysVar === "$$ROOT") {
+          obj = opt.root;
+        }
+        expr = expr.substr(sysVar.length); // '.' prefix will be sliced off below
       }
 
       return resolve(obj, expr.slice(1));

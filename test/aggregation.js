@@ -228,6 +228,27 @@ test("Aggregation Pipeline Operators", function (t) {
      }
     ], "Group Documents by author");
 
+    expected = [
+      { "_id" : "Homer", "books" : [ "The Odyssey", "Iliad" ] },
+      { "_id" : "Dante", "books" : [ "The Banquet", "Divine Comedy", "Eclogues" ] }
+    ];
+
+    result = Mingo.aggregate(books, [
+        { $group : { _id : "$author", books: { $push: "$$ROOT.title" } } },
+        { $sort: { _id: -1 } }
+      ]
+    );
+
+    t.deepEqual(result, expected, "Group title by author - $$ROOT.field");
+
+    result = Mingo.aggregate(books, [
+        { $group : { _id : "$author", books: { $push: "$$CURRENT.title" } } },
+        { $sort: { _id: -1 } }
+      ]
+    );
+
+    t.deepEqual(result, expected, "Group title by author - $$CURRENT.title");
+
     t.end();
 
   });
