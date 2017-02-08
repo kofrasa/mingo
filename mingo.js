@@ -32,9 +32,10 @@
     root.Mingo = Mingo;
   }
 
-  // short-hand for common array functions
+  // short-hand for common functions
   var arrayPush = Array.prototype.push;
   var arraySlice = Array.prototype.slice;
+  var stringify = JSON.stringify;
 
   /////////////////// POLYFILL /////////////////////
   /**
@@ -237,12 +238,13 @@
   function isFunction(v,t) { return isType(v, "Function"); }
   function isNull(v) { return isType(v, "Null"); }
   function isUndefined(v) { return isType(v, "Undefined"); }
+  function isUnknown(v) { return isNull(v) || isUndefined(v); }
   function notInArray(arr, item) { return !arr.includes(item); }
   function inArray(arr, item) { return arr.includes(item); }
   function truthy(arg) { return !!arg; }
   function falsey(arg) { return  !arg; }
   function isEmpty(x) {
-   return ['undefined', 'null'].includes(typeof x)
+   return isUnknown(x)
    || isArray(x) && x.length === 0
    || isObject(x) && Object.keys(x).length === 0
    || !x;
@@ -425,7 +427,7 @@
 
   /**
    * Return helper functions used internally
-   * This is exposed to support users writing custom operators, and testing
+   * This is exposed to support users writing custom operators and also for testing
    *
    * @return {Object} An object of functions
    */
@@ -454,6 +456,11 @@
       "isRegExp": isRegExp.bind(null),
       "isString": isString.bind(null),
       "isUndefined": isUndefined.bind(null),
+      "isUnknown": isUnknown.bind(null),
+      "resolve": resolve.bind(null),
+      "resolveObj": resolveObj.bind(null),
+      "slice": slice.bind(null),
+      "stringify": stringify.bind(null),
       "map": map.bind(null),
       "notInArray": notInArray.bind(null),
       "sortBy": sortBy.bind(null),
@@ -1139,11 +1146,21 @@
           } else if (isObject(subExpr)) {
             var operator = Object.keys(subExpr);
             operator = operator.length > 1 ? false : operator[0];
-            if (operator !== false && ops(OP_PROJECTION).includes(operator)) {
+
+            if (ops(OP_PROJECTION).includes(operator)) {
               // apply the projection operator on the operator expression for the key
-              value = projectionOperators[operator](obj, subExpr[operator], key);
               if (operator === '$slice') {
-                foundSlice = true;
+                // $slice is handled differently for aggregation and projection operations
+                if (coerceArray(subExpr[operator]).every(isNumber)) {
+                  // $slice for projection operation
+                  value = projectionOperators[operator](obj, subExpr[operator], key);
+                  foundSlice = true;
+                } else {
+                  // $slice for aggregation operation
+                  value = computeValue(obj, subExpr, key);
+                }
+              } else {
+                value = projectionOperators[operator](obj, subExpr[operator], key)
               }
             } else {
               // compute the value for the sub expression for the key
@@ -1768,24 +1785,17 @@
      * @param expr
      */
     $slice: function (obj, expr, field) {
-      var array = resolve(obj, field);
-      if (!isArray(array)) {
-        return array;
-      }
-      if (!isArray(expr)) {
-        if (!isNumber(expr)) {
-          throw new Error("Invalid type for $slice operator");
-        }
-        expr = expr < 0 ? [expr] : [0, expr];
-      } else {
-        // MongoDB $slice works a bit differently from Array.slice
-        // Uses single argument for 'limit' and array argument [skip, limit]
-        var skip = (expr[0] < 0) ? array.length + expr[0] : expr;
-        var limit = skip + expr[1];
-        expr = [skip, limit];
-      }
+      var xs = resolve(obj, field);
 
-      return arraySlice.apply(array, expr);
+      if (!isArray(xs)) return xs;
+
+      if (isArray(expr)) {
+        return slice(xs, expr[0], expr[1]);
+      } else if (isNumber(expr)) {
+        return slice(xs, expr);
+      } else {
+        throw new Error("Invalid argument type for $slice projection operator");
+      }
     },
 
     /**
@@ -2521,15 +2531,15 @@
      */
     $indexOfArray: function (obj, expr) {
       var arr = computeValue(obj, expr, null);
-      if (isNull(arr)) return null;
+      if (isUnknown(arr)) return null;
 
       var array = arr[0];
-      if (isNull(array) || isUndefined(array)) return null;
+      if (isUnknown(array)) return null;
 
       assertType(isArray(array), "First operand for $indexOfArray must resolve to an array.");
 
       var searchValue = arr[1];
-      if (isNull(searchValue) || isUndefined(searchValue)) return null;
+      if (isUnknown(searchValue)) return null;
 
       var start = arr[2] || 0;
       var end = arr[3] || array.length;
@@ -2553,7 +2563,6 @@
     },
 
     /**
-     * Outputs an array containing a sequence of integers according to user-defined inputs.
      * Returns an array whose elements are a generated sequence of numbers.
      *
      * @param  {Object} obj
@@ -2567,13 +2576,31 @@
           step = arr[2] || 1;
 
       var result = [];
-      
+
       while ((start < end && step > 0) || (start > end && step < 0)) {
         result.push(start);
         start += step;
       }
 
       return result;
+    },
+
+    /**
+     * Returns an array with the elements in reverse order.
+     *
+     * @param  {Object} obj
+     * @param  {*} expr
+     * @return {*}
+     */
+    $reverseArray: function (obj, expr) {
+      var arr = computeValue(obj, expr, null);
+
+      if (isUnknown(arr)) return null;
+      assertType(isArray(arr), "$reverseArray expression must resolve to an array");
+
+      arr = clone(arr);
+      arr.reverse();
+      return arr;
     },
 
     /**
@@ -2585,6 +2612,18 @@
     $size: function (obj, expr) {
       var value = computeValue(obj, expr, null);
       return isArray(value) ? value.length : undefined;
+    },
+
+    /**
+     * Returns a subset of an array.
+     *
+     * @param  {Object} obj
+     * @param  {*} expr
+     * @return {*}
+     */
+    $slice: function (obj, expr) {
+      var arr = computeValue(obj, expr, null);
+      return slice(clone(arr[0]), arr[1], arr[2]);
     }
   };
 
@@ -3156,7 +3195,7 @@
 
   // encode value using a simple optimistic scheme
   function encode(value) {
-    return JSON.stringify({"":value}) + getType(value) + value;
+    return stringify({"":value}) + getType(value) + value;
   }
 
   // http://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript-jquery
@@ -3196,7 +3235,7 @@
             result = result[key];
             // if there are more keys in expression this is bad
             if (Object.keys(expr).length > 1) {
-              throw new Error("Invalid $group expression '" + JSON.stringify(expr) + "'");
+              throw new Error("Invalid $group expression '" + stringify(expr) + "'");
             }
             break;
           }
@@ -3273,7 +3312,7 @@
             // if so, return result of the computed value
             if (ops(OP_AGGREGATE).includes(key)) {
               // there should be only one operator
-              assert(Object.keys(expr).length === 1, "Invalid aggregation expression '" + JSON.stringify(expr) + "'");
+              assert(Object.keys(expr).length === 1, "Invalid aggregation expression '" + stringify(expr) + "'");
               result = result[key];
               break;
             }
@@ -3298,6 +3337,35 @@
     return Math.sqrt(
       ctx.dataset.reduce(function (acc, n) { return acc + Math.pow(n - avg, 2); }, 0) / N
     );
+  }
+
+  /**
+   * Returns a slice of the array
+   *
+   * @param  {Array} xs
+   * @param  {Number} skip
+   * @param  {Number} limit
+   * @return {Array}
+   */
+  function slice(xs, skip, limit) {
+    // MongoDB $slice works a bit differently from Array.slice
+    // Uses single argument for 'limit' and array argument [skip, limit]
+    if (isUnknown(limit)) {
+      if (skip < 0) {
+        skip = Math.max(0, xs.length + skip);
+        limit = xs.length - skip + 1;
+      } else {
+        limit = skip;
+        skip = 0;
+      }
+    } else {
+      if (skip < 0) {
+        skip = Math.max(0, xs.length + skip);
+      }
+      assert(limit > 0, "Invalid argument value for $slice operator. Limit must be a positive number");
+      limit += skip;
+    }
+    return arraySlice.apply(xs, [skip, limit]);
   }
 
 }(this));
