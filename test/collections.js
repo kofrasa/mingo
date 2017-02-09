@@ -1,9 +1,8 @@
 var test = require('tape'),
   Backbone = require('backbone'),
   samples = require('./samples'),
-  Mingo = require('../mingo');
-
-var _ = Mingo._internal();
+  Mingo = require('../mingo'),
+  _ = Mingo._internal();
 
 var MingoCollection = Backbone.Collection.extend(Mingo.CollectionMixin);
 

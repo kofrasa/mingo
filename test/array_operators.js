@@ -1,18 +1,6 @@
 var test = require('tape'),
-  Mingo = require('../mingo');
-
-var _ = Mingo._internal();
-
-function tryExamples(examples, operator) {
-  test("More examples for " + operator, function (t) {
-    examples.forEach(function (val) {
-      var input = val[0], output = val[1];
-      var result = _.computeValue({}, input, operator);
-      t.deepEqual(result, val[1], operator + ":\t" + _.stringify(input) + "\t=>\t" + _.stringify(output));
-    });
-    t.end();
-  });
-}
+  Mingo = require('../mingo'),
+  tryExamples = require('./samples').tryExamples;
 
 test("Array Operators", function (t) {
 
