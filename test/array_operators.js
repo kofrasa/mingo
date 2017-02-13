@@ -513,5 +513,96 @@ test("Array Operators", function (t) {
     { "_id" : 3, "store location" : "82nd Street", "has bananas" : false }
   ], "can apply $in array aggregation operator");
 
+  // $zip
+  data = [
+    { matrix: [[1, 2], [2, 3], [3, 4]] },
+    { matrix: [[8, 7], [7, 6], [5, 4]] }
+  ];
+
+  result = Mingo.aggregate(data, [{
+    $project: {
+      _id: false,
+      transposed: {
+        $zip: {
+          inputs: [
+            { $arrayElemAt: [ "$matrix", 0 ] },
+            { $arrayElemAt: [ "$matrix", 1 ] },
+            { $arrayElemAt: [ "$matrix", 2 ] },
+          ]
+        }
+      }
+    }
+  }]);
+
+  t.deepEqual(result, [
+    { "transposed" : [ [ 1, 2, 3 ], [ 2, 3, 4 ] ] },
+    { "transposed" : [ [ 8, 7, 5 ], [ 7, 6, 4 ] ] }
+  ], "$zip : Matrix Transposition example");
+
+  data = [
+    {
+      "category": "unix",
+      "pages": [
+        { "title": "awk for beginners", reviews: 5 },
+        { "title": "sed for newbies", reviews: 0 },
+        { "title": "grep made simple", reviews: 2 },
+      ]
+    }
+  ];
+
+  result = Mingo.aggregate(data, [{
+    $project: {
+      _id: false,
+      pages: {
+        $filter: {
+          input: {
+            $zip: {
+              inputs: [ "$pages", { $range: [0, { $size: "$pages" }] } ]
+            }
+          },
+          as: "pageWithIndex",
+          cond: {
+            $let: {
+              vars: {
+                page: { $arrayElemAt: [ "$$pageWithIndex", 0 ] }
+              },
+              in: { $gte: [ "$$page.reviews", 1 ] }
+            }
+          }
+        }
+      }
+    }
+  }]);
+
+  t.deepEqual(result, [
+    {
+      "pages" : [
+        [ { "title" : "awk for beginners", "reviews" : 5 }, 0 ],
+        [ { "title" : "grep made simple", "reviews" : 2 }, 2 ] ]
+    }
+  ], "$zip : Filtering and Preserving Indexes");
+
+  examples = [
+    [ { inputs: [ [ "a" ], [ "b" ], [ "c" ] ] }, [ [ "a", "b", "c" ] ] ],
+    [ { inputs: [ [ "a" ], [ "b", "c" ] ] }, [ [ "a", "b" ] ] ],
+    [
+      {
+         inputs: [ [ 1 ], [ 2, 3 ] ],
+         useLongestLength: true
+      },
+      [ [ 1, 2 ], [ null, 3 ] ]
+    ],
+    [
+      {
+        inputs: [ [ 1 ], [ 2, 3 ], [ 4 ] ],
+        useLongestLength: true,
+        defaults: [ "a", "b", "c" ]
+      },
+      [ [ 1, 2, 4 ], [ "a", 3, "c" ] ]
+    ]
+  ];
+
+  tryExamples(examples, "$zip");
+
   t.end();
 });

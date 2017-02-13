@@ -2643,6 +2643,55 @@
     $slice: function (obj, expr) {
       var arr = computeValue(obj, expr, null);
       return slice(clone(arr[0]), arr[1], arr[2]);
+    },
+
+    /**
+     * Merge two lists together.
+     *
+     * Transposes an array of input arrays so that the first element of the output array would be an array containing,
+     * the first element of the first input array, the first element of the second input array, etc.
+     *
+     * @param  {Obj} obj
+     * @param  {*} expr
+     * @return {*}
+     */
+    $zip: function (obj, expr) {
+      var inputs = computeValue(obj, expr.inputs, null),
+          useLongestLength = expr.useLongestLength || false;
+
+      assertType(isArray(inputs), "'inputs' expression must resolve to an array");
+      assertType(isBoolean(useLongestLength), "'useLongestLength' must be a boolean");
+
+      if (isArray(expr.defaults)) {
+        assert(truthy(useLongestLength), "'useLongestLength' must be set to true to use 'defaults'");
+      }
+
+      var len = 0;
+
+      for (var i = 0; i < inputs.length; i++) {
+        var arr = inputs[i];
+
+        if (isUnknown(arr)) return null;
+        assertType(isArray(arr), "'inputs' expression values must resolve to an array or null");
+
+        len = useLongestLength
+          ? Math.max(len, arr.length)
+          : Math.min(len || arr.length, arr.length);
+      }
+
+      var result = [];
+      var defaults = expr.defaults || [];
+
+      for (var i = 0; i < len; i++) {
+        var arr = inputs.map(function (val, index) {
+          return isUnknown(val[i])
+            ? (defaults[index] || null)
+            : val[i];
+        });
+        result.push(arr);
+      }
+
+      return result;
     }
   };
 
