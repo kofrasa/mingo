@@ -1,8 +1,10 @@
 var test = require('tape'),
-  Mingo = require('../mingo');
+  Mingo = require('../mingo'),
+  _ = Mingo._internal(),
+  tryExamples = require('./samples').tryExamples;
 
 test("String Operators", function (t) {
-  t.plan(5);
+
   var inventory = [
     {"_id": 1, "item": "ABC1", quarter: "13Q1", "description": "product 1"},
     {"_id": 2, "item": "ABC2", quarter: "13Q4", "description": "product 2"},
@@ -19,6 +21,27 @@ test("String Operators", function (t) {
     {"_id": 2, "itemDescription": "ABC2 - product 2"},
     {"_id": 3, "itemDescription": null}
   ], "aggregate with $concat");
+
+  // $indexOfBytes
+  var examples = [
+    [ [ "cafeteria", "e" ],	3 ],
+    [ [ "cafétéria", "é" ], 3 ],
+    [ [ "cafétéria", "e" ], -1 ],
+    [ [ "cafétéria", "t" ], 4 ], // "5" is an error in MongoDB docs.
+    [ [ "foo.bar.fi", ".", 5 ], 7 ],
+    [ [ "vanilla", "ll", 0, 2 ], -1 ],
+    // [ [ "vanilla", "ll", -1 ], -1 ], // should throw exception according to MongoDB docs
+    [ [ "vanilla", "ll", 12 ], -1 ],
+    [ [ "vanilla", "ll", 5, 2 ], -1 ],
+    [ [ "vanilla", "nilla", 3 ], -1 ],
+    [ [ null, "foo" ], null ]
+  ];
+
+  tryExamples(examples, "$indexOfBytes");
+
+  t.throws(function () {
+    _.computeValue({}, [ "vanilla", "ll", -1 ], "$indexOfBytes");
+  }, /\$indexOfBytes third operand must resolve to a non-negative integer/);
 
   // $substr
   result = Mingo.aggregate(inventory, [

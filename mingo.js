@@ -2065,6 +2065,47 @@
     },
 
     /**
+     * Searches a string for an occurence of a substring and returns the UTF-8 code point index of the first occurence.
+     * If the substring is not found, returns -1.
+     *
+     * @param  {Object} obj
+     * @param  {*} expr
+     * @return {*}
+     */
+    $indexOfBytes: function (obj, expr) {
+      var arr = computeValue(obj, expr, null);
+
+      if (isUnknown(arr[0])) return null;
+
+      assertType(isString(arr[0]), "$indexOfBytes first operand must resolve to a string");
+      assertType(isString(arr[1]), "$indexOfBytes second operand must resolve to a string");
+
+      var str = arr[0],
+          searchStr = arr[1],
+          start = arr[2],
+          end = arr[3];
+
+      assert(
+        isUndefined(start) || (isNumber(start) && start >= 0 && Math.round(start) === start),
+        "$indexOfBytes third operand must resolve to a non-negative integer"
+      );
+      start = start || 0;
+
+      assert(
+        isUndefined(end) || (isNumber(end) && end >= 0 && Math.round(end) === end),
+        "$indexOfBytes fourth operand must resolve to a non-negative integer"
+      );
+      end = end || str.length;
+
+      if (start > end) return -1;
+
+      var index = str.substring(start, end).indexOf(searchStr);
+      return (index > -1)
+        ? index + start
+        : index;
+    },
+
+    /**
      * Compares two strings and returns an integer that reflects the comparison.
      *
      * @param obj
