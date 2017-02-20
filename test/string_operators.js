@@ -30,7 +30,7 @@ test("String Operators", function (t) {
     [ [ "cafétéria", "t" ], 4 ], // "5" is an error in MongoDB docs.
     [ [ "foo.bar.fi", ".", 5 ], 7 ],
     [ [ "vanilla", "ll", 0, 2 ], -1 ],
-    // [ [ "vanilla", "ll", -1 ], -1 ], // should throw exception according to MongoDB docs
+    [ [ "vanilla", "ll", -1 ], "$indexOfBytes third operand must resolve to a non-negative integer", true ], // Error
     [ [ "vanilla", "ll", 12 ], -1 ],
     [ [ "vanilla", "ll", 5, 2 ], -1 ],
     [ [ "vanilla", "nilla", 3 ], -1 ],
@@ -39,9 +39,42 @@ test("String Operators", function (t) {
 
   tryExamples(examples, "$indexOfBytes");
 
-  t.throws(function () {
-    _.computeValue({}, [ "vanilla", "ll", -1 ], "$indexOfBytes");
-  }, /\$indexOfBytes third operand must resolve to a non-negative integer/);
+  // $split
+  data = [
+    { "_id" : 1, "city" : "Berkeley, CA", "qty" : 648 },
+    { "_id" : 2, "city" : "Bend, OR", "qty" : 491 },
+    { "_id" : 3, "city" : "Kensington, CA", "qty" : 233 },
+    { "_id" : 4, "city" : "Eugene, OR", "qty" : 842 },
+    { "_id" : 5, "city" : "Reno, NV", "qty" : 655 },
+    { "_id" : 6, "city" : "Portland, OR", "qty" : 408 },
+    { "_id" : 7, "city" : "Sacramento, CA", "qty" : 574 }
+  ];
+
+  result = Mingo.aggregate(data, [
+    { $project : { city_state : { $split: ["$city", ", "] }, qty : 1 } },
+    { $unwind : "$city_state" },
+    { $match : { city_state : /[A-Z]{2}/ } },
+    { $group : { _id: { "state" : "$city_state" }, total_qty : { "$sum" : "$qty" } } },
+    { $sort : { total_qty : -1 } }
+  ]);
+
+  t.deepEqual(result, [
+    { "_id" : { "state" : "OR" }, "total_qty" : 1741 },
+    { "_id" : { "state" : "CA" }, "total_qty" : 1455 },
+    { "_id" : { "state" : "NV" }, "total_qty" : 655 }
+  ], "can aggregate with $split");
+
+  examples = [
+    [ [ "June-15-2013", "-" ], 	[ "June", "15", "2013" ] ],
+    [ [ "banana split", "a" ], 	[ "b", "n", "n", " split" ] ],
+    [ [ "Hello World", " " ],	[ "Hello", "World" ] ],
+    [ [ "astronomical", "astro" ],	[ "", "nomical" ] ],
+    [ [ "pea green boat", "owl" ],	[ "pea green boat" ] ],
+    [ { $split: [ "headphone jack", 7 ] },	"$split requires an expression that evaluates to a string as a second argument, found: number", true ],
+    [ { $split: [ "headphone jack", /jack/ ] },	"$split requires an expression that evaluates to a string as a second argument, found: regex", true ]
+  ];
+
+  tryExamples(examples, "$split");
 
   // $substr
   result = Mingo.aggregate(inventory, [

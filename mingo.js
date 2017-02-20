@@ -2106,6 +2106,21 @@
     },
 
     /**
+     * Splits a string into substrings based on a delimiter.
+     * If the delimiter is not found within the string, returns an array containing the original string.
+     *
+     * @param  {Object} obj
+     * @param  {Array} expr
+     * @return {Array} Returns an array of substrings.
+     */
+    $split: function (obj, expr) {
+      var args = computeValue(obj, expr, null);
+      assertType(isString(args[0]), "$split requires an expression that evaluates to a string as a first argument, found: " + getType(args[0]));
+      assertType(isString(args[1]), "$split requires an expression that evaluates to a string as a second argument, found: " + getType(args[1]));
+      return args[0].split(args[1]);
+    },
+
+    /**
      * Compares two strings and returns an integer that reflects the comparison.
      *
      * @param obj

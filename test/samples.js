@@ -21,8 +21,14 @@ exports.tryExamples = function (examples, operator) {
   test("More examples for " + operator, function (t) {
     examples.forEach(function (val) {
       var input = val[0], output = val[1];
-      var result = _.computeValue({}, input, operator);
-      t.deepEqual(result, val[1], operator + ":\t" + _.stringify(input) + "\t=>\t" + _.stringify(output));
+      if (val[2] === true) { // Error
+        t.throws(function () {
+          _.computeValue({}, input, operator);
+        }, "Error: " + output);
+      } else {
+        var result = _.computeValue({}, input, operator);
+        t.deepEqual(result, val[1], operator + ":\t" + _.stringify(input) + "\t=>\t" + _.stringify(output));
+      }
     });
     t.end();
   });
