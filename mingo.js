@@ -1,4 +1,4 @@
-// Mingo.js 0.9.1
+// Mingo.js
 // Copyright (c) 2016 Francis Asante <kofrasa@gmail.com>
 // MIT
 
@@ -9,7 +9,7 @@
   // global on the server, window in the browser
   var Mingo = {}, previousMingo;
 
-  Mingo.VERSION = '0.9.1';
+  Mingo.VERSION = '0.9.2';
 
   // backup previous Mingo
   if (root !== null) {
@@ -48,7 +48,7 @@
         if (typeof this !== 'function') {
           // closest thing possible to the ECMAScript 5
           // internal IsCallable function
-          throw new TypeError('Function.prototype.bind - what is trying to be bound is not callable');
+          err('Function.prototype.bind - what is trying to be bound is not callable');
         }
 
         var aArgs   = arraySlice.call(arguments, 1),
@@ -75,7 +75,7 @@
     if (!Array.prototype.includes) {
       Array.prototype.includes = function(searchElement) {
         if (this === null) {
-          throw new TypeError('Array.prototype.includes called on null or undefined');
+          err('Array.prototype.includes called on null or undefined');
         }
 
         var O = Object(this);
@@ -108,10 +108,10 @@
     if (!Array.prototype.find) {
       Array.prototype.find = function(predicate) {
         if (this === null) {
-          throw new TypeError('Array.prototype.find called on null or undefined');
+          err('Array.prototype.find called on null or undefined');
         }
         if (!isFunction(predicate)) {
-          throw new TypeError('predicate must be a function');
+          err('predicate must be a function');
         }
         var list = Object(this);
         var length = list.length >>> 0;
@@ -133,10 +133,10 @@
         value: function(predicate) {
           'use strict';
           if (this == null) {
-            throw new TypeError('Array.prototype.findIndex called on null or undefined');
+            err('Array.prototype.findIndex called on null or undefined');
           }
           if (typeof predicate !== 'function') {
-            throw new TypeError('predicate must be a function');
+            err('predicate must be a function');
           }
           var list = Object(this);
           var length = list.length >>> 0;
@@ -190,7 +190,7 @@
       Object.assign = function (target) {
         // We must check against these specific cases.
         if (isNull(target) || isUndefined(target)) {
-          throw new TypeError('Cannot convert undefined or null to object');
+          err('Cannot convert undefined or null to object');
         }
 
         var result = Object(target);
@@ -211,11 +211,11 @@
   //////////////////// END POLYFILL /////////////////////
 
   function assert(condition, message) {
-    if (falsey(condition)) throw new Error(message);
+    if (falsey(condition)) err(message);
   }
 
   function assertType(condition, message) {
-    if (falsey(condition)) throw new TypeError(message);
+    if (falsey(condition)) err(message);
   }
 
   function assertExists(value) {
@@ -252,6 +252,7 @@
   function coerceArray(x) { return isArray(x)? x : [x]; }
   function getType(value) { return Object.prototype.toString.call(value).match(/\s(\w+)/)[1].toLowerCase(); }
   function has(obj, prop) { return Object.prototype.hasOwnProperty.call(obj, prop); }
+  function err(s) { throw new Error(s); }
 
   //////////////////// UTILS ////////////////////
 
@@ -295,7 +296,7 @@
       }
       return o;
     }
-    throw new TypeError("Input must be an Array or Object type");
+    err("Input must be an Array or Object type");
   }
 
   /**
@@ -525,7 +526,7 @@
       if (ops(OP_QUERY).includes(operator)) {
         this._compiled.push(queryOperators[operator](field, value));
       } else {
-        throw new Error("Invalid query operator '" + operator + "' detected");
+        err("Invalid query operator '" + operator + "' detected");
       }
     },
 
@@ -650,7 +651,7 @@
       }
 
       if (!isArray(this._collection)) {
-        throw new Error("Input collection is not of valid type. Must be an Array.");
+        err("Input collection is not of valid type. Must be an Array.");
       }
 
       // filter collection
@@ -825,7 +826,7 @@
               collection = pipelineOperators[key](collection, operator[key], opt);
             }
           } else {
-            throw new Error("Invalid aggregation operator '" + key + "'");
+            err("Invalid aggregation operator '" + key + "'");
           }
         }
       }
@@ -862,7 +863,7 @@
    */
   Mingo.aggregate = function (collection, pipeline) {
     if (!isArray(pipeline)) {
-      throw new Error("Aggregation pipeline must be an array");
+      err("Aggregation pipeline must be an array");
     }
     return (new Mingo.Aggregator(pipeline)).run(collection);
   };
@@ -913,7 +914,7 @@
                   } else if (result instanceof Mingo.Query) {
                     return result.test(obj);
                   } else {
-                    throw new Error("Invalid return type for '" + op + "'. Must return a Boolean or Mingo.Query");
+                    err("Invalid return type for '" + op + "'. Must return a Boolean or Mingo.Query");
                   }
                 }
               };
@@ -1243,7 +1244,7 @@
             result.push(tmp);
           });
         } else {
-          throw new Error("Target field '" + field + "' is not of type Array.");
+          err("Target field '" + field + "' is not of type Array.");
         }
       }
       return result;
@@ -1416,7 +1417,7 @@
      */
     $or: function (selector, value) {
       if (!isArray(value)) {
-        throw new Error("Invalid expression for $or criteria");
+        err("Invalid expression for $or criteria");
       }
       var queries = [];
       value.forEach(function (expr) {
@@ -1444,7 +1445,7 @@
      */
     $nor: function (selector, value) {
       if (!isArray(value)) {
-        throw new Error("Invalid expression for $nor criteria");
+        err("Invalid expression for $nor criteria");
       }
       var query = this.$or("$or", value);
       return {
@@ -1749,7 +1750,7 @@
      * @param expr
      */
     $: function (obj, expr, field) {
-      throw new Error("$ not implemented");
+      err("$ not implemented");
     },
 
     /**
@@ -1794,7 +1795,7 @@
       } else if (isNumber(expr)) {
         return slice(xs, expr);
       } else {
-        throw new Error("Invalid argument type for $slice projection operator");
+        err("Invalid argument type for $slice projection operator");
       }
     },
 
@@ -2434,7 +2435,7 @@
       var ifExpr, thenExpr, elseExpr;
       if (isArray(expr)) {
         if (expr.length != 3) {
-          throw new Error("Invalid arguments for $cond operator");
+          err("Invalid arguments for $cond operator");
         }
         ifExpr = expr[0];
         thenExpr = expr[1];
@@ -2458,12 +2459,12 @@
      */
     $switch: function (obj, expr) {
       if (!expr.branches) {
-        throw new Error("Invalid arguments for $switch operator");
+        err("Invalid arguments for $switch operator");
       }
 
       var validBranch = expr.branches.find(function (branch) {
         if (!(branch.case && branch.then)) {
-          throw new Error("Invalid arguments for $switch operator");
+          err("Invalid arguments for $switch operator");
         }
         return computeValue(obj, branch.case, null)
       })
@@ -2471,7 +2472,7 @@
       if (validBranch) {
         return computeValue(obj, validBranch.then, null)
       } else if (!expr.default) {
-        throw new Error("Invalid arguments for $switch operator");
+        err("Invalid arguments for $switch operator");
       } else {
         return computeValue(obj, expr.default, null)
       }
@@ -2773,7 +2774,7 @@
     $map: function (obj, expr) {
       var inputExpr = computeValue(obj, expr["input"], null);
       if (!isArray(inputExpr)) {
-        throw new Error("Input expression for $map must resolve to an array");
+        err("Input expression for $map must resolve to an array");
       }
       var asExpr = expr["as"];
       var inExpr = expr["in"];
@@ -3359,7 +3360,7 @@
             result = result[key];
             // if there are more keys in expression this is bad
             if (Object.keys(expr).length > 1) {
-              throw new Error("Invalid $group expression '" + stringify(expr) + "'");
+              err("Invalid $group expression '" + stringify(expr) + "'");
             }
             break;
           }
