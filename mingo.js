@@ -158,9 +158,9 @@
     }
 
     // http://tokenposts.blogspot.co.za/2012/04/javascript-objectkeys-browser.html
-    if (!Object.keys) {
+    if (!keys) {
       Object.keys = function(o) {
-        assertObjectLike(o, 'Object.keys called on a non-object');
+        assertObjectLike(o, 'keys called on a non-object');
         var result = [];
         for (var k in o) {
           if (has(o, k)) {
@@ -226,18 +226,18 @@
     assertType(o === Object(o), message);
   }
 
-  function isType(v, n) { return Object.prototype.toString.call(v) === "[object " + n + "]" }
-  function isBoolean(v) { return isType(v, "Boolean"); }
-  function isString(v) { return isType(v, "String"); }
-  function isNumber(v) { return isType(v, "Number"); }
-  function isArray(v) { return isType(v, "Array"); }
-  function isObject(v) { return isType(v, "Object"); }
+  function isType(v, n) { return getType(v) === n; }
+  function isBoolean(v) { return isType(v, "boolean"); }
+  function isString(v) { return isType(v, "string"); }
+  function isNumber(v) { return isType(v, "number"); }
+  function isArray(v) { return isType(v, "array"); }
+  function isObject(v) { return isType(v, "object"); }
   function isObjectLike(v) { return v === Object(v); } // objects, arrays, functions
-  function isDate(v) { return isType(v, "Date"); }
-  function isRegExp(v,t) { return isType(v, "RegExp"); }
-  function isFunction(v,t) { return isType(v, "Function"); }
-  function isNull(v) { return isType(v, "Null"); }
-  function isUndefined(v) { return isType(v, "Undefined"); }
+  function isDate(v) { return isType(v, "date"); }
+  function isRegExp(v,t) { return isType(v, "regexp"); }
+  function isFunction(v,t) { return isType(v, "function"); }
+  function isNull(v) { return isType(v, "null"); }
+  function isUndefined(v) { return isType(v, "undefined"); }
   function isUnknown(v) { return isNull(v) || isUndefined(v); }
   function notInArray(arr, item) { return !arr.includes(item); }
   function inArray(arr, item) { return arr.includes(item); }
@@ -246,13 +246,14 @@
   function isEmpty(x) {
    return isUnknown(x)
    || isArray(x) && x.length === 0
-   || isObject(x) && Object.keys(x).length === 0
+   || isObject(x) && keys(x).length === 0
    || !x;
   }
   function coerceArray(x) { return isArray(x)? x : [x]; }
   function getType(value) { return Object.prototype.toString.call(value).match(/\s(\w+)/)[1].toLowerCase(); }
   function has(obj, prop) { return Object.prototype.hasOwnProperty.call(obj, prop); }
   function err(s) { throw new Error(s); }
+  function keys(o) { return Object.keys(o); }
 
   //////////////////// UTILS ////////////////////
 
@@ -289,7 +290,7 @@
       return obj.map(callback, ctx);
     } else if (isObject(obj)) {
       var o = {};
-      var arr = Object.keys(obj);
+      var arr = keys(obj);
       for (var k, i = 0, len = arr.length; i < len; i++) {
         k = arr[i];
         o[k] = callback.call(ctx, obj[k], k);
@@ -375,8 +376,8 @@
       }
     } else if ([a, b].every(isObject)) {
       // deep compare objects
-      var ka = Object.keys(a);
-      var kb = Object.keys(b);
+      var ka = keys(a);
+      var kb = keys(b);
 
       // check length of keys early
       if (ka.length !== kb.length) return false;
@@ -409,7 +410,7 @@
   function unique(xs) {
     var h = {};
     var arr = [];
-    xs.forEach(function (item) {
+    each(xs, function (item) {
       var k = hashcode(item);
       if (!has(h, k)) {
         arr.push(item);
@@ -658,7 +659,7 @@
       this._result = this._collection.filter(this._query.test, this._query);
       var pipeline = [];
 
-      ['$sort', '$skip', '$limit', '$project'].forEach(function (op) {
+      each(['$sort', '$skip', '$limit', '$project'], function (op) {
         if (has(self._operators, op)) {
           var selected = {};
           selected[op] = self._operators[op];
@@ -816,7 +817,7 @@
         // run aggregation pipeline
         for (var i = 0; i < this._operators.length; i++) {
           var operator = this._operators[i];
-          var key = Object.keys(operator);
+          var key = keys(operator);
           if (key.length === 1 && ops(OP_PIPELINE).includes(key[0])) {
             key = key[0];
             var opt = { pipelineOp: key };
@@ -892,7 +893,7 @@
     var operators = ops(type);
 
     // check for existing operators
-    Object.keys(newOperators).forEach(function (op) {
+    keys(newOperators).forEach(function (op) {
       assert(/^\$\w+$/.test(op), "Invalid operator name '" + op + "'");
       assert(!operators.includes(op), "Operator " + op + " is already defined for " + type + " operators");
     });
@@ -901,7 +902,7 @@
 
     switch (type) {
       case OP_QUERY:
-        Object.keys(newOperators).forEach(function (op) {
+        keys(newOperators).forEach(function (op) {
           wrapped[op] = (function (f, ctx) {
             return function (selector, value) {
               return {
@@ -923,7 +924,7 @@
         });
         break;
       case OP_PROJECTION:
-        Object.keys(newOperators).forEach(function (op) {
+        keys(newOperators).forEach(function (op) {
           wrapped[op] = (function (f, ctx) {
             return function (obj, expr, selector) {
               var lhs = resolve(obj, selector);
@@ -933,7 +934,7 @@
         });
         break;
       default:
-        Object.keys(newOperators).forEach(function (op) {
+        keys(newOperators).forEach(function (op) {
           wrapped[op] = (function (f, ctx) {
             return function () {
               var args = arraySlice.call(arguments);
@@ -982,17 +983,17 @@
      * @param {*} expr
      */
     $addFields: function (collection, expr) {
-      var newFields = Object.keys(expr);
+      var newFields = keys(expr);
 
       return collection.map(function (obj) {
         obj = clone(obj);
 
-        newFields.forEach(function(selector) {
+        each(newFields, function(selector) {
           var subExpr = expr[selector];
           var newValue;
 
           if (isObject(subExpr)) {
-            var subKeys = Object.keys(subExpr);
+            var subKeys = keys(subExpr);
 
             // check for any operators first
             var operator = subKeys.filter(function (k) {
@@ -1038,7 +1039,7 @@
       // remove the group key
       delete expr[settings.key]
 
-      partitions.keys.forEach(function (value, i) {
+      each(partitions.keys, function (value, i) {
         var obj = {};
 
         // exclude undefined key value
@@ -1086,7 +1087,7 @@
 
       // result collection
       var projected = [];
-      var objKeys = Object.keys(expr);
+      var objKeys = keys(expr);
       var idOnlyExcludedExpression = false;
 
       // validate inclusion and exclusion
@@ -1127,7 +1128,7 @@
           dropKeys.push(settings.key);
         }
 
-        objKeys.forEach(function (key) {
+        each(objKeys, function (key) {
 
           var subExpr = expr[key];
           var value; // final computed value of the key
@@ -1145,7 +1146,7 @@
           } else if (subExpr === 1 || subExpr === true) {
             // For direct projections, we use the resolved object value
           } else if (isObject(subExpr)) {
-            var operator = Object.keys(subExpr);
+            var operator = keys(subExpr);
             operator = operator.length > 1 ? false : operator[0];
 
             if (ops(OP_PROJECTION).includes(operator)) {
@@ -1191,7 +1192,7 @@
         // include keys that were not explicitly excluded
         if (foundSlice || foundExclusion || idOnlyExcludedExpression) {
           cloneObj = Object.assign(clone(obj), cloneObj);
-          dropKeys.forEach(function (key) {
+          each(dropKeys, function (key) {
             removeValue(cloneObj, key);
           });
         }
@@ -1238,7 +1239,7 @@
         // must throw an error if value is not an array
         var value = getValue(obj, field);
         if (isArray(value)) {
-          value.forEach(function (item) {
+          each(value, function (item) {
             var tmp = clone(obj);
             tmp[field] = item;
             result.push(tmp);
@@ -1259,7 +1260,7 @@
      */
     $sort: function (collection, sortKeys) {
       if (!isEmpty(sortKeys) && isObject(sortKeys)) {
-        var modifiers = Object.keys(sortKeys);
+        var modifiers = keys(sortKeys);
         modifiers.reverse().forEach(function (key) {
           var grouped = groupBy(collection, function (obj) {
             return resolve(obj, key);
@@ -1276,7 +1277,7 @@
             indexKeys.reverse();
           }
           collection = [];
-          indexKeys.forEach(function (item) {
+          each(indexKeys, function (item) {
             arrayPush.apply(collection, grouped.groups[findIndex(item)]);
           });
         });
@@ -1355,7 +1356,7 @@
     $replaceRoot: function (collection, expr) {
       var newRoot = expr["newRoot"];
       var result = [];
-      collection.forEach(function (obj) {
+      each(collection, function (obj) {
         obj = computeValue(obj, newRoot, null);
         assertType(isObject(obj),
           "$replaceRoot expression must return a valid JS object. " +
@@ -1392,7 +1393,7 @@
     $and: function (selector, value) {
       assertType(isArray(value), "Invalid expression: $and expects value to be an Array");
       var queries = [];
-      value.forEach(function (expr) {
+      each(value, function (expr) {
         queries.push(new Mingo.Query(expr));
       });
 
@@ -1420,7 +1421,7 @@
         err("Invalid expression for $or criteria");
       }
       var queries = [];
-      value.forEach(function (expr) {
+      each(value, function (expr) {
         queries.push(new Mingo.Query(expr));
       });
 
@@ -1650,7 +1651,7 @@
       var matched = false;
       if (isArray(a) && isArray(b)) {
         for (var i = 0; i < b.length; i++) {
-          if (isObject(b[i]) && Object.keys(b[i]).includes("$elemMatch")) {
+          if (isObject(b[i]) && keys(b[i]).includes("$elemMatch")) {
             matched = matched || self.$elemMatch(a, b[i].$elemMatch);
           } else {
             // order of arguments matter
@@ -1726,7 +1727,7 @@
     }
   };
   // add simple query operators
-  Object.keys(simpleOperators).forEach(function (op) {
+  keys(simpleOperators).forEach(function (op) {
     queryOperators[op] = (function (f, ctx) {
       return function (selector, value) {
         return {
@@ -1866,7 +1867,7 @@
       var max;
       if (mapped.length > 0) {
         max = mapped[0];
-        mapped.forEach(function (item) {
+        each(mapped, function (item) {
           if (item > max) max = item;
         });
       }
@@ -1885,7 +1886,7 @@
       var min;
       if (mapped.length > 0) {
         min = mapped[0];
-        mapped.forEach(function (item) {
+        each(mapped, function (item) {
           if (item < min) min = item;
         });
       }
@@ -2811,8 +2812,8 @@
 
       // resolve vars
       var originals = {};
-      var varsKeys = Object.keys(varsExpr);
-      varsKeys.forEach(function (key) {
+      var varsKeys = keys(varsExpr);
+      each(varsKeys, function (key) {
         var val = computeValue(obj, varsExpr[key], null);
         var tempKey = "$" + key;
         // set value on object using same technique as in "$map"
@@ -2823,7 +2824,7 @@
       var value = computeValue(obj, inExpr, null);
 
       // cleanup and restore
-      varsKeys.forEach(function (key) {
+      each(varsKeys, function (key) {
         var tempKey = "$" + key;
         if (isUndefined(originals[tempKey])) {
           delete obj[tempKey];
@@ -2911,7 +2912,7 @@
         if (isObjectLike(current)) {
           if (isArray(current)) {
             result = [];
-            current.forEach(function (elem, index) {
+            each(current, function (elem, index) {
               if (isObject(elem)) {
                 elem = redactObj(elem, expr, opt);
               }
@@ -2933,8 +2934,8 @@
   };
 
   // system varibiables
-  var SYS_VARS = Object.keys(systemVariables);
-  var REDACT_VARS = Object.keys(redactVariables);
+  var SYS_VARS = keys(systemVariables);
+  var REDACT_VARS = keys(redactVariables);
 
   var OP_QUERY = Mingo.OP_QUERY = 'query',
       OP_GROUP = Mingo.OP_GROUP = 'group',
@@ -3063,7 +3064,7 @@
             result = [result];
           } else {
             result = [];
-            obj.forEach(function (item) {
+            each(obj, function (item) {
               var val = resolveObj(item, selector);
               if (!isUndefined(val)) result.push(val);
             });
@@ -3084,7 +3085,7 @@
             result = [result];
           } else {
             result = [];
-            obj.forEach(function (item) {
+            each(obj, function (item) {
               var val = resolveObj(item, selector);
               if (!isUndefined(val)) result.push(val);
             });
@@ -3123,7 +3124,7 @@
         fn(obj, key);
     } else { // nested objects
       if (isArray(obj) && !isIndex) {
-        obj.forEach(function (item) {
+        each(obj, function (item) {
           traverse(item, selector, fn, force);
         });
       } else {
@@ -3165,18 +3166,14 @@
   /**
    * Clone an object the old-fashion way.
    */
-  function clone(value) {
-    switch (getType(value)) {
+  function clone(arg) {
+    switch (getType(arg)) {
       case "array":
-        return value.map(function (item) {
-          return clone(item);
-        });
+        return arg.map(clone);
       case "object":
-        return map(value, function (v,k) {
-          return clone(v);
-        });
+        return map(arg, clone);
       default:
-        return value;
+        return arg;
     }
   }
 
@@ -3212,8 +3209,8 @@
 
     // normalize object expression
     if (isObjectLike(expr)) {
-      var keys = Object.keys(expr);
-      var notQuery = intersection(ops(OP_QUERY), keys).length === 0;
+      var exprKeys = keys(expr);
+      var notQuery = intersection(ops(OP_QUERY), exprKeys).length === 0;
 
       // no valid query operator found, so we do simple comparison
       if (notQuery) {
@@ -3221,7 +3218,7 @@
       }
 
       // ensure valid regex
-      if (keys.includes("$regex")) {
+      if (exprKeys.includes("$regex")) {
         var regex = expr['$regex'];
         var options = expr['$options'] || "";
         var modifiers = "";
@@ -3249,7 +3246,7 @@
    * @returns {*}
    */
   function ops(type) {
-    return Object.keys(OPERATORS[type]);
+    return keys(OPERATORS[type]);
   }
 
   /**
@@ -3299,7 +3296,7 @@
 
     var lookup = {};
 
-    collection.forEach(function (obj) {
+    each(collection, function (obj) {
       var key = fn.call(ctx, obj);
       var hash = hashcode(key);
       var index = -1;
@@ -3359,7 +3356,7 @@
           if (ops(OP_GROUP).includes(key)) {
             result = result[key];
             // if there are more keys in expression this is bad
-            if (Object.keys(expr).length > 1) {
+            if (keys(expr).length > 1) {
               err("Invalid $group expression '" + stringify(expr) + "'");
             }
             break;
@@ -3437,7 +3434,7 @@
             // if so, return result of the computed value
             if (ops(OP_AGGREGATE).includes(key)) {
               // there should be only one operator
-              assert(Object.keys(expr).length === 1, "Invalid aggregation expression '" + stringify(expr) + "'");
+              assert(keys(expr).length === 1, "Invalid aggregation expression '" + stringify(expr) + "'");
               result = result[key];
               break;
             }
