@@ -158,7 +158,7 @@
     }
 
     // http://tokenposts.blogspot.co.za/2012/04/javascript-objectkeys-browser.html
-    if (!keys) {
+    if (!Object.keys) {
       Object.keys = function(o) {
         assertObjectLike(o, 'keys called on a non-object');
         var result = [];
@@ -189,14 +189,14 @@
     if (!Object.assign) {
       Object.assign = function (target) {
         // We must check against these specific cases.
-        if (isNull(target) || isUndefined(target)) {
+        if (isUnknown(target)) {
           err('Cannot convert undefined or null to object');
         }
 
         var result = Object(target);
         for (var index = 1; index < arguments.length; index++) {
           var source = arguments[index];
-          if (!isUndefined(source) && !isNull(source)) {
+          if (!isUnknown(source)) {
             for (var nextKey in source) {
               if (has(source, nextKey)) {
                 result[nextKey] = source[nextKey];
@@ -210,221 +210,14 @@
   })();
   //////////////////// END POLYFILL /////////////////////
 
-  function assert(condition, message) {
-    if (falsey(condition)) err(message);
-  }
-
-  function assertType(condition, message) {
-    if (falsey(condition)) err(message);
-  }
-
-  function assertExists(value) {
-    return assert(!isUndefined(value));
-  }
-
-  function assertObjectLike(o, message) {
-    assertType(o === Object(o), message);
-  }
-
-  function isType(v, n) { return getType(v) === n; }
-  function isBoolean(v) { return isType(v, "boolean"); }
-  function isString(v) { return isType(v, "string"); }
-  function isNumber(v) { return isType(v, "number"); }
-  function isArray(v) { return isType(v, "array"); }
-  function isObject(v) { return isType(v, "object"); }
-  function isObjectLike(v) { return v === Object(v); } // objects, arrays, functions
-  function isDate(v) { return isType(v, "date"); }
-  function isRegExp(v,t) { return isType(v, "regexp"); }
-  function isFunction(v,t) { return isType(v, "function"); }
-  function isNull(v) { return isType(v, "null"); }
-  function isUndefined(v) { return isType(v, "undefined"); }
-  function isUnknown(v) { return isNull(v) || isUndefined(v); }
-  function notInArray(arr, item) { return !arr.includes(item); }
-  function inArray(arr, item) { return arr.includes(item); }
-  function truthy(arg) { return !!arg; }
-  function falsey(arg) { return  !arg; }
-  function isEmpty(x) {
-   return isUnknown(x)
-   || isArray(x) && x.length === 0
-   || isObject(x) && keys(x).length === 0
-   || !x;
-  }
-  function coerceArray(x) { return isArray(x)? x : [x]; }
-  function getType(value) { return Object.prototype.toString.call(value).match(/\s(\w+)/)[1].toLowerCase(); }
-  function has(obj, prop) { return Object.prototype.hasOwnProperty.call(obj, prop); }
-  function err(s) { throw new Error(s); }
-  function keys(o) { return Object.keys(o); }
-
-  //////////////////// UTILS ////////////////////
-
-  /**
-   * Iterate over an array or object
-   * @param  {Array|Object} obj An object-like value
-   * @param  {Function} callback The callback to run per item
-   * @param  {*}   ctx  The object to use a context
-   * @return {void}
-   */
-  function each(obj, callback, ctx) {
-    assertObjectLike(obj, "Cannot iterate over object of type '" + getType(obj) + "'");
-    if (isArray(obj)) {
-      obj.forEach(callback, ctx);
-    } else {
-      for (var k in obj) {
-        if (has(obj, k)) {
-          callback.call(ctx, obj[k], k);
-        }
-      }
-    }
-  }
-
-  /**
-   * Transform values in a collection
-   *
-   * @param  {Array|Object}   obj   An array/object whose values to transform
-   * @param  {Function} callback The transform function
-   * @param  {*}   ctx The value to use as the "this" context for the transform
-   * @return {Array|Object} Result object after applying the transform
-   */
-  function map(obj, callback, ctx) {
-    if (isArray(obj)) {
-      return obj.map(callback, ctx);
-    } else if (isObject(obj)) {
-      var o = {};
-      var arr = keys(obj);
-      for (var k, i = 0, len = arr.length; i < len; i++) {
-        k = arr[i];
-        o[k] = callback.call(ctx, obj[k], k);
-      }
-      return o;
-    }
-    err("Input must be an Array or Object type");
-  }
-
-  /**
-   * Returns the intersection between two arrays
-   *
-   * @param  {Array} xs The first array
-   * @param  {Array} ys The second array
-   * @return {Array}    Result array
-   */
-  function intersection(xs, ys) {
-    return xs.filter(inArray.bind(null, ys));
-  }
-
-  /**
-   * Returns the union of two arrays
-   *
-   * @param  {Array} xs The first array
-   * @param  {Array} ys The second array
-   * @return {Array}   The result array
-   */
-  function union(xs, ys) {
-    var arr = [];
-    arrayPush.apply(arr, xs);
-    arrayPush.apply(arr, ys.filter(notInArray.bind(null, xs)));
-    return arr;
-  }
-
-  /**
-   * Flatten the array
-   *
-   * @param  {Array} xs The array to flatten
-   * @return {Array}
-   */
-  function flatten(xs, depth) {
-    assertType(isArray(xs), "Input must be an Array");
-    var arr = [];
-    var unwrap = function (ys, iter) {
-      for (var i = 0, len = ys.length; i < len; i++) {
-        if (isArray(ys[i]) && (iter > 0 || iter < 0)) {
-          unwrap(ys[i], Math.max(-1, iter - 1));
-        } else {
-          arrayPush.call(arr, ys[i]);
-        }
-      }
-    };
-    unwrap(xs, depth || -1);
-    return arr;
-  }
-
-  /**
-   * Determine whether two values are the same or strictly equivalent
-   *
-   * @param  {*}  a The first value
-   * @param  {*}  b The second value
-   * @return {Boolean}   Result of comparison
-   */
-  function isEqual(a, b) {
-    // strictly equal must be equal.
-    if (a === b) return true;
-
-    // unequal types cannot be equal.
-    var type = getType(a);
-    if (type !== getType(b)) return false;
-
-    // we treat NaN as the same
-    if (type === "number" && isNaN(a) && isNaN(b)) return true;
-
-    // leverage toString for Date and RegExp types
-    if (["date", "regexp"].includes(type)) return a.toString() === b.toString();
-
-    if (type === "array") {
-      if (a.length === b.length && a.length === 0) return true;
-      if (a.length !== b.length) return false;
-      for (var i = 0, k = a.length; i < k; i++) {
-        if (!isEqual(a[i], b[i])) return false;
-      }
-    } else if ([a, b].every(isObject)) {
-      // deep compare objects
-      var ka = keys(a);
-      var kb = keys(b);
-
-      // check length of keys early
-      if (ka.length !== kb.length) return false;
-
-      // we know keys are strings so we sort before comparing
-      ka.sort();
-      kb.sort();
-
-      // compare keys
-      if (!isEqual(ka, kb)) return false;
-
-      // back to the drawing board
-      for (var i = 0, len = ka.length; i < len; i++) {
-        var t = ka[i];
-        if (!isEqual(a[t], b[t])) return false;
-      }
-    } else {
-      // we do not know how to compare unknown types
-      return false;
-    }
-    // best effort says values are equal :)
-    return true;
-  }
-
-  /**
-   * Return a new unique version of the collection
-   * @param  {Array} xs The input collection
-   * @return {Array}    A new collection with unique values
-   */
-  function unique(xs) {
-    var h = {};
-    var arr = [];
-    each(xs, function (item) {
-      var k = hashcode(item);
-      if (!has(h, k)) {
-        arr.push(item);
-        h[k] = 0;
-      }
-    });
-    return arr;
-  }
-
-  //////////////////// END UTILS //////////////////
 
   // Settings used by Mingo internally
   var settings = {
     key: "_id"
+  };
+
+  Mingo.idKey = function () {
+    return settings.key;
   };
 
   /**
@@ -434,15 +227,17 @@
    * @return {Object} An object of functions
    */
   Mingo._internal = function() {
-    // We need exlicit naming to survive minification
+    // We need explicit naming to survive minification
     return {
       "assert": assert.bind(null),
       "computeValue": computeValue.bind(null),
       "each": each.bind(null),
+      "err": err.bind(null),
       "falsey": falsey.bind(null),
       "flatten": flatten.bind(null),
       "groupBy": groupBy.bind(null),
       "has": has.bind(null),
+      "hashcode": hashcode.bind(null),
       "inArray": inArray.bind(null),
       "intersection": intersection.bind(null),
       "isArray": isArray.bind(null),
@@ -459,14 +254,18 @@
       "isString": isString.bind(null),
       "isUndefined": isUndefined.bind(null),
       "isUnknown": isUnknown.bind(null),
+      "keys": keys.bind(null),
+      "map": map.bind(null),
+      "notInArray": notInArray.bind(null),
+      "ops": ops.bind(null),
       "resolve": resolve.bind(null),
       "resolveObj": resolveObj.bind(null),
       "slice": slice.bind(null),
+      "stddev": stddev.bind(null),
       "stringify": stringify.bind(null),
-      "map": map.bind(null),
-      "notInArray": notInArray.bind(null),
       "sortBy": sortBy.bind(null),
       "truthy": truthy.bind(null),
+      "type": type.bind(null),
       "union": union.bind(null),
       "unique": unique.bind(null)
     };
@@ -503,7 +302,7 @@
 
       if (isEmpty(this._criteria)) return;
 
-      assertType(isObject(this._criteria), "Criteria must be of type Object");
+      assert(isObject(this._criteria), "Criteria must be of type Object");
 
       for (var field in this._criteria) {
         if (has(this._criteria, field)) {
@@ -871,38 +670,37 @@
 
   /**
    * Add new operators
-   * @param type the operator type to extend
-   * @param f a function returning an object of new operators
+   * @param opClass the operator class to extend
+   * @param oFn a function returning an object of new operators
    */
-  Mingo.addOperators = function (type, f) {
-    var newOperators = f({
-      resolve: resolve,
-      computeValue: computeValue,
-      ops: ops,
-      key: function () {
-        return settings.key;
-      }
-    });
+  Mingo.addOperators = function (opClass, fn) {
+    var newOperators = fn(
+      Object.assign({ 
+        "idKey": function() { 
+          return settings.key; 
+        }
+      }, Mingo._internal())
+    );
 
     // ensure correct type specified
     assert(
-      [OP_AGGREGATE, OP_GROUP, OP_PIPELINE, OP_PROJECTION, OP_QUERY].includes(type),
-      "Could not identify type '" + type + "'"
+      [OP_AGGREGATE, OP_GROUP, OP_PIPELINE, OP_PROJECTION, OP_QUERY].includes(opClass),
+      "Could not identify operator class '" + opClass + "'"
     );
 
-    var operators = ops(type);
+    var operators = ops(opClass);
 
     // check for existing operators
-    keys(newOperators).forEach(function (op) {
+    each(newOperators, function (fn, op) {
       assert(/^\$\w+$/.test(op), "Invalid operator name '" + op + "'");
-      assert(!operators.includes(op), "Operator " + op + " is already defined for " + type + " operators");
+      assert(!operators.includes(op), "Operator " + op + " is already defined for " + opClass + " operators");
     });
 
     var wrapped = {};
 
-    switch (type) {
+    switch (opClass) {
       case OP_QUERY:
-        keys(newOperators).forEach(function (op) {
+        each(newOperators, function (fn, op) {
           wrapped[op] = (function (f, ctx) {
             return function (selector, value) {
               return {
@@ -920,32 +718,32 @@
                 }
               };
             }
-          }(newOperators[op], newOperators));
+          }(fn, newOperators));
         });
         break;
       case OP_PROJECTION:
-        keys(newOperators).forEach(function (op) {
+        each(newOperators, function (fn, op) {
           wrapped[op] = (function (f, ctx) {
             return function (obj, expr, selector) {
               var lhs = resolve(obj, selector);
               return f.call(ctx, selector, lhs, expr);
             }
-          }(newOperators[op], newOperators));
+          }(fn, newOperators));
         });
         break;
       default:
-        keys(newOperators).forEach(function (op) {
+        each(newOperators, function (fn, op) {
           wrapped[op] = (function (f, ctx) {
             return function () {
               var args = arraySlice.call(arguments);
               return f.apply(ctx, args);
             }
-          }(newOperators[op], newOperators));
+          }(fn, newOperators));
         });
     }
 
     // toss the operator salad :)
-    Object.assign(OPERATORS[type], wrapped);
+    Object.assign(OPERATORS[opClass], wrapped);
 
   };
 
@@ -1315,7 +1113,7 @@
      */
     $sample: function (collection, expr) {
       var size = expr["size"];
-      assertType(isNumber(size),
+      assert(isNumber(size),
       "$sample size must be a positive integer. See https://docs.mongodb.com/manual/reference/operator/aggregation/sample/");
 
       var result = [];
@@ -1358,7 +1156,7 @@
       var result = [];
       each(collection, function (obj) {
         obj = computeValue(obj, newRoot, null);
-        assertType(isObject(obj),
+        assert(isObject(obj),
           "$replaceRoot expression must return a valid JS object. " +
           "See https://docs.mongodb.com/manual/reference/operator/aggregation/replaceRoot/");
           result.push(obj);
@@ -1391,7 +1189,7 @@
      * @returns {{test: Function}}
      */
     $and: function (selector, value) {
-      assertType(isArray(value), "Invalid expression: $and expects value to be an Array");
+      assert(isArray(value), "Invalid expression: $and expects value to be an Array");
       var queries = [];
       each(value, function (expr) {
         queries.push(new Mingo.Query(expr));
@@ -1914,7 +1712,7 @@
      * @returns {Array|*}
      */
     $push: function (collection, expr) {
-      if (isNull(expr)) return clone(collection);
+      if (isUnknown(expr)) return clone(collection);
 
       return collection.map(function (obj) {
         return computeValue(obj, expr, null);
@@ -2079,8 +1877,8 @@
 
       if (isUnknown(arr[0])) return null;
 
-      assertType(isString(arr[0]), "$indexOfBytes first operand must resolve to a string");
-      assertType(isString(arr[1]), "$indexOfBytes second operand must resolve to a string");
+      assert(isString(arr[0]), "$indexOfBytes first operand must resolve to a string");
+      assert(isString(arr[1]), "$indexOfBytes second operand must resolve to a string");
 
       var str = arr[0],
           searchStr = arr[1],
@@ -2117,8 +1915,8 @@
      */
     $split: function (obj, expr) {
       var args = computeValue(obj, expr, null);
-      assertType(isString(args[0]), "$split requires an expression that evaluates to a string as a first argument, found: " + getType(args[0]));
-      assertType(isString(args[1]), "$split requires an expression that evaluates to a string as a second argument, found: " + getType(args[1]));
+      assert(isString(args[0]), "$split requires an expression that evaluates to a string as a first argument, found: " + type(args[0]));
+      assert(isString(args[1]), "$split requires an expression that evaluates to a string as a second argument, found: " + type(args[1]));
       return args[0].split(args[1]);
     },
 
@@ -2529,8 +2327,8 @@
     $arrayElemAt: function (obj, expr) {
       var arr = computeValue(obj, expr, null);
       assert(isArray(arr) && arr.length === 2, "$arrayElemAt expression must resolve to an array of 2 elements");
-      assertType(isArray(arr[0]), "First operand to $arrayElemAt must resolve to an array");
-      assertType(isNumber(arr[1]), "Second operand to $arrayElemAt must resolve to an integer");
+      assert(isArray(arr[0]), "First operand to $arrayElemAt must resolve to an array");
+      assert(isNumber(arr[1]), "Second operand to $arrayElemAt must resolve to an integer");
       var idx = arr[1];
       arr = arr[0];
       if (idx < 0 && Math.abs(idx) <= arr.length) {
@@ -2552,7 +2350,7 @@
       var arr = computeValue(obj, expr, null);
       assert(isArray(arr) && arr.length === 2, "$concatArrays expression must resolve to an array of 2 elements");
 
-      if (isNull(arr[0]) || isNull(arr[1]) || isUndefined(arr[0]) || isUndefined(arr[1])) return null;
+      if (arr.some(isUnknown)) return null;
 
       return arr[0].concat(arr[1]);
     },
@@ -2569,7 +2367,7 @@
           as = expr["as"],
           cond = expr["cond"];
 
-      assertType(isArray(input), "'input' expression for $filter must resolve to an array");
+      assert(isArray(input), "'input' expression for $filter must resolve to an array");
 
       return input.filter(function (o) {
         // inject variable
@@ -2594,7 +2392,7 @@
       var array = arr[0];
       if (isUnknown(array)) return null;
 
-      assertType(isArray(array), "First operand for $indexOfArray must resolve to an array.");
+      assert(isArray(array), "First operand for $indexOfArray must resolve to an array.");
 
       var searchValue = arr[1];
       if (isUnknown(searchValue)) return null;
@@ -2654,7 +2452,7 @@
       var arr = computeValue(obj, expr, null);
 
       if (isUnknown(arr)) return null;
-      assertType(isArray(arr), "$reverseArray expression must resolve to an array");
+      assert(isArray(arr), "$reverseArray expression must resolve to an array");
 
       arr = clone(arr);
       arr.reverse();
@@ -2673,7 +2471,7 @@
           in_expr = expr["in"];
 
       if (isUnknown(input)) return null;
-      assertType(isArray(input), "'input' expression for $reduce must resolve to an array");
+      assert(isArray(input), "'input' expression for $reduce must resolve to an array");
 
       return input.reduce(function (acc, n) {
         return computeValue({ "$value": acc, "$this": n }, in_expr, null);
@@ -2717,8 +2515,8 @@
       var inputs = computeValue(obj, expr.inputs, null),
           useLongestLength = expr.useLongestLength || false;
 
-      assertType(isArray(inputs), "'inputs' expression must resolve to an array");
-      assertType(isBoolean(useLongestLength), "'useLongestLength' must be a boolean");
+      assert(isArray(inputs), "'inputs' expression must resolve to an array");
+      assert(isBoolean(useLongestLength), "'useLongestLength' must be a boolean");
 
       if (isArray(expr.defaults)) {
         assert(truthy(useLongestLength), "'useLongestLength' must be set to true to use 'defaults'");
@@ -2730,7 +2528,7 @@
         var arr = inputs[i];
 
         if (isUnknown(arr)) return null;
-        assertType(isArray(arr), "'inputs' expression values must resolve to an array or null");
+        assert(isArray(arr), "'inputs' expression values must resolve to an array or null");
 
         len = useLongestLength
           ? Math.max(len, arr.length)
@@ -3131,7 +2929,7 @@
         // force the rest of the graph while traversing
         if (force === true) {
           var exists = has(obj, key);
-          if (!exists || isUndefined(obj[key]) || isNull(obj[key])) {
+          if (!exists || isUnknown(obj[key])) {
             obj[key] = {};
           }
         }
@@ -3167,7 +2965,7 @@
    * Clone an object the old-fashion way.
    */
   function clone(arg) {
-    switch (getType(arg)) {
+    switch (type(arg)) {
       case "array":
         return arg.map(clone);
       case "object":
@@ -3179,7 +2977,7 @@
 
   // quick reference for
   var primitives = [
-    isString, isBoolean, isNumber, isDate, isNull, isRegExp, isUndefined
+    isString, isBoolean, isNumber, isDate, isUnknown, isRegExp
   ];
 
   function isPrimitive(value) {
@@ -3317,7 +3115,7 @@
 
   // encode value using a simple optimistic scheme
   function encode(value) {
-    return stringify({"":value}) + getType(value) + value;
+    return stringify({"":value}) + type(value) + value;
   }
 
   // http://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript-jquery
@@ -3391,7 +3189,7 @@
     if (ops(OP_GROUP).includes(field)) {
       // we first fully resolve the expression
       obj = computeValue(obj, expr, null, opt);
-      assertType(isArray(obj), "Must use collection type with " + field + " operator");
+      assert(isArray(obj), "Must use collection type with " + field + " operator");
       // we pass a null expression because all values have been resolved
       return groupOperators[field](obj, null, opt);
     }
@@ -3420,7 +3218,7 @@
     }
 
     // check and return value if already in a resolved state
-    switch (getType(expr)) {
+    switch (type(expr)) {
       case "array":
         return expr.map(function (item) {
           return computeValue(obj, item, null);
@@ -3444,6 +3242,212 @@
       default:
         return clone(expr);
     }
+  }
+
+  function assert(condition, message) {
+    if (falsey(condition)) err(message);
+  }
+
+  function assertExists(value) {
+    return assert(!isUndefined(value));
+  }
+
+  function assertObjectLike(o, message) {
+    assert(o === Object(o), message);
+  }
+
+  function isType(v, n) { return type(v) === n; }
+  function isBoolean(v) { return isType(v, "boolean"); }
+  function isString(v) { return isType(v, "string"); }
+  function isNumber(v) { return isType(v, "number"); }
+  function isArray(v) { return isType(v, "array"); }
+  function isObject(v) { return isType(v, "object"); }
+  function isObjectLike(v) { return v === Object(v); } // objects, arrays, functions
+  function isDate(v) { return isType(v, "date"); }
+  function isRegExp(v,t) { return isType(v, "regexp"); }
+  function isFunction(v,t) { return isType(v, "function"); }
+  function isNull(v) { return isType(v, "null"); }
+  function isUndefined(v) { return isType(v, "undefined"); }
+  function isUnknown(v) { return isNull(v) || isUndefined(v); }
+  function notInArray(arr, item) { return !arr.includes(item); }
+  function inArray(arr, item) { return arr.includes(item); }
+  function truthy(arg) { return !!arg; }
+  function falsey(arg) { return  !arg; }
+  function isEmpty(x) {
+   return isUnknown(x)
+   || isArray(x) && x.length === 0
+   || isObject(x) && keys(x).length === 0
+   || !x;
+  }
+  function coerceArray(x) { return isArray(x)? x : [x]; }
+  function type(value) { return Object.prototype.toString.call(value).match(/\s(\w+)/)[1].toLowerCase(); }
+  function has(obj, prop) { return Object.prototype.hasOwnProperty.call(obj, prop); }
+  function err(s) { throw new Error(s); }
+  function keys(o) { return Object.keys(o); }
+
+  //////////////////// UTILS ////////////////////
+
+  /**
+   * Iterate over an array or object
+   * @param  {Array|Object} obj An object-like value
+   * @param  {Function} callback The callback to run per item
+   * @param  {*}   ctx  The object to use a context
+   * @return {void}
+   */
+  function each(obj, callback, ctx) {
+    assertObjectLike(obj, "Cannot iterate over object of type '" + type(obj) + "'");
+    if (isArray(obj)) {
+      obj.forEach(callback, ctx);
+    } else {
+      for (var k in obj) {
+        if (has(obj, k)) {
+          callback.call(ctx, obj[k], k);
+        }
+      }
+    }
+  }
+
+  /**
+   * Transform values in a collection
+   *
+   * @param  {Array|Object}   obj   An array/object whose values to transform
+   * @param  {Function} callback The transform function
+   * @param  {*}   ctx The value to use as the "this" context for the transform
+   * @return {Array|Object} Result object after applying the transform
+   */
+  function map(obj, callback, ctx) {
+    if (isArray(obj)) {
+      return obj.map(callback, ctx);
+    } else if (isObject(obj)) {
+      var o = {};
+      var arr = keys(obj);
+      for (var k, i = 0, len = arr.length; i < len; i++) {
+        k = arr[i];
+        o[k] = callback.call(ctx, obj[k], k);
+      }
+      return o;
+    }
+    err("Input must be an Array or Object type");
+  }
+
+  /**
+   * Returns the intersection between two arrays
+   *
+   * @param  {Array} xs The first array
+   * @param  {Array} ys The second array
+   * @return {Array}    Result array
+   */
+  function intersection(xs, ys) {
+    return xs.filter(inArray.bind(null, ys));
+  }
+
+  /**
+   * Returns the union of two arrays
+   *
+   * @param  {Array} xs The first array
+   * @param  {Array} ys The second array
+   * @return {Array}   The result array
+   */
+  function union(xs, ys) {
+    var arr = [];
+    arrayPush.apply(arr, xs);
+    arrayPush.apply(arr, ys.filter(notInArray.bind(null, xs)));
+    return arr;
+  }
+
+  /**
+   * Flatten the array
+   *
+   * @param  {Array} xs The array to flatten
+   * @return {Array} depth The number of nested lists to interate
+   */
+  function flatten(xs, depth) {
+    assert(isArray(xs), "Input must be an Array");
+    var arr = [];
+    var unwrap = function (ys, iter) {
+      for (var i = 0, len = ys.length; i < len; i++) {
+        if (isArray(ys[i]) && (iter > 0 || iter < 0)) {
+          unwrap(ys[i], Math.max(-1, iter - 1));
+        } else {
+          arrayPush.call(arr, ys[i]);
+        }
+      }
+    };
+    unwrap(xs, depth || -1);
+    return arr;
+  }
+
+  /**
+   * Determine whether two values are the same or strictly equivalent
+   *
+   * @param  {*}  a The first value
+   * @param  {*}  b The second value
+   * @return {Boolean}   Result of comparison
+   */
+  function isEqual(a, b) {
+    // strictly equal must be equal.
+    if (a === b) return true;
+
+    // unequal types cannot be equal.
+    var t = type(a);
+    if (t !== type(b)) return false;
+
+    // we treat NaN as the same
+    if (t === "number" && isNaN(a) && isNaN(b)) return true;
+
+    // leverage toString for Date and RegExp types
+    if (["date", "regexp"].includes(t)) return a.toString() === b.toString();
+
+    if (t === "array") {
+      if (a.length === b.length && a.length === 0) return true;
+      if (a.length !== b.length) return false;
+      for (var i = 0, k = a.length; i < k; i++) {
+        if (!isEqual(a[i], b[i])) return false;
+      }
+    } else if ([a, b].every(isObject)) {
+      // deep compare objects
+      var ka = keys(a);
+      var kb = keys(b);
+
+      // check length of keys early
+      if (ka.length !== kb.length) return false;
+
+      // we know keys are strings so we sort before comparing
+      ka.sort();
+      kb.sort();
+
+      // compare keys
+      if (!isEqual(ka, kb)) return false;
+
+      // back to the drawing board
+      for (var i = 0, len = ka.length; i < len; i++) {
+        var t = ka[i];
+        if (!isEqual(a[t], b[t])) return false;
+      }
+    } else {
+      // we do not know how to compare unknown types
+      return false;
+    }
+    // best effort says values are equal :)
+    return true;
+  }
+
+  /**
+   * Return a new unique version of the collection
+   * @param  {Array} xs The input collection
+   * @return {Array}    A new collection with unique values
+   */
+  function unique(xs) {
+    var h = {};
+    var arr = [];
+    each(xs, function (item) {
+      var k = hashcode(item);
+      if (!has(h, k)) {
+        arr.push(item);
+        h[k] = 0;
+      }
+    });
+    return arr;
   }
 
   /**

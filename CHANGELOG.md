@@ -1,13 +1,14 @@
 Changelog
 =========
 
-Changes starting from v0.5.0 are tracked here
-
-## v0.9.2 / 2017-02-21
+## v0.10.0 / 2017-02-xx
 - Remove console.log debug code
 - Implemented array aggregation operators       
   (`$arrayElemAt`,`$concatArrays`,`$filter`,`$indexOfArray`,`$isArray`,`$range`,`$reverseArray`,`$reduce`,`$slice`,`$zip`)
 - Implemented string aggregation operators (`$indexOfBytes`,`$split`)
+- Added .editorconfig
+- Pass utility functions to custom operator implementation
+- Rename function to retrieve collection id to `idKey` in custom operators
 
 ## v0.9.1 / 2017-02-08
 - Fix resolving system variables with subpaths. See [issue#41](https://github.com/kofrasa/mingo/issues/41)
