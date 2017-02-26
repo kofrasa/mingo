@@ -18,31 +18,30 @@ In browser
 ## Features
 - Supports Dot Notation for both '_&lt;array&gt;.&lt;index&gt;_' and '_&lt;document&gt;.&lt;field&gt;_' selectors
 - Query and Projection Operators
-    - Array Operators (`$all`, `$elemMatch`, `$size`)
-    - Comparisons Operators (`$gt`, `$gte`, `$lt`, `$lte`, `$ne`, `$nin`, `$in`)
-    - Element Operators (`$exists`, `$type`)
-    - Evaluation Operators (`$regex`, `$mod`, `$where`)
-    - Logical Operators (`$and`, `$or`, `$nor`, `$not`)
+    - [Array Operators](https://docs.mongodb.com/manual/reference/operator/query-array/)
+    - [Comparisons Operators](https://docs.mongodb.com/manual/reference/operator/query-comparison/)
+    - [Element Operators](https://docs.mongodb.com/manual/reference/operator/query-element/)
+    - [Evaluation Operators](https://docs.mongodb.com/manual/reference/operator/query-evaluation/)
+    - [Logical Operators](https://docs.mongodb.com/manual/reference/operator/query-logical/)
 - Aggregation Framework Operators
-    - Pipeline Operators (`$group`,`$match`,`$project`,`$sort`,`$limit`,`$unwind`,`$skip`,`$count`,`$replaceRoot`,`$redact`,`$sample`,`$sortByCount`,`$addFields`)
-    - Group Operators (`$addToSet`, `$sum`, `$max`, `$min`, `$avg`, `$push`, `$first`, `$last`)
-    - Projection Operators (`$elemMatch`, `$slice`)
-    - Arithmetic Operators (`$add`, `$divide`, `$mod`, `$multiply`, `$subtract`)
-    - Array Operators (`$size`)
-    - Boolean Operators (`$and`, `$or`, `$not`)
-    - Comparisons Operators (`$cmp`, `$gt`, `$gte`, `$lt`, `$lte`, `$ne`, `$nin`, `$in`)
-    - Conditional Operators (`$cond`, `$switch`, `$ifNull`)
-    - Date Operators
-    (`$dayOfYear`, `$dayOfMonth`, `$dayOfWeek`, `$year`, `$month`, `$week`, `$hour`, `$minute`, `$second`, `$millisecond`, `$dateToString`)
-    - Literal Operators (`$literal`)
-    - Set Operators
-    (`$setEquals`, `$setIntersection`, `$setDifference`, `$setUnion`, `$setIsSubset`, `$anyElementTrue`, `$allElementsTrue`)
-    - String Operators (`$strcasecmp`, `$concat`, `$substr`, `$toLower`, `$toUpper`)
-    - Variable Operators (`$map`, `$let`)
+    - [Pipeline Operators](https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline/)
+    - [Group Operators](https://docs.mongodb.com/manual/reference/operator/aggregation-group/)
+    - [Projection Operators](https://docs.mongodb.com/manual/reference/operator/projection/)
+    - [Arithmetic Operators](https://docs.mongodb.com/manual/reference/operator/aggregation-arithmetic/)
+    - [Array Operators](https://docs.mongodb.com/manual/reference/operator/aggregation-array/)
+    - [Boolean Operators](https://docs.mongodb.com/manual/reference/operator/aggregation-boolean/)
+    - [Comparisons Operators](https://docs.mongodb.com/manual/reference/operator/aggregation-comparison/)
+    - [Conditional Operators](https://docs.mongodb.com/manual/reference/operator/aggregation-conditional/)
+    - [Date Operators](https://docs.mongodb.com/manual/reference/operator/aggregation-date/)
+    - [Literal Operators](https://docs.mongodb.com/manual/reference/operator/aggregation-literal/)
+    - [Set Operators](https://docs.mongodb.com/manual/reference/operator/aggregation-set/)
+    - [String Operators](https://docs.mongodb.com/manual/reference/operator/aggregation-string/)
+    - [Variable Operators](https://docs.mongodb.com/manual/reference/operator/aggregation-projection/)
 - Support for custom operators
 - BackboneJS Integration
 - Match against user-defined types
-- Support for system variables (`$$ROOT`,`$$CURRENT`,`$$DESCEND`,`$$PRUNE`,`$$KEEP`)
+- Support for aggregaion variables
+    - [`$$ROOT`,`$$CURRENT`,`$$DESCEND`,`$$PRUNE`,`$$KEEP`](https://docs.mongodb.com/manual/reference/aggregation-variables/)
 - JSON stream filtering and projection. *NodeJS only*
 
 For documentation on using query operators see [mongodb](http://docs.mongodb.org/manual/reference/operator/query/)
@@ -69,6 +68,8 @@ var query = new Mingo.Query({
 
 ## Searching and Filtering
 ```js
+// `collection` is an Array of objects you want to query
+
 // filter collection with find()
 var cursor = query.find(collection);
 
