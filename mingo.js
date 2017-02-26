@@ -9,7 +9,7 @@
   // global on the server, window in the browser
   var Mingo = {}, previousMingo;
 
-  Mingo.VERSION = '0.9.2';
+  Mingo.VERSION = '0.10.0';
 
   // backup previous Mingo
   if (root !== null) {
