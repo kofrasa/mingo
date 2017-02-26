@@ -1059,7 +1059,7 @@
     $sort: function (collection, sortKeys) {
       if (!isEmpty(sortKeys) && isObject(sortKeys)) {
         var modifiers = keys(sortKeys);
-        modifiers.reverse().forEach(function (key) {
+        each(modifiers.reverse(), function (key) {
           var grouped = groupBy(collection, function (obj) {
             return resolve(obj, key);
           });
@@ -1525,7 +1525,7 @@
     }
   };
   // add simple query operators
-  keys(simpleOperators).forEach(function (op) {
+  each(simpleOperators, function (fn, op) {
     queryOperators[op] = (function (f, ctx) {
       return function (selector, value) {
         return {
@@ -1536,7 +1536,7 @@
           }
         };
       }
-    }(simpleOperators[op], simpleOperators));
+    }(fn, simpleOperators));
   });
 
   var projectionOperators = {
@@ -2445,7 +2445,7 @@
     }
   };
   // mixin comparison operators
-  ["$eq", "$ne", "$gt", "$gte", "$lt", "$lte", "$in", "$nin"].forEach(function (op) {
+  each(["$eq", "$ne", "$gt", "$gte", "$lt", "$lte", "$in", "$nin"], function (op) {
     comparisonOperators[op] = function (obj, expr) {
       var args = computeValue(obj, expr, null);
       return simpleOperators[op](args[0], args[1]);
