@@ -1796,15 +1796,18 @@
     },
 
     /**
-     * Takes an array that contains two numbers or two dates and subtracts the second value from the first.
-     *
-     * @param obj
+     * Returns the smallest integer greater than or equal to the specified number.
+     * 
+     * @param obj 
      * @param expr
      * @returns {number}
      */
-    $subtract: function (obj, expr) {
-      var args = computeValue(obj, expr, null);
-      return args[0] - args[1];
+    $ceil: function (obj, expr) {
+      var arg = computeValue(obj, expr, null);
+      if (isNaN(arg)) return NaN;
+      if (isUnknown(arg)) return null;
+      assert(isNumber(arg), "$ceil must be a valid expression that resolves to a number.");
+      return Math.ceil(arg);
     },
 
     /**
@@ -1817,6 +1820,94 @@
     $divide: function (obj, expr) {
       var args = computeValue(obj, expr, null);
       return args[0] / args[1];
+    },
+
+    /**
+     * Raises Euler’s number (i.e. e ) to the specified exponent and returns the result.
+     * 
+     * @param obj
+     * @param expr
+     * @returns {number}
+     */
+    $exp: function (obj, expr) {
+      var arg = computeValue(obj, expr, null);
+      if (isNaN(arg)) return NaN;
+      if (isUnknown(arg)) return null;
+      assert(isNumber(arg), "$exp must be a valid expression that resolves to a number.");
+      return Math.exp(arg);
+    },
+
+    /**
+     * Returns the largest integer less than or equal to the specified number.
+     * 
+     * @param obj
+     * @param expr
+     * @returns {number}
+     */
+    $floor: function (obj, expr) {
+      var arg = computeValue(obj, expr, null);
+      if (isNaN(arg)) return NaN;
+      if (isUnknown(arg)) return null;
+      assert(isNumber(arg), "$floor must be a valid expression that resolves to a number.");
+      return Math.floor(arg);
+    },
+
+    /**
+     * Calculates the natural logarithm ln (i.e loge) of a number and returns the result as a double.
+     * 
+     * @param obj
+     * @param expr
+     * @returns {number}
+     */
+    $ln: function (obj, expr) {
+      var arg = computeValue(obj, expr, null);
+      if (isNaN(arg)) return NaN;
+      if (isUnknown(arg)) return null;
+      assert(isNumber(arg), "$ln must be a valid expression that resolves to a number.");
+      return Math.log(arg);
+    },
+
+    /**
+     * Calculates the log of a number in the specified base and returns the result as a double.
+     * 
+     * @param obj
+     * @param expr
+     * @returns {number}
+     */
+    $log: function (obj, expr) {
+      var args = computeValue(obj, expr, null);
+      assert(isArray(args) && args.length === 2, "$log must be a valid expression that resolves to an array of 2 items");
+      if (args.some(isNaN)) return NaN;
+      if (args.some(isUnknown)) return null;
+      assert(args.every(isNumber), "$log expression must resolve to array of 2 numbers");
+      return Math.log10(args[0]) / Math.log10(args[1]);
+    },
+
+    /**
+     * Calculates the log base 10 of a number and returns the result as a double.
+     * 
+     * @param obj
+     * @param expr
+     * @returns {number}
+     */
+    $log10: function (obj, expr) {
+      var arg = computeValue(obj, expr, null);
+      if (isNaN(arg)) return NaN;
+      if (isUnknown(arg)) return null;
+      assert(isNumber(arg), "$log10 must be a valid expression that resolves to a number.");
+      return Math.log10(arg);
+    },
+
+    /**
+     * Takes two numbers and calculates the modulo of the first number divided by the second.
+     *
+     * @param obj
+     * @param expr
+     * @returns {number}
+     */
+    $mod: function (obj, expr) {
+      var args = computeValue(obj, expr, null);
+      return args[0] % args[1];
     },
 
     /**
@@ -1834,16 +1925,62 @@
     },
 
     /**
-     * Takes two numbers and calculates the modulo of the first number divided by the second.
+     * Raises a number to the specified exponent and returns the result.
+     *
+     * @param obj
+     * @param expr
+     * @returns {Object}
+     */
+    $pow: function (obj, expr) {
+      var args = computeValue(obj, expr, null);
+      assert(isArray(args) && args.length === 2 && args.every(isNumber), "$pow must be a valid expression that resolves to an array of 2 numbers");
+
+      if (args[0] === 0 && args[1] < 0) err("$pow cannot raise 0 to a negative exponent");
+
+      return Math.pow(args[0], args[1]);
+    },
+
+    /**
+     * Calculates the square root of a positive number and returns the result as a double.
+     * 
+     * @param obj
+     * @param expr
+     * @returns {number}
+     */
+    $sqrt: function (obj, expr) {
+      var n = computeValue(obj, expr, null);
+      if (isNaN(n)) return NaN;
+      if (isUnknown(n)) return null;
+      assert(isNumber(n) && n > 0, "$sqrt must be a valid expression that resolves to a non-negative number.");
+      return Math.sqrt(n);
+    },
+
+    /**
+     * Takes an array that contains two numbers or two dates and subtracts the second value from the first.
      *
      * @param obj
      * @param expr
      * @returns {number}
      */
-    $mod: function (obj, expr) {
+    $subtract: function (obj, expr) {
       var args = computeValue(obj, expr, null);
-      return args[0] % args[1];
-    }
+      return args[0] - args[1];
+    },
+
+    /**
+     * Truncates a number to its integer.
+     * 
+     * @param obj
+     * @param expr
+     * @returns {number}
+     */
+    $trunc: function (obj, expr) {
+      var n = computeValue(obj, expr, null);
+      if (isNaN(n)) return NaN;
+      if (isUnknown(n)) return null;
+      assert(isNumber(n) && n > 0, "$trunc must be a valid expression that resolves to a non-negative number.");
+      return Math.trunc(n);
+    },
   };
 
   var stringOperators = {
