@@ -10,6 +10,7 @@ Changelog
 - Added .editorconfig
 - Pass utility functions to custom operator implementation
 - Rename function to retrieve collection id to `idKey` in custom operators
+- Moved support for query porjection streaming to a new package [mingo-stream](https://github.com/kofrasa/mingo-stream)
 
 ## v0.9.1 / 2017-02-08
 - Fix resolving system variables with subpaths. See [issue#41](https://github.com/kofrasa/mingo/issues/41)

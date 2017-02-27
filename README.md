@@ -37,12 +37,12 @@ In browser
     - [Set Operators](https://docs.mongodb.com/manual/reference/operator/aggregation-set/)
     - [String Operators](https://docs.mongodb.com/manual/reference/operator/aggregation-string/)
     - [Variable Operators](https://docs.mongodb.com/manual/reference/operator/aggregation-projection/)
-- Support for custom operators
-- BackboneJS Integration
+- Support for adding custom operators
 - Match against user-defined types
 - Support for aggregaion variables
     - [`$$ROOT`,`$$CURRENT`,`$$DESCEND`,`$$PRUNE`,`$$KEEP`](https://docs.mongodb.com/manual/reference/aggregation-variables/)
-- JSON stream filtering and projection. *NodeJS only*
+- Support integrating with custom collections via mixin
+- Query filter and projection streaming. See [mingo-stream](https://github.com/kofrasa/mingo-stream)
 
 For documentation on using query operators see [mongodb](http://docs.mongodb.org/manual/reference/operator/query/)
 
@@ -120,32 +120,12 @@ result = Mingo.aggregate(
 );
 ```
 
-## Stream Filtering
+## Integration with custom collection
 ```js
-var JSONStream = require('JSONStream'),
-    fs = require('fs'),
-    Mingo = require('mingo');
-
-var query = new Mingo.Query({
-  scores: { $elemMatch: {type: "exam", score: {$gt: 90}} }
-}, {name: 1});
-
-file = fs.createReadStream('./students.json');
-
-var qs = query.stream();
-qs.on('data', function (data) {
-    console.log(data); // log filtered outputs
-    // ex. { name: 'Dinah Sauve', _id: 49 }
-});
-
-file.pipe(JSONStream.parse("*")).pipe(qs);
-```
-
-## Backbone Integration
-```js
-// using with Backbone
+// using Backbone.Collection as an example (any user-defined object will do)
 var Grades = Backbone.Collection.extend(Mingo.CollectionMixin);
 
+// `collection` is an array of objects
 var grades = new Grades(collection);
 
 // find students with grades less than 50 in homework or quiz
@@ -154,9 +134,11 @@ cursor = grades.query({
     $or: [{type: "quiz", score: {$lt: 50}}, {type: "homework", score: {$lt: 50}}]
 }).sort({score: 1, type: -1}).limit(10);
 
-// print grade with the lowest score
+// return grade with the lowest score
 cursor.first();
 ```
+
+The collection to mixin needs to provide a method with signature `toJSON() -> Array[Object]`.
 
 ## Documentation
 - [API](https://github.com/kofrasa/mingo/wiki/API)

@@ -4,8 +4,6 @@ var test = require('tape'),
   Mingo = require('../mingo'),
   _ = Mingo._internal();
 
-var MingoCollection = Backbone.Collection.extend(Mingo.CollectionMixin);
-
 test("Mingo.Cursor", function (t) {
   t.plan(5);
   // create a query with no criteria
@@ -18,8 +16,10 @@ test("Mingo.Cursor", function (t) {
   t.ok(cursor.count() === 800, "can count items with count()");
 });
 
-test("Backbone integration", function (t) {
+test("CollectionMixin integration", function (t) {
   t.plan(1);
+
+  var MingoCollection = Backbone.Collection.extend(Mingo.CollectionMixin);
   var grades = new MingoCollection(samples.gradesSimple);
   // find students with grades less than 50 in homework or quiz
   // sort by score ascending and type descending
@@ -62,57 +62,4 @@ test("Match $all with $elemMatch on nested elements", function (t) {
   // It should return one user object
   var result = Mingo.find(data, criteria).count();
   t.ok(result === 1, "can match using $all with $elemMatch on nested elements");
-});
-
-
-test("JSON Stream filtering", function (t) {
-  t.plan(2);
-
-  var fs = require('fs'),
-    Transform = require('stream').Transform,
-    util = require('util'),
-    Mingo = require('../mingo');
-
-  // create a simple JSON stream
-  var JSONStream = function () {
-    if (!(this instanceof JSONStream))
-      return new JSONStream();
-    Transform.call(this, {objectMode: true});
-  };
-  util.inherits(JSONStream, Transform);
-  JSONStream.prototype._transform = function (chunk, enc, done) {
-    var self = this;
-    chunk = JSON.parse(chunk);
-    _.each(chunk, function (obj) {
-      self.push(obj);
-    });
-    done();
-  };
-
-  var found2Keys = true;
-  var cursor;
-  var query = new Mingo.Query({
-    scores: {$elemMatch: {type: "exam", score: {$gt: 90}}}
-  }, {name: 1});
-
-  var file = fs.createReadStream(__dirname + '/data/students.json');
-  file.on('data', function (data) {
-    cursor = query.find(JSON.parse(data));
-  });
-
-  var qs = query.stream();
-  var count = 0;
-  qs.on('data', function (data) {
-    // projecting only {name, _id}
-    found2Keys = Object.keys(data).length == 2 && found2Keys;
-    count++;
-  });
-
-  qs.on('end', function () {
-    t.ok(count > 0 && count === cursor.count(), "Filtered only matching documents via stream");
-    t.ok(found2Keys, "Projected only requested keys via stream");
-  });
-
-  // fileStream --> jsonStream --> queryStream
-  file.pipe(JSONStream()).pipe(qs);
 });

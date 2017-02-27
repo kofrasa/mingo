@@ -1,15 +1,15 @@
 // Mingo.js
-// Copyright (c) 2016 Francis Asante <kofrasa@gmail.com>
+// Copyright (c) 2017 Francis Asante <kofrasa@gmail.com>
 // MIT
 
 ;(function (root, undefined) {
 
   "use strict";
 
+  var VERSION = '0.10.0';
+
   // global on the server, window in the browser
   var Mingo = {}, previousMingo;
-
-  Mingo.VERSION = '0.10.0';
 
   // backup previous Mingo
   if (root !== null) {
@@ -21,13 +21,11 @@
     return Mingo;
   };
 
-  var nodeEnabled = (undefined !== module && typeof require !== 'undefined');
+  var isNodeJS = (typeof module !== 'undefined' && module.exports && typeof require !== 'undefined');
 
   // Export the Mingo object for Node.js
-  if (nodeEnabled) {
-    if (module !== undefined) {
-      module.exports = Mingo;
-    }
+  if (isNodeJS) {
+    module.exports = Mingo;
   } else {
     root.Mingo = Mingo;
   }
@@ -370,52 +368,6 @@
     }
   };
 
-  // It's ok for this to live here since the code size is neglible
-  if (nodeEnabled) {
-
-    var Transform = require('stream').Transform;
-    var util = require('util');
-
-    Mingo.Query.prototype.stream = function (options) {
-      return new Mingo.Stream(this, options);
-    };
-
-    /**
-     * Create a Transform class
-     * @param query
-     * @param options
-     * @returns {Mingo.Stream}
-     * @constructor
-     */
-    Mingo.Stream = function (query, options) {
-
-      if (!(this instanceof Mingo.Stream))
-        return new Mingo.Stream(query, options);
-
-      options = options || {};
-      Object.assign(options, {objectMode: true});
-      Transform.call(this, options);
-      // query for this stream
-      this._query = query;
-    };
-    // extend Transform
-    util.inherits(Mingo.Stream, Transform);
-
-    Mingo.Stream.prototype._transform = function (chunk, encoding, done) {
-      if (isObject(chunk) && this._query.test(chunk)) {
-        if (isEmpty(this._query._projection)) {
-          this.push(chunk);
-        } else {
-          var cursor = new Mingo.Cursor([chunk], this._query);
-          if (cursor.hasNext()) {
-            this.push(cursor.next());
-          }
-        }
-      }
-      done();
-    };
-  }
-
   /**
    * Cursor to iterate and perform filtering on matched objects
    * @param collection
@@ -671,7 +623,7 @@
   /**
    * Add new operators
    * @param opClass the operator class to extend
-   * @param oFn a function returning an object of new operators
+   * @param fn a function returning an object of new operators
    */
   Mingo.addOperators = function (opClass, fn) {
     var newOperators = fn(
@@ -748,7 +700,7 @@
   };
 
   /**
-   * Mixin for Backbone.Collection objects
+   * Mixin for Collection types that provide a method `toJSON() -> Array[Object]`
    */
   Mingo.CollectionMixin = {
     /**
@@ -3099,7 +3051,7 @@
   }
 
   /**
-   * Clone an object the old-fashion way.
+   * Deep clone an object 
    */
   function clone(arg) {
     switch (type(arg)) {
@@ -3630,5 +3582,7 @@
     }
     return arraySlice.apply(xs, [skip, limit]);
   }
+
+  Mingo.VERSION = VERSION;
 
 }(this));

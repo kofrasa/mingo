@@ -1,6 +1,3 @@
-/**
- * Created by francis on 3/27/15.
- */
 
 var gulp = require('gulp')
   exec = require('child_process').exec;
