@@ -1,7 +1,7 @@
-var test = require('tape'),
-  Mingo = require('../mingo'),
-  samples = require('./samples'),
-  _ = Mingo._internal();
+var test = require('tape')
+var Mingo = require('../mingo')
+var samples = require('./samples')
+var _ = Mingo._internal()
 
 
 test("Aggregation Pipeline Operators", function (t) {
