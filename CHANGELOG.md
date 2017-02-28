@@ -1,12 +1,11 @@
 Changelog
 =========
 
-## v0.10.0 / 2017-xx-xx
-- Remove console.log debug code
-- Implemented array aggregation operators
+## v0.10.0 / 2017-02-28
+- Added array aggregation operators
   (`$arrayElemAt`,`$concatArrays`,`$filter`,`$indexOfArray`,`$isArray`,`$range`,`$reverseArray`,`$reduce`,`$slice`,`$zip`)
-- Implemented string aggregation operators (`$indexOfBytes`,`$split`)
-- Implemented arithmetic aggregation operators (`$ceil`,`$exp`,`$floor`,`$ln`,`$log`,`$log10`,`$pow`,`$sqrt`,`$trunc`)
+- Added string aggregation operators (`$indexOfBytes`,`$split`)
+- Added arithmetic aggregation operators (`$ceil`,`$exp`,`$floor`,`$ln`,`$log`,`$log10`,`$pow`,`$sqrt`,`$trunc`)
 - Added .editorconfig
 - Pass utility functions to custom operator implementation
 - Rename function to retrieve collection id to `idKey` in custom operators
