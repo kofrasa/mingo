@@ -1,7 +1,7 @@
 Changelog
 =========
 
-## v0.10.0 / 2017-02-28
+## v1.0.0 / 2017-02-28
 - Added array aggregation operators
   (`$arrayElemAt`,`$concatArrays`,`$filter`,`$indexOfArray`,`$isArray`,`$range`,`$reverseArray`,`$reduce`,`$slice`,`$zip`)
 - Added string aggregation operators (`$indexOfBytes`,`$split`)
