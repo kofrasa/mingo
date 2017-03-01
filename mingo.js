@@ -69,89 +69,114 @@
       }
     }
 
-    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/includes
-    if (!Array.prototype.includes) {
-      Array.prototype.includes = function (searchElement) {
-        if (this === null) {
-          err('Array.prototype.includes called on null or undefined')
-        }
-
-        var O = Object(this)
-        var len = parseInt(O.length, 10) || 0
-        if (len === 0) {
-          return false
-        }
-        var n = parseInt(arguments[1], 10) || 0
-        var k
-        if (n >= 0) {
-          k = n
-        } else {
-          k = len + n
-          if (k < 0) { k = 0 }
-        }
-        var currentElement
-        while (k < len) {
-          currentElement = O[k]
-          if (searchElement === currentElement || isNaN(searchElement) && isNaN(currentElement)) { // NaN !== NaN
-            return true
-          }
-          k++
-        }
-        return false
-      }
-    }
-
-    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find
+    // https://tc39.github.io/ecma262/#sec-array.prototype.find
     if (!Array.prototype.find) {
-      Array.prototype.find = function (predicate) {
-        if (this === null) {
-          err('Array.prototype.find called on null or undefined')
-        }
-        if (!isFunction(predicate)) {
-          err('predicate must be a function')
-        }
-        var list = Object(this)
-        var length = list.length >>> 0
-        var thisArg = arguments[1]
-        var value
-
-        for (var i = 0; i < length; i++) {
-          value = list[i]
-          if (predicate.call(thisArg, value, i, list)) {
-            return value
+      Object.defineProperty(Array.prototype, 'find', {
+        value: function(predicate) {
+          if (this == null) {
+            throw new TypeError('"this" is null or not defined');
           }
+
+          var o = Object(this);
+          var len = o.length >>> 0;
+
+          if (typeof predicate !== 'function') {
+            throw new TypeError('predicate must be a function');
+          }
+
+          var thisArg = arguments[1];
+          var k = 0;
+
+          while (k < len) {
+            var kValue = o[k];
+            if (predicate.call(thisArg, kValue, k, o)) {
+              return kValue;
+            }
+            k++;
+          }
+          return undefined;
         }
-        return undefined
-      }
+      });
     }
-    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/findIndex
+
+    // https://tc39.github.io/ecma262/#sec-array.prototype.findIndex
     if (!Array.prototype.findIndex) {
       Object.defineProperty(Array.prototype, 'findIndex', {
-        value: function (predicate) {
-          'use strict'
+        value: function(predicate) {
           if (this == null) {
-            err('Array.prototype.findIndex called on null or undefined')
+            throw new TypeError('"this" is null or not defined');
           }
-          if (typeof predicate !== 'function') {
-            err('predicate must be a function')
-          }
-          var list = Object(this)
-          var length = list.length >>> 0
-          var thisArg = arguments[1]
-          var value
 
-          for (var i = 0; i < length; i++) {
-            value = list[i]
-            if (predicate.call(thisArg, value, i, list)) {
-              return i
+          var o = Object(this);
+          var len = o.length >>> 0;
+
+          if (typeof predicate !== 'function') {
+            throw new TypeError('predicate must be a function');
+          }
+
+          var thisArg = arguments[1];
+          var k = 0;
+          while (k < len) {
+            var kValue = o[k];
+            if (predicate.call(thisArg, kValue, k, o)) {
+              return k;
+            }
+            k++;
+          }
+          return -1;
+        }
+      });
+    }
+
+    // https://tc39.github.io/ecma262/#sec-array.prototype.includes
+    if (!Array.prototype.includes) {
+      Object.defineProperty(Array.prototype, 'includes', {
+        value: function(searchElement, fromIndex) {
+          if (this == null) {
+            throw new TypeError('"this" is null or not defined');
+          }
+
+          var o = Object(this);
+          var len = o.length >>> 0;
+
+          if (len === 0) {
+            return false;
+          }
+          var n = fromIndex | 0;
+          var k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
+
+          while (k < len) {
+            if (o[k] === searchElement) {
+              return true;
+            }
+            k++;
+          }
+          return false;
+        }
+      });
+    }
+
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
+    if (!Object.assign) {
+      Object.assign = function (target) {
+        // We must check against these specific cases.
+        if (isUnknown(target)) {
+          err('Cannot convert undefined or null to object')
+        }
+
+        var result = Object(target)
+        for (var index = 1; index < arguments.length; index++) {
+          var source = arguments[index]
+          if (!isUnknown(source)) {
+            for (var nextKey in source) {
+              if (has(source, nextKey)) {
+                result[nextKey] = source[nextKey]
+              }
             }
           }
-          return -1
-        },
-        enumerable: false,
-        configurable: false,
-        writable: false
-      })
+        }
+        return result
+      }
     }
 
     // http://tokenposts.blogspot.co.za/2012/04/javascript-objectkeys-browser.html
@@ -176,29 +201,6 @@
         for (var k in o) {
           if (has(o, k)) {
             result.push(o[k])
-          }
-        }
-        return result
-      }
-    }
-
-    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
-    if (!Object.assign) {
-      Object.assign = function (target) {
-        // We must check against these specific cases.
-        if (isUnknown(target)) {
-          err('Cannot convert undefined or null to object')
-        }
-
-        var result = Object(target)
-        for (var index = 1; index < arguments.length; index++) {
-          var source = arguments[index]
-          if (!isUnknown(source)) {
-            for (var nextKey in source) {
-              if (has(source, nextKey)) {
-                result[nextKey] = source[nextKey]
-              }
-            }
           }
         }
         return result
@@ -300,7 +302,7 @@
       for (var field in this._criteria) {
         if (has(this._criteria, field)) {
           var expr = this._criteria[field]
-          if (['$and', '$or', '$nor', '$where'].includes(field)) {
+          if (inArray(['$and', '$or', '$nor', '$where'], field)) {
             this._processOperator(field, field, expr)
           } else {
             // normalize expression
@@ -316,7 +318,7 @@
     },
 
     _processOperator: function (field, operator, value) {
-      if (ops(OP_QUERY).includes(operator)) {
+      if (inArray(ops(OP_QUERY), operator)) {
         this._compiled.push(queryOperators[operator](field, value))
       } else {
         err("Invalid query operator '" + operator + "' detected")
@@ -565,7 +567,7 @@
         for (var i = 0; i < this._operators.length; i++) {
           var operator = this._operators[i]
           var key = keys(operator)
-          if (key.length === 1 && ops(OP_PIPELINE).includes(key[0])) {
+          if (key.length === 1 && inArray(ops(OP_PIPELINE), key[0])) {
             key = key[0]
             var opt = { pipelineOp: key }
             if (query instanceof Mingo.Query) {
@@ -632,7 +634,7 @@
 
     // ensure correct type specified
     assert(
-      [OP_AGGREGATE, OP_GROUP, OP_PIPELINE, OP_PROJECTION, OP_QUERY].includes(opClass),
+      inArray([OP_AGGREGATE, OP_GROUP, OP_PIPELINE, OP_PROJECTION, OP_QUERY], opClass),
       "Could not identify operator class '" + opClass + "'"
     )
 
@@ -641,7 +643,7 @@
     // check for existing operators
     each(newOperators, function (fn, op) {
       assert(/^\$\w+$/.test(op), "Invalid operator name '" + op + "'")
-      assert(!operators.includes(op), 'Operator ' + op + ' is already defined for ' + opClass + ' operators')
+      assert(notInArray(operators, op), 'Operator ' + op + ' is already defined for ' + opClass + ' operators')
     })
 
     var wrapped = {}
@@ -847,11 +849,11 @@
         assert(check[0] !== check[1], 'Projection cannot have a mix of inclusion and exclusion.')
       })
 
-      if (objKeys.includes(settings.key)) {
+      if (inArray(objKeys, settings.key)) {
         var id = expr[settings.key]
         if (id === 0 || id === false) {
           objKeys = objKeys.filter(notInArray.bind(null, [settings.key]))
-          assert(!objKeys.includes(settings.key), 'Must not contain collections _id')
+          assert(notInArray(objKeys, settings.key), 'Must not contain collections _id')
           idOnlyExcludedExpression = isEmpty(objKeys)
         }
       } else {
@@ -889,7 +891,7 @@
             var operator = keys(subExpr)
             operator = operator.length > 1 ? false : operator[0]
 
-            if (ops(OP_PROJECTION).includes(operator)) {
+            if (inArray(ops(OP_PROJECTION), operator)) {
               // apply the projection operator on the operator expression for the key
               if (operator === '$slice') {
                 // $slice is handled differently for aggregation and projection operations
@@ -1118,7 +1120,7 @@
   }
 
   // //////// QUERY OPERATORS //////////
-  var queryOperators = {}
+  var queryOperators = {};
 
   var compoundOperators = {
 
@@ -1390,7 +1392,7 @@
       var matched = false
       if (isArray(a) && isArray(b)) {
         for (var i = 0; i < b.length; i++) {
-          if (isObject(b[i]) && keys(b[i]).includes('$elemMatch')) {
+          if (isObject(b[i]) && inArray(keys(b[i]), '$elemMatch')) {
             matched = matched || self.$elemMatch(a, b[i].$elemMatch)
           } else {
             // order of arguments matter
@@ -2853,7 +2855,7 @@
     opt.root = opt.root || clone(obj)
 
     var result = computeValue(obj, expr, null, opt)
-    return REDACT_VARS.includes(result)
+    return inArray(REDACT_VARS, result)
       ? redactVariables[result](obj, expr, opt)
       : result
   }
@@ -3091,7 +3093,7 @@
       }
 
       // ensure valid regex
-      if (exprKeys.includes('$regex')) {
+      if (inArray(exprKeys, '$regex')) {
         var regex = expr['$regex']
         var options = expr['$options'] || ''
         var modifiers = ''
@@ -3215,7 +3217,7 @@
    * @returns {*}
    */
   function accumulate (collection, field, expr) {
-    if (ops(OP_GROUP).includes(field)) {
+    if (inArray(ops(OP_GROUP), field)) {
       return groupOperators[field](collection, expr)
     }
 
@@ -3226,7 +3228,7 @@
           result[key] = accumulate(collection, key, expr[key])
           // must run ONLY one group operator per expression
           // if so, return result of the computed value
-          if (ops(OP_GROUP).includes(key)) {
+          if (inArray(ops(OP_GROUP), key)) {
             result = result[key]
             // if there are more keys in expression this is bad
             if (keys(expr).length > 1) {
@@ -3255,12 +3257,12 @@
     opt.root = opt.root || clone(obj)
 
     // if the field of the object is a valid operator
-    if (ops(OP_AGGREGATE).includes(field)) {
+    if (inArray(ops(OP_AGGREGATE), field)) {
       return aggregateOperators[field](obj, expr, opt)
     }
 
     // we also handle $group accumulator operators
-    if (ops(OP_GROUP).includes(field)) {
+    if (inArray(ops(OP_GROUP), field)) {
       // we first fully resolve the expression
       obj = computeValue(obj, expr, null, opt)
       assert(isArray(obj), 'Must use collection type with ' + field + ' operator')
@@ -3272,9 +3274,9 @@
     // field not used in this case
     if (isString(expr) && expr.length > 0 && expr[0] === '$') {
       // we return system variables as literals
-      if (SYS_VARS.includes(expr)) {
+      if (inArray(SYS_VARS, expr)) {
         return systemVariables[expr](obj, null, opt)
-      } else if (REDACT_VARS.includes(expr)) {
+      } else if (inArray(REDACT_VARS, expr)) {
         return expr
       }
 
@@ -3304,7 +3306,7 @@
             result[key] = computeValue(obj, expr[key], key, opt)
             // must run ONLY one aggregate operator per expression
             // if so, return result of the computed value
-            if (ops(OP_AGGREGATE).includes(key)) {
+            if (inArray(ops(OP_AGGREGATE), key)) {
               // there should be only one operator
               assert(keys(expr).length === 1, "Invalid aggregation expression '" + stringify(expr) + "'")
               result = result[key]
@@ -3343,8 +3345,8 @@
   function isNull (v) { return isType(v, 'null') }
   function isUndefined (v) { return isType(v, 'undefined') }
   function isUnknown (v) { return isNull(v) || isUndefined(v) }
-  function notInArray (arr, item) { return !arr.includes(item) }
   function inArray (arr, item) { return arr.includes(item) }
+  function notInArray (arr, item) { return !arr.includes(item) }
   function truthy (arg) { return !!arg }
   function falsey (arg) { return !arg }
   function isEmpty (x) {
@@ -3470,7 +3472,7 @@
     if (vtype === 'number' && isNaN(a) && isNaN(b)) return true
 
     // leverage toString for Date and RegExp types
-    if (['date', 'regexp'].includes(vtype)) return a.toString() === b.toString()
+    if (inArray(['date', 'regexp'], vtype)) return a.toString() === b.toString()
 
     var i // loop counter
     var len // loop length
