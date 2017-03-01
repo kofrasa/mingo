@@ -5,7 +5,7 @@
 ;(function (root) {
   'use strict'
 
-  var VERSION = '1.0.0'
+  var VERSION = '1.0.1'
 
   // global on the server, window in the browser
   var Mingo = {}
