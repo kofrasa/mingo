@@ -1,6 +1,9 @@
 Changelog
 =========
 
+## v1.0.0 / 2017-03-01
+- Updated polyfills to fix failing build on older node versions
+
 ## v1.0.0 / 2017-02-28
 - Added array aggregation operators
   (`$arrayElemAt`,`$concatArrays`,`$filter`,`$indexOfArray`,`$isArray`,`$range`,`$reverseArray`,`$reduce`,`$slice`,`$zip`)
