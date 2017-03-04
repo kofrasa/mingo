@@ -22,7 +22,7 @@ exports.tryExamples = function (examples, operator) {
     examples.forEach(function (val) {
       var input = val[0]
       var output = val[1]
-      
+
       if (val[2] === true) { // Error
         t.throws(function () {
           _.computeValue({}, input, operator)

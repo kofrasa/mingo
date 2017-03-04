@@ -1,0 +1,10 @@
+
+
+// Export the Mingo object for Node.js
+if (typeof module !== 'undefined' && module.exports && typeof require !== 'undefined') {
+  module.exports = Mingo
+} else {
+  root.Mingo = Mingo
+}
+
+}(this))

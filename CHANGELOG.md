@@ -1,6 +1,9 @@
 Changelog
 =========
 
+## v1.1.0 / 2017-xx-xx
+- Renamed `Mingo.OP_XXX` functions to `Mingo.KEY_XXX`
+
 ## v1.0.1 / 2017-03-01
 - Updated polyfills to fix failing build on older node versions
 

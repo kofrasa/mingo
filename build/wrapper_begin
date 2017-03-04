@@ -1,0 +1,23 @@
+// Mingo.js
+// Copyright (c) @YEAR Francis Asante <kofrasa@gmail.com>
+// MIT
+
+;(function(root){
+
+'use strict'
+
+// global on the server, window in the browser
+var Mingo = {}
+var previousMingo
+
+// backup previous Mingo
+if (root !== null) {
+  previousMingo = root.Mingo
+}
+
+Mingo.noConflict = function () {
+  root.Mingo = previousMingo
+  return Mingo
+}
+
+Mingo.VERSION = '@VERSION'
