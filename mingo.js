@@ -1326,68 +1326,6 @@ Mingo.Query.prototype = {
 
 
 /**
- * Performs a query on a collection and returns a cursor object.
- *
- * @param collection
- * @param criteria
- * @param projection
- * @returns {Mingo.Cursor}
- */
-Mingo.find = function (collection, criteria, projection) {
-  return (new Mingo.Query(criteria)).find(collection, projection)
-}
-
-/**
- * Returns a new array without objects which match the criteria
- *
- * @param collection
- * @param criteria
- * @returns {Array}
- */
-Mingo.remove = function (collection, criteria) {
-  return (new Mingo.Query(criteria)).remove(collection)
-}
-
-/**
- * Return the result collection after running the aggregation pipeline for the given collection
- *
- * @param collection
- * @param pipeline
- * @returns {Array}
- */
-Mingo.aggregate = function (collection, pipeline) {
-  if (!isArray(pipeline)) {
-    err('Aggregation pipeline must be an array')
-  }
-  return (new Mingo.Aggregator(pipeline)).run(collection)
-}
-
-/**
- * Mixin for Collection types that provide a method `toJSON() -> Array[Object]`
- */
-Mingo.CollectionMixin = {
-
-  /**
-   * Runs a query and returns a cursor to the result
-   * @param criteria
-   * @param projection
-   * @returns {Mingo.Cursor}
-   */
-  query: function (criteria, projection) {
-    return Mingo.find(this.toJSON(), criteria, projection)
-  },
-
-  /**
-   * Runs the given aggregation operators on this collection
-   * @params pipeline
-   * @returns {Array}
-   */
-  aggregate: function (pipeline) {
-    return Mingo.aggregate.call(null, this.toJSON(), pipeline)
-  }
-}
-
-/**
  * Group Accumulator Operators. https://docs.mongodb.com/manual/reference/operator/aggregation-group/
  */
 
@@ -1610,6 +1548,47 @@ var pipelineOperators = {
         }
       }
       result.push(obj)
+    })
+
+    return result
+  },
+
+  /**
+   * Performs a left outer join to another collection in the same database to filter in documents from the “joined” collection for processing.
+   *
+   * @param collection
+   * @param expr
+   */
+  $lookup: function (collection, expr) {
+    var joinColl = expr.from
+    var localField = expr.localField
+    var foreignField = expr.foreignField
+    var asField = expr.as
+
+    var errorMsg = "Invalid $lookup expression. "
+    assert(isArray(joinColl), errorMsg + "'from' must be an array")
+    assert(isString(foreignField), errorMsg + "'foreignField' must be a string")
+    assert(isString(localField), errorMsg + "'localField' must be a string")
+    assert(isString(asField), errorMsg + "'as' must be a string")
+
+    var result = []
+    var hash = {}
+    var getHash = function (v) { return hashcode(isNil(v)? null : v) }
+
+    each(joinColl, function (obj, i) {
+      var k = getHash(obj[foreignField])
+      hash[k] = hash[k] || []
+      hash[k].push(i)
+    })
+
+    each(collection, function (obj) {
+      var k = getHash(obj[localField])
+      var indexes = hash[k] || []
+      var newObj = clone(obj)
+      newObj[asField] = map(indexes, function (i) {
+        return clone(joinColl[i])
+      })
+      result.push(newObj)
     })
 
     return result
@@ -1923,7 +1902,7 @@ var pipelineOperators = {
     return collection.map(function (obj) {
       return redactObj(clone(obj), expr)
     })
-  }
+  },
 }
 
 /**
@@ -3573,7 +3552,7 @@ Mingo.addOperators = function (opClass, fn) {
       each(newOperators, function (fn, op) {
         wrapped[op] = (function (f, ctx) {
           return function () {
-            var args = Array.prototype.slice.call(arguments)
+            var args = ArrayProto.slice.call(arguments)
             return f.apply(ctx, args)
           }
         }(fn, newOperators))
@@ -3582,6 +3561,68 @@ Mingo.addOperators = function (opClass, fn) {
 
   // toss the operator salad :)
   Object.assign(OPERATORS[opClass], wrapped)
+}
+
+/**
+ * Performs a query on a collection and returns a cursor object.
+ *
+ * @param collection
+ * @param criteria
+ * @param projection
+ * @returns {Mingo.Cursor}
+ */
+Mingo.find = function (collection, criteria, projection) {
+  return (new Mingo.Query(criteria)).find(collection, projection)
+}
+
+/**
+ * Returns a new array without objects which match the criteria
+ *
+ * @param collection
+ * @param criteria
+ * @returns {Array}
+ */
+Mingo.remove = function (collection, criteria) {
+  return (new Mingo.Query(criteria)).remove(collection)
+}
+
+/**
+ * Return the result collection after running the aggregation pipeline for the given collection
+ *
+ * @param collection
+ * @param pipeline
+ * @returns {Array}
+ */
+Mingo.aggregate = function (collection, pipeline) {
+  if (!isArray(pipeline)) {
+    err('Aggregation pipeline must be an array')
+  }
+  return (new Mingo.Aggregator(pipeline)).run(collection)
+}
+
+/**
+ * Mixin for Collection types that provide a method `toJSON() -> Array[Object]`
+ */
+Mingo.CollectionMixin = {
+
+  /**
+   * Runs a query and returns a cursor to the result
+   * @param criteria
+   * @param projection
+   * @returns {Mingo.Cursor}
+   */
+  query: function (criteria, projection) {
+    return Mingo.find(this.toJSON(), criteria, projection)
+  },
+
+  /**
+   * Runs the given aggregation operators on this collection
+   * @params pipeline
+   * @returns {Array}
+   */
+  aggregate: function (pipeline) {
+    return Mingo.aggregate.call(null, this.toJSON(), pipeline)
+  }
 }
 
 

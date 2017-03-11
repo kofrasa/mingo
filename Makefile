@@ -6,7 +6,6 @@ SRC = lib/common.js \
 	lib/aggregator.js \
 	lib/cursor.js \
 	lib/query.js \
-	lib/index.js \
 	lib/operators/group.js \
 	lib/operators/pipeline.js \
 	lib/operators/projection.js \
@@ -22,7 +21,8 @@ SRC = lib/common.js \
 	lib/operators/aggregation/string.js \
 	lib/operators/aggregation/variable.js \
 	lib/operators/aggregation/index.js \
-	lib/operators/index.js
+	lib/operators/index.js \
+	lib/index.js
 
 YEAR = $(shell date +%Y)
 VERSION = $(shell cat VERSION)

@@ -1,8 +1,9 @@
 Changelog
 =========
 
-## v1.1.0 / 2017-xx-xx
-- Renamed `Mingo.OP_XXX` functions to `Mingo.KEY_XXX`
+## v1.1.0 / 2017-03-11
+- Renamed `Mingo.OP_<name>` functions to `Mingo.KEY_<name>`
+- Added pipeline stage operator (`$lookup`)
 
 ## v1.0.1 / 2017-03-01
 - Updated polyfills to fix failing build on older node versions
