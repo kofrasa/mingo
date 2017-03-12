@@ -29,7 +29,7 @@ exports.tryExamples = function (examples, operator) {
         }, 'Error: ' + output)
       } else {
         var result = _.computeValue({}, input, operator)
-        t.deepEqual(result, val[1], operator + ':\t' + _.stringify(input) + '\t=>\t' + _.stringify(output))
+        t.deepEqual(result, val[1], operator + ':\t' + JSON.stringify(input) + '\t=>\t' + JSON.stringify(output))
       }
     })
     t.end()

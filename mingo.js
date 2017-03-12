@@ -20,7 +20,7 @@ Mingo.noConflict = function () {
   return Mingo
 }
 
-Mingo.VERSION = '1.1.0'
+Mingo.VERSION = '1.1.1'
 
 /**
  * Common references
@@ -167,7 +167,7 @@ if (typeof Object.assign != 'function') {
       if (nextSource != null) { // Skip over if undefined or null
         for (var nextKey in nextSource) {
           // Avoid bugs when hasOwnProperty is shadowed
-          if (ObjectProto.has.call(nextSource, nextKey)) {
+          if (ObjectProto.hasOwnProperty.call(nextSource, nextKey)) {
             to[nextKey] = nextSource[nextKey]
           }
         }
@@ -186,7 +186,7 @@ if (!Object.keys) {
 
     var result = []
     for (var k in o) {
-      if (ObjectProto.has.call(o, k)) {
+      if (ObjectProto.hasOwnProperty.call(o, k)) {
         result.push(k)
       }
     }
@@ -202,7 +202,7 @@ if (!Object.values) {
     }
     var result = []
     for (var k in o) {
-      if (ObjectProto.has.call(o, k)) {
+      if (ObjectProto.hasOwnProperty.call(o, k)) {
         result.push(o[k])
       }
     }
@@ -212,23 +212,6 @@ if (!Object.values) {
 
 function util () {
   return {
-    'array': array,
-    'assert': assert,
-    'assertExists': assertExists,
-    'assign': Object.assign,
-    'clone': clone,
-    'each': each,
-    'err': err,
-    'excludes': notInArray,
-    'falsey': falsey,
-    'flatten': flatten,
-    'getType': getType,
-    'groupBy': groupBy,
-    'has': has,
-    'hashcode': hashcode,
-    'includes': inArray,
-    'intersection': intersection,
-    'into': into,
     'isArray': isArray,
     'isBoolean': isBoolean,
     'isDate': isDate,
@@ -242,15 +225,7 @@ function util () {
     'isObjectLike': isObjectLike,
     'isRegExp': isRegExp,
     'isString': isString,
-    'isUndefined': isUndefined,
-    'isUnknown': isNil,
-    'keys': keys,
-    'map': map,
-    'stringify': stringify, // common.js
-    'sortBy': sortBy,
-    'truthy': truthy,
-    'union': union,
-    'unique': unique
+    'isUndefined': isUndefined
   }
 }
 
@@ -301,8 +276,8 @@ function isEmpty (x) {
 }
 // TODO: convert arguments to array
 function array (x) { return isArray(x) ? x : [x] }
-function getType (value) { return Object.prototype.toString.call(value).match(/\s(\w+)/)[1].toLowerCase() }
-function has (obj, prop) { return Object.prototype.hasOwnProperty.call(obj, prop) }
+function getType (value) { return ObjectProto.toString.call(value).match(/\s(\w+)/)[1].toLowerCase() }
+function has (obj, prop) { return ObjectProto.hasOwnProperty.call(obj, prop) }
 function err (s) { throw new Error(s) }
 function keys (o) { return Object.keys(o) }
 
@@ -465,7 +440,7 @@ function unique (xs) {
   var h = {}
   var arr = []
   each(xs, function (item) {
-    var k = hashcode(item)
+    var k = getHash(item)
     if (!has(h, k)) {
       arr.push(item)
       h[k] = 0
@@ -481,7 +456,7 @@ function encode (value) {
 
 // http://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript-jquery
 // http://werxltd.com/wp/2010/05/13/javascript-implementation-of-javas-string-hashcode-method/
-function hashcode (value) {
+function getHash (value) {
   var hash = 0, i, chr, len, s = encode(value)
   if (s.length === 0) return hash
   for (i = 0, len = s.length; i < len; i++) {
@@ -505,7 +480,7 @@ function sortBy (collection, fn, ctx) {
   for (var i = 0; i < len; i++) {
     val = collection[i]
     key = fn.call(ctx, val, i)
-    hash = hashcode(val)
+    hash = getHash(val)
     if (!has(sortKeys, hash)) {
       sortKeys[hash] = [key, i]
     }
@@ -513,8 +488,8 @@ function sortBy (collection, fn, ctx) {
   }
   // use native array sorting but enforce stableness
   sorted.sort(function (a, b) {
-    var A = sortKeys[hashcode(a)]
-    var B = sortKeys[hashcode(b)]
+    var A = sortKeys[getHash(a)]
+    var B = sortKeys[getHash(b)]
     if (A[0] < B[0]) return -1
     if (A[0] > B[0]) return 1
     if (A[1] < B[1]) return -1
@@ -541,7 +516,7 @@ function groupBy (collection, fn, ctx) {
 
   each(collection, function (obj) {
     var key = fn.call(ctx, obj)
-    var hash = hashcode(key)
+    var hash = getHash(key)
     var index = -1
 
     if (isUndefined(lookup[hash])) {
@@ -1573,16 +1548,16 @@ var pipelineOperators = {
 
     var result = []
     var hash = {}
-    var getHash = function (v) { return hashcode(isNil(v)? null : v) }
+    function hashCode (v) { return getHash(isNil(v)? null : v) }
 
     each(joinColl, function (obj, i) {
-      var k = getHash(obj[foreignField])
+      var k = hashCode(obj[foreignField])
       hash[k] = hash[k] || []
       hash[k].push(i)
     })
 
     each(collection, function (obj) {
-      var k = getHash(obj[localField])
+      var k = hashCode(obj[localField])
       var indexes = hash[k] || []
       var newObj = clone(obj)
       newObj[asField] = map(indexes, function (i) {
@@ -1794,10 +1769,10 @@ var pipelineOperators = {
           return resolve(obj, key)
         })
         var sortedIndex = {}
-        var findIndex = function (k) { return sortedIndex[hashcode(k)] }
+        var findIndex = function (k) { return sortedIndex[getHash(k)] }
 
         var indexKeys = sortBy(grouped.keys, function (item, i) {
-          sortedIndex[hashcode(item)] = i
+          sortedIndex[getHash(item)] = i
           return item
         })
 
