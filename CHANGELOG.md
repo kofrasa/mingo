@@ -1,6 +1,10 @@
 Changelog
 =========
 
+## v1.1.1 / 2017-03-12
+- Fix incorrect method call for ObjectProto
+- Limit exposed util methods to type checking
+
 ## v1.1.0 / 2017-03-11
 - Renamed `Mingo.OP_<name>` functions to `Mingo.KEY_<name>`
 - Added pipeline stage operator (`$lookup`)
