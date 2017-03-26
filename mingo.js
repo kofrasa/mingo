@@ -20,7 +20,7 @@ Mingo.noConflict = function () {
   return Mingo
 }
 
-Mingo.VERSION = '1.1.1'
+Mingo.VERSION = '1.1.2'
 
 /**
  * Common references
@@ -689,53 +689,35 @@ function resolveObj (obj, selector) {
   // get the next part of the selector
   var next = names.length === 1 || names.slice(1).join('.')
   var isIndex = key.match(/^\d+$/) !== null
+  var hasNext = names.length > 1
   var result
-  var val
+  var value
 
   try {
-    if (names.length === 1) {
-
-      if (isArray(obj)) {
-        if (isIndex) {
-          result = getValue(obj, key)
-          assertExists(result)
-          result = [result]
-        } else {
-          result = []
-          each(obj, function (item) {
-            val = resolveObj(item, selector)
-            if (!isUndefined(val)) result.push(val)
-          })
-          assert(result.length > 0)
+    if (isArray(obj)) {
+      if (isIndex) {
+        result = getValue(obj, key)
+        if (hasNext) {
+          result = resolveObj(result, next)
         }
+        assertExists(result)
+        result = [result]
       } else {
-        val = getValue(obj, key)
-        assertExists(val)
-        result = {}
-        result[key] = val
+        result = []
+        each(obj, function (item) {
+          value = resolveObj(item, selector)
+          if (!isUndefined(value)) result.push(value)
+        })
+        assert(result.length > 0)
       }
     } else {
-      if (isArray(obj)) {
-        if (isIndex) {
-          result = getValue(obj, key)
-          result = resolveObj(result, next)
-          assertExists(result)
-          result = [result]
-        } else {
-          result = []
-          each(obj, function (item) {
-            val = resolveObj(item, selector)
-            if (!isUndefined(val)) result.push(val)
-          })
-          assert(result.length > 0)
-        }
-      } else {
-        val = getValue(obj, key)
-        val = resolveObj(val, next)
-        assertExists(val)
-        result = {}
-        result[key] = val
+      value = getValue(obj, key)
+      if (hasNext) {
+        value = resolveObj(value, next)
       }
+      assertExists(value)
+      result = {}
+      result[key] = value
     }
   } catch (e) {
     result = undefined
@@ -1550,21 +1532,46 @@ var pipelineOperators = {
     var hash = {}
     function hashCode (v) { return getHash(isNil(v)? null : v) }
 
-    each(joinColl, function (obj, i) {
-      var k = hashCode(obj[foreignField])
-      hash[k] = hash[k] || []
-      hash[k].push(i)
-    })
-
-    each(collection, function (obj) {
-      var k = hashCode(obj[localField])
-      var indexes = hash[k] || []
-      var newObj = clone(obj)
-      newObj[asField] = map(indexes, function (i) {
-        return clone(joinColl[i])
+    if (joinColl.length <= collection.length) {
+      each(joinColl, function (obj, i) {
+        var k = hashCode(obj[foreignField])
+        hash[k] = hash[k] || []
+        hash[k].push(i)
       })
-      result.push(newObj)
-    })
+
+      each(collection, function (obj) {
+        var k = hashCode(obj[localField])
+        var indexes = hash[k] || []
+        var newObj = clone(obj)
+        newObj[asField] = map(indexes, function (i) {
+          return clone(joinColl[i])
+        })
+        result.push(newObj)
+      })
+
+    } else {
+
+      each(collection, function (obj, i) {
+        var k = hashCode(obj[localField])
+        hash[k] = hash[k] || []
+        hash[k].push(i)
+      })
+
+      var tempResult = {}
+      each(joinColl, function (obj) {
+        var k = hashCode(obj[foreignField])
+        var indexes = hash[k] || []
+        each(indexes, function (i) {
+          var newObj = tempResult[i] || clone(collection[i])
+          newObj[asField] = newObj[asField] || []
+          newObj[asField].push(clone(obj))
+          tempResult[i] = newObj
+        })
+      })
+      for (var i = 0, len = keys(tempResult).length; i < len; i++) {
+        result.push(tempResult[i])
+      }
+    }
 
     return result
   },
@@ -1818,8 +1825,7 @@ var pipelineOperators = {
    */
   $sample: function (collection, expr) {
     var size = expr['size']
-    assert(isNumber(size),
-    '$sample size must be a positive integer')
+    assert(isNumber(size), '$sample size must be a positive integer')
 
     var result = []
     for (var i = 0; i < size; i++) {
@@ -1861,8 +1867,7 @@ var pipelineOperators = {
     var result = []
     each(collection, function (obj) {
       obj = computeValue(obj, newRoot, null)
-      assert(isObject(obj),
-        '$replaceRoot expression must return a valid JS object')
+      assert(isObject(obj), '$replaceRoot expression must return a valid JS object')
       result.push(obj)
     })
     return result
@@ -2714,9 +2719,11 @@ var arrayOperators = {
     if (isNil(arr)) return null
     assert(isArray(arr), '$reverseArray expression must resolve to an array')
 
-    arr = clone(arr)
-    arr.reverse()
-    return arr
+    var result = []
+    for (var i = arr.length - 1; i > -1; i--) {
+      result.push(arr[i])
+    }
+    return result
   },
 
   /**
@@ -2758,7 +2765,7 @@ var arrayOperators = {
    */
   $slice: function (obj, expr) {
     var arr = computeValue(obj, expr, null)
-    return slice(clone(arr[0]), arr[1], arr[2])
+    return slice(arr[0], arr[1], arr[2])
   },
 
   /**

@@ -1,6 +1,11 @@
 Changelog
 =========
 
+## v1.1.2 / 2017-03-30
+- Optimize `$lookup` implementation
+- Avoid reversing original input to `$reverseArray`
+- Refactor some methods
+
 ## v1.1.1 / 2017-03-12
 - Fix incorrect method call for ObjectProto
 - Limit exposed util methods to type checking

@@ -17,7 +17,7 @@ gulp.task('test', function (cb) {
 })
 
 gulp.task('watch', function () {
-  gulp.watch('lib/**/*.js', ['build'])
+  gulp.watch('lib/**/*.js', ['build', 'test'])
   gulp.watch('test/*.js', ['test'])
 })
 
