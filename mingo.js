@@ -533,10 +533,38 @@ function groupBy (collection, fn, ctx) {
   return result
 }
 
+/**
+ * Push elements in given array into target array
+ *
+ * @param {*} target The array to push into
+ * @param {*} xs The array of elements to push
+ */
 function into (target, xs) {
   ArrayProto.push.apply(target, xs)
 }
 
+/**
+ * Find the insert index for the given key in a sorted array.
+ *
+ * @param {*} array The sorted array to search
+ * @param {*} key The search key
+ */
+function findInsertIndex(array, key) {
+  // uses binary search
+  var lo = 0
+  var hi = array.length - 1
+  while (lo <= hi) {
+    var mid = lo + (hi - lo) / 2
+    if (key < array[mid]) {
+      hi = mid - 1
+    } else if (key > array[mid]) {
+      lo = mid + 1
+    } else {
+      return mid
+    }
+  }
+  return lo
+}
 /**
  * Internal functions
  */
@@ -1012,7 +1040,7 @@ Mingo.Aggregator.prototype.run = function (collection, query) {
           collection = pipelineOperators[key](collection, operator[key])
         }
       } else {
-        except("Invalid aggregation operator '" + key + "'")
+        err("Invalid aggregation operator '" + key + "'")
       }
     }
   }
@@ -1054,7 +1082,7 @@ Mingo.Cursor.prototype = {
     }
 
     if (!isArray(this.__collection)) {
-      except('Input collection is not of valid type. Must be an Array.')
+      err('Input collection is not of valid type. Must be an Array.')
     }
 
     // filter collection
@@ -1237,7 +1265,7 @@ Mingo.Query.prototype = {
     if (inArray(ops(KEY_QUERY), operator)) {
       this.__compiled.push(queryOperators[operator](field, value))
     } else {
-      except("Invalid query operator '" + operator + "' detected")
+      err("Invalid query operator '" + operator + "' detected")
     }
   },
 
@@ -1283,7 +1311,7 @@ Mingo.Query.prototype = {
 
 
 /**
- * Group Accumulator Operators. https://docs.mongodb.com/manual/reference/operator/aggregation-group/
+ * Group statge Accumulator Operators. https://docs.mongodb.com/manual/reference/operator/aggregation-group/
  */
 
 var groupOperators = {
@@ -1755,7 +1783,7 @@ var pipelineOperators = {
           result.push(tmp)
         })
       } else {
-        except("Target field '" + field + "' is not of type Array.")
+        err("Target field '" + field + "' is not of type Array.")
       }
     }
     return result
@@ -1883,6 +1911,71 @@ var pipelineOperators = {
       return redactObj(clone(obj), expr)
     })
   },
+
+  /**
+   * Categorizes incoming documents into groups, called buckets, based on a specified expression and bucket boundaries.
+   *
+   * https://docs.mongodb.com/manual/reference/operator/aggregation/bucket/
+   */
+  $bucket: function (collection, expr) {
+    var boundaries = expr.boundaries
+    var hasDefault = !isNil(expr['default'])
+    var lower = boundaries[0] // inclusive
+    var upper = boundaries[boundaries.length - 1] // exclusive
+    var outputExpr = expr.output || { 'count': { '$sum': 1 } }
+
+    assert(boundaries.length > 2, "$bucket 'boundaries' expression must have at least 3 elements")
+    var boundType = getType(lower)
+
+    for (var i = 0, len = boundaries.length - 1; i < len; i++) {
+      assert(boundType === getType(boundaries[i + 1]), "$bucket 'boundaries' must all be of the same type")
+      assert(boundaries[i] < boundaries[i + 1], "$bucket 'boundaries' must be sorted in ascending order")
+    }
+
+    if (hasDefault && getType(expr.default) === getType(lower)) {
+      assert(lower > expr.default || upper < expr.default, "$bucket 'default' expression must be out of boundaries range")
+    }
+
+    var groups = {}
+    if (hasDefault) {
+      groups[expr.default] = []
+    }
+    each(boundaries, function (b) {
+      groups[b] = []
+    })
+
+    each(collection, function (obj) {
+      var val = computeValue(obj, expr.groupBy, null)
+
+      if (hasDefault && (isNil(val) || val < lower || val >= upper)) {
+          groups[expr.default].push(obj)
+      } else if (val >= lower && val < upper) {
+        var index = findInsertIndex(boundaries, val)
+        var boundKey = boundaries[Math.max(0, index - 1)]
+        groups[boundKey].push(obj)
+      } else {
+        err("$bucket group expression must resolve to a value in range of boundaries")
+      }
+    })
+
+    // upper bound is exclusive so we remove it
+    boundaries.pop()
+    if (hasDefault) boundaries.push(expr.default)
+
+    return map(boundaries, function (key) {
+      return Object.assign(accumulate(groups[key], null, outputExpr), { '_id': key})
+    })
+  },
+
+  /**
+   * Processes multiple aggregation pipelines within a single stage on the same set of input documents.
+   * Enables the creation of multi-faceted aggregations capable of characterizing data across multiple dimensions, or facets, in a single stage.
+   */
+  $facet: function (collection, expr) {
+    return map(expr, function (pipeline) {
+      return Mingo.aggregate(pipeline, collection)
+    })
+  }
 }
 
 /**
@@ -2213,26 +2306,43 @@ var simpleOperators = {
   $type: function (a, b) {
     switch (b) {
       case 1:
+      case "double":
         return isNumber(a) && (a + '').indexOf('.') !== -1
       case 2:
+      case "string":
       case 5:
+      case "bindata":
         return isString(a)
       case 3:
+      case "object":
         return isObject(a)
       case 4:
+      case "array":
         return isArray(a)
+      case 6:
+      case "undefined":
+        return isUndefined(a)
       case 8:
+      case "bool":
         return isBoolean(a)
       case 9:
+      case "date":
         return isDate(a)
       case 10:
+      case "null":
         return isNull(a)
       case 11:
+      case "regex":
         return isRegExp(a)
       case 16:
+      case "int":
         return isNumber(a) && a <= 2147483647 && (a + '').indexOf('.') === -1
       case 18:
+      case "long":
         return isNumber(a) && a > 2147483647 && a <= 9223372036854775807 && (a + '').indexOf('.') === -1
+      case 19:
+      case "decimal":
+        return isNumber(a)
       default:
         return false
     }
