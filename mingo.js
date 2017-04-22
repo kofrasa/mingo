@@ -484,7 +484,7 @@ function sortBy (collection, fn, ctx) {
     if (!has(sortKeys, hash)) {
       sortKeys[hash] = [key, i]
     }
-    sorted.push(clone(val))
+    sorted.push(val)
   }
   // use native array sorting but enforce stableness
   sorted.sort(function (a, b) {
@@ -880,7 +880,7 @@ function normalize (expr) {
  */
 function computeValue (obj, expr, field, opt) {
   opt = opt || {}
-  opt.root = opt.root || clone(obj)
+  opt.root = opt.root || obj
 
   // if the field of the object is a valid operator
   if (inArray(ops(KEY_AGGREGATE), field)) {
@@ -891,7 +891,7 @@ function computeValue (obj, expr, field, opt) {
   if (inArray(ops(KEY_GROUP), field)) {
     // we first fully resolve the expression
     obj = computeValue(obj, expr, null, opt)
-    assert(isArray(obj), 'Must use collection type with ' + field + ' operator')
+    assert(isArray(obj), field + ' expression must resolve to an array')
     // we pass a null expression because all values have been resolved
     return groupOperators[field](obj, null, opt)
   }
@@ -942,7 +942,7 @@ function computeValue (obj, expr, field, opt) {
       }
       return result
     default:
-      return clone(expr)
+      return expr
   }
 }
 
@@ -999,7 +999,7 @@ function stddev (ctx) {
  */
 function redactObj (obj, expr, opt) {
   opt = opt || {}
-  opt.root = opt.root || clone(obj)
+  opt.root = opt.root || obj
 
   var result = computeValue(obj, expr, null, opt)
   return inArray(REDACT_VARS, result)
@@ -1218,6 +1218,29 @@ Mingo.Cursor.prototype = {
    */
   forEach: function (callback) {
     each(this._fetch(), callback)
+  }
+}
+
+if ('function' === typeof Symbol && Symbol.iterator) {
+  /**
+   * Applies an [ES2015 Iteration protocol][] compatible implementation
+   * [ES2015 Iteration protocol]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols
+   * @returns {Object}
+   */
+  Mingo.Cursor.prototype[Symbol.iterator] = function() {
+    var self = this
+
+    return {
+      next: function() {
+        if (!self.hasNext()) {
+          return {done: true}
+        }
+        return {
+          done: false,
+          value: self.next()
+        }
+      }
+    }
   }
 }
 
@@ -1714,14 +1737,13 @@ var pipelineOperators = {
         }
 
         // clone resolved values
-        value = clone(value)
         objValue = clone(resolveObj(obj, key))
 
         if (!isUndefined(objValue)) {
           Object.assign(cloneObj, objValue)
         }
         if (!isUndefined(value)) {
-          setValue(cloneObj, key, value)
+          setValue(cloneObj, key, clone(value))
         }
 
       })
@@ -1965,6 +1987,14 @@ var pipelineOperators = {
     return map(boundaries, function (key) {
       return Object.assign(accumulate(groups[key], null, outputExpr), { '_id': key})
     })
+  },
+
+  $bucketAuto: function (collection, expr) {
+    var outputExpr = expr.output || { 'count': { '$sum': 1 } }
+    var granularity = expr.granularity
+    var buckets = expr.buckets
+
+
   },
 
   /**

@@ -1,6 +1,9 @@
 Changelog
 =========
 
+## v1.x.0 / 2017-04-26
+- Added iterator method compatible with [ES2015 Iteration protocol](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols)
+
 ## v1.1.2 / 2017-03-30
 - Optimize `$lookup` implementation
 - Avoid reversing original input to `$reverseArray`
