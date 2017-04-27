@@ -181,6 +181,12 @@ test('Array Operators', function (t) {
 
     var result = Mingo.find(data, query).all()
     t.deepEqual(result, expected, message)
+
+    if (Array.from) {
+      var iterResult = Mingo.find(data, query)
+      t.deepEqual(Array.from(iterResult), expected, message)
+      t.deepEqual(Array.from(iterResult), [], message)
+    }
   })
 
   fixtures = [
@@ -195,6 +201,12 @@ test('Array Operators', function (t) {
     var query = row[0], message = row[1]
     var result = Mingo.find(data, query).all()
     t.deepEqual(result, data, message)
+
+    if (Array.from) {
+      var iterResult = Mingo.find(data, query)
+      t.deepEqual(Array.from(iterResult), data, message)
+      t.deepEqual(Array.from(iterResult), [], message)
+    }
   })
 
   t.end()
