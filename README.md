@@ -145,7 +145,10 @@ The collection to mixin needs to provide a method with signature `toJSON() -> Ar
 - [Custom Operators](https://github.com/kofrasa/mingo/wiki/Custom-Operators)
 
 ## Contributing
-- Submit pull requests to the [development](https://github.com/kofrasa/mingo/tree/development) branch
+* Submit pull requests to the [development](https://github.com/kofrasa/mingo/tree/development) branch
+* Before you submit pull requests
+    * Unstage files under **_dist/_**
+    * Squash changes into one commit
 
 ## License
 MIT
