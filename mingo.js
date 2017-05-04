@@ -469,22 +469,29 @@ function getHash (value) {
 
 /**
  * Returns a (stably) sorted copy of list, ranked in ascending order by the results of running each value through iteratee
- * @param  {Array}   collection [description]
+ * @param  {Array}   collection
  * @param  {Function} fn The function used to sort
  * @return {Array} Returns a new sorted array by the given iteratee
  */
 function sortBy (collection, fn, ctx) {
   var sortKeys = {}
   var sorted = []
-  var key, val, hash, len = collection.length
+  var len = collection.length
+  var result = []
+
   for (var i = 0; i < len; i++) {
-    val = collection[i]
-    key = fn.call(ctx, val, i)
-    hash = getHash(val)
-    if (!has(sortKeys, hash)) {
-      sortKeys[hash] = [key, i]
+    var obj = collection[i]
+    var key = fn.call(ctx, obj, i)
+    if (isNil(key)) {
+      // objects with null keys will go in first
+      result.push(obj)
+    } else {
+      var hash = getHash(obj)
+      if (!has(sortKeys, hash)) {
+        sortKeys[hash] = [key, i]
+      }
+      sorted.push(obj)
     }
-    sorted.push(val)
   }
   // use native array sorting but enforce stableness
   sorted.sort(function (a, b) {
@@ -496,8 +503,10 @@ function sortBy (collection, fn, ctx) {
     if (A[1] > B[1]) return 1
     return 0
   })
-  assert(sorted.length === collection.length, 'sortBy must retain collection length')
-  return sorted
+
+  into(result, sorted)
+  assert(result.length === collection.length, 'sortBy must retain collection length')
+  return result
 }
 
 /**
@@ -544,6 +553,21 @@ function into (target, xs) {
 }
 
 /**
+ * Compute the standard deviation of the dataset
+ * @param  {Object} ctx An object of the context. Includes "dataset:Array" and "sampled:Boolean".
+ * @return {Number}
+ */
+function stddev (ctx) {
+  var sum = ctx.dataset.reduce(function (acc, n) { return acc + n }, 0)
+  var N = ctx.dataset.length || 1
+  var err = ctx.sampled === true ? 1 : 0
+  var avg = sum / (N - err)
+  return Math.sqrt(
+    ctx.dataset.reduce(function (acc, n) { return acc + Math.pow(n - avg, 2) }, 0) / N
+  )
+}
+
+/**
  * Find the insert index for the given key in a sorted array.
  *
  * @param {*} array The sorted array to search
@@ -554,7 +578,7 @@ function findInsertIndex(array, key) {
   var lo = 0
   var hi = array.length - 1
   while (lo <= hi) {
-    var mid = lo + (hi - lo) / 2
+    var mid = Math.round(lo + (hi - lo) / 2)
     if (key < array[mid]) {
       hi = mid - 1
     } else if (key > array[mid]) {
@@ -565,7 +589,27 @@ function findInsertIndex(array, key) {
   }
   return lo
 }
+
 /**
+ * This is a generic memoization function
+ *
+ * Thi implementation uses a cache independent of the function being memoized
+ * to allow old values to be garbage collected when the memoized function goes out of scope.
+ *
+ * @param {*} fn The function object to memoize
+ */
+function memoize(fn) {
+  return (function (cache) {
+    return function () {
+        var args = ArrayProto.slice.call(arguments)
+        var key = getHash(args)
+        if (!has(cache, key)) {
+          cache[key] = fn.apply(this, args)
+        }
+        return cache[key]
+      }
+  })({})
+}/**
  * Internal functions
  */
 
@@ -586,7 +630,7 @@ Mingo.setup = function (options) {
  * Internally used Mingo helpers.
  * NB: This is not guaranteed to be available in later versions
  */
-Mingo._internal = function() {
+Mingo._internal = function () {
   return Object.assign(util(), {
     'computeValue': computeValue
   })
@@ -597,17 +641,28 @@ Mingo._internal = function() {
  * @type {Object}
  */
 var systemVariables = {
-  '$$ROOT': function (obj, expr, opt) { return opt.root },
-  '$$CURRENT': function (obj, expr, opt) { return obj }
+  '$$ROOT': function (obj, expr, opt) {
+    return opt.root
+  },
+  '$$CURRENT': function (obj /*, expr, opt */) {
+    return obj
+  }
 }
 
 /**
  * Implementation of $redact variables
+ *
+ * Each function accepts 3 arguments (obj, expr, opt)
+ *
  * @type {Object}
  */
 var redactVariables = {
-  '$$KEEP': function (obj, expr, opt) { return obj },
-  '$$PRUNE': function (obj, expr, opt) { return undefined },
+  '$$KEEP': function (obj) {
+    return obj
+  },
+  '$$PRUNE': function () {
+    return undefined
+  },
   '$$DESCEND': function (obj, expr, opt) {
     // traverse nested documents iff there is a $cond
     if (!has(expr, '$cond')) return obj
@@ -618,17 +673,17 @@ var redactVariables = {
       if (isObjectLike(current)) {
         if (isArray(current)) {
           result = []
-          each(current, function (elem, index) {
+          each(current, function (elem) {
             if (isObject(elem)) {
               elem = redactObj(elem, expr, opt)
             }
-            if (!isUndefined(elem)) result.push(elem)
+            if (!isNil(elem)) result.push(elem)
           })
         } else {
           result = redactObj(current, expr, opt)
         }
 
-        if (isUndefined(result)) {
+        if (isNil(result)) {
           delete obj[key] // pruned result
         } else {
           obj[key] = result
@@ -639,7 +694,7 @@ var redactVariables = {
   }
 }
 
-// system varibiables
+// system variables
 var SYS_VARS = keys(systemVariables)
 var REDACT_VARS = keys(redactVariables)
 
@@ -696,7 +751,7 @@ function resolve (obj, selector, deepFlag) {
       deepFlag = false // reset stop flag when we do a direct lookup
     }
 
-    if (isUndefined(value)) break
+    if (isNil(value)) break
   }
 
   return value
@@ -710,7 +765,7 @@ function resolve (obj, selector, deepFlag) {
  * @param selector {String} dot separated path to field
  */
 function resolveObj (obj, selector) {
-  if (isUndefined(obj)) return
+  if (isNil(obj)) return
 
   var names = selector.split('.')
   var key = names[0]
@@ -734,7 +789,7 @@ function resolveObj (obj, selector) {
         result = []
         each(obj, function (item) {
           value = resolveObj(item, selector)
-          if (!isUndefined(value)) result.push(value)
+          if (!isNil(value)) result.push(value)
         })
         assert(result.length > 0)
       }
@@ -838,7 +893,7 @@ function isSimpleType (value) {
 function normalize (expr) {
   // normalized primitives
   if (isSimpleType(expr)) {
-    return isRegExp(expr) ? {'$regex': expr} : {'$eq': expr}
+    return isRegExp(expr) ? { '$regex': expr } : { '$eq': expr }
   }
 
   // normalize object expression
@@ -848,7 +903,7 @@ function normalize (expr) {
 
     // no valid query operator found, so we do simple comparison
     if (notQuery) {
-      return {'$eq': expr}
+      return { '$eq': expr }
     }
 
     // ensure valid regex
@@ -907,7 +962,10 @@ function computeValue (obj, expr, field, opt) {
     }
 
     // handle selectors with explicit prefix
-    var sysVar = SYS_VARS.filter(function (v) { return expr.indexOf(v + '.') === 0 })
+    var sysVar = SYS_VARS.filter(function (v) {
+      return expr.indexOf(v + '.') === 0
+    })
+
     if (sysVar.length === 1) {
       sysVar = sysVar[0]
       if (sysVar === '$$ROOT') {
@@ -981,12 +1039,16 @@ function slice (xs, skip, limit) {
  * @return {Number}
  */
 function stddev (ctx) {
-  var sum = ctx.dataset.reduce(function (acc, n) { return acc + n }, 0)
+  var sum = ctx.dataset.reduce(function (acc, n) {
+    return acc + n
+  }, 0)
   var N = ctx.dataset.length || 1
   var err = ctx.sampled === true ? 1 : 0
   var avg = sum / (N - err)
   return Math.sqrt(
-    ctx.dataset.reduce(function (acc, n) { return acc + Math.pow(n - avg, 2) }, 0) / N
+    ctx.dataset.reduce(function (acc, n) {
+      return acc + Math.pow(n - avg, 2)
+    }, 0) / N
   )
 }
 
@@ -1243,7 +1305,6 @@ if ('function' === typeof Symbol && Symbol.iterator) {
     }
   }
 }
-
 /**
  * Query object to test collection elements with
  * @param criteria the pass criteria for the query
@@ -1323,7 +1384,7 @@ Mingo.Query.prototype = {
    */
   remove: function (collection) {
     var self = this
-    return collection.reduce(function(acc, obj) {
+    return collection.reduce(function (acc, obj) {
       if (!self.test(obj)) {
         acc.push(obj)
       }
@@ -1471,7 +1532,6 @@ var groupOperators = {
     return stddev({ dataset: dataset, sampled: true })
   }
 }
-
 /**
  * Pipeline Aggregation Stages. https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline/
  */
@@ -1581,7 +1641,10 @@ var pipelineOperators = {
 
     var result = []
     var hash = {}
-    function hashCode (v) { return getHash(isNil(v)? null : v) }
+
+    function hashCode (v) {
+      return getHash(isNil(v) ? null : v)
+    }
 
     if (joinColl.length <= collection.length) {
       each(joinColl, function (obj, i) {
@@ -1826,7 +1889,9 @@ var pipelineOperators = {
           return resolve(obj, key)
         })
         var sortedIndex = {}
-        var findIndex = function (k) { return sortedIndex[getHash(k)] }
+        var findIndex = function (k) {
+          return sortedIndex[getHash(k)]
+        }
 
         var indexKeys = sortBy(grouped.keys, function (item, i) {
           sortedIndex[getHash(item)] = i
@@ -1941,7 +2006,7 @@ var pipelineOperators = {
    */
   $bucket: function (collection, expr) {
     var boundaries = expr.boundaries
-    var hasDefault = !isNil(expr['default'])
+    var defaultKey = expr.default
     var lower = boundaries[0] // inclusive
     var upper = boundaries[boundaries.length - 1] // exclusive
     var outputExpr = expr.output || { 'count': { '$sum': 1 } }
@@ -1954,47 +2019,110 @@ var pipelineOperators = {
       assert(boundaries[i] < boundaries[i + 1], "$bucket 'boundaries' must be sorted in ascending order")
     }
 
-    if (hasDefault && getType(expr.default) === getType(lower)) {
+    if (!isNil(defaultKey) && getType(expr.default) === getType(lower)) {
       assert(lower > expr.default || upper < expr.default, "$bucket 'default' expression must be out of boundaries range")
     }
 
-    var groups = {}
-    if (hasDefault) {
-      groups[expr.default] = []
-    }
-    each(boundaries, function (b) {
-      groups[b] = []
+    var grouped = {}
+    each(boundaries, function (k) {
+      grouped[k] = []
     })
+    // add default key if provided
+    if (!isNil(defaultKey)) grouped[defaultKey] = []
 
     each(collection, function (obj) {
-      var val = computeValue(obj, expr.groupBy, null)
+      var key = computeValue(obj, expr.groupBy, null)
 
-      if (hasDefault && (isNil(val) || val < lower || val >= upper)) {
-          groups[expr.default].push(obj)
-      } else if (val >= lower && val < upper) {
-        var index = findInsertIndex(boundaries, val)
+      if (isNil(key) || key < lower || key >= upper) {
+        assert(!isNil(defaultKey), '$bucket require a default for out of range values')
+        grouped[defaultKey].push(obj)
+      } else if (key >= lower && key < upper) {
+        var index = findInsertIndex(boundaries, key)
         var boundKey = boundaries[Math.max(0, index - 1)]
-        groups[boundKey].push(obj)
+        grouped[boundKey].push(obj)
       } else {
-        err("$bucket group expression must resolve to a value in range of boundaries")
+        err("$bucket 'groupBy' expression must resolve to a value in range of boundaries")
       }
     })
 
     // upper bound is exclusive so we remove it
     boundaries.pop()
-    if (hasDefault) boundaries.push(expr.default)
+    if (!isNil(defaultKey)) boundaries.push(defaultKey)
 
     return map(boundaries, function (key) {
-      return Object.assign(accumulate(groups[key], null, outputExpr), { '_id': key})
+      var acc = accumulate(grouped[key], null, outputExpr)
+      return Object.assign(acc, { '_id': key })
     })
   },
 
   $bucketAuto: function (collection, expr) {
     var outputExpr = expr.output || { 'count': { '$sum': 1 } }
+    var groupByExpr = expr.groupBy
     var granularity = expr.granularity
-    var buckets = expr.buckets
+    var bucketCount = expr.buckets
 
+    assert(bucketCount > 0, "The $bucketAuto 'buckets' field must be greater than 0, but found: " + bucketCount)
 
+    var approxBucketSize = Math.round(collection.length / bucketCount)
+    if (approxBucketSize < 1) {
+      approxBucketSize = 1
+    }
+
+    var computeValueOptimized = memoize(computeValue)
+    var grouped = {}
+    var remaining = []
+    var sorted = sortBy(collection, function (o) {
+      var key = computeValueOptimized(o, groupByExpr, null)
+      if (isNil(key)) {
+        remaining.push(o)
+      } else {
+        grouped[key] || (grouped[key] = [])
+        grouped[key].push(o)
+      }
+      return key
+    })
+
+    var result = []
+    var index = 0 // counter for sorted collection
+    var len = sorted.length
+
+    for (var i = 0; i < bucketCount && index < len; i++) {
+      var boundaries = {}
+      var bucketItems = []
+
+      for (var j = 0; j < approxBucketSize && index < len; j++) {
+        var key = computeValueOptimized(sorted[index], groupByExpr, null)
+
+        if (isNil(key)) key = null
+
+        // populate current bucket with all values for current key
+        into(bucketItems, isNil(key) ? remaining : grouped[key])
+
+        // increase sort index by number of items added
+        index += (isNil(key) ? remaining.length : grouped[key].length)
+
+        // set the min key boundary if not already present
+        if (!has(boundaries, 'min')) boundaries['min'] = key
+
+        if (result.length > 0) {
+          var lastBucket = result[result.length - 1]
+          lastBucket['_id']['max'] = boundaries['min']
+        }
+      }
+
+      // if is last bucket add remaining items
+      if (i == bucketCount - 1) {
+        into(bucketItems, sorted.slice(index))
+      }
+
+      result.push(Object.assign(accumulate(bucketItems, null, outputExpr), { '_id': boundaries }))
+    }
+
+    if (result.length > 0) {
+      result[result.length - 1]['_id']['max'] = computeValueOptimized(sorted[sorted.length - 1], groupByExpr, null)
+    }
+
+    return result
   },
 
   /**
@@ -2003,7 +2131,7 @@ var pipelineOperators = {
    */
   $facet: function (collection, expr) {
     return map(expr, function (pipeline) {
-      return Mingo.aggregate(pipeline, collection)
+      return Mingo.aggregate(collection, pipeline)
     })
   }
 }
@@ -2042,8 +2170,7 @@ function accumulate (collection, field, expr) {
   }
 
   return undefined
-}
-/**
+}/**
  * Projection Operators. https://docs.mongodb.com/manual/reference/operator/projection/
  */
 
@@ -2072,7 +2199,7 @@ var projectionOperators = {
     var array = resolve(obj, field)
     var query = new Mingo.Query(expr)
 
-    if (isUndefined(array) || !isArray(array)) {
+    if (isNil(array) || !isArray(array)) {
       return undefined
     }
 
@@ -2127,8 +2254,7 @@ var projectionOperators = {
     var dataset = computeValue(obj, expr, field)
     return stddev({ dataset: dataset, sampled: true })
   }
-}
-/**
+}/**
  * Query and Projection Operators. https://docs.mongodb.com/manual/reference/operator/query/
  */
 
@@ -2176,7 +2302,7 @@ var simpleOperators = {
    * @returns {*|boolean}
    */
   $nin: function (a, b) {
-    return isUndefined(a) || !this.$in(a, b)
+    return isNil(a) || !this.$in(a, b)
   },
 
   /**
@@ -2271,7 +2397,7 @@ var simpleOperators = {
    * @returns {boolean}
    */
   $exists: function (a, b) {
-    return (b === false && isUndefined(a)) || (b === true && !isUndefined(a))
+    return ((b === false || b === 0) && isNil(a)) || ((b === true || b === 1) && !isNil(a))
   },
 
   /**
@@ -2351,7 +2477,7 @@ var simpleOperators = {
         return isArray(a)
       case 6:
       case "undefined":
-        return isUndefined(a)
+        return isNil(a)
       case 8:
       case "bool":
         return isBoolean(a)
@@ -3353,7 +3479,6 @@ var setOperators = {
     return args.every(truthy)
   }
 }
-
 var stringOperators = {
 
   /**
@@ -3394,13 +3519,13 @@ var stringOperators = {
     var end = arr[3]
 
     assert(
-      isUndefined(start) || (isNumber(start) && start >= 0 && Math.round(start) === start),
+      isNil(start) || (isNumber(start) && start >= 0 && Math.round(start) === start),
       '$indexOfBytes third operand must resolve to a non-negative integer'
     )
     start = start || 0
 
     assert(
-      isUndefined(end) || (isNumber(end) && end >= 0 && Math.round(end) === end),
+      isNil(end) || (isNumber(end) && end >= 0 && Math.round(end) === end),
       '$indexOfBytes fourth operand must resolve to a non-negative integer'
     )
     end = end || str.length
@@ -3491,14 +3616,14 @@ var stringOperators = {
     return isEmpty(value) ? '' : value.toUpperCase()
   }
 }
-
 /**
  * Aggregation framework variable operators
  */
 
 var variableOperators = {
   /**
-   * Applies a subexpression to each element of an array and returns the array of resulting values in order.
+   * Applies a sub-expression to each element of an array and returns the array of resulting values in order.
+   *
    * @param obj
    * @param expr
    * @returns {Array|*}
@@ -3531,7 +3656,8 @@ var variableOperators = {
   },
 
   /**
-   * Defines variables for use within the scope of a subexpression and returns the result of the subexpression.
+   * Defines variables for use within the scope of a sub-expression and returns the result of the sub-expression.
+   *
    * @param obj
    * @param expr
    * @returns {*}
