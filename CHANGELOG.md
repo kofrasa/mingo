@@ -1,8 +1,10 @@
 Changelog
 =========
 
-## v1.x.0 / 2017-04-26
+## v1.1.3 / 2017-06-22
 - Added iterator method compatible with [ES2015 Iteration protocol](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols)
+- Fix `$where` operator not executed last. https://github.com/kofrasa/mingo/pull/50
+- Fix matching against nested arrays. https://github.com/kofrasa/mingo/issues/51 
 
 ## v1.1.2 / 2017-03-30
 - Optimize `$lookup` implementation
