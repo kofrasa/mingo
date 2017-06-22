@@ -1327,10 +1327,15 @@ Mingo.Query.prototype = {
 
     assert(isObject(this.__criteria), 'Criteria must be of type Object')
 
+    var whereOperator;
+
     for (var field in this.__criteria) {
       if (has(this.__criteria, field)) {
         var expr = this.__criteria[field]
-        if (inArray(['$and', '$or', '$nor', '$where'], field)) {
+        // save $where operators to be executed after other operators
+        if ('$where' === field) {
+          whereOperator = {field: field, expr: expr};
+        } else if (inArray(['$and', '$or', '$nor'], field)) {
           this._processOperator(field, field, expr)
         } else {
           // normalize expression
@@ -1342,6 +1347,11 @@ Mingo.Query.prototype = {
           }
         }
       }
+
+      if(whereOperator) {
+        this._processOperator(whereOperator.field, whereOperator.field, whereOperator.expr);
+      }
+
     }
   },
 
