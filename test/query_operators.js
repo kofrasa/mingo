@@ -209,5 +209,10 @@ test('Array Operators', function (t) {
     }
   })
 
+  // https://github.com/kofrasa/mingo/issues/51
+  data = [{ "key0" : [ { "key1" : [ "value" ] }, { "key1" : [ "value1" ] } ] }]
+  result = Mingo.find(data, { "key0.key1": { "$eq": "value" } }).first()
+  t.deepEqual(result, data[0], "should match nested array of objects without indices")
+
   t.end()
 })

@@ -209,7 +209,6 @@ if (!Object.values) {
     return result
   }
 }
-
 function util () {
   return {
     'isArray': isArray,
@@ -271,8 +270,7 @@ function falsey (arg) { return !arg }
 function isEmpty (x) {
   return isNil(x) ||
     isArray(x) && x.length === 0 ||
-    isObject(x) && keys(x).length === 0 ||
-    !x
+    isObject(x) && keys(x).length === 0 || !x
 }
 // TODO: convert arguments to array
 function array (x) { return isArray(x) ? x : [x] }
@@ -451,7 +449,7 @@ function unique (xs) {
 
 // encode value using a simple optimistic scheme
 function encode (value) {
-  return JSON.stringify({'': value}) + getType(value) + value
+  return JSON.stringify({ '': value }) + getType(value) + value
 }
 
 // http://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript-jquery
@@ -469,8 +467,11 @@ function getHash (value) {
 
 /**
  * Returns a (stably) sorted copy of list, ranked in ascending order by the results of running each value through iteratee
+ *
+ * This implementation treats null/undefined sort keys as less than every other type
+ *
  * @param  {Array}   collection
- * @param  {Function} fn The function used to sort
+ * @param  {Function} fn The function used to resolve sort keys
  * @return {Array} Returns a new sorted array by the given iteratee
  */
 function sortBy (collection, fn, ctx) {
@@ -558,12 +559,16 @@ function into (target, xs) {
  * @return {Number}
  */
 function stddev (ctx) {
-  var sum = ctx.dataset.reduce(function (acc, n) { return acc + n }, 0)
+  var sum = ctx.dataset.reduce(function (acc, n) {
+    return acc + n
+  }, 0)
   var N = ctx.dataset.length || 1
   var err = ctx.sampled === true ? 1 : 0
   var avg = sum / (N - err)
   return Math.sqrt(
-    ctx.dataset.reduce(function (acc, n) { return acc + Math.pow(n - avg, 2) }, 0) / N
+    ctx.dataset.reduce(function (acc, n) {
+      return acc + Math.pow(n - avg, 2)
+    }, 0) / N
   )
 }
 
@@ -573,7 +578,7 @@ function stddev (ctx) {
  * @param {*} array The sorted array to search
  * @param {*} key The search key
  */
-function findInsertIndex(array, key) {
+function findInsertIndex (array, key) {
   // uses binary search
   var lo = 0
   var hi = array.length - 1
@@ -598,16 +603,16 @@ function findInsertIndex(array, key) {
  *
  * @param {*} fn The function object to memoize
  */
-function memoize(fn) {
+function memoize (fn) {
   return (function (cache) {
     return function () {
-        var args = ArrayProto.slice.call(arguments)
-        var key = getHash(args)
-        if (!has(cache, key)) {
-          cache[key] = fn.apply(this, args)
-        }
-        return cache[key]
+      var args = ArrayProto.slice.call(arguments)
+      var key = getHash(args)
+      if (!has(cache, key)) {
+        cache[key] = fn.apply(this, args)
       }
+      return cache[key]
+    }
   })({})
 }/**
  * Internal functions
@@ -716,6 +721,10 @@ function getValue (obj, field) {
   return obj[field]
 }
 
+function hasMeta (obj, value) {
+  return has(obj, '__mingo__') && isObject(value) && isEqual(Object.assign({}, obj.__mingo__, value), obj.__mingo__)
+}
+
 /**
  * Resolve the value of the field (dot separated) on the given object
  * @param obj {Object} the object context
@@ -727,7 +736,7 @@ function resolve (obj, selector, deepFlag) {
   var value = obj
 
   for (var i = 0; i < names.length; i++) {
-    var isText = isNull(names[i].match(/^\d+$/))
+    var isText = names[i].match(/^\d+$/) === null
 
     if (isText && isArray(value)) {
       // On the first iteration, we check if we received a stop flag.
@@ -740,6 +749,9 @@ function resolve (obj, selector, deepFlag) {
       value = value.map(function (item) {
         return resolve(item, names[i], true)
       })
+
+      // we mark this value as being multi-valued
+      value.__mingo__ = { isMulti: true }
 
       // we unwrap for arrays of unit length
       // this avoids excess wrapping when resolving deeply nested arrays
@@ -1348,7 +1360,7 @@ Mingo.Query.prototype = {
         }
       }
 
-      if(whereOperator) {
+      if (isObject(whereOperator)) {
         this._processOperator(whereOperator.field, whereOperator.field, whereOperator.expr);
       }
 
@@ -2271,14 +2283,28 @@ var projectionOperators = {
 var simpleOperators = {
 
   /**
-   * Checks that two values are equal. Pseudo operator introduced for convenience and consistency
+   * Checks that two values are equal.
    *
    * @param a         The lhs operand as resolved from the object by the given selector
    * @param b         The rhs operand provided by the user
    * @returns {*}
    */
   $eq: function (a, b) {
-    return isEqual(a, b) || (isArray(a) && a.findIndex(isEqual.bind(null, b)) !== -1)
+    // start with simple equality check
+    if (isEqual(a, b)) return true;
+
+    if (isArray(a)) {
+      // is multi-valued lhs so we check each separately
+      if (hasMeta(a, { isMulti: true })) {
+        for (var i = 0; i < a.length; i++) {
+          if (this.$eq(a[i], b)) return true;
+        }
+      } else {
+        // check one level deep
+        return a.findIndex(isEqual.bind(null, b)) !== -1
+      }
+    }
+    return false;
   },
 
   /**
