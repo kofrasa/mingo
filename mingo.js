@@ -20,7 +20,7 @@ Mingo.noConflict = function () {
   return Mingo
 }
 
-Mingo.VERSION = '1.1.4'
+Mingo.VERSION = '1.1.5'
 
 /**
  * Common references
