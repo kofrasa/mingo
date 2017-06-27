@@ -1,10 +1,14 @@
 Changelog
 =========
 
-## v1.1.5 / 2017-06-22
-- Added iterator method compatible with [ES2015 Iteration protocol](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols)
+## v1.2.0 / 2017-06-27
 - Fix `$where` operator not executed last. https://github.com/kofrasa/mingo/pull/50
-- Fix matching against nested arrays. https://github.com/kofrasa/mingo/issues/51 
+- Fix matching nested arrays. https://github.com/kofrasa/mingo/issues/51 
+- Added `$facet` and `$bucket` operators 
+- Added `$bucketAuto` operator without granularity support
+- Added string keys for `$type` operator
+- Added Cursor support for [ES2015 Iterator Protocol](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols)
+- Sort null/undefined values to front of sorted result
 
 ## v1.1.2 / 2017-03-30
 - Optimize `$lookup` implementation
