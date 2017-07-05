@@ -291,7 +291,10 @@ function keys (o) { return Object.keys(o) }
 function each (obj, callback, ctx) {
   assert(obj === Object(obj), "Cannot iterate over object of type '" + getType(obj) + "'")
   if (isArray(obj)) {
-    obj.forEach(callback, ctx)
+    for (var i = 0, len = obj.length; i < len; i++) {
+      callback.call(ctx, obj[i], i);
+    }
+    //obj.forEach(callback, ctx)
   } else {
     for (var k in obj) {
       if (has(obj, k)) {
