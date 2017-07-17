@@ -1,24 +1,18 @@
 // Mingo.js
 // Copyright (c) 2017 Francis Asante <kofrasa@gmail.com>
 // MIT
+(function (global, factory) {
+  if (typeof exports === 'object' && typeof module !== 'undefined') {
+    factory(exports)
+  } else if (typeof define === 'function' && define.amd) {
+    define(['exports'], factory)
+  } else {
+    factory((global.Mingo = global.Mingo || {}))
+  }
 
-;(function(root){
+}(this, (function (Mingo) {
 
 'use strict'
-
-// global on the server, window in the browser
-var Mingo = {}
-var previousMingo
-
-// backup previous Mingo
-if (root !== null) {
-  previousMingo = root.Mingo
-}
-
-Mingo.noConflict = function () {
-  root.Mingo = previousMingo
-  return Mingo
-}
 
 Mingo.VERSION = '1.2.0'
 
@@ -139,8 +133,12 @@ if (!Array.prototype.includes) {
       var n = fromIndex | 0
       var k = Math.max(n >= 0 ? n : len - Math.abs(n), 0)
 
+      function sameValueZero(x, y) {
+        return x === y || (typeof x === 'number' && typeof y === 'number' && isNaN(x) && isNaN(y))
+      }
+
       while (k < len) {
-        if (o[k] === searchElement) {
+        if (sameValueZero(o[k], searchElement)) {
           return true
         }
         k++
@@ -294,7 +292,6 @@ function each (obj, callback, ctx) {
     for (var i = 0, len = obj.length; i < len; i++) {
       callback.call(ctx, obj[i], i);
     }
-    //obj.forEach(callback, ctx)
   } else {
     for (var k in obj) {
       if (has(obj, k)) {
@@ -914,7 +911,7 @@ function normalize (expr) {
   // normalize object expression
   if (isObjectLike(expr)) {
     var exprKeys = keys(expr)
-    var notQuery = intersection(ops(KEY_QUERY), exprKeys).length === 0
+    var notQuery = intersection(ops(OP_QUERY), exprKeys).length === 0
 
     // no valid query operator found, so we do simple comparison
     if (notQuery) {
@@ -953,12 +950,12 @@ function computeValue (obj, expr, field, opt) {
   opt.root = opt.root || obj
 
   // if the field of the object is a valid operator
-  if (inArray(ops(KEY_AGGREGATE), field)) {
+  if (inArray(ops(OP_AGGREGATE), field)) {
     return aggregateOperators[field](obj, expr, opt)
   }
 
   // we also handle $group accumulator operators
-  if (inArray(ops(KEY_GROUP), field)) {
+  if (inArray(ops(OP_GROUP), field)) {
     // we first fully resolve the expression
     obj = computeValue(obj, expr, null, opt)
     assert(isArray(obj), field + ' expression must resolve to an array')
@@ -1005,7 +1002,7 @@ function computeValue (obj, expr, field, opt) {
           result[key] = computeValue(obj, expr[key], key, opt)
           // must run ONLY one aggregate operator per expression
           // if so, return result of the computed value
-          if (inArray(ops(KEY_AGGREGATE), key)) {
+          if (inArray(ops(OP_AGGREGATE), key)) {
             // there should be only one operator
             assert(keys(expr).length === 1, "Invalid aggregation expression '" + stringify(expr) + "'")
             result = result[key]
@@ -1109,7 +1106,7 @@ Mingo.Aggregator.prototype.run = function (collection, query) {
     for (var i = 0; i < this.__operators.length; i++) {
       var operator = this.__operators[i]
       var key = keys(operator)
-      if (key.length === 1 && inArray(ops(KEY_PIPELINE), key[0])) {
+      if (key.length === 1 && inArray(ops(OP_PIPELINE), key[0])) {
         key = key[0]
         if (query instanceof Mingo.Query) {
           collection = pipelineOperators[key].call(query, collection, operator[key])
@@ -1371,7 +1368,7 @@ Mingo.Query.prototype = {
   },
 
   _processOperator: function (field, operator, value) {
-    if (inArray(ops(KEY_QUERY), operator)) {
+    if (inArray(ops(OP_QUERY), operator)) {
       this.__compiled.push(queryOperators[operator](field, value))
     } else {
       err("Invalid query operator '" + operator + "' detected")
@@ -1800,7 +1797,7 @@ var pipelineOperators = {
           var operator = keys(subExpr)
           operator = operator.length > 1 ? false : operator[0]
 
-          if (inArray(ops(KEY_PROJECTION), operator)) {
+          if (inArray(ops(OP_PROJECTION), operator)) {
             // apply the projection operator on the operator expression for the key
             if (operator === '$slice') {
               // $slice is handled differently for aggregation and projection operations
@@ -2170,7 +2167,7 @@ var pipelineOperators = {
  * @returns {*}
  */
 function accumulate (collection, field, expr) {
-  if (inArray(ops(KEY_GROUP), field)) {
+  if (inArray(ops(OP_GROUP), field)) {
     return groupOperators[field](collection, expr)
   }
 
@@ -2181,7 +2178,7 @@ function accumulate (collection, field, expr) {
         result[key] = accumulate(collection, key, expr[key])
         // must run ONLY one group operator per expression
         // if so, return result of the computed value
-        if (inArray(ops(KEY_GROUP), key)) {
+        if (inArray(ops(OP_GROUP), key)) {
           result = result[key]
           // if there are more keys in expression this is bad
           if (keys(expr).length > 1) {
@@ -3746,15 +3743,14 @@ var aggregateOperators = Object.assign(
   stringOperators,
   variableOperators
 )
-
 /**
  * Keys specifying different operator classes
  */
-var KEY_QUERY = Mingo.KEY_QUERY = Mingo.OP_QUERY = 'query'
-var KEY_GROUP = Mingo.KEY_GROUP = Mingo.OP_GROUP = 'group'
-var KEY_AGGREGATE = Mingo.KEY_AGGREGATE = Mingo.OP_AGGREGATE = 'aggregate'
-var KEY_PIPELINE = Mingo.KEY_PIPELINE = Mingo.OP_PIPELINE = 'pipeline'
-var KEY_PROJECTION = Mingo.KEY_PROJECTION = Mingo.OP_PROJECTION = 'projection'
+var OP_QUERY = Mingo.OP_QUERY = 'query'
+var OP_GROUP = Mingo.OP_GROUP = 'group'
+var OP_AGGREGATE = Mingo.OP_AGGREGATE = 'aggregate'
+var OP_PIPELINE = Mingo.OP_PIPELINE = 'pipeline'
+var OP_PROJECTION = Mingo.OP_PROJECTION = 'projection'
 
 // operator definitions
 var OPERATORS = {
@@ -3768,7 +3764,7 @@ var OPERATORS = {
 /**
  * Returns the operators defined for the given operator key
  *
- * @param {String} opClass The operator class to query. See `Mingo.KEY_$XXX` members
+ * @param {String} opClass The operator class to query. See `Mingo.OP_$XXX` members
  */
 function ops (opClass) {
   return keys(OPERATORS[opClass])
@@ -3803,7 +3799,7 @@ Mingo.addOperators = function (opClass, fn) {
   var wrapped = {}
 
   switch (opClass) {
-    case KEY_QUERY:
+    case OP_QUERY:
       each(newOperators, function (fn, op) {
         wrapped[op] = (function (f, ctx) {
           return function (selector, value) {
@@ -3825,7 +3821,7 @@ Mingo.addOperators = function (opClass, fn) {
         }(fn, newOperators))
       })
       break
-    case KEY_PROJECTION:
+    case OP_PROJECTION:
       each(newOperators, function (fn, op) {
         wrapped[op] = (function (f, ctx) {
           return function (obj, expr, selector) {
@@ -3912,12 +3908,4 @@ Mingo.CollectionMixin = {
   }
 }
 
-
-// Export the Mingo object for Node.js
-if (typeof module !== 'undefined' && module.exports && typeof require !== 'undefined') {
-  module.exports = Mingo
-} else {
-  root.Mingo = Mingo
-}
-
-}(this))
+})));

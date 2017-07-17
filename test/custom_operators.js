@@ -6,7 +6,7 @@ test('Custom Operators', function (t) {
   t.test('custom pipeline operator', function (t) {
     t.plan(1)
 
-    Mingo.addOperators(Mingo.KEY_PIPELINE, function (m) {
+    Mingo.addOperators(Mingo.OP_PIPELINE, function (m) {
       return {
         '$pluck': function (collection, expr) {
           return collection.map(function (item) {
@@ -23,7 +23,7 @@ test('Custom Operators', function (t) {
   t.test('custom query operator', function (t) {
     t.plan(2)
 
-    Mingo.addOperators(Mingo.KEY_QUERY, function () {
+    Mingo.addOperators(Mingo.OP_QUERY, function () {
       return {
         '$between': function (selector, value, args) {
           return value >= args[0] && value <= args[1]
@@ -36,7 +36,7 @@ test('Custom Operators', function (t) {
     t.equal(2, result.length, 'can add new query operator')
 
     try {
-      Mingo.addOperators(Mingo.KEY_QUERY, function () {
+      Mingo.addOperators(Mingo.OP_QUERY, function () {
         return {
           '$between': function (selector, value, args) {
             var query = {}
@@ -52,7 +52,7 @@ test('Custom Operators', function (t) {
 
   t.test('custom group operator', function (t) {
     t.plan(2)
-    Mingo.addOperators(Mingo.KEY_GROUP, function (m) {
+    Mingo.addOperators(Mingo.OP_GROUP, function (m) {
       return {
         '$stddev': function (collection, expr) {
           var result = Mingo.aggregate(collection, [{$group: {avg: {$avg: expr}}}])

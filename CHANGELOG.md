@@ -1,7 +1,7 @@
 Changelog
 =========
 
-## v1.2.0 / 2017-06-27
+## v1.2.0 / 2017-07-17
 - Fix `$where` operator not executed last. https://github.com/kofrasa/mingo/pull/50
 - Fix matching nested arrays. https://github.com/kofrasa/mingo/issues/51 
 - Added `$facet` and `$bucket` operators 
@@ -9,6 +9,7 @@ Changelog
 - Added string keys for `$type` operator
 - Added Cursor support for [ES2015 Iterator Protocol](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols)
 - Sort null/undefined values to front of sorted result
+- Revert to operator names with format `Mingo.OP_<name>`
 
 ## v1.1.2 / 2017-03-30
 - Optimize `$lookup` implementation
@@ -34,7 +35,7 @@ Changelog
 - Added .editorconfig
 - Pass utility functions to custom operator implementation
 - Rename function to retrieve collection id to `idKey` in custom operators
-- Moved support for query porjection streaming to a new package [mingo-stream](https://github.com/kofrasa/mingo-stream)
+- Moved support for query projection streaming to a new package [mingo-stream](https://github.com/kofrasa/mingo-stream)
 
 ## v0.9.1 / 2017-02-08
 - Fix resolving system variables with subpaths. See [issue#41](https://github.com/kofrasa/mingo/issues/41)

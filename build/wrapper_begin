@@ -1,23 +1,17 @@
 // Mingo.js
 // Copyright (c) @YEAR Francis Asante <kofrasa@gmail.com>
 // MIT
+(function (global, factory) {
+  if (typeof exports === 'object' && typeof module !== 'undefined') {
+    factory(exports)
+  } else if (typeof define === 'function' && define.amd) {
+    define(['exports'], factory)
+  } else {
+    factory((global.Mingo = global.Mingo || {}))
+  }
 
-;(function(root){
+}(this, (function (Mingo) {
 
 'use strict'
-
-// global on the server, window in the browser
-var Mingo = {}
-var previousMingo
-
-// backup previous Mingo
-if (root !== null) {
-  previousMingo = root.Mingo
-}
-
-Mingo.noConflict = function () {
-  root.Mingo = previousMingo
-  return Mingo
-}
 
 Mingo.VERSION = '@VERSION'
