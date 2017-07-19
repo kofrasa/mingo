@@ -43,7 +43,8 @@ test('Comparison, Evaluation, and Element Operators', function (t) {
   ]
 
   queries.forEach(function (q) {
-    t.ok(Mingo.Query(q[0]).test(obj), q[1])
+    var query = new Mingo.Query(q[0])
+    t.ok(query.test(obj), q[1])
   })
 })
 

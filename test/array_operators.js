@@ -152,16 +152,16 @@ test('Array Operators', function (t) {
   ]
 
   result = Mingo.aggregate(warehouses, [
-    { $project:
-    { items:
-    { $cond:
     {
-      if: { $and: [ { $isArray: '$instock' }, { $isArray: '$ordered' } ] },
-      then: { $concatArrays: [ '$instock', '$ordered' ] },
-      else: 'One or more fields is not an array.'
-    }
-    }
-    }
+      $project: {
+        items: {
+          $cond: {
+            if: { $and: [{ $isArray: '$instock' }, { $isArray: '$ordered' }] },
+            then: { $concatArrays: ['$instock', '$ordered'] },
+            else: 'One or more fields is not an array.'
+          }
+        }
+      }
     }
   ])
 

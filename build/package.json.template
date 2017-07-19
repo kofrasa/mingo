@@ -24,10 +24,12 @@
     "VERSION"
   ],
   "devDependencies": {
+    "babel-cli": "^6.0.0",
+    "backbone": ">=1.3.x",
     "dox": "0.4.4",
     "dox-template": "0.1.1",
-    "backbone": ">=1.3.x",
     "gulp": ">=3.9.x",
+    "rollup": "^0.41.6",
     "tape": ">=4.x.x",
     "uglify-js": "2.x.x"
   },

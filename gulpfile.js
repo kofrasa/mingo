@@ -1,9 +1,10 @@
 
-var gulp = require('gulp')
-exec = require('child_process').exec
+const gulp = require('gulp')
+const rollup = require('rollup')
+const exec = require('child_process').exec
 
 gulp.task('build', function (cb) {
-  exec('make', function (err) {
+  exec('./compile.sh cjs', function (err) {
     if (err) return cb(err)
     cb()
   })
