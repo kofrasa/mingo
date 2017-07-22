@@ -23,9 +23,8 @@
     "VERSION"
   ],
   "devDependencies": {
-    "babel-cli": "^6.0.0",
     "babel-plugin-external-helpers": "^6.22.0",
-    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-env": "^1.6.0",
     "backbone": ">=1.3.x",
     "bson": "1.x.x",
     "core-js": "2.x.x",
