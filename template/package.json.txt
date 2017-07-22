@@ -1,8 +1,8 @@
 {
   "name": "mingo",
-  "version": "@VERSION",
+  "version": "2.0.0",
   "description": "JavaScript implementation of MongoDB query language",
-  "main": "mingo.js",
+  "main": "dist/mingo.js",
   "scripts": {
     "test": "make test",
     "build": "make build"
@@ -12,10 +12,9 @@
     "url": "https://github.com/kofrasa/mingo.git"
   },
   "files": [
-    "mingo.js",
-    "dist/mingo.min.js",
-    "dist/mingo.min.js.gz",
-    "dist/mingo.min.map",
+    "config",
+    "lib",
+    "template",
     "Makefile",
     "LICENSE",
     "README.md",
@@ -28,9 +27,8 @@
     "babel-plugin-external-helpers": "^6.22.0",
     "babel-preset-es2015": "^6.24.1",
     "backbone": ">=1.3.x",
+    "bson": "1.x.x",
     "core-js": "2.x.x",
-    "dox": "0.4.4",
-    "dox-template": "0.1.1",
     "gulp": ">=3.9.x",
     "rollup": "^0.41.6",
     "rollup-plugin-babel": "^2.7.1",

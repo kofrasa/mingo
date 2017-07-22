@@ -1,21 +1,16 @@
 var test = require('tape')
 var Mingo = require('../dist/mingo')
 var samples = require('./samples')
+var ObjectId = require('bson').ObjectId
 
-function ObjectId (id) {
-  this.id = id
-}
-
-var objectId = new ObjectId(100)
-
+var idStr = "123456789abe"
 var obj = samples.person
-obj['_id'] = objectId
+obj['_id'] = new ObjectId(idStr)
 obj['today'] = new Date()
 
 test('Comparison, Evaluation, and Element Operators', function (t) {
-  t.plan(25)
   var queries = [
-    [{_id: objectId}, 'can match against user-defined types'],
+    [{_id: new ObjectId(idStr)}, 'can match against user-defined types'],
     [{firstName: 'Francis'}, 'can check for equality with $eq'],
     [{lastName: /^a.+e/i}, 'can check against regex with literal'],
     [{lastName: {$regex: 'a.+e', $options: 'i'}}, 'can check against regex with $regex operator'],
@@ -46,6 +41,13 @@ test('Comparison, Evaluation, and Element Operators', function (t) {
     var query = new Mingo.Query(q[0])
     t.ok(query.test(obj), q[1])
   })
+
+  //https://github.com/kofrasa/mingo/issues/54
+  var data = [{ _id: 1, item: null }, { _id: 2 }]
+  var result = Mingo.find(data, {item: null}).all()
+  t.deepEqual(result, data, "can match null and missing types correctly")
+
+  t.end()
 })
 
 test('Projection Operators', function (t) {
@@ -94,7 +96,6 @@ test('Projection Operators', function (t) {
 })
 
 test('Logical Operators', function (t) {
-  t.plan(12)
   var queries = [
     [{$and: [{firstName: 'Francis'}, {lastName: /^a.+e/i}]}, 'can use conjunction true AND true'],
     [{$and: [{firstName: 'Francis'}, {lastName: 'Amoah'}]}, false, 'can use conjunction true AND false'],
@@ -119,6 +120,8 @@ test('Logical Operators', function (t) {
       t.equal(new Mingo.Query(q[0]).test(obj), q[1], q[2])
     }
   })
+
+  t.end()
 })
 
 test('Array Operators', function (t) {

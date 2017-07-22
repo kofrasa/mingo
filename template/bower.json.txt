@@ -1,6 +1,6 @@
 {
   "name": "mingo",
-  "main": "mingo.js",
+  "main": "dist/mingo.js",
   "version": "@VERSION",
   "homepage": "https://github.com/kofrasa/mingo",
   "authors": [

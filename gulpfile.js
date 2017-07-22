@@ -1,17 +1,17 @@
 
 const gulp = require('gulp')
-const rollup = require('rollup')
 const exec = require('child_process').exec
 
 gulp.task('build', function (cb) {
-  exec('make build', function (err) {
+  // ensures prerequisite exists
+  exec('make test', function (err) {
     if (err) return cb(err)
     cb()
   })
 })
 
 gulp.task('test', function (cb) {
-  exec('make test', function (err) {
+  exec('tape test/*.js', function (err) {
     if (err) return cb(err)
     cb()
   })

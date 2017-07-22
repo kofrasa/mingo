@@ -10,36 +10,37 @@ ROLLUP = ${NODE_MODULES}/rollup/bin/rollup
 UGLIFY = ${NODE_MODULES}/uglify-js/bin/uglifyjs
 
 
-all: clean build test compress bower.json package.json
+all: clean test build
 
 
-build: version build.es6 build.umd
+build: build.es6 compress version bower.json package.json
 	@echo "\033[0;32mBUILD SUCCEEDED"
-	@reset
 
 
-build.es6: version
+build.es6:
 	@${ROLLUP} -c config/rollup.es6.js
 
 
-build.umd: version
-	@${ROLLUP} -c config/rollup.umd.js
-
-
-compress:
+compress: mingo.js
 	@${UGLIFY} dist/${MODULE}.js --compress --mangle --output dist/${MODULE}.min.js --source-map dist/${MODULE}.min.map
 	@gzip -kf dist/${MODULE}.min.js
 
 
 clean:
 	@rm -fr dist/*
+	@rm -f bower.json
+	@rm -f package.json
 
 
-test:
+mingo.js:
+	@${ROLLUP} -c config/rollup.umd.js
+
+
+test: mingo.js
 	@tape test/*.js
 
 
-version: lib/index.js
+version:
 	@sed -E -i .bak "s/VERSION \s*= \s*'.{1,}'/VERSION = '${VERSION}'/" lib/index.js && rm lib/index.js.bak
 
 
