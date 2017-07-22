@@ -40,7 +40,7 @@ test: mingo.js
 	@tape test/*.js
 
 
-version:
+version: lib/index.js
 	@sed -E -i .bak "s/VERSION \s*= \s*'.{1,}'/VERSION = '${VERSION}'/" lib/index.js && rm lib/index.js.bak
 
 
