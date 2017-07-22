@@ -1,5 +1,5 @@
 var test = require('tape')
-var Mingo = require('../mingo')
+var Mingo = require('../dist/mingo')
 
 test('Conditional Operators', function (t) {
   t.plan(4)

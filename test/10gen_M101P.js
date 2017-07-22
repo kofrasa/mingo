@@ -1,7 +1,7 @@
 var test = require('tape')
 var fs = require('fs')
 var Backbone = require('backbone')
-var Mingo = require('../mingo')
+var Mingo = require('../dist/mingo')
 
 var students = JSON.parse(fs.readFileSync(__dirname + '/data/students.json'))
 var gradesSimple = JSON.parse(fs.readFileSync(__dirname + '/data/grades_simple.json'))

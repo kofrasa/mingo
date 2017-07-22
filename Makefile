@@ -1,47 +1,49 @@
 
 # configuration
 MODULE = mingo
-YEAR = $(shell date +%Y)
 VERSION = $(shell cat VERSION)
 
 # tools
 NODE_MODULES = ./node_modules
 BABEL = ${NODE_MODULES}/babel-cli/bin/babel.js
 ROLLUP = ${NODE_MODULES}/rollup/bin/rollup
-UGLIFYJS = ${NODE_MODULES}/uglify-js/bin/uglifyjs
-
-# sources
-HEADER_FILE = build/header.template
-SRC_DIR = lib
-SRC_INDEX = ${SRC_DIR}/index.js
-TARGET = umd
+UGLIFY = ${NODE_MODULES}/uglify-js/bin/uglifyjs
 
 
-all: clean mingo.js test build bower.json package.json
+all: clean build test compress bower.json package.json
 
 
-test: mingo.js
-	@tape test/*.js
+build: version build.es6 build.umd
+	@echo "\033[0;32mBUILD SUCCEEDED"
+	@reset
+
+
+build.es6: version
+	@${ROLLUP} -c config/rollup.es6.js
+
+
+build.umd: version
+	@${ROLLUP} -c config/rollup.umd.js
+
+
+compress:
+	@${UGLIFY} dist/${MODULE}.js --compress --mangle --output dist/${MODULE}.min.js --source-map dist/${MODULE}.min.map
+	@gzip -kf dist/${MODULE}.min.js
 
 
 clean:
 	@rm -fr dist/*
-	@rm -f *.json mingo.js
 
 
-build: mingo.js
-	@mkdir -p dist/
-	@${UGLIFYJS} ${MODULE}.js --compress --mangle -o dist/${MODULE}.min.js --source-map dist/${MODULE}.min.map
-	@gzip -kf dist/${MODULE}.min.js
-	@echo "\033[0;32mBUILD SUCCEEDED"
+test:
+	@tape test/*.js
 
 
-mingo.js: $(shell find ${SRC_DIR})
-	@cat ${HEADER_FILE} | sed "s/@YEAR/${YEAR}/" > ${MODULE}.js
-	@${ROLLUP} ${SRC_INDEX} -f ${TARGET} -n ${MODULE} | ${BABEL} --presets=es2015 | sed "s/@VERSION/${VERSION}/" >> ${MODULE}.js
+version: lib/index.js
+	@sed -E -i .bak "s/VERSION \s*= \s*'.{1,}'/VERSION = '${VERSION}'/" lib/index.js && rm lib/index.js.bak
 
 
-%.json: build/%.json.template
+%.json: template/%.json.txt
 	@cat $< | sed "s/@VERSION/${VERSION}/" > $@
 
 

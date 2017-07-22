@@ -1,5 +1,5 @@
 var test = require('tape')
-var Mingo = require('../mingo')
+var Mingo = require('../dist/mingo')
 var _ = Mingo._internal()
 
 // TODO: add some more tests

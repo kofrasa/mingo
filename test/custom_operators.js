@@ -1,6 +1,6 @@
 var test = require('tape')
 var samples = require('./samples')
-var Mingo = require('../mingo')
+var Mingo = require('../dist/mingo')
 
 test('Custom Operators', function (t) {
   t.test('custom pipeline operator', function (t) {

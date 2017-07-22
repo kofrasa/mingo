@@ -1,6 +1,6 @@
 var fs = require('fs')
 var test = require('tape')
-var Mingo = require('../mingo')
+var Mingo = require('../dist/mingo')
 var _ = Mingo._internal()
 
 exports.person = JSON.parse(fs.readFileSync(__dirname + '/data/person.json'))

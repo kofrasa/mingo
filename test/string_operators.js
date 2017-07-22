@@ -1,5 +1,5 @@
 var test = require('tape')
-var Mingo = require('../mingo')
+var Mingo = require('../dist/mingo')
 var tryExamples = require('./samples').tryExamples
 
 test('String Operators', function (t) {
