@@ -44,7 +44,7 @@ For documentation on using query operators see [mongodb](http://docs.mongodb.org
 On the server side
 ```js
 // Use as es6 module 
-import mingo from 'mingo.es6'
+import mingo from 'mingo'
 
 // or vanilla nodeJS
 var mingo = require('mingo')
