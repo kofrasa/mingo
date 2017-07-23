@@ -1,8 +1,8 @@
 Changelog
 =========
 
-## 2.0.0
-- Port fully to ES6 to support partial use via modules
+## 1.3.0 / 2017-07-23
+- Support ES6 modules
 - Fix matching null and missing values. https://github.com/kofrasa/mingo/issues/54
 - Improve comparing user-defined types
 

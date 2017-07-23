@@ -1,12 +1,10 @@
 # Mingo
-JavaScript implementation of MongoDB query language
-
-Query in-memory javascript collections using MongoDB-style queries without the full database. 
+JavaScript implementation of MongoDB query language 
 
 [![version](https://img.shields.io/npm/v/mingo.svg)](https://www.npmjs.org/package/mingo)
 [![build status](https://secure.travis-ci.org/kofrasa/mingo.png)](http://travis-ci.org/kofrasa/mingo)
 
-## Installing
+## Install
 ```$ npm install mingo```
 
 ## Features
@@ -45,20 +43,20 @@ For documentation on using query operators see [mongodb](http://docs.mongodb.org
 ## Usage
 On the server side
 ```js
-// As es6 module
-import mingo from 'mingo'
+// Use as es6 module 
+import mingo from 'mingo.es6'
 
 // or vanilla nodeJS
-const mingo = require('mingo')
+var mingo = require('mingo')
 ```
 
 For the browser
 ```
-// run make to build UMD style module
-$ make
-
-// load minified file
+// minified UMD module
 <script type="text/javascript" src="./dist/mingo.min.js"></script>
+
+// or gzipped UMD module
+<script type="text/javascript" src="./dist/mingo.min.js.gz"></script>
 ```
 
 Tiny configuration if needed
@@ -162,14 +160,13 @@ The collection to mixin needs to provide a method with signature `toJSON() -> Ar
   - Born out of a real need
   - Alternative to writing a lot of custom code for transforming collections of JSON objects
   - Quick validation of MongoDB queries without the need for a database
-  - IMO MongoDB query language is among the best in the market and is well documented
+  - MongoDB query language is among the best in the market and is well documented
   - Finally, because queries are better than me and perhaps you too :)
 
 ## Contributing
 * Submit pull requests to the [development](https://github.com/kofrasa/mingo/tree/development) branch
-* Before you submit pull requests
-    * Squash changes into one commit
-    * Run ```$ make``` to ensure build and test pass
+* Squash changes into one commit
+* Run `make` to ensure build and tests pass
 
 ## License
 MIT

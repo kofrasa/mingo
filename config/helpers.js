@@ -8,10 +8,11 @@ export function version () {
   return {
     name: 'version',
     transformBundle (code) {
-      return code.replace(/VERSION\s+=\s+(['"])@VERSION\1/, `VERSION = '${VERSION}'`)
+      return code.replace(/VERSION\s+=\s+(['"])[\d\.]+\1/, `VERSION = '${VERSION}'`)
     }
   }
 }
 
-const contents = fs.readFileSync(__dirname + '/../template/header.txt').toString()
-export const HEADER = contents.replace('@YEAR', new Date().getFullYear()).replace('@VERSION', VERSION)
+export const HEADER = fs.readFileSync(__dirname + '/../templates/header.txt').toString()
+  .replace('@YEAR', new Date().getFullYear())
+  .replace('@VERSION', VERSION)
