@@ -1,5 +1,8 @@
 Changelog
 =========
+## 1.3.1 / 2017-07-24
+- Replaced core-js because it bloats compiled library by 10K i.e. ~24%
+- Fix #55
 
 ## 1.3.0 / 2017-07-23
 - Support ES6 modules

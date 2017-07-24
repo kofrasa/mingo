@@ -14,7 +14,7 @@ UGLIFY = ${NODE_MODULES}/uglify-js/bin/uglifyjs
 all: clean test build
 
 
-build: build.es6 compile compress bower.json package.json
+build: prepare build.es6 compress bower.json package.json
 	@echo "\033[0;32mBUILD SUCCEEDED"
 
 
@@ -22,7 +22,7 @@ build.es6:
 	@${ROLLUP} -c config/rollup.es.js
 
 
-compile:
+prepare:
 	@sed -E -i .bak "s/VERSION = '.{1,}'/VERSION = '${VERSION}'/" lib/index.js && rm lib/index.js.bak
 
 
