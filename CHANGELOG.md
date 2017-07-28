@@ -1,5 +1,8 @@
 Changelog
 =========
+## 1.3.2 / 2017-07-28
+- Restore `setup` function. https://github.com/kofrasa/mingo/issues/56
+
 ## 1.3.1 / 2017-07-24
 - Replaced core-js because it bloats compiled library by 10K i.e. ~24%
 - Fix #55

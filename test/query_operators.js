@@ -1,5 +1,5 @@
 var test = require('tape')
-var Mingo = require('../dist/mingo')
+var mingo = require('../dist/mingo')
 var samples = require('./samples')
 var ObjectId = require('bson').ObjectId
 
@@ -7,6 +7,11 @@ var idStr = "123456789abe"
 var obj = samples.person
 obj['_id'] = new ObjectId(idStr)
 obj['today'] = new Date()
+
+// test configurations
+mingo.setup({
+  'key': '_id'
+})
 
 test('Comparison, Evaluation, and Element Operators', function (t) {
   var queries = [
@@ -38,13 +43,13 @@ test('Comparison, Evaluation, and Element Operators', function (t) {
   ]
 
   queries.forEach(function (q) {
-    var query = new Mingo.Query(q[0])
+    var query = new mingo.Query(q[0])
     t.ok(query.test(obj), q[1])
   })
 
   //https://github.com/kofrasa/mingo/issues/54
   var data = [{ _id: 1, item: null }, { _id: 2 }]
-  var result = Mingo.find(data, {item: null}).all()
+  var result = mingo.find(data, {item: null}).all()
   t.deepEqual(result, data, "can match null and missing types correctly")
 
   t.end()
@@ -52,7 +57,7 @@ test('Comparison, Evaluation, and Element Operators', function (t) {
 
 test('Projection Operators', function (t) {
   var data = [obj]
-  var result = Mingo.find(data, {}, {'languages.programming': {$slice: [-3, 2]}}).first()
+  var result = mingo.find(data, {}, {'languages.programming': {$slice: [-3, 2]}}).first()
   t.deepEqual(result['languages']['programming'], ['Javascript', 'Bash'], 'should project with $slice operator')
 
   // special tests
@@ -66,29 +71,29 @@ test('Projection Operators', function (t) {
 
   var expected = {'key0': [{'key1': [[[{'key2': [{'a': 'value2'}, {'a': 'dummy'}]}]]]}]}
 
-  result = Mingo.find(data, {'key0.key1.key2': 'value'}, {'key0.key1.key2.a': 1}).first()
+  result = mingo.find(data, {'key0.key1.key2': 'value'}, {'key0.key1.key2.a': 1}).first()
   t.deepEqual(result, expected, 'should project only selected object graph from nested arrays')
   t.notDeepEqual(data[0], result, 'should not modify original')
 
   data = [ { 'name': 'Steve', 'age': 15, 'features': { 'hair': 'brown', 'eyes': 'brown' } } ]
-  result = Mingo.find(data, {}, { 'features.hair': 1 }).first()
+  result = mingo.find(data, {}, { 'features.hair': 1 }).first()
   t.deepEqual(result, {'features': {hair: 'brown'}}, 'should project only selected object graph')
   t.notDeepEqual(data[0], result, 'should not modify original')
 
   t.throws(function () {
-    Mingo.find(data, {}, { 'features.hair': 0, 'name': 1 }).first()
+    mingo.find(data, {}, { 'features.hair': 0, 'name': 1 }).first()
   }, Error, 'should throw exception: Projection cannot have a mix of inclusion and exclusion')
 
-  result = Mingo.find(data, {}, { 'features.hair': 0}).first()
+  result = mingo.find(data, {}, { 'features.hair': 0}).first()
   t.deepEqual(result, {'name': 'Steve', 'age': 15, 'features': {'eyes': 'brown'}}, 'should omit key')
   t.notDeepEqual(data[0], result, 'should not modify original')
 
   data = [{ 'name': 'Steve', 'age': 15, 'features': ['hair', 'eyes', 'nose']} ]
-  result = Mingo.find(data, {}, { 'features.1': 0}).first()
+  result = mingo.find(data, {}, { 'features.1': 0}).first()
   t.deepEqual(result, {'name': 'Steve', 'age': 15, 'features': ['hair', 'nose']}, 'should omit second element in array')
   t.notDeepEqual(data[0], result, 'should not modify original')
 
-  result = Mingo.find(data, {}, { 'features.1': 1}).first()
+  result = mingo.find(data, {}, { 'features.1': 1}).first()
   t.deepEqual(result, {'features': ['eyes']}, 'should select only second element in array')
   t.notDeepEqual(data[0], result, 'should not modify original')
 
@@ -115,9 +120,9 @@ test('Logical Operators', function (t) {
 
   queries.forEach(function (q) {
     if (q.length === 2) {
-      t.ok(new Mingo.Query(q[0]).test(obj), q[1])
+      t.ok(new mingo.Query(q[0]).test(obj), q[1])
     } else if (q.length === 3) {
-      t.equal(new Mingo.Query(q[0]).test(obj), q[1], q[2])
+      t.equal(new mingo.Query(q[0]).test(obj), q[1], q[2])
     }
   })
 
@@ -145,7 +150,7 @@ test('Array Operators', function (t) {
       ]
     }
   ]
-  var q = new Mingo.Query({
+  var q = new mingo.Query({
     qty: {
       $all: [
         {'$elemMatch': {size: 'M', num: {$gt: 50}}},
@@ -183,11 +188,11 @@ test('Array Operators', function (t) {
       expected = row[1],
       message = row[2]
 
-    var result = Mingo.find(data, query).all()
+    var result = mingo.find(data, query).all()
     t.deepEqual(result, expected, message)
 
     if (Array.from) {
-      var iterResult = Mingo.find(data, query)
+      var iterResult = mingo.find(data, query)
       t.deepEqual(Array.from(iterResult), expected, message)
       t.deepEqual(Array.from(iterResult), [], message)
     }
@@ -203,11 +208,11 @@ test('Array Operators', function (t) {
   // should match whole objects
   fixtures.forEach(function (row) {
     var query = row[0], message = row[1]
-    var result = Mingo.find(data, query).all()
+    var result = mingo.find(data, query).all()
     t.deepEqual(result, data, message)
 
     if (Array.from) {
-      var iterResult = Mingo.find(data, query)
+      var iterResult = mingo.find(data, query)
       t.deepEqual(Array.from(iterResult), data, message)
       t.deepEqual(Array.from(iterResult), [], message)
     }
@@ -215,7 +220,7 @@ test('Array Operators', function (t) {
 
   // https://github.com/kofrasa/mingo/issues/51
   data = [{ "key0" : [ { "key1" : [ "value" ] }, { "key1" : [ "value1" ] } ] }]
-  result = Mingo.find(data, { "key0.key1": { "$eq": "value" } }).first()
+  result = mingo.find(data, { "key0.key1": { "$eq": "value" } }).first()
   t.deepEqual(result, data[0], "should match nested array of objects without indices")
 
   t.end()
