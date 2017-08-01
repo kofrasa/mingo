@@ -1,5 +1,5 @@
 var test = require('tape')
-var Mingo = require('../dist/mingo')
+var mingo = require('../dist/mingo')
 
 test('Set Operators', function (t) {
   t.plan(7)
@@ -17,7 +17,7 @@ test('Set Operators', function (t) {
   ]
 
   // equality
-  var result = Mingo.aggregate(experiments, [
+  var result = mingo.aggregate(experiments, [
     {$project: {A: 1, B: 1, sameElements: {$setEquals: ['$A', '$B']}, _id: 0}}
   ])
   t.deepEqual(result, [
@@ -33,7 +33,7 @@ test('Set Operators', function (t) {
   ], 'aggregate with $setEquals')
 
   // intersection
-  result = Mingo.aggregate(experiments, [
+  result = mingo.aggregate(experiments, [
     {$project: {A: 1, B: 1, commonToBoth: {$setIntersection: ['$A', '$B']}, _id: 0}}
   ])
   t.deepEqual(result, [
@@ -49,7 +49,7 @@ test('Set Operators', function (t) {
   ], 'aggregate with $setIntersection')
 
   // union
-  result = Mingo.aggregate(experiments, [
+  result = mingo.aggregate(experiments, [
     {$project: {A: 1, B: 1, allValues: {$setUnion: ['$A', '$B']}, _id: 0}}
   ])
   t.deepEqual(result, [
@@ -65,7 +65,7 @@ test('Set Operators', function (t) {
   ], 'aggregate with $setUnion')
 
   // difference
-  result = Mingo.aggregate(experiments, [
+  result = mingo.aggregate(experiments, [
     {$project: {A: 1, B: 1, inBOnly: {$setDifference: ['$B', '$A']}, _id: 0}}
   ])
   t.deepEqual(result, [
@@ -81,7 +81,7 @@ test('Set Operators', function (t) {
   ], 'aggregate with $setDifference')
 
   // subset
-  result = Mingo.aggregate(experiments, [
+  result = mingo.aggregate(experiments, [
     {$project: {A: 1, B: 1, AisSubset: {$setIsSubset: ['$A', '$B']}, _id: 0}}
   ])
   t.deepEqual(result, [
@@ -110,7 +110,7 @@ test('Set Operators', function (t) {
   ]
 
   // any element true
-  result = Mingo.aggregate(surveyData, [
+  result = mingo.aggregate(surveyData, [
     {$project: {responses: 1, isAnyTrue: {$anyElementTrue: ['$responses']}, _id: 0}}
   ])
   t.deepEqual(result, [
@@ -127,7 +127,7 @@ test('Set Operators', function (t) {
   ], 'aggregate with $anyElementTrue')
 
   // all elements true
-  result = Mingo.aggregate(surveyData, [
+  result = mingo.aggregate(surveyData, [
     {$project: {responses: 1, isAllTrue: {$allElementsTrue: ['$responses']}, _id: 0}}
   ])
   t.deepEqual(result, [

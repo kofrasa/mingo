@@ -1,5 +1,5 @@
 var test = require('tape')
-var Mingo = require('../dist/mingo')
+var mingo = require('../dist/mingo')
 
 test('Arithmetic Operators', function (t) {
   t.plan(5)
@@ -35,7 +35,7 @@ test('Arithmetic Operators', function (t) {
   ]
 
   // $add
-  var result = Mingo.aggregate(sales, [
+  var result = mingo.aggregate(sales, [
     {$project: {item: 1, total: {$add: ['$price', '$fee']}}}
   ])
   t.deepEqual(result, [
@@ -45,7 +45,7 @@ test('Arithmetic Operators', function (t) {
   ], 'aggregate with $add operator')
 
   // $subtract
-  result = Mingo.aggregate(sales, [
+  result = mingo.aggregate(sales, [
     {$project: {item: 1, total: {$subtract: [{$add: ['$price', '$fee']}, '$discount']}}}
   ])
   t.deepEqual(result, [
@@ -55,7 +55,7 @@ test('Arithmetic Operators', function (t) {
   ], 'aggregate with $subtract operator')
 
   // $multiply
-  result = Mingo.aggregate(sales, [
+  result = mingo.aggregate(sales, [
     {$project: {date: 1, item: 1, total: {$multiply: ['$price', '$quantity']}}}
   ])
   t.deepEqual(result, [
@@ -65,7 +65,7 @@ test('Arithmetic Operators', function (t) {
   ], 'aggregate with $multiply operator')
 
   // $divide
-  result = Mingo.aggregate([
+  result = mingo.aggregate([
     {'_id': 1, 'name': 'A', 'hours': 80, 'resources': 7},
     {'_id': 2, 'name': 'B', 'hours': 40, 'resources': 4}
   ], [
@@ -77,7 +77,7 @@ test('Arithmetic Operators', function (t) {
   ], 'aggregate with $divide operator')
 
   // $mod
-  result = Mingo.aggregate([
+  result = mingo.aggregate([
     {'_id': 1, 'project': 'A', 'hours': 80, 'tasks': 7},
     {'_id': 2, 'project': 'B', 'hours': 40, 'tasks': 4}
   ], [

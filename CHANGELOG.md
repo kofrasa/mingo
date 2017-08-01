@@ -1,5 +1,10 @@
 Changelog
 =========
+## 1.3.3 / in-progress
+- Fix `computeValue` not overriding group operator keys after resolving expression
+- Added `$in`, `$objectToArray`, and `$arrayToObject` array aggregation operators
+- Minor refactoring
+
 ## 1.3.2 / 2017-07-28
 - Restore `setup` function. https://github.com/kofrasa/mingo/issues/56
 

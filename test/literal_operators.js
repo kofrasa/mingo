@@ -1,9 +1,9 @@
 var test = require('tape')
-var Mingo = require('../dist/mingo')
+var mingo = require('../dist/mingo')
 
 test('Literal Operators', function (t) {
   t.plan(1)
-  var result = Mingo.aggregate([
+  var result = mingo.aggregate([
     {'_id': 1, 'item': 'abc123', price: '$2.50'},
     {'_id': 2, 'item': 'xyz123', price: '1'},
     {'_id': 3, 'item': 'ijk123', price: '$1'}

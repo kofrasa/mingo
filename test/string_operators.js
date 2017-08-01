@@ -1,5 +1,5 @@
 var test = require('tape')
-var Mingo = require('../dist/mingo')
+var mingo = require('../dist/mingo')
 var tryExamples = require('./samples').tryExamples
 
 test('String Operators', function (t) {
@@ -10,7 +10,7 @@ test('String Operators', function (t) {
   ]
 
   // $concat
-  var result = Mingo.aggregate(inventory, [
+  var result = mingo.aggregate(inventory, [
     {$project: {itemDescription: {$concat: ['$item', ' - ', '$description']}}}
   ])
 
@@ -48,7 +48,7 @@ test('String Operators', function (t) {
     { '_id': 7, 'city': 'Sacramento, CA', 'qty': 574 }
   ]
 
-  result = Mingo.aggregate(data, [
+  result = mingo.aggregate(data, [
     { $project: { city_state: { $split: ['$city', ', '] }, qty: 1 } },
     { $unwind: '$city_state' },
     { $match: { city_state: /[A-Z]{2}/ } },
@@ -75,7 +75,7 @@ test('String Operators', function (t) {
   tryExamples(examples, '$split')
 
   // $substr
-  result = Mingo.aggregate(inventory, [
+  result = mingo.aggregate(inventory, [
     {
       $project: {
         item: 1,
@@ -99,7 +99,7 @@ test('String Operators', function (t) {
   ]
 
   // $toLower
-  result = Mingo.aggregate(inventoryMixedCase, [
+  result = mingo.aggregate(inventoryMixedCase, [
     {
       $project: {
         item: {$toLower: '$item'},
@@ -115,7 +115,7 @@ test('String Operators', function (t) {
   ], 'aggregate with $toLower')
 
   // $toUpper
-  result = Mingo.aggregate(inventoryMixedCase, [
+  result = mingo.aggregate(inventoryMixedCase, [
     {
       $project: {
         item: {$toUpper: '$item'},
@@ -131,7 +131,7 @@ test('String Operators', function (t) {
   ], 'aggregate with $toUpper')
 
   // $strcasecmp
-  result = Mingo.aggregate(inventory, [
+  result = mingo.aggregate(inventory, [
     {
       $project: {
         item: 1,

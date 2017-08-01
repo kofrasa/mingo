@@ -1,5 +1,5 @@
 var test = require('tape')
-var Mingo = require('../dist/mingo')
+var mingo = require('../dist/mingo')
 
 test('Boolean Operators', function (t) {
   t.plan(5)
@@ -11,7 +11,7 @@ test('Boolean Operators', function (t) {
     {'_id': 5, 'item': 'VWZ2', description: 'product 5', qty: 180}
   ]
 
-  var result = Mingo.aggregate(inventory, [{
+  var result = mingo.aggregate(inventory, [{
     $project: {
       item: 1,
       result: {$and: [{$gt: ['$qty', 100]}, {$lt: ['$qty', 250]}]}
@@ -26,7 +26,7 @@ test('Boolean Operators', function (t) {
     {'_id': 5, 'item': 'VWZ2', 'result': true}
   ], result, 'can apply $and operator')
 
-  result = Mingo.aggregate(inventory, [{
+  result = mingo.aggregate(inventory, [{
     $project: {
       item: 1,
       result: {$or: [{$gt: ['$qty', 250]}, {$lt: ['$qty', 200]}]}
@@ -41,7 +41,7 @@ test('Boolean Operators', function (t) {
     {'_id': 5, 'item': 'VWZ2', 'result': true}
   ], result, 'can apply $or aggregate operator')
 
-  result = Mingo.aggregate(inventory, [{
+  result = mingo.aggregate(inventory, [{
     $project: {
       item: 1,
       result: {$not: [{$gt: ['$qty', 250]}]}
@@ -56,7 +56,7 @@ test('Boolean Operators', function (t) {
     {'_id': 5, 'item': 'VWZ2', 'result': true}
   ], result, 'can apply $not aggregate operator')
 
-  result = Mingo.aggregate(inventory, [{
+  result = mingo.aggregate(inventory, [{
     $project: {
       item: 1,
       result: {$in: ['$item', ['abc1', 'abc2']]}
@@ -71,7 +71,7 @@ test('Boolean Operators', function (t) {
     {'_id': 5, 'item': 'VWZ2', 'result': false}
   ], result, 'can apply $in aggregate operator')
 
-  result = Mingo.aggregate(inventory, [{
+  result = mingo.aggregate(inventory, [{
     $project: {
       item: 1,
       result: {$nin: ['$item', ['abc1', 'abc2']]}

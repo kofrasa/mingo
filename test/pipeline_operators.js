@@ -1,7 +1,7 @@
 var test = require('tape')
-var Mingo = require('../dist/mingo')
+var mingo = require('../dist/mingo')
 var samples = require('./samples')
-var _ = Mingo._internal()
+var _ = mingo._internal()
 
 
 test("Aggregation Pipeline Operators", function (t) {
@@ -16,7 +16,7 @@ test("Aggregation Pipeline Operators", function (t) {
 
   t.test("$match operator", function (t) {
     t.plan(1);
-    var result = Mingo.aggregate(samples.students, [
+    var result = mingo.aggregate(samples.students, [
       { '$match': { _id: { $in: [0, 1, 2, 3, 4] } } }
     ]);
     t.ok(result.length === 5, "can filter collection with $match");
@@ -24,7 +24,7 @@ test("Aggregation Pipeline Operators", function (t) {
 
   t.test("$unwind operator", function (t) {
     t.plan(1)
-    var flattened = Mingo.aggregate(samples.students, [
+    var flattened = mingo.aggregate(samples.students, [
       { '$unwind': '$scores' }
     ]);
     t.ok(flattened.length === 800, "can unwind array value in collection");
@@ -32,7 +32,7 @@ test("Aggregation Pipeline Operators", function (t) {
 
   t.test("$project operator", function (t) {
     t.plan(13);
-    var result = Mingo.aggregate(
+    var result = mingo.aggregate(
       samples.students,
       [
         { '$unwind': '$scores' },
@@ -65,7 +65,7 @@ test("Aggregation Pipeline Operators", function (t) {
       { "_id": 5, "item": "VWZ2", description: "product 5", qty: 180 }
     ];
 
-    result = Mingo.aggregate(products, [
+    result = mingo.aggregate(products, [
       {
         $project: {
           item: 1,
@@ -84,7 +84,7 @@ test("Aggregation Pipeline Operators", function (t) {
     ], "can project with $eq operator");
 
     // $cmp
-    result = Mingo.aggregate(products, [
+    result = mingo.aggregate(products, [
       {
         $project: {
           item: 1,
@@ -101,7 +101,7 @@ test("Aggregation Pipeline Operators", function (t) {
       { "item": "VWZ2", "qty": 180, "cmpTo250": -1 }
     ], "can project with $cmp operator");
 
-    result = Mingo.aggregate(
+    result = mingo.aggregate(
       samples.students,
       [
         {
@@ -119,7 +119,7 @@ test("Aggregation Pipeline Operators", function (t) {
     t.ok(fields.indexOf('_id') >= 0, "_id is included");
     t.ok(fields.indexOf('scores') >= 0, "score is included");
 
-    result = Mingo.aggregate(
+    result = mingo.aggregate(
       samples.students,
       [
         {
@@ -140,10 +140,10 @@ test("Aggregation Pipeline Operators", function (t) {
 
   t.test("$group operator", function (t) {
 
-    var flattened = Mingo.aggregate(samples.students, [
+    var flattened = mingo.aggregate(samples.students, [
       { '$unwind': '$scores' }
     ]);
-    var grouped = Mingo.aggregate(flattened, [{
+    var grouped = mingo.aggregate(flattened, [{
       '$group': {
         '_id': '$scores.type', 'highest': { $max: '$scores.score' },
         'lowest': { $min: '$scores.score' }, 'average': { $avg: '$scores.score' }, 'count': { $sum: 1 }
@@ -151,14 +151,14 @@ test("Aggregation Pipeline Operators", function (t) {
     }
     ]);
     t.ok(grouped.length === 3, "can group collection with $group");
-    grouped = Mingo.aggregate(sales, [
+    grouped = mingo.aggregate(sales, [
       { $group: { max: { $max: "$price" }, sum: { $sum: "$price" } } }
     ]);
 
     t.ok(grouped.length === 1 && grouped[0]['max'] === 20, "can compute $max");
     t.ok(grouped.length === 1 && grouped[0]['sum'] === 45, "can compute $sum");
 
-    grouped = Mingo.aggregate(samples.groupByObjectsData, [
+    grouped = mingo.aggregate(samples.groupByObjectsData, [
         { "$match": {} }, {
           "$group": {
             "_id": {
@@ -192,7 +192,7 @@ test("Aggregation Pipeline Operators", function (t) {
       { "_id": 7020, "title": "Iliad", "author": "Homer", "copies": 10 }
     ];
 
-    result = Mingo.aggregate(books, [
+    result = mingo.aggregate(books, [
         { $group: { _id: "$author", books: { $push: "$title" } } },
         { $sort: { _id: -1 } }
       ]
@@ -203,7 +203,7 @@ test("Aggregation Pipeline Operators", function (t) {
       { "_id": "Dante", "books": ["The Banquet", "Divine Comedy", "Eclogues"] }
     ], "Group title by author");
 
-    result = Mingo.aggregate(books, [
+    result = mingo.aggregate(books, [
         { $group: { _id: "$author", books: { $push: "$$ROOT" } } },
         { $sort: { _id: -1 } }
       ]
@@ -232,7 +232,7 @@ test("Aggregation Pipeline Operators", function (t) {
       { "_id": "Dante", "books": ["The Banquet", "Divine Comedy", "Eclogues"] }
     ];
 
-    result = Mingo.aggregate(books, [
+    result = mingo.aggregate(books, [
         { $group: { _id: "$author", books: { $push: "$$ROOT.title" } } },
         { $sort: { _id: -1 } }
       ]
@@ -240,7 +240,7 @@ test("Aggregation Pipeline Operators", function (t) {
 
     t.deepEqual(result, expected, "Group title by author - $$ROOT.field");
 
-    result = Mingo.aggregate(books, [
+    result = mingo.aggregate(books, [
         { $group: { _id: "$author", books: { $push: "$$CURRENT.title" } } },
         { $sort: { _id: -1 } }
       ]
@@ -254,7 +254,7 @@ test("Aggregation Pipeline Operators", function (t) {
 
   t.test("$limit operator", function (t) {
     t.plan(1);
-    var result = Mingo.aggregate(samples.students, [
+    var result = mingo.aggregate(samples.students, [
       { '$limit': 100 }
     ]);
     t.ok(result.length === 100, "can limit result with $limit");
@@ -262,7 +262,7 @@ test("Aggregation Pipeline Operators", function (t) {
 
   t.test("$skip operator", function (t) {
     t.plan(1);
-    var result = Mingo.aggregate(samples.students, [
+    var result = mingo.aggregate(samples.students, [
       { '$skip': 100 }
     ]);
     t.ok(result.length === samples.students.length - 100, "can skip result with $skip");
@@ -270,23 +270,23 @@ test("Aggregation Pipeline Operators", function (t) {
 
   t.test("$sort operator", function (t) {
     t.plan(2);
-    var result = Mingo.aggregate(samples.students, [
+    var result = mingo.aggregate(samples.students, [
       { '$sort': { '_id': -1 } }
     ]);
     t.ok(result[0]['_id'] === 199, "can sort collection with $sort");
 
     var data = [
-      { _id: 'c', date: new Date(2018, 01, 01) },
-      { _id: 'a', date: new Date(2017, 01, 01) },
-      { _id: 'b', date: new Date(2017, 01, 01) }
+      { _id: 'c', date: new Date(2018, 1, 1) },
+      { _id: 'a', date: new Date(2017, 1, 1) },
+      { _id: 'b', date: new Date(2017, 1, 1) }
     ];
     var expected = [
-      { _id: 'a', date: new Date(2017, 01, 01) },
-      { _id: 'b', date: new Date(2017, 01, 01) },
-      { _id: 'c', date: new Date(2018, 01, 01) },
-    ];
+      { _id: 'a', date: new Date(2017, 1, 1) },
+      { _id: 'b', date: new Date(2017, 1, 1) },
+      { _id: 'c', date: new Date(2018, 1, 1) },
+    ]
 
-    result = Mingo.aggregate(data, [{ "$sort": { "date": 1 } }]);
+    result = mingo.aggregate(data, [{ "$sort": { "date": 1 } }]);
     t.deepEqual(result, expected, "can sort on complex fields");
   });
 
@@ -336,7 +336,7 @@ test("Aggregation Pipeline Operators", function (t) {
       }
     ];
 
-    var result = Mingo.aggregate(data, query);
+    var result = mingo.aggregate(data, query);
 
     t.deepEqual(result, [
       {
@@ -366,7 +366,7 @@ test("Aggregation Pipeline Operators", function (t) {
       cc: {
         level: 5,
         type: "yy",
-        num: 000000000000,
+        num: 0,
         exp_date: new Date("2015-11-01T00:00:00.000Z"),
         billing_addr: {
           level: 5,
@@ -402,7 +402,7 @@ test("Aggregation Pipeline Operators", function (t) {
       }
     ];
 
-    result = Mingo.aggregate(data, query);
+    result = mingo.aggregate(data, query);
 
     t.deepEqual(result, [
       {
@@ -430,7 +430,7 @@ test("Aggregation Pipeline Operators", function (t) {
       { "_id": 6, "subject": "History", "score": 83 }
     ];
 
-    var result = Mingo.aggregate(scores,
+    var result = mingo.aggregate(scores,
       [
         {
           $match: {
@@ -464,7 +464,7 @@ test("Aggregation Pipeline Operators", function (t) {
       { "_id": 7, "name": "ty", "q1": false, "q2": true }
     ];
 
-    var result = Mingo.aggregate(users,
+    var result = mingo.aggregate(users,
       [{ $sample: { size: 3 } }]
     );
 
@@ -493,7 +493,7 @@ test("Aggregation Pipeline Operators", function (t) {
       }
     ];
 
-    var result = Mingo.aggregate(scores, [
+    var result = mingo.aggregate(scores, [
       {
         $addFields: {
           totalHomework: { $sum: "$homework" },
@@ -536,7 +536,7 @@ test("Aggregation Pipeline Operators", function (t) {
       { _id: 3, type: "jet ski" }
     ];
 
-    result = Mingo.aggregate(vehicles, [
+    result = mingo.aggregate(vehicles, [
       {
         $addFields: {
           "specs.fuel_type": "unleaded"
@@ -553,7 +553,7 @@ test("Aggregation Pipeline Operators", function (t) {
 
     var animals = [{ _id: 1, dogs: 10, cats: 15 }];
 
-    result = Mingo.aggregate(animals, [
+    result = mingo.aggregate(animals, [
       {
         $addFields: { "cats": 20 }
       }
@@ -567,7 +567,7 @@ test("Aggregation Pipeline Operators", function (t) {
       { "_id": 3, "item": "grapefruit", "type": "citrus" }
     ];
 
-    result = Mingo.aggregate(fruit, [
+    result = mingo.aggregate(fruit, [
       {
         $addFields: {
           _id: "$item",
@@ -624,7 +624,7 @@ test("Aggregation Pipeline Operators", function (t) {
       { "_id": 8, "title": "Blue Flower", "artist": "O'Keefe", "year": 1918, "tags": ["abstract", "painting"] }
     ];
 
-    var result = Mingo.aggregate(exhibits, [{ $unwind: "$tags" }, { $sortByCount: "$tags" }]);
+    var result = mingo.aggregate(exhibits, [{ $unwind: "$tags" }, { $sortByCount: "$tags" }]);
 
     t.equals(result.every(function (o) {
       return Object.keys(o).length === 2
@@ -669,7 +669,7 @@ test("Aggregation Pipeline Operators", function (t) {
       }
     ];
 
-    var result = Mingo.aggregate(produce, [
+    var result = mingo.aggregate(produce, [
       {
         $replaceRoot: { newRoot: "$in_stock" }
       }
@@ -686,7 +686,7 @@ test("Aggregation Pipeline Operators", function (t) {
       { "_id": 3, "name": "Maria", "age": 25 }
     ];
 
-    result = Mingo.aggregate(people, [
+    result = mingo.aggregate(people, [
       {
         $match: { pets: { $exists: true } }
       },
@@ -706,7 +706,7 @@ test("Aggregation Pipeline Operators", function (t) {
       { "_id": 3, "first_name": "Peter", "last_name": "Sumner", "city": "Toledo" }
     ];
 
-    result = Mingo.aggregate(contacts, [
+    result = mingo.aggregate(contacts, [
       {
         $replaceRoot: {
           newRoot: {
@@ -729,7 +729,7 @@ test("Aggregation Pipeline Operators", function (t) {
       { "_id": 2, "name": "Mark", "phones": [{ "cell": "555-445-8767" }, { "home": "555-322-2774" }] }
     ];
 
-    result = Mingo.aggregate(contacts, [
+    result = mingo.aggregate(contacts, [
       {
         $unwind: "$phones"
       },
@@ -768,7 +768,7 @@ test("Aggregation Pipeline Operators", function (t) {
       { "_id": 6 }
     ]
 
-    var result = Mingo.aggregate(orders, [
+    var result = mingo.aggregate(orders, [
       {
         $lookup: {
           from: inventory,
@@ -850,7 +850,7 @@ test("Aggregation Pipeline Operators", function (t) {
       }
     ]
 
-    var result = Mingo.aggregate(artwork, [
+    var result = mingo.aggregate(artwork, [
       {
         $bucket: {
           groupBy: "$price",
@@ -941,7 +941,7 @@ test("Aggregation Pipeline Operators", function (t) {
       }
     ]
 
-    var result = Mingo.aggregate(artwork, [
+    var result = mingo.aggregate(artwork, [
       {
         $bucketAuto: {
           groupBy: "$price",
@@ -986,7 +986,7 @@ test("Aggregation Pipeline Operators", function (t) {
       things.push({ _id: i })
     }
 
-    result = Mingo.aggregate(things, [
+    result = mingo.aggregate(things, [
       {
         $bucketAuto: {
           groupBy: "$_id",
@@ -1051,7 +1051,7 @@ test("Aggregation Pipeline Operators", function (t) {
       }
     ]
 
-    var result = Mingo.aggregate(artwork, [
+    var result = mingo.aggregate(artwork, [
       {
         $facet: {
           "categorizedByTags": [

@@ -1,5 +1,5 @@
 var test = require('tape')
-var Mingo = require('../dist/mingo')
+var mingo = require('../dist/mingo')
 
 test('Conditional Operators', function (t) {
   t.plan(4)
@@ -12,7 +12,7 @@ test('Conditional Operators', function (t) {
     {'_id': 5, 'item': 'VWZ2', description: 'product 5', qty: 80}
   ]
 
-  var result = Mingo.aggregate(products, [{
+  var result = mingo.aggregate(products, [{
     $project: {
       item: 1,
       stock: {
@@ -33,7 +33,7 @@ test('Conditional Operators', function (t) {
     {'_id': 5, 'item': 'VWZ2', 'stock': 'low'}
   ], result, 'can apply $cond aggregate operator')
 
-  result = Mingo.aggregate(products, [{
+  result = mingo.aggregate(products, [{
     $project: {
       item: 1,
       stock: {
@@ -56,7 +56,7 @@ test('Conditional Operators', function (t) {
     {'_id': 5, 'item': 'VWZ2', 'stock': 'low'}
   ], result, 'can apply $switch aggregate operator')
 
-  result = Mingo.aggregate([
+  result = mingo.aggregate([
     {'_id': 1, 'item': 'abc1', description: 'product 1', qty: 300},
     {'_id': 2, 'item': 'abc2', description: null, qty: 200},
     {'_id': 3, 'item': 'xyz1', qty: 250}
@@ -75,7 +75,7 @@ test('Conditional Operators', function (t) {
 
   // expect $ifNull to throw if num of args are wrong
   t.throws(function () {
-    Mingo.aggregate([
+    mingo.aggregate([
       {'_id': 1, 'item': 'abc1', description: 'product 1', qty: 300}
     ], [{
       $project: {

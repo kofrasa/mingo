@@ -1,13 +1,13 @@
 var test = require('tape')
 var Backbone = require('backbone')
-var Mingo = require('../dist/mingo')
+var mingo = require('../dist/mingo')
 var samples = require('./samples')
-var _ = Mingo._internal()
+var _ = mingo._internal()
 
 test('Mingo.Cursor', function (t) {
   t.plan(5)
   // create a query with no criteria
-  var query = new Mingo.Query()
+  var query = new mingo.Query()
   var cursor = query.find(samples.gradesSimple)
   t.ok(cursor.hasNext(), 'can peek for an item with hasNext()')
   t.ok(cursor.next(), 'can select next item with next()')
@@ -19,7 +19,7 @@ test('Mingo.Cursor', function (t) {
 test('CollectionMixin integration', function (t) {
   t.plan(1)
 
-  var MingoCollection = Backbone.Collection.extend(Mingo.CollectionMixin)
+  var MingoCollection = Backbone.Collection.extend(mingo.CollectionMixin)
   var grades = new MingoCollection(samples.gradesSimple)
   // find students with grades less than 50 in homework or quiz
   // sort by score ascending and type descending
@@ -60,7 +60,7 @@ test('Match $all with $elemMatch on nested elements', function (t) {
     'user.projects': {'$all': [ {'$elemMatch': {'rating.complexity': {'$gt': 6}}} ]}
   }
   // It should return one user object
-  var result = Mingo.find(data, criteria).count()
+  var result = mingo.find(data, criteria).count()
   t.ok(result === 1, 'can match using $all with $elemMatch on nested elements')
 })
 
@@ -96,7 +96,7 @@ test('Evaluate $where last', function (t) {
     $where: 'this.user.color === "green" && this.user.number === 42'
   }
   // It should return one user object
-  var result = Mingo.find(data, criteria).count()
+  var result = mingo.find(data, criteria).count()
   t.ok(result === 1, 'can safely reference properties on this using $where and $exists')
 
   criteria = {
@@ -108,6 +108,6 @@ test('Evaluate $where last', function (t) {
     ]
   }
   // It should return one user object
-  var result = Mingo.find(data, criteria).count()
+  var result = mingo.find(data, criteria).count()
   t.ok(result === 1, 'can safely reference properties on this using multiple $where operators and $exists')
 })

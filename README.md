@@ -1,4 +1,4 @@
-# Mingo
+# mingo
 JavaScript implementation of MongoDB query language 
 
 [![version](https://img.shields.io/npm/v/mingo.svg)](https://www.npmjs.org/package/mingo)

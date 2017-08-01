@@ -1,11 +1,11 @@
 var test = require('tape')
 var fs = require('fs')
 var Backbone = require('backbone')
-var Mingo = require('../dist/mingo')
+var mingo = require('../dist/mingo')
 
 var students = JSON.parse(fs.readFileSync(__dirname + '/data/students.json'))
 var gradesSimple = JSON.parse(fs.readFileSync(__dirname + '/data/grades_simple.json'))
-var MingoCollection = Backbone.Collection.extend(Mingo.CollectionMixin)
+var MingoCollection = Backbone.Collection.extend(mingo.CollectionMixin)
 
 test('10gen Education: M101P', function (t) {
   t.test('Homework 2.1', function (t) {
@@ -39,7 +39,7 @@ test('10gen Education: M101P', function (t) {
     }
 
     t.equal(ids.length, 200, '200 minimum homework scores found')
-    var result = Mingo.remove(grades.toJSON(), {'_id': {$in: ids}})
+    var result = mingo.remove(grades.toJSON(), {'_id': {$in: ids}})
 
     // var res = Mingo.find(result).sort({'score':-1}).skip(100).limit(1).first();
     // console.log(res);
@@ -47,7 +47,7 @@ test('10gen Education: M101P', function (t) {
 
     t.equal(result.length, 600, 'remove lowest homework from grades for each student. count is 600')
 
-    var res = Mingo.aggregate(result, [
+    var res = mingo.aggregate(result, [
       {'$group': {'_id': '$student_id', 'average': {$avg: '$score'}}},
       {'$sort': {'average': -1}},
       {'$limit': 1}

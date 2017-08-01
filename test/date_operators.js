@@ -1,11 +1,11 @@
 var test = require('tape')
-var Mingo = require('../dist/mingo')
+var mingo = require('../dist/mingo')
 
 
 test("Date Operators", function (t) {
  t.plan(12);
 
- var result = Mingo.aggregate([{
+ var result = mingo.aggregate([{
    "_id": 1, "item": "abc", "price": 10, "quantity": 2, "date": new Date("2014-01-01T08:15:39.736Z")
  }], [{
    $project: {

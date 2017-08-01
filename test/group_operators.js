@@ -1,5 +1,5 @@
 var test = require('tape')
-var Mingo = require('../dist/mingo')
+var mingo = require('../dist/mingo')
 
 test('Group Accumulator Operators', function (t) {
   var data = [
@@ -11,7 +11,7 @@ test('Group Accumulator Operators', function (t) {
     { '_id': 6, 'name': 'ty', 'quiz': 2, 'score': 82 }
   ]
 
-  var result = Mingo.aggregate(data, [
+  var result = mingo.aggregate(data, [
      { $group: { _id: '$quiz', stdDev: { $stdDevPop: '$score' } } }
   ])
 
@@ -58,7 +58,7 @@ test('Group Accumulator Operators', function (t) {
     }
   ]
 
-  result = Mingo.aggregate(data, [
+  result = mingo.aggregate(data, [
      { $project: { stdDev: { $stdDevPop: '$scores.score' } } }
   ])
 

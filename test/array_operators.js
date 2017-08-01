@@ -1,9 +1,9 @@
 var test = require('tape')
-var Mingo = require('../dist/mingo')
+var mingo = require('../dist/mingo')
 var tryExamples = require('./samples').tryExamples
 
 test('Array Operators', function (t) {
-  var result = Mingo.aggregate([
+  var result = mingo.aggregate([
     {'_id': 1, 'item': 'ABC1', 'description': 'product 1', colors: ['blue', 'black', 'red']},
     {'_id': 2, 'item': 'ABC2', 'description': 'product 2', colors: ['purple']},
     {'_id': 3, 'item': 'XYZ1', 'description': 'product 3', colors: []}
@@ -20,7 +20,7 @@ test('Array Operators', function (t) {
     {'_id': 3, 'item': 'XYZ1', 'numberOfColors': 0}
   ], 'can apply $size operator')
 
-  result = Mingo.aggregate([
+  result = mingo.aggregate([
     { '_id': 1, 'name': 'dave123', favorites: [ 'chocolate', 'cake', 'butter', 'apples' ] },
     { '_id': 2, 'name': 'li', favorites: [ 'apples', 'pudding', 'pie' ] },
     { '_id': 3, 'name': 'ahn', favorites: [ 'pears', 'pecans', 'chocolate', 'cherries' ] },
@@ -44,7 +44,7 @@ test('Array Operators', function (t) {
   ], 'can apply $arrayElemAt operator')
 
   // $concatArrays
-  result = Mingo.aggregate([
+  result = mingo.aggregate([
     { '_id': 1, instock: [ 'chocolate' ], ordered: [ 'butter', 'apples' ] },
     { '_id': 2, instock: [ 'apples', 'pudding', 'pie' ] },
     { '_id': 3, instock: [ 'pears', 'pecans' ], ordered: [ 'cherries' ] },
@@ -85,7 +85,7 @@ test('Array Operators', function (t) {
     }
   ]
 
-  result = Mingo.aggregate(data, [
+  result = mingo.aggregate(data, [
     {
       $project: {
         items: {
@@ -125,7 +125,7 @@ test('Array Operators', function (t) {
     { '_id': 5, 'amount': 3 }
   ]
 
-  result = Mingo.aggregate(data,
+  result = mingo.aggregate(data,
     [
       {
         $project:
@@ -151,7 +151,7 @@ test('Array Operators', function (t) {
     { '_id': 4, instock: [ 'ice cream' ], ordered: [ ] }
   ]
 
-  result = Mingo.aggregate(warehouses, [
+  result = mingo.aggregate(warehouses, [
     {
       $project: {
         items: {
@@ -180,7 +180,7 @@ test('Array Operators', function (t) {
     { _id: 3, city: 'Los Angeles', distance: 383 }
   ]
 
-  result = Mingo.aggregate(distances, [
+  result = mingo.aggregate(distances, [
     {
       $project: {
         _id: 0,
@@ -214,7 +214,7 @@ test('Array Operators', function (t) {
     { '_id': 4, 'name': 'ty' }
   ]
 
-  result = Mingo.aggregate(data, [
+  result = mingo.aggregate(data, [
     {
       $project:
       {
@@ -249,7 +249,7 @@ test('Array Operators', function (t) {
     { '_id': 4, 'name': 'ty', favorites: [ 'ice cream' ] }
   ]
 
-  result = Mingo.aggregate(data, [
+  result = mingo.aggregate(data, [
     { $project: { name: 1, threeFavorites: { $slice: [ '$favorites', 3 ] } } }
   ])
 
@@ -281,7 +281,7 @@ test('Array Operators', function (t) {
     {_id: 8, 'type': 'card', 'experimentId': 'dak', 'description': 'Draw an ace, then a king', 'eventNum': 2, 'probability': 0.07843137254902}
   ]
 
-  result = Mingo.aggregate(data,
+  result = mingo.aggregate(data,
     [
       {
         $group: {
@@ -322,7 +322,7 @@ test('Array Operators', function (t) {
     { '_id': 5, 'productId': 'j2', 'description': 'Designer Jeans', 'color': 'blue', 'size': '30', 'price': 80, 'discounts': [ 0.1, 0.25 ] }
   ]
 
-  result = Mingo.aggregate(data,
+  result = mingo.aggregate(data,
     [
       {
         $project: {
@@ -355,7 +355,7 @@ test('Array Operators', function (t) {
     { '_id': 6, 'name': 'Claire' }
   ]
 
-  result = Mingo.aggregate(data,
+  result = mingo.aggregate(data,
     [
        // Filter to return only non-empty arrays
        { $match: { 'hobbies': { $gt: [ ] } } },
@@ -401,7 +401,7 @@ test('Array Operators', function (t) {
     { '_id': 4 }
   ]
 
-  result = Mingo.aggregate(matrices,
+  result = mingo.aggregate(matrices,
     [
       {
         $project: {
@@ -424,7 +424,7 @@ test('Array Operators', function (t) {
     { '_id': 4, 'collapsed': null }
   ], '$reduce: Array Concatenation example - Computing a Single Reduction')
 
-  result = Mingo.aggregate(matrices,
+  result = mingo.aggregate(matrices,
     [
       {
         $project: {
@@ -493,7 +493,7 @@ test('Array Operators', function (t) {
     { '_id': 3, 'location': '82nd Street', 'in_stock': [ 'cantaloupes', 'watermelons', 'apples' ] }
   ]
 
-  result = Mingo.aggregate(data, [
+  result = mingo.aggregate(data, [
     {
       $project: {
         'store location': '$location',
@@ -516,7 +516,7 @@ test('Array Operators', function (t) {
     { matrix: [[8, 7], [7, 6], [5, 4]] }
   ]
 
-  result = Mingo.aggregate(data, [{
+  result = mingo.aggregate(data, [{
     $project: {
       _id: false,
       transposed: {
@@ -547,7 +547,7 @@ test('Array Operators', function (t) {
     }
   ]
 
-  result = Mingo.aggregate(data, [{
+  result = mingo.aggregate(data, [{
     $project: {
       _id: false,
       pages: {
@@ -600,6 +600,96 @@ test('Array Operators', function (t) {
   ]
 
   tryExamples(examples, '$zip')
+
+
+  // $map
+  result = mingo.aggregate([
+    {_id: 1, quizzes: [5, 6, 7]},
+    {_id: 2, quizzes: []},
+    {_id: 3, quizzes: [3, 8, 9]}
+  ], [
+    {
+      $project: {
+        adjustedGrades: {
+          $map: {
+            input: '$quizzes',
+            as: 'grade',
+            in: {$add: ['$$grade', 2]}
+          }
+        }
+      }
+    }
+  ])
+
+  t.deepEqual([
+    {'_id': 1, 'adjustedGrades': [7, 8, 9]},
+    {'_id': 2, 'adjustedGrades': []},
+    {'_id': 3, 'adjustedGrades': [5, 10, 11]}
+  ], result, 'can apply $map operator')
+
+  // $arrayToObject
+  var inventory = [
+    { "_id" : 1, "item" : "ABC1",  dimensions: [ { "k": "l", "v": 25} , { "k": "w", "v": 10 }, { "k": "uom", "v": "cm" } ] },
+    { "_id" : 2, "item" : "ABC2",  dimensions: [ [ "l", 50], [ "w",  25 ], [ "uom", "cm" ] ] }
+  ]
+
+  result = mingo.aggregate(inventory,
+    [
+      {
+        $project: {
+          item: 1,
+          dimensions: { $arrayToObject: "$dimensions" }
+        }
+      }
+    ]
+  )
+
+  t.deepEqual([
+    { "_id" : 1, "item" : "ABC1", "dimensions" : { "l" : 25, "w" : 10, "uom" : "cm" } },
+    { "_id" : 2, "item" : "ABC2", "dimensions" : { "l" : 50, "w" : 25, "uom" : "cm" } }
+  ], result, 'can apply $arrayToObject operator')
+
+
+  // $objectToArray
+  inventory = [
+    { "_id" : 1, "item" : "ABC1",  dimensions: { l: 25, w: 10, uom: "cm" } },
+    { "_id" : 2, "item" : "ABC2",  dimensions: { l: 50, w: 25, uom: "cm" } },
+    { "_id" : 3, "item" : "XYZ1",  dimensions: { l: 70, w: 75, uom: "cm" } }
+  ]
+
+  result = mingo.aggregate(inventory,
+    [
+      {
+        $project: {
+          item: 1,
+          dimensions: { $objectToArray: "$dimensions" }
+        }
+      }
+    ]
+  )
+
+  t.deepEqual([
+    { "_id" : 1, "item" : "ABC1", "dimensions" : [ { "k" : "l", "v" : 25 }, { "k" : "w", "v" : 10 }, { "k" : "uom", "v" : "cm" } ] },
+    { "_id" : 2, "item" : "ABC2", "dimensions" : [ { "k" : "l", "v" : 50 }, { "k" : "w", "v" : 25 }, { "k" : "uom", "v" : "cm" } ] },
+    { "_id" : 3, "item" : "XYZ1", "dimensions" : [ { "k" : "l", "v" : 70 }, { "k" : "w", "v" : 75 }, { "k" : "uom", "v" : "cm" } ] }
+  ], result, 'can apply $objectToArray operator')
+
+  // $arrayToObject + $objectToArray
+  inventory = [
+    { "_id" : 1, "item" : "ABC1", instock: { warehouse1: 2500, warehouse2: 500 } },
+    { "_id" : 2, "item" : "ABC2", instock: { warehouse2: 500, warehouse3: 200} }
+  ]
+
+  result = mingo.aggregate(inventory, [
+    { $addFields: { instock: { $objectToArray: "$instock" } } },
+    { $addFields: { instock: { $concatArrays: [ "$instock", [ { "k": "total", "v": { $sum: "$instock.v" } } ] ] } } } ,
+    { $addFields: { instock: { $arrayToObject: "$instock" } } }
+  ])
+
+  t.deepEqual([
+    { "_id" : 1, "item" : "ABC1", "instock" : { "warehouse1" : 2500, "warehouse2" : 500, "total" : 3000 } },
+    { "_id" : 2, "item" : "ABC2", "instock" : { "warehouse2" : 500, "warehouse3" : 200, "total" : 700 } }
+  ], result, 'can apply $objectToArray + $arrayToObject operators together')
 
   t.end()
 })
