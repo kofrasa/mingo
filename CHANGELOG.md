@@ -1,6 +1,6 @@
 Changelog
 =========
-## 1.3.3 / in-progress
+## 1.3.3 / 2017-08-02
 - Fix `computeValue` not overriding group operator keys after resolving expression
 - Added `$in`, `$objectToArray`, and `$arrayToObject` array aggregation operators
 - Minor refactoring
