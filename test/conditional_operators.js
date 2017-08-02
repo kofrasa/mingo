@@ -1,90 +1,50 @@
 var test = require('tape')
 var mingo = require('../dist/mingo')
+var runTest = require('./samples').runTest
 
-test('Conditional Operators', function (t) {
-  t.plan(4)
-
-  var products = [
-    {'_id': 1, 'item': 'abc1', description: 'product 1', qty: 400},
-    {'_id': 2, 'item': 'abc2', description: 'product 2', qty: 200},
-    {'_id': 3, 'item': 'xyz1', description: 'product 3', qty: 150},
-    {'_id': 4, 'item': 'VWZ1', description: 'product 4', qty: 300},
-    {'_id': 5, 'item': 'VWZ2', description: 'product 5', qty: 80}
+runTest('Conditional Operators', {
+  $cond: [
+    [{ 'if': {$lte: [200, 200]}, then: 'low', 'else': 'high'}, 'low'],
+    [{ 'if': {$lte: [500, 200]}, then: 'low', 'else': 'high'}, 'high'],
+    [[{$lte: [100, 200]},'low', 'high'], 'low'],
+    [[{$lte: [500, 200]},'low', 'high'], 'high']
+  ],
+  $switch: [
+    [
+      {
+        branches: [
+          {'case': {$lte: [500, 200]}, then: 'low'},
+          {'case': {$gte: [500, 400]}, then: 'high'}
+        ],
+        'default': 'normal'
+      },
+      'high'
+    ],
+    [
+      {
+        branches: [
+          {'case': {$lte: [100, 200]}, then: 'low'},
+          {'case': {$gte: [100, 400]}, then: 'high'}
+        ],
+        'default': 'normal'
+      },
+      'low'
+    ],
+    [
+      {
+        branches: [
+          {'case': {$lt: [500, 200]}, then: 'low'},
+          {'case': {$gt: [200, 400]}, then: 'high'}
+        ],
+        'default': 'normal'
+      },
+      'normal'
+    ]
+  ],
+  $ifNull: [
+    [[ null, 'Unspecified' ], 'Unspecified'],
+    [[ undefined, 'Unspecified' ], 'Unspecified'],
+    [[ 5, 'Unspecified' ], 5],
+    [[ 5, 'Unspecified', 'error' ], 'invalid arguments', {err:true}]
   ]
-
-  var result = mingo.aggregate(products, [{
-    $project: {
-      item: 1,
-      stock: {
-        $cond: {
-          if: {$lte: ['$qty', 200]},
-          then: 'low',
-          else: 'high'
-        }
-      }
-    }
-  }])
-
-  t.deepEqual([
-    {'_id': 1, 'item': 'abc1', 'stock': 'high'},
-    {'_id': 2, 'item': 'abc2', 'stock': 'low'},
-    {'_id': 3, 'item': 'xyz1', 'stock': 'low'},
-    {'_id': 4, 'item': 'VWZ1', 'stock': 'high'},
-    {'_id': 5, 'item': 'VWZ2', 'stock': 'low'}
-  ], result, 'can apply $cond aggregate operator')
-
-  result = mingo.aggregate(products, [{
-    $project: {
-      item: 1,
-      stock: {
-        $switch: {
-          branches: [
-            {case: {$lte: ['$qty', 200]}, then: 'low'},
-            {case: {$gte: ['$qty', 400]}, then: 'high'}
-          ],
-          default: 'normal'
-        }
-      }
-    }
-  }])
-
-  t.deepEqual([
-    {'_id': 1, 'item': 'abc1', 'stock': 'high'},
-    {'_id': 2, 'item': 'abc2', 'stock': 'low'},
-    {'_id': 3, 'item': 'xyz1', 'stock': 'low'},
-    {'_id': 4, 'item': 'VWZ1', 'stock': 'normal'},
-    {'_id': 5, 'item': 'VWZ2', 'stock': 'low'}
-  ], result, 'can apply $switch aggregate operator')
-
-  result = mingo.aggregate([
-    {'_id': 1, 'item': 'abc1', description: 'product 1', qty: 300},
-    {'_id': 2, 'item': 'abc2', description: null, qty: 200},
-    {'_id': 3, 'item': 'xyz1', qty: 250}
-  ], [{
-    $project: {
-      item: 1,
-      description: {$ifNull: [ '$description', 'Unspecified' ]}
-    }
-  }])
-
-  t.deepEqual([
-    {'_id': 1, 'item': 'abc1', 'description': 'product 1'},
-    {'_id': 2, 'item': 'abc2', 'description': 'Unspecified'},
-    {'_id': 3, 'item': 'xyz1', 'description': 'Unspecified'}
-  ], result, 'can apply $ifNull aggregate operator')
-
-  // expect $ifNull to throw if num of args are wrong
-  t.throws(function () {
-    mingo.aggregate([
-      {'_id': 1, 'item': 'abc1', description: 'product 1', qty: 300}
-    ], [{
-      $project: {
-        item: 1,
-        description: {$ifNull: [ '$description', 'Unspecified', '' ]}
-      }
-    }])
-  }, /Invalid arguments for \$ifNull operator/,
-  '$ifNull throws with wrong arguments')
-
-  t.end()
 })

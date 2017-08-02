@@ -1,12 +1,12 @@
 var fs = require('fs')
 var test = require('tape')
-var Mingo = require('../dist/mingo')
-var _ = Mingo._internal()
+var mingo = require('../dist/mingo')
+var _ = mingo._internal()
 
-exports.person = JSON.parse(fs.readFileSync(__dirname + '/data/person.json'))
-exports.gradesSimple = JSON.parse(fs.readFileSync(__dirname + '/data/grades_simple.json'))
-exports.gradesComplex = JSON.parse(fs.readFileSync(__dirname + '/data/grades_complex.json'))
-exports.students = JSON.parse(fs.readFileSync(__dirname + '/data/students.json'))
+exports.personData = JSON.parse(fs.readFileSync(__dirname + '/data/person.json'))
+exports.simpleGradesData = JSON.parse(fs.readFileSync(__dirname + '/data/grades_simple.json'))
+exports.complexGradesData = JSON.parse(fs.readFileSync(__dirname + '/data/grades_complex.json'))
+exports.studentsData = JSON.parse(fs.readFileSync(__dirname + '/data/students.json'))
 
 exports.groupByObjectsData = [
   {'date_buckets': {'date': '2015-04-29T00:17:03.107Z', 'day': 28, 'hour': 18, 'minute': 17, 'sec': 3, 'hour_minute': '18:17'}, 'Keyword ID': 'sr3_4VzRD3sp', 'Creative ID': '5184986203', 'Keyword': 'Bathroom Cleaning Tips', 'Match Type': 'be', 'Device': 'm', 'Conversions': [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0], 'Revenues': [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0], 'account_id': 'baron'},
@@ -17,21 +17,37 @@ exports.groupByObjectsData = [
   {'date_buckets': {'date': '2015-04-29T00:17:03.107Z', 'day': 28, 'hour': 18, 'minute': 17, 'sec': 3, 'hour_minute': '18:17'}, 'Keyword ID': 'sr3_irU8fFk0', 'Creative ID': '6074827289', 'Keyword': 'unclog bathtub drain', 'Match Type': 'bp', 'Device': 'c', 'Conversions': [1, 0, 0, 1, 0, 0, 0, 0, 0], 'Revenues': [5, 0, 0, 5, 0, 0, 0, 0, 0], 'account_id': 'baron'}
 ]
 
-exports.tryExamples = function (examples, operator) {
-  test('More examples for ' + operator, function (t) {
-    examples.forEach(function (val) {
-      var input = val[0]
-      var output = val[1]
+exports.runTest = function (description, suite) {
+  _.each(suite, function (examples, operator) {
+    test(description + ': ' + operator, function (t) {
+      _.each(examples, function (val) {
+        var input = val[0]
+        var expected = val[1]
+        var ctx = val[2] || { err: false }
+        var obj = ctx.obj || {}
 
-      if (val[2] === true) { // Error
-        t.throws(function () {
-          _.computeValue({}, input, operator)
-        }, 'Error: ' + output)
-      } else {
-        var result = _.computeValue({}, input, operator)
-        t.deepEqual(result, val[1], operator + ':\t' + JSON.stringify(input) + '\t=>\t' + JSON.stringify(output))
-      }
+        var field = operator
+        // use the operator as field if not present in input
+        if (_.isObject(input)) {
+          field = _.keys(input).find((s) => s[0] === '$') || null
+          if (field === null) {
+            field = operator
+          } else {
+            input = input[field]
+          }
+        }
+
+        if (ctx.err) {
+          t.throws(() => _.computeValue(obj, input, field),  JSON.stringify(input) + '\t=>\t' + expected)
+        } else {
+          var actual = _.computeValue(obj, input, field)
+          var message =  operator + ':\t' + JSON.stringify(input) + '\t=>\t' + JSON.stringify(expected)
+          // NaNs don't compare
+          if (isNaN(actual) && isNaN(expected)) actual = expected = 0
+          t.deepEqual(actual, expected, message)
+        }
+      })
+      t.end()
     })
-    t.end()
   })
 }

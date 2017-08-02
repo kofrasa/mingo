@@ -4,7 +4,7 @@ var samples = require('./samples')
 var ObjectId = require('bson').ObjectId
 
 var idStr = "123456789abe"
-var obj = samples.person
+var obj = samples.personData
 obj['_id'] = new ObjectId(idStr)
 obj['today'] = new Date()
 
@@ -55,7 +55,183 @@ test('Comparison, Evaluation, and Element Operators', function (t) {
   t.end()
 })
 
-test('Projection Operators', function (t) {
+test('project $type operator', function (t) {
+  var obj = {
+    double: 12323.4,
+    string: "me",
+    obj: {},
+    array: [],
+    boolean: true,
+    date: new Date(),
+    nothing: null,
+    regex: /ab/,
+    int: 49023,
+    long: Math.pow(2,32),
+    decimal: 20.7823e10
+  }
+  var queries = [
+    [{double: {$type: 1}}, 'can match $type 1 "double"'],
+    [{string: {$type: 2}}, 'can match $type 2 "string"'],
+    [{obj: {$type: 3}}, 'can match $type 3 "object"'],
+    [{array: {$type: 4}}, 'can match $type 4 "array"'],
+    [{missing: {$type: 6}}, 'can match $type 6 "undefined"'],
+    [{boolean: {$type: 8}}, 'can match $type 8 "boolean"'],
+    [{date: {$type: 9}}, 'can match $type 9 "date"'],
+    [{nothing: {$type: 10}}, 'can match $type 10 "null"'],
+    [{regex: {$type: 11}}, 'can match $type 11 "regexp"'],
+    [{int: {$type: 16}}, 'can match $type 16 "int"'],
+    [{long: {$type: 18}}, 'can match $type 18 "long"'],
+    [{decimal: {$type: 19}}, 'can match $type 19 "decimal"'],
+    [{obj: {$not: {$type: 100}}}, 'do not match unknown $type']
+  ]
+
+  queries.forEach(function (q) {
+    var query = new mingo.Query(q[0])
+    t.ok(query.test(obj), q[1])
+  })
+
+  t.end()
+})
+
+
+test('Match $all with $elemMatch on nested elements', function (t) {
+  t.plan(1)
+
+  var data = [
+    {
+      user: {
+        username: 'User1',
+        projects: [
+          {name: 'Project 1', rating: {complexity: 6}},
+          {name: 'Project 2', rating: {complexity: 2}}
+        ]
+      }
+    },
+    {
+      user: {
+        username: 'User2',
+        projects: [
+          {name: 'Project 1', rating: {complexity: 6}},
+          {name: 'Project 2', rating: {complexity: 8}}
+        ]
+      }
+    }
+  ]
+  var criteria = {
+    'user.projects': {'$all': [ {'$elemMatch': {'rating.complexity': {'$gt': 6}}} ]}
+  }
+  // It should return one user object
+  var result = mingo.find(data, criteria).count()
+  t.ok(result === 1, 'can match using $all with $elemMatch on nested elements')
+})
+
+test('Projection $elemMatch operator', function (t) {
+  var data = [
+    {
+      _id: 1,
+      zipcode: "63109",
+      students: [
+        { name: "john", school: 102, age: 10 },
+        { name: "jess", school: 102, age: 11 },
+        { name: "jeff", school: 108, age: 15 }
+      ]
+    },
+    {
+      _id: 2,
+      zipcode: "63110",
+      students: [
+        { name: "ajax", school: 100, age: 7 },
+        { name: "achilles", school: 100, age: 8 }
+      ]
+    },
+    {
+      _id: 3,
+      zipcode: "63109",
+      students: [
+        { name: "ajax", school: 100, age: 7 },
+        { name: "achilles", school: 100, age: 8 }
+      ]
+    },
+    {
+      _id: 4,
+      zipcode: "63109",
+      students: [
+        { name: "barney", school: 102, age: 7 },
+        { name: "ruth", school: 102, age: 16 }
+      ]
+    }
+  ]
+
+  var result = mingo.find(data, { zipcode: "63109" }, { students: { $elemMatch: { school: 102 } } } ).all()
+  t.deepEqual(result, [
+    { "_id" : 1, "students" : [ { "name" : "john", "school" : 102, "age" : 10 } ] },
+    { "_id" : 3 },
+    { "_id" : 4, "students" : [ { "name" : "barney", "school" : 102, "age" : 7 } ] }
+  ], 'can project with $elemMatch')
+
+  result = mingo.find(data, { zipcode: "63109" }, { students: { $elemMatch: { school: 102, age: { $gt: 10} } } } ).all()
+  t.deepEqual(result, [
+    { "_id" : 1, "students" : [ { "name" : "jess", "school" : 102, "age" : 11 } ] },
+    { "_id" : 3 },
+    { "_id" : 4, "students" : [ { "name" : "ruth", "school" : 102, "age" : 16 } ] }
+  ], 'can project multiple fields with $elemMatch')
+
+  result = mingo.find(data, { }, { students: {$slice: 1 } } ).first()
+  t.equal(result.students.length, 1, 'can project with $slice')
+
+  t.end()
+
+})
+
+test('Evaluate $where last', function (t) {
+  t.plan(2)
+
+  var data = [
+    {
+      user: {
+        username: 'User1',
+        projects: [
+          {name: 'Project 1', rating: {complexity: 6}},
+          {name: 'Project 2', rating: {complexity: 2}}
+        ],
+        color: 'green',
+        number: 42
+      }
+    },
+    {
+      user: {
+        username: 'User2',
+        projects: [
+          {name: 'Project 1', rating: {complexity: 6}},
+          {name: 'Project 2', rating: {complexity: 8}}
+        ]
+      }
+    }
+  ]
+
+  var criteria = {
+    'user.color': {$exists: true},
+    'user.number': {$exists: true},
+    $where: 'this.user.color === "green" && this.user.number === 42'
+  }
+  // It should return one user object
+  var result = mingo.find(data, criteria).count()
+  t.ok(result === 1, 'can safely reference properties on this using $where and $exists')
+
+  criteria = {
+    'user.color': {$exists: true},
+    'user.number': {$exists: true},
+    $and: [
+      { $where: 'this.user.color === "green"' },
+      { $where: 'this.user.number === 42' }
+    ]
+  }
+  // It should return one user object
+  var result = mingo.find(data, criteria).count()
+  t.ok(result === 1, 'can safely reference properties on this using multiple $where operators and $exists')
+})
+
+test('Query projection operators', function (t) {
   var data = [obj]
   var result = mingo.find(data, {}, {'languages.programming': {$slice: [-3, 2]}}).first()
   t.deepEqual(result['languages']['programming'], ['Javascript', 'Bash'], 'should project with $slice operator')
@@ -129,7 +305,7 @@ test('Logical Operators', function (t) {
   t.end()
 })
 
-test('Array Operators', function (t) {
+test('Query array operators', function (t) {
   var data = [
     {
       '_id': '5234ccb7687ea597eabee677',

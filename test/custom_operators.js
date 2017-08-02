@@ -16,7 +16,7 @@ test('Custom Operators', function (t) {
       }
     })
 
-    var result = mingo.aggregate(samples.gradesComplex, [{$unwind: '$scores'}, {$pluck: 'scores.score'}])
+    var result = mingo.aggregate(samples.complexGradesData, [{$unwind: '$scores'}, {$pluck: 'scores.score'}])
     t.ok(typeof result[0] === 'number', 'can add new pipeline operator')
   })
 
@@ -68,7 +68,7 @@ test('Custom Operators', function (t) {
         }
       }
     })
-    result = mingo.aggregate(samples.gradesComplex, [{$unwind: '$scores'}, {$group: {stddev: {$stddev: '$scores.score'}}}])
+    result = mingo.aggregate(samples.complexGradesData, [{$unwind: '$scores'}, {$group: {stddev: {$stddev: '$scores.score'}}}])
     t.ok(result.length === 1, 'must return one result after grouping')
     t.equal(28.57362029450366, result[0].stddev, 'must return correct stddev')
   })

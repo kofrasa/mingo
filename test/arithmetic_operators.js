@@ -1,92 +1,112 @@
 var test = require('tape')
 var mingo = require('../dist/mingo')
+var runTest = require('./samples').runTest
 
-test('Arithmetic Operators', function (t) {
-  t.plan(5)
 
-  var sales = [
-    {
-      '_id': 1,
-      'item': 'abc',
-      'price': 10,
-      'fee': 2,
-      'discount': 5,
-      'quantity': 2,
-      date: new Date('2014-03-01T08:00:00Z')
-    },
-    {
-      '_id': 2,
-      'item': 'jkl',
-      'price': 20,
-      'fee': 1,
-      'discount': 2,
-      'quantity': 1,
-      date: new Date('2014-03-01T09:00:00Z')
-    },
-    {
-      '_id': 3,
-      'item': 'xyz',
-      'price': 5,
-      'fee': 0,
-      'discount': 1,
-      'quantity': 10,
-      date: new Date('2014-03-15T09:00:00Z')
+// hook in custom operator to round value
+mingo.addOperators(mingo.OP_AGGREGATE, (_) => {
+  return {
+    $round: (obj, expr) => {
+      var args = _.computeValue(obj, expr)
+      var n = args[0].toString()
+      var parts = n.toString().split('.')
+      return (parts.length > 1)
+        ? Number(parts[0] + '.' + parts[1].substr(0, args[1]))
+        : n
     }
+  }
+})
+
+runTest("Arithmetic Operators", {
+  $abs: [
+    [{ $abs: null },	null],
+    [{ $abs: -1 },	1],
+    [{ $abs: 1 },	1]
+  ],
+  $add: [
+    [[10, 2], 12],
+    [[-1, 5], 4],
+    [[-3, -7], -10]
+  ],
+  $ceil: [
+    [{ $ceil: NaN }, NaN],
+    [{ $ceil: null }, null],
+    [{ $ceil: 1 }, 1],
+    [{ $ceil: 7.80 },	8],
+    [{ $ceil: -2.8 },	-2]
+  ],
+  $divide: [
+    [[80, 4], 20],
+    [[1.5, 3], 0.5],
+    [[40, 8], 5]
+  ],
+  $exp: [
+    [{ $exp: 0 },	1],
+    [{$round: [{ $exp: 2 }, 10]}, 7.3890560989], // applied rounding to survive different v8 versions
+    [{$round: [{ $exp: -2 }, 10]}, 0.1353352832],
+    [{ $exp: NaN }, NaN],
+    [{ $exp: undefined }, null]
+  ],
+  $floor: [
+    [{ $floor: NaN }, NaN],
+    [{ $floor: undefined }, null],
+    [{ $floor: 1 }, 1],
+    [{ $floor: 7.80 }, 7],
+    [{ $floor: -2.8 }, -3]
+  ],
+  $ln: [
+    [{ $ln: NaN }, NaN],
+    [{ $ln: undefined }, null],
+    [{ $ln: 1 },	0],
+    [{ $ln: Math.E }, 1],
+    [{ $ln: 10  },	2.302585092994046]
+  ],
+  $log: [
+    [{ $log: [NaN, 1] }, NaN],
+    [{ $log: [undefined, 2] }, null],
+    [{ $log: [ 100, 10 ] },	2],
+    [{ $log: [ 100, Math.E ] }, 4.605170185988092]
+  ],
+  $log10: [
+    [{ $log10: NaN }, NaN],
+    [{ $log10: undefined }, null],
+    [{ $log10: 1 },	0],
+    [{ $log10: 10 },	1],
+    [{ $log10: 100 },	2],
+    [{ $log10: 1000 },	3]
+  ],
+  $mod: [
+    [[80, 7], 3],
+    [[40, 4], 0]
+  ],
+  $multiply: [
+    [[5, 10], 50],
+    [[-2, 4], -8],
+    [[-3, -3], 9]
+  ],
+  $pow: [
+    [{ $pow: [ 0, -1 ] },	'$pow cannot raise 0 to a negative exponent', {err:1}],
+    [{ $pow: [ 5, 0 ] },	1],
+    [{ $pow: [ 5, 2 ] },	25],
+    [{ $pow: [ 5, -2 ] },	0.04],
+    [{ $pow: [ -5, 0.5 ] },	NaN]
+  ],
+  $sqrt: [
+    [{ $sqrt: null },	null],
+    [{ $sqrt: NaN },	NaN],
+    [{ $sqrt: 25 },	5],
+    [{ $sqrt: 30 },	5.477225575051661]
+  ],
+  $subtract: [
+    [[-1, -1], 0],
+    [[-1, 2], -3],
+    [[2, -1], 3]
+  ],
+  $truc: [
+    [{ $trunc: NaN }, NaN],
+    [{ $trunc: null }, null],
+    [{ $trunc: 0 },	0],
+    [{ $trunc: 7.80 }, 7],
+    [{ $trunc: -2.3 }, -2]
   ]
-
-  // $add
-  var result = mingo.aggregate(sales, [
-    {$project: {item: 1, total: {$add: ['$price', '$fee']}}}
-  ])
-  t.deepEqual(result, [
-    {'_id': 1, 'item': 'abc', 'total': 12},
-    {'_id': 2, 'item': 'jkl', 'total': 21},
-    {'_id': 3, 'item': 'xyz', 'total': 5}
-  ], 'aggregate with $add operator')
-
-  // $subtract
-  result = mingo.aggregate(sales, [
-    {$project: {item: 1, total: {$subtract: [{$add: ['$price', '$fee']}, '$discount']}}}
-  ])
-  t.deepEqual(result, [
-    {'_id': 1, 'item': 'abc', 'total': 7},
-    {'_id': 2, 'item': 'jkl', 'total': 19},
-    {'_id': 3, 'item': 'xyz', 'total': 4}
-  ], 'aggregate with $subtract operator')
-
-  // $multiply
-  result = mingo.aggregate(sales, [
-    {$project: {date: 1, item: 1, total: {$multiply: ['$price', '$quantity']}}}
-  ])
-  t.deepEqual(result, [
-    {'_id': 1, 'item': 'abc', 'date': new Date('2014-03-01T08:00:00Z'), 'total': 20},
-    {'_id': 2, 'item': 'jkl', 'date': new Date('2014-03-01T09:00:00Z'), 'total': 20},
-    {'_id': 3, 'item': 'xyz', 'date': new Date('2014-03-15T09:00:00Z'), 'total': 50}
-  ], 'aggregate with $multiply operator')
-
-  // $divide
-  result = mingo.aggregate([
-    {'_id': 1, 'name': 'A', 'hours': 80, 'resources': 7},
-    {'_id': 2, 'name': 'B', 'hours': 40, 'resources': 4}
-  ], [
-    {$project: {name: 1, workdays: {$divide: ['$hours', 8]}}}
-  ])
-  t.deepEqual(result, [
-    {'_id': 1, 'name': 'A', 'workdays': 10},
-    {'_id': 2, 'name': 'B', 'workdays': 5}
-  ], 'aggregate with $divide operator')
-
-  // $mod
-  result = mingo.aggregate([
-    {'_id': 1, 'project': 'A', 'hours': 80, 'tasks': 7},
-    {'_id': 2, 'project': 'B', 'hours': 40, 'tasks': 4}
-  ], [
-    {$project: {remainder: {$mod: ['$hours', '$tasks']}}}
-  ])
-  t.deepEqual(result, [
-    {'_id': 1, 'remainder': 3},
-    {'_id': 2, 'remainder': 0}
-  ], 'aggregate with $mod operator')
-
-  t.end()
 })

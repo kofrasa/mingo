@@ -6,5 +6,10 @@
   ],
   "plugins": [
     "external-helpers"
-  ]
+  ],
+  "env": {
+    "test": {
+      "plugins": ["istanbul"]
+    }
+  }
 }

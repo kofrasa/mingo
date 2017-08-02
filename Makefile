@@ -4,12 +4,7 @@ MODULE = mingo
 VERSION = $(shell cat VERSION)
 YEAR = $(shell date +%Y)
 BANNER = templates/header.txt
-
-# tools
-NODE_MODULES = ./node_modules
-ROLLUP = ${NODE_MODULES}/rollup/bin/rollup
-UGLIFY = ${NODE_MODULES}/uglify-js/bin/uglifyjs
-
+TEST_FILES = $(shell find test -name "*.js")
 
 all: clean test build
 
@@ -19,7 +14,7 @@ build: prepare build.es6 compress bower.json package.json
 
 
 build.es6:
-	@${ROLLUP} -c config/rollup.es.js
+	@node_modules/.bin/rollup -c config/rollup.es.js
 
 
 prepare:
@@ -28,7 +23,7 @@ prepare:
 
 compress: mingo.js
 	@cat ${BANNER} | sed "s/@VERSION/${VERSION}/" | sed "s/@YEAR/${YEAR}/" > dist/${MODULE}.min.js
-	@${UGLIFY} dist/${MODULE}.js --compress --mangle --source-map dist/${MODULE}.map >> dist/${MODULE}.min.js
+	@node_modules/.bin/uglifyjs dist/${MODULE}.js --compress --mangle --source-map dist/${MODULE}.min.map >> dist/${MODULE}.min.js
 	@gzip -kf dist/${MODULE}.min.js
 
 
@@ -39,11 +34,11 @@ clean:
 
 
 mingo.js:
-	@${ROLLUP} -c config/rollup.umd.js
+	@node_modules/.bin/rollup -c config/rollup.umd.js
 
 
 test: mingo.js
-	@tape test/*.js
+	@node_modules/.bin/nyc --reporter=lcov --reporter=text node_modules/.bin/tape ${TEST_FILES}
 
 
 %.json: templates/%.json.txt

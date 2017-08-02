@@ -3,7 +3,6 @@ Changelog
 ## 1.3.3 / 2017-08-02
 - Fix `computeValue` not overriding group operator keys after resolving expression
 - Added `$in`, `$objectToArray`, and `$arrayToObject` array aggregation operators
-- Minor refactoring
 
 ## 1.3.2 / 2017-07-28
 - Restore `setup` function. https://github.com/kofrasa/mingo/issues/56
@@ -30,7 +29,6 @@ Changelog
 ## v1.1.2 / 2017-03-30
 - Optimize `$lookup` implementation
 - Avoid reversing original input to `$reverseArray`
-- Refactor some methods
 
 ## v1.1.1 / 2017-03-12
 - Fix incorrect method call for ObjectProto

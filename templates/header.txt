@@ -1,4 +1,3 @@
 // mingo.js @VERSION
 // Copyright (c) @YEAR Francis Asante
-// https://github.com/kofrasa/mingo
 // MIT

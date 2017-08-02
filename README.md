@@ -3,6 +3,7 @@ JavaScript implementation of MongoDB query language
 
 [![version](https://img.shields.io/npm/v/mingo.svg)](https://www.npmjs.org/package/mingo)
 [![build status](https://secure.travis-ci.org/kofrasa/mingo.png)](http://travis-ci.org/kofrasa/mingo)
+[![npm](https://img.shields.io/npm/dt/mingo.svg)]()
 
 ## Install
 ```$ npm install mingo```
@@ -51,7 +52,7 @@ var mingo = require('mingo')
 ```
 
 For the browser
-```
+```html
 // minified UMD module
 <script type="text/javascript" src="./dist/mingo.min.js"></script>
 
@@ -65,9 +66,10 @@ Tiny configuration if needed
 mingo.setup({
     key: '_id' // default
 });
-
+```
 
 ## Using query object to test objects
+```js
 // create a query with criteria
 // find all grades for homework with score >= 50
 let query = new mingo.Query({
