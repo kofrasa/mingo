@@ -50,7 +50,7 @@ mingo.js:
 
 
 test: mingo.js
-	@${NYC} --reporter=text ${TAPE} ${TEST_FILES}
+	@${NYC} --reporter=lcov --reporter=text ${TAPE} ${TEST_FILES}
 
 
 %.json: templates/%.json.txt
