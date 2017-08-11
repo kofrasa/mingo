@@ -8,7 +8,7 @@
     "build": "make build",
     "prepublishOnly": "make build",
     "test": "NODE_ENV=test make test",
-    "coverage": "node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov node_modules/.bin/codecov"
+    "coverage": "node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov && node_modules/.bin/codecov"
   },
   "repository": {
     "type": "git",
