@@ -7,7 +7,8 @@
   "scripts": {
     "build": "make build",
     "prepublishOnly": "make build",
-    "test": "make test"
+    "test": "make test",
+    "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov"
   },
   "repository": {
     "type": "git",

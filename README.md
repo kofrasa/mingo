@@ -4,6 +4,7 @@ JavaScript implementation of MongoDB query language
 [![version](https://img.shields.io/npm/v/mingo.svg)](https://www.npmjs.org/package/mingo)
 [![build status](https://img.shields.io/travis/kofrasa/mingo.svg)](http://travis-ci.org/kofrasa/mingo)
 [![npm](https://img.shields.io/npm/dt/mingo.svg)]()
+[![Codecov](https://img.shields.io/codecov/c/github/kofrasa/mingo.svg)]()
 
 ## Install
 ```$ npm install mingo```

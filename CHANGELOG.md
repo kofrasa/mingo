@@ -1,5 +1,14 @@
 Changelog
 =========
+## 1.4.0 / 2017-08-13
+- Removed custom polyfills
+- Added $strLenBytes, $strLenCP, $substrCP, $substrBytes
+- Fix $indexOfBytes
+- Fix $stdDevSamp not returning correct result
+- Fix $in for aggregation operations
+- Removed max and min cursor methods. 
+- Restrict custom query operator type `OP_QUERY` to return boolean only
+
 ## 1.3.3 / 2017-08-02
 - Fix `computeValue` not overriding group operator keys after resolving expression
 - Added `$in`, `$objectToArray`, and `$arrayToObject` array aggregation operators

@@ -6,6 +6,13 @@ YEAR = $(shell date +%Y)
 BANNER = templates/header.txt
 TEST_FILES = $(shell find test -name "*.js")
 
+# tools
+NYC = node_modules/.bin/nyc
+ROLLUP = node_modules/.bin/rollup
+TAPE = node_modules/.bin/tape
+UGLIFY = node_modules/.bin/uglifyjs
+
+# tasks
 all: clean test build
 
 
@@ -14,7 +21,7 @@ build: prepare build.es6 compress bower.json package.json
 
 
 build.es6:
-	@node_modules/.bin/rollup -c config/rollup.es.js
+	@${ROLLUP} -c config/rollup.es.js
 
 
 prepare:
@@ -34,11 +41,11 @@ clean:
 
 
 mingo.js:
-	@node_modules/.bin/rollup -c config/rollup.umd.js
+	@${ROLLUP} -c config/rollup.umd.js
 
 
 test: mingo.js
-	@node_modules/.bin/nyc --reporter=lcov --reporter=text node_modules/.bin/tape ${TEST_FILES}
+	@${NYC} --reporter=lcov --reporter=text ${TAPE} ${TEST_FILES}
 
 
 %.json: templates/%.json.txt
