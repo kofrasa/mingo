@@ -7,6 +7,7 @@ BANNER = templates/header.txt
 TEST_FILES = $(shell find test -name "*.js")
 
 # tools
+COVERALLS = node_modules/.bin/coveralls
 NYC = node_modules/.bin/nyc
 ROLLUP = node_modules/.bin/rollup
 TAPE = node_modules/.bin/tape
@@ -30,7 +31,7 @@ prepare:
 
 compress: mingo.js
 	@cat ${BANNER} | sed "s/@VERSION/${VERSION}/" | sed "s/@YEAR/${YEAR}/" > dist/${MODULE}.min.js
-	@node_modules/.bin/uglifyjs dist/${MODULE}.js --compress --mangle --source-map dist/${MODULE}.min.map >> dist/${MODULE}.min.js
+	@${UGLIFY} dist/${MODULE}.js --compress --mangle --source-map dist/${MODULE}.min.map >> dist/${MODULE}.min.js
 	@gzip -kf dist/${MODULE}.min.js
 
 
@@ -40,16 +41,20 @@ clean:
 	@rm -f package.json
 
 
+coverage:
+	${NYC} report --reporter=text-lcov | ${COVERALLS}
+
+
 mingo.js:
-	@${ROLLUP} -c config/rollup.umd.js
+	${ROLLUP} -c config/rollup.umd.js
 
 
 test: mingo.js
-	@${NYC} --reporter=lcov --reporter=text ${TAPE} ${TEST_FILES}
+	@${NYC} --reporter=text ${TAPE} ${TEST_FILES}
 
 
 %.json: templates/%.json.txt
 	@cat $< | sed "s/@VERSION/${VERSION}/" > $@
 
 
-.PHONY: clean test build
+.PHONY: clean test build coverage
