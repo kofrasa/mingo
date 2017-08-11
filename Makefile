@@ -7,7 +7,7 @@ BANNER = templates/header.txt
 TEST_FILES = $(shell find test -name "*.js")
 
 # tools
-COVERALLS = node_modules/.bin/coveralls
+CODECOV = node_modules/.bin/codecov
 NYC = node_modules/.bin/nyc
 ROLLUP = node_modules/.bin/rollup
 TAPE = node_modules/.bin/tape
@@ -42,7 +42,7 @@ clean:
 
 
 coverage:
-	${NYC} report --reporter=text-lcov | ${COVERALLS}
+	${NYC} report --reporter=text-lcov > coverage.lcov && ${CODECOV}
 
 
 mingo.js:

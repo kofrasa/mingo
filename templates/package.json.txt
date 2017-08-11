@@ -8,7 +8,7 @@
     "build": "make build",
     "prepublishOnly": "make build",
     "test": "NODE_ENV=test make test",
-    "coverage": "node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov && node_modules/.bin/codecov"
+    "coverage": "make coverage"
   },
   "repository": {
     "type": "git",
@@ -29,7 +29,6 @@
     "backbone": ">=1.3.x",
     "bson": "1.x.x",
     "codecov": "2.3.0",
-    "coveralls": "2.13.1",
     "gulp": ">=3.9.x",
     "istanbul": "0.4.0",
     "nyc": "^11.1.0",
