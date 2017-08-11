@@ -46,7 +46,7 @@ coverage:
 
 
 mingo.js:
-	${ROLLUP} -c config/rollup.umd.js
+	@${ROLLUP} -c config/rollup.umd.js
 
 
 test: mingo.js

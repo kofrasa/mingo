@@ -1,10 +1,10 @@
 Changelog
 =========
-## 1.4.0 / 2017-08-13
+## 1.4.0 / 2017-08-11
 - Removed custom polyfills
 - Added $strLenBytes, $strLenCP, $substrCP, $substrBytes
 - Fix $indexOfBytes
-- Fix $stdDevSamp not returning correct result
+- Fix $stdDevSamp
 - Fix $in for aggregation operations
 - Removed max and min cursor methods. 
 - Restrict custom query operator type `OP_QUERY` to return boolean only

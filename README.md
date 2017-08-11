@@ -4,7 +4,7 @@ JavaScript implementation of MongoDB query language
 [![version](https://img.shields.io/npm/v/mingo.svg)](https://www.npmjs.org/package/mingo)
 [![build status](https://img.shields.io/travis/kofrasa/mingo.svg)](http://travis-ci.org/kofrasa/mingo)
 [![npm](https://img.shields.io/npm/dt/mingo.svg)]()
-[![Codecov](https://img.shields.io/codecov/c/github/kofrasa/mingo.svg)]()
+[![Codecov](https://img.shields.io/codecov/c/github/kofrasa/mingo/development.svg)]()
 
 ## Install
 ```$ npm install mingo```
@@ -160,11 +160,9 @@ The collection to mixin needs to provide a method with signature `toJSON() -> Ar
 - [Custom Operators](https://github.com/kofrasa/mingo/wiki/Custom-Operators)
 
 ## Why?
-  - Born out of a real need
   - Alternative to writing a lot of custom code for transforming collections of JSON objects
   - Quick validation of MongoDB queries without the need for a database
   - MongoDB query language is among the best in the market and is well documented
-  - Finally, because queries are better than me and perhaps you too :)
 
 ## Contributing
 * Submit pull requests to the [development](https://github.com/kofrasa/mingo/tree/development) branch
