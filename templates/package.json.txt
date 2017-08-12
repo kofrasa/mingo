@@ -17,7 +17,7 @@
   "files": [
     "dist",
     "lib",
-    "index.js"
+    "index.js",
     "LICENSE",
     "README.md",
     "CHANGELOG.md",
