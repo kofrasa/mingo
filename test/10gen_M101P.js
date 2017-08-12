@@ -1,7 +1,7 @@
 var test = require('tape')
 var Backbone = require('backbone')
 var mingo = require('../dist/mingo')
-var samples = require('./samples')
+var samples = require('./support')
 
 var MingoCollection = Backbone.Collection.extend(mingo.CollectionMixin)
 

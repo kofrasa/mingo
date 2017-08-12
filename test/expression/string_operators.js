@@ -1,6 +1,6 @@
 var test = require('tape')
-var mingo = require('../dist/mingo')
-var runTest = require('./samples').runTest
+var mingo = require('../../dist/mingo')
+var runTest = require('./../support').runTest
 
 var opt = {err:true}
 

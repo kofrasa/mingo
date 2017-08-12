@@ -1,5 +1,5 @@
 var test = require('tape')
-var mingo = require('../dist/mingo')
+var mingo = require('../../dist/mingo')
 
 
 test("Date Operators", function (t) {

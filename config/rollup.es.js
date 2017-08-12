@@ -21,7 +21,7 @@ function version () {
 
 export default {
   banner: BANNER,
-  entry: 'lib/index.js',
+  entry: 'index.js',
   dest: `dist/${MODULE}.es6.js`,
   format: 'es',
   moduleName: MODULE,

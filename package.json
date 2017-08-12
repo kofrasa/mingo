@@ -1,9 +1,9 @@
 {
   "name": "mingo",
-  "version": "1.4.0",
+  "version": "2.0.0",
   "description": "JavaScript implementation of MongoDB query language",
   "main": "dist/mingo.js",
-  "module": "lib/index.js",
+  "module": "index.js",
   "scripts": {
     "build": "make build",
     "prepublishOnly": "make build",

@@ -1,5 +1,5 @@
 var test = require('tape')
-var mingo = require('../dist/mingo')
+var mingo = require('../../dist/mingo')
 
 test('Variable Operators', function (t) {
   var result = mingo.aggregate([

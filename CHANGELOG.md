@@ -1,6 +1,6 @@
 Changelog
 =========
-## 1.4.0 / 2017-08-11
+## 2.0.0 / 2017-08-12
 - Removed custom polyfills
 - Added $strLenBytes, $strLenCP, $substrCP, $substrBytes
 - Fix $indexOfBytes
@@ -8,6 +8,8 @@ Changelog
 - Fix $in for aggregation operations
 - Removed max and min cursor methods. 
 - Restrict custom query operator type `OP_QUERY` to return boolean only
+- Rename `OP_AGGREGATE` to `OP_EXPRESSION`
+- Update `$unwind` to MongoDB 3.2 features
 
 ## 1.3.3 / 2017-08-02
 - Fix `computeValue` not overriding group operator keys after resolving expression

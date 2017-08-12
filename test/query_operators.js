@@ -1,6 +1,6 @@
 var test = require('tape')
 var mingo = require('../dist/mingo')
-var samples = require('./samples')
+var samples = require('./support')
 var ObjectId = require('bson').ObjectId
 
 var idStr = "123456789abe"

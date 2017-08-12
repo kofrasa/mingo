@@ -3,7 +3,7 @@
   "version": "@VERSION",
   "description": "JavaScript implementation of MongoDB query language",
   "main": "dist/mingo.js",
-  "module": "lib/index.js",
+  "module": "index.js",
   "scripts": {
     "build": "make build",
     "prepublishOnly": "make build",

@@ -1,6 +1,6 @@
 var test = require('tape')
 var mingo = require('../../dist/mingo')
-var samples = require('../samples')
+var samples = require('../support')
 
 
 /**

@@ -1,5 +1,5 @@
 var test = require('tape')
-var samples = require('./samples')
+var samples = require('./support')
 var mingo = require('../dist/mingo')
 
 test('Custom Operators', function (t) {

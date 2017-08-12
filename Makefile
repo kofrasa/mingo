@@ -26,7 +26,7 @@ build.es6:
 
 
 prepare:
-	@sed -E -i .bak "s/VERSION = '.{1,}'/VERSION = '${VERSION}'/" lib/index.js && rm lib/index.js.bak
+	@sed -E -i .bak "s/VERSION = '.{1,}'/VERSION = '${VERSION}'/" index.js && rm index.js.bak
 
 
 compress: mingo.js

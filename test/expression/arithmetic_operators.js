@@ -1,10 +1,10 @@
 var test = require('tape')
-var mingo = require('../dist/mingo')
-var runTest = require('./samples').runTest
+var mingo = require('../../dist/mingo')
+var runTest = require('./../support').runTest
 
 
 // hook in custom operator to round value
-mingo.addOperators(mingo.OP_AGGREGATE, (_) => {
+mingo.addOperators(mingo.OP_EXPRESSION, (_) => {
   return {
     $round: (obj, expr) => {
       var args = _.computeValue(obj, expr)
