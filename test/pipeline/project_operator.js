@@ -110,3 +110,29 @@ test("$project pipeline operator", function (t) {
   t.ok(fields.indexOf('_id') === -1, "_id is excluded");
   t.ok(fields.indexOf('scores') >= 0, "score is included");
 });
+
+test('more projection examples', function (t) {
+  var data = [
+    { "_id": 1, "quizzes": [10, 6, 7], "labs": [5, 8], "final": 80, "midterm": 75 },
+    { "_id": 2, "quizzes": [9, 10], "labs": [8, 8], "final": 95, "midterm": 80 },
+    { "_id": 3, "quizzes": [4, 5, 5], "labs": [6, 5], "final": 78, "midterm": 70 }
+  ]
+
+  var result = mingo.aggregate(data, [
+    {
+      $project: {
+        quizTotal: { $sum: "$quizzes"},
+        labTotal: { $sum: "$labs" },
+        examTotal: { $sum: [ "$final", "$midterm" ] }
+      }
+    }
+  ])
+
+  t.deepEqual(result, [
+    { "_id" : 1, "quizTotal" : 23, "labTotal" : 13, "examTotal" : 155 },
+    { "_id" : 2, "quizTotal" : 19, "labTotal" : 16, "examTotal" : 175 },
+    { "_id" : 3, "quizTotal" : 14, "labTotal" : 11, "examTotal" : 148 }
+  ], 'can $project new field with group operator')
+
+  t.end()
+})
