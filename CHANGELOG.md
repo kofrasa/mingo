@@ -1,5 +1,8 @@
 Changelog
 =========
+## 2.0.1 / 2017-09-xx
+- Minimize cloning
+
 ## 2.0.0 / 2017-08-12
 - Removed custom polyfills
 - Added $strLenBytes, $strLenCP, $substrCP, $substrBytes

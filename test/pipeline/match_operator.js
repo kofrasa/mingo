@@ -3,10 +3,10 @@ var mingo = require('../../dist/mingo')
 var samples = require('../support')
 var _ = mingo._internal()
 
-test("$match pipeline operator", function (t) {
-  t.plan(1);
-  var result = mingo.aggregate(samples.studentsData, [
-    { '$match': { _id: { $in: [0, 1, 2, 3, 4] } } }
-  ]);
-  t.ok(result.length === 5, "can filter collection with $match");
-});
+samples.runTestPipeline("$match pipeline operator", [
+  {
+    input: samples.studentsData,
+    query: [ { '$match': { _id: { $in: [0, 1, 2, 3, 4] } } } ],
+    check: function (result, t) { t.ok(result.length === 5, "can filter collection with $match"); }
+  }
+])

@@ -6,7 +6,7 @@ import { CollectionMixin } from './lib/mixin'
 import { Cursor } from './lib/cursor'
 import { addOperators } from './lib/operators/index'
 
-const VERSION = '2.0.0'
+const VERSION = '2.0.1'
 
 // mingo!
 export default {

@@ -51,3 +51,25 @@ exports.runTest = function (description, suite) {
     })
   })
 }
+
+/**
+ * run pipeline test
+ */
+exports.runTestPipeline = function (description, suite) {
+  test(description, function (t) {
+    _.each(suite, function (unitTest) {
+      var pipeline = unitTest.query
+      var input = unitTest.input
+      var check = unitTest.check
+      var hash = _.getHash(input)
+      var actual = mingo.aggregate(input, pipeline)
+      if (_.isFunction(check)) {
+        check(actual, t)
+      } else {
+        t.deepEqual(actual, check, unitTest.message || "actual equals expected")
+      }
+      _.assert(hash === _.getHash(input), "input changed")
+    })
+    t.end()
+  })
+}
