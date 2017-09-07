@@ -1,7 +1,10 @@
 Changelog
 =========
 ## 2.0.1 / 2017-09-xx
-- Minimize cloning
+- Minimize cloning in pipeline operators
+- Return new object for `$lookup` without mutating original. Fixes #59 and #60
+- Make `clone` return shallow clone
+- Provide `cloneDeep` for deep cloning
 
 ## 2.0.0 / 2017-08-12
 - Removed custom polyfills
