@@ -25,3 +25,15 @@ test('Test isEqual', function (t) {
   })
   t.end()
 })
+
+test('Test resolve', function (t) {
+  const result = _.resolve({
+    l1: [
+      {l2: [{ l3: 'level3', l3bis: 'level3bis'}]},
+      {l2bis: 'level2bis'}
+    ]
+  }, 'l1.l2.l3');
+
+  t.equal(result, 'level3')
+  t.end();
+})
