@@ -16,7 +16,8 @@ runTest('Array Operators', {
   $concatArrays: [
     [{ $concatArrays: [ [ "hello", " "], null ] },	null],
     [{ $concatArrays: [ [ "hello", " "], [ "world" ] ] },	[ "hello", " ", "world" ]],
-    [{ $concatArrays: [ [ "hello", " "], [ [ "world" ], "again"] ] },	[ "hello", " ", [ "world" ], "again" ]]
+    [{ $concatArrays: [ [ "hello", " "], [ [ "world" ], "again"] ] },	[ "hello", " ", [ "world" ], "again" ]],
+    [{ $concatArrays: [ [ "hello", " "], [ [ "universe" ], "again"], ["and", "bye"] ] },	[ "hello", " ", [ "universe" ], "again", "and", "bye" ]]
   ],
   $filter: [
     [
@@ -225,4 +226,21 @@ test('Array Operators: $arrayToObject + $objectToArray', function (t) {
     { "_id" : 2, "item" : "ABC2", "instock" : { "warehouse2" : 500, "warehouse3" : 200, "total" : 700 } }
   ], result, 'can apply $objectToArray + $arrayToObject operators together')
   t.end()
+})
+
+test('$concatArrays more examples', function (t) {
+  var inventory = [
+        { "_id" : 1, "instock": [1, 2, 3], "ordered": [4, 5, 6], "shipped": [7, 8, 9]},
+        { "_id" : 2, "instock": [10] }
+      ]
+
+      result = mingo.aggregate(inventory, [
+        { $project: { ids: { $concatArrays: ["$instock", "$ordered", "$shipped"] } } }
+      ])
+
+      t.deepEqual([
+        { ids: [ 1, 2, 3, 4, 5, 6, 7, 8, 9 ], _id: 1 },
+        { ids: null, _id: 2 }
+      ], result, 'can concat more than 2 arrays using $concatArrays')
+      t.end()
 })
