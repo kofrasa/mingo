@@ -2,6 +2,8 @@ var test = require('tape')
 var mingo = require('../dist/mingo')
 var _ = mingo._internal()
 
+function pp(v) { console.log(JSON.stringify(v)) }
+
 // TODO: add some more tests
 test('Test isEqual', function (t) {
   var sample = [
@@ -25,3 +27,20 @@ test('Test isEqual', function (t) {
   })
   t.end()
 })
+
+test('Test resolve()', function (t) {
+
+  //var input = {_id: 'some-id', l1: [{l2: [{ l3: 'level3', l3bis: 'level3bis'}]}, {l2bis: 'level2bis'}]}
+  //var res = mingo.aggregate([input], [{$project: { l3: '$l1.l2.l3'}}])
+  //pp(res)
+
+  // pp(_.computeValue(input, '$l1.l2.l3', 'l3'))
+  // pp(_.resolveObj(input, 'l1.l2.l3'))
+  // pp(_.resolveObj(input, 'l3'))
+
+  var data = {l1: {l2: [{l3: [{ a: 666}, {a: false}, {a: undefined}]}, {l4: 'some prop'}, {a: false}]}}
+  t.deepEqual(_.resolve(data, 'l1.l2.l4'), 'some prop' , "should resolve existing single nested value")
+  t.deepEqual(_.resolve(data, 'l1.l2.l3.a'), [666, false] , "should resolve all existing nested values")
+  t.end()
+})
+

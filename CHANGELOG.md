@@ -1,6 +1,11 @@
 Changelog
 =========
-## 2.0.1 / 2017-09-xx
+## 2.0.2 / 2017-09-xx
+- Remove array size constraint on `$concatArrays`. fix #64
+- Filter out empty values from collection. fix #65
+- Fix false positive tests and `$substrBytes`. fix #66
+
+## 2.0.1 / 2017-09-07
 - Minimize cloning in pipeline operators
 - Return new object for `$lookup` without mutating original. Fixes #59 and #60
 - Make `clone` return shallow clone
@@ -8,11 +13,11 @@ Changelog
 
 ## 2.0.0 / 2017-08-12
 - Removed custom polyfills
-- Added $strLenBytes, $strLenCP, $substrCP, $substrBytes
-- Fix $indexOfBytes
-- Fix $stdDevSamp
-- Fix $in for aggregation operations
-- Removed max and min cursor methods. 
+- Added `$strLenBytes`, `$strLenCP`, `$substrCP`, `$substrBytes`
+- Fix `$indexOfBytes`
+- Fix `$stdDevSamp`
+- Fix `$in` for aggregation operations
+- Removed max and min cursor methods.
 - Restrict custom query operator type `OP_QUERY` to return boolean only
 - Rename `OP_AGGREGATE` to `OP_EXPRESSION`
 - Update `$unwind` to MongoDB 3.2 features
@@ -35,8 +40,8 @@ Changelog
 
 ## v1.2.0 / 2017-07-17
 - Fix `$where` operator not executed last. https://github.com/kofrasa/mingo/pull/50
-- Fix matching nested arrays. https://github.com/kofrasa/mingo/issues/51 
-- Added `$facet` and `$bucket` operators 
+- Fix matching nested arrays. https://github.com/kofrasa/mingo/issues/51
+- Added `$facet` and `$bucket` operators
 - Added `$bucketAuto` operator without granularity support
 - Added string keys for `$type` operator
 - Added Cursor support for [ES2015 Iterator Protocol](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols)

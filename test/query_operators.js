@@ -2,6 +2,7 @@ var test = require('tape')
 var mingo = require('../dist/mingo')
 var samples = require('./support')
 var ObjectId = require('bson').ObjectId
+var _ = mingo._internal()
 
 var idStr = "123456789abe"
 var obj = samples.personData
@@ -366,12 +367,6 @@ test('Query array operators', function (t) {
 
     var result = mingo.find(data, query).all()
     t.deepEqual(result, expected, message)
-
-    if (Array.from) {
-      var iterResult = mingo.find(data, query)
-      t.deepEqual(Array.from(iterResult), expected, message)
-      t.deepEqual(Array.from(iterResult), [], message)
-    }
   })
 
   fixtures = [
@@ -384,14 +379,11 @@ test('Query array operators', function (t) {
   // should match whole objects
   fixtures.forEach(function (row) {
     var query = row[0], message = row[1]
-    var result = mingo.find(data, query).all()
-    t.deepEqual(result, data, message)
+    var result = mingo.find(data, query)
 
-    if (Array.from) {
-      var iterResult = mingo.find(data, query)
-      t.deepEqual(Array.from(iterResult), data, message)
-      t.deepEqual(Array.from(iterResult), [], message)
-    }
+    // using iterator
+    t.deepEqual(Array.from(result), data, message)
+    _.assert(Array.from(result).length === 0, "iterator should be empty")
   })
 
   // https://github.com/kofrasa/mingo/issues/51

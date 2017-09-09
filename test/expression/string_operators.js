@@ -69,7 +69,7 @@ runTest('String Operators', {
     [{ $substrCP: ["abcde", 1, 2] }, "bc"],
     [{ $substrCP: ["Hello World!", 6, 5] }, "World"],
     [{ $substrCP: ["cafétéria", 0, 5] }, "cafét"],
-    [{ $substrCP: ["cafétéria", 5, 4] }, "tér"],
+    [{ $substrCP: ["cafétéria", 5, 4] }, "éria"],
     [{ $substrCP: ["cafétéria", 7, 3] }, "ia"],
     [{ $substrCP: ["cafétéria", 3, 1] }, "é"]
   ],
@@ -80,7 +80,10 @@ runTest('String Operators', {
     [{ $substrBytes: [ "cafétéria", 0, 5 ] },	"café"],
     [{ $substrBytes: [ "cafétéria", 5, 4 ] },	"tér"],
     [{ $substrBytes: [ "cafétéria", 7, 3 ] },	"invalid range", {err:1}],
-    [{ $substrBytes: [ "cafétéria", 3, 1 ] },	"invalid range", {err:1}]
+    [{ $substrBytes: [ "cafétéria", 3, 1 ] },	"invalid range", {err:1}],
+    [["éclair", 0, 3], "éc"],
+    [["jalapeño", 0, 3], "jal"],
+    [["寿司sushi", 0, 3], "寿"]
   ],
 
   $toLower: [

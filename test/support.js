@@ -43,7 +43,7 @@ exports.runTest = function (description, suite) {
           var actual = _.computeValue(obj, input, field)
           var message =  operator + ':\t' + JSON.stringify(input) + '\t=>\t' + JSON.stringify(expected)
           // NaNs don't compare
-          if (isNaN(actual) && isNaN(expected)) actual = expected = 0
+          if (actual !== actual && expected !== expected) actual = expected = 0
           t.deepEqual(actual, expected, message)
         }
       })
