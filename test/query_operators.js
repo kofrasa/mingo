@@ -341,6 +341,7 @@ test('Query array operators', function (t) {
     result = result && q.test(obj)
   })
 
+  // FIXME: this is failing
   t.ok(result, 'can match object using $all with $elemMatch')
 
   data = [{
@@ -390,6 +391,26 @@ test('Query array operators', function (t) {
   data = [{ "key0" : [ { "key1" : [ "value" ] }, { "key1" : [ "value1" ] } ] }]
   result = mingo.find(data, { "key0.key1": { "$eq": "value" } }).first()
   t.deepEqual(result, data[0], "should match nested array of objects without indices")
+
+  t.end()
+})
+
+test('$regex test', function (t) {
+
+  // no regex - returns expected list: 1 element - ok
+  var res = []
+  res.push(mingo.find([{l1: [{ tags: ['tag1', 'tag2'] }, {'notags': 'yep'}]}], {'l1.tags': 'tag1'}).all())
+
+  // with regex - but searched property is not an array: ok
+  res.push(mingo.find([{l1: [{ tags: 'tag1'}, {'notags': 'yep'}]}], {'l1.tags': {$regex: '.*tag.*', $options: 'i'}}).all())
+
+  // with regex - but searched property is an array, with all elements matching: not ok - expected 1, returned 0
+  res.push(mingo.find([{l1: [{ tags: ['tag1', 'tag2'] }, {'tags': ['tag66']}]}], {'l1.tags': {$regex: 'tag', $options: 'i'}}).all())
+
+  // with regex - but searched property is an array, only one element matching: not ok - returns 0 elements - expected 1
+  res.push(mingo.find([{l1: [{ tags: ['tag1', 'tag2'] }, {'notags': 'yep'}]}], {'l1.tags': {$regex: 'tag', $options: 'i'}}).all())
+
+  t.ok(res.every((x) => x.length === 1), 'can $regex match nested values')
 
   t.end()
 })

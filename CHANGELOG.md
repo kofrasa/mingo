@@ -4,6 +4,8 @@ Changelog
 - Remove array size constraint on `$concatArrays`. fix #64
 - Filter out empty values from collection. fix #65
 - Fix false positive tests and `$substrBytes`. fix #66
+- Update resolve to not unwrap by default.
+- `$regex` should matched nested one level deep. fix #70
 
 ## 2.0.1 / 2017-09-07
 - Minimize cloning in pipeline operators

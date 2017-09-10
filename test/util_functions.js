@@ -30,17 +30,24 @@ test('Test isEqual', function (t) {
 
 test('Test resolve()', function (t) {
 
-  //var input = {_id: 'some-id', l1: [{l2: [{ l3: 'level3', l3bis: 'level3bis'}]}, {l2bis: 'level2bis'}]}
-  //var res = mingo.aggregate([input], [{$project: { l3: '$l1.l2.l3'}}])
-  //pp(res)
-
-  // pp(_.computeValue(input, '$l1.l2.l3', 'l3'))
-  // pp(_.resolveObj(input, 'l1.l2.l3'))
-  // pp(_.resolveObj(input, 'l3'))
+  var input = {_id: 'some-id', l1: [{l2: [{ l3: 'level3', l3bis: 'level3bis'}]}, {l2bis: 'level2bis'}]}
+  t.deepEqual(_.resolve(input, 'l1.l2.l3'), [['level3']])
 
   var data = {l1: {l2: [{l3: [{ a: 666}, {a: false}, {a: undefined}]}, {l4: 'some prop'}, {a: false}]}}
-  t.deepEqual(_.resolve(data, 'l1.l2.l4'), 'some prop' , "should resolve existing single nested value")
-  t.deepEqual(_.resolve(data, 'l1.l2.l3.a'), [666, false] , "should resolve all existing nested values")
+  t.deepEqual(_.resolve(data, 'l1.l2.l4'), ['some prop'] , "should resolve existing single nested value")
+  t.deepEqual(_.resolve(data, 'l1.l2.l3.a'), [[666, false]] , "should resolve all existing nested values")
+
+  data = {
+    key0: [{
+      key1: [[[{key2: [{a: 'value2'}, {a: 'dummy'}, {b: 20}]}]], {'key2': 'value'}],
+      key1a: {key2a: 'value2a'}
+    }]
+  }
+  //pp(_.resolve(data, 'key0.key1.0'))
+  //pp(_.resolve(data, 'key0.key1.0.0.key2'))
+
+  data = { "key0" : [ { "key1" : [ "value" ] }, { "key1" : [ "value1" ] } ] }
+  t.deepEqual(_.resolve(data, 'key0.key1'), [['value'], ['value1']])
   t.end()
 })
 
