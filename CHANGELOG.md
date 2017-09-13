@@ -1,11 +1,10 @@
 Changelog
 =========
-## 2.0.2 / 2017-09-xx
-- Remove array size constraint on `$concatArrays`. fix #64
-- Filter out empty values from collection. fix #65
-- Fix false positive tests and `$substrBytes`. fix #66
-- Update resolve to not unwrap by default.
-- `$regex` should matched nested one level deep. fix #70
+## 2.0.2 / 2017-09-14
+- Remove array size constraint on `$concatArrays`. [#64](https://github.com/kofrasa/mingo/issues/64)
+- Filter out empty values from collection. [#65](https://github.com/kofrasa/mingo/issues/65)
+- Fix false positive tests and `$substrBytes`. [#66](https://github.com/kofrasa/mingo/issues/66)
+- `$regex` should matched nested one level deep. [#70](https://github.com/kofrasa/mingo/issues/70)
 
 ## 2.0.1 / 2017-09-07
 - Minimize cloning in pipeline operators
