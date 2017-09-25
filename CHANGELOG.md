@@ -1,5 +1,9 @@
 Changelog
 =========
+## 2.0.3 / 2017-09-25
+- Fix `map` so it does not break `cloneDeep`
+- Improve hash function
+
 ## 2.0.2 / 2017-09-14
 - Remove array size constraint on `$concatArrays`. [#64](https://github.com/kofrasa/mingo/issues/64)
 - Filter out empty values from collection. [#65](https://github.com/kofrasa/mingo/issues/65)

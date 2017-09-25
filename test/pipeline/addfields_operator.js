@@ -113,5 +113,39 @@ test("$addFields pipeline operator", function (t) {
     { "_id": "grapefruit", "item": "fruit", "type": "citrus" }
   ], "Replace one field with another");
 
+  const col = [{
+    _id: '59c52580809dd0032d75238a',
+    email: 'an@email.com',
+    deleted: false,
+    accounts: [{
+      createdAt: '2017-09-22T15:00:17.418Z',
+      updatedAt: '2017-09-22T15:00:17.418Z',
+    }],
+  }]
+
+  const expected = [{
+    _id: '59c52580809dd0032d75238a',
+    email: 'an@email.com',
+    deleted: false,
+    accountInfo: {
+      createdAt: '2017-09-22T15:00:17.418Z',
+      updatedAt: '2017-09-22T15:00:17.418Z',
+    },
+    accounts: [{
+      createdAt: '2017-09-22T15:00:17.418Z',
+      updatedAt: '2017-09-22T15:00:17.418Z',
+    }],
+  }]
+
+  var actual = mingo.aggregate(col, [{
+    $addFields: {
+      accountInfo: {
+        $arrayElemAt: ['$accounts', 0],
+      },
+    },
+  }])
+
+  t.deepEqual(actual, expected, 'can $addField with boolean values')
+
   t.end();
 });
