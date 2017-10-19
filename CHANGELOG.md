@@ -1,5 +1,8 @@
 Changelog
 =========
+## 2.0.4 / 2017-10-19
+- Handle date values in $add operator. Fixes [#73]((https://github.com/kofrasa/mingo/issues/73))
+
 ## 2.0.3 / 2017-09-25
 - Fix `map` so it does not break `cloneDeep`
 - Improve hash function
