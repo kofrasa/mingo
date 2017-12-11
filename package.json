@@ -1,6 +1,6 @@
 {
   "name": "mingo",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "JavaScript implementation of MongoDB query language",
   "main": "dist/mingo.js",
   "module": "index.js",
@@ -17,6 +17,7 @@
   "files": [
     "dist",
     "lib",
+    "index.d.ts",
     "index.js",
     "LICENSE",
     "README.md",
@@ -38,7 +39,7 @@
     "rollup-plugin-commonjs": "^8.0.2",
     "rollup-plugin-node-resolve": "^3.0.0",
     "tape": ">=4.x.x",
-    "uglify-js": "2.x.x"
+    "uglify-js": "2.6.x"
   },
   "keywords": [
     "util",

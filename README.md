@@ -1,9 +1,9 @@
 # mingo
-JavaScript implementation of MongoDB query language 
+JavaScript implementation of MongoDB query language
 
 [![version](https://img.shields.io/npm/v/mingo.svg)](https://www.npmjs.org/package/mingo)
 [![build status](https://img.shields.io/travis/kofrasa/mingo.svg)](http://travis-ci.org/kofrasa/mingo)
-[![npm](https://img.shields.io/npm/dt/mingo.svg)](https://www.npmjs.org/package/mingo)
+[![npm](https://img.shields.io/npm/dm/mingo.svg)](https://www.npmjs.org/package/mingo)
 [![Codecov](https://img.shields.io/codecov/c/github/kofrasa/mingo.svg)](https://codecov.io/gh/kofrasa/mingo)
 
 ## Install
@@ -45,7 +45,7 @@ For documentation on using query operators see [mongodb](http://docs.mongodb.org
 ## Usage
 On the server side
 ```js
-// Use as es6 module 
+// Use as es6 module
 import mingo from 'mingo'
 
 // or vanilla nodeJS

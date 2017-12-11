@@ -1,7 +1,10 @@
 Changelog
 =========
+## 2.0.5 / 2017-12-11
+- Add typescript declaration. Fixes [#75](https://github.com/kofrasa/mingo/pull/75)
+
 ## 2.0.4 / 2017-10-19
-- Handle date values in $add operator. Fixes [#73]((https://github.com/kofrasa/mingo/issues/73))
+- Handle date values in `$add` operator. Fixes [#73](https://github.com/kofrasa/mingo/issues/73)
 
 ## 2.0.3 / 2017-09-25
 - Fix `map` so it does not break `cloneDeep`
