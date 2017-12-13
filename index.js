@@ -5,6 +5,7 @@ import { Aggregator, aggregate } from './lib/aggregator'
 import { CollectionMixin } from './lib/mixin'
 import { Cursor } from './lib/cursor'
 import { addOperators } from './lib/operators/index'
+import { Lazy } from './lib/Lazy'
 
 const VERSION = '2.0.5'
 
@@ -14,6 +15,7 @@ export default {
   Aggregator,
   CollectionMixin,
   Cursor,
+  Lazy,
   OP_EXPRESSION,
   OP_GROUP,
   OP_PIPELINE,

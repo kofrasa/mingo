@@ -14,7 +14,7 @@ test('Mingo.Cursor tests', function (t) {
   t.ok(cursor.next(), 'can select next item with next()')
   t.ok(_.isObject(cursor.first()), 'can retrieve first item with first()')
   t.ok(_.isObject(cursor.last()), 'can retrieve last item with last()')
-  t.ok(cursor.count() === 100, 'can count items with count()')
+  t.equal(cursor.count(), 99, 'can count items with count()')
   cursor.forEach(_.isObject)
   cursor.map(_.isObject).every(_.isBoolean)
 })
