@@ -1,6 +1,4 @@
-var mingo = require('../dist/mingo')
-var Lazy = mingo.Lazy
-var _ = mingo._internal()
+var Lazy = require('../dist/mingo').Lazy
 var test = require('tape')
 
 test('Lazy tests', function (t) {
@@ -9,7 +7,7 @@ test('Lazy tests', function (t) {
     return new Lazy([1,2,3,4,5,6,7,8,9]).map(n => n*3)
   }
 
-  let fixtures = [
+  var fixtures = [
     [ newLazy(), [3, 6, 9, 12, 15, 18, 21, 24, 27], "can map sequence" ],
     [ newLazy().filter(n => n % 2 == 0), [6, 12, 18, 24], "can filter sequence" ],
     [ newLazy().skip(3), [12, 15, 18, 21, 24, 27], "can skip with number" ],
@@ -19,11 +17,16 @@ test('Lazy tests', function (t) {
     [ newLazy().reverse().take(3), [27, 24, 21], "can reverse sequence" ],
     [ newLazy().reverse().take(3).sort(), [21, 24, 27], "can sort sequence" ],
     [ newLazy().count(), 9, "can count sequence" ],
+    [ newLazy().map(n => n/3).reduce((acc,n,xs) => acc + n, 0), 45, "can reduce sequence" ],
   ]
 
   fixtures.forEach(n => {
     t.deepEqual(n[0].all(), n[1], n[2])
   })
+
+  var arr = []
+  newLazy().each(o => arr.push(o%2))
+  t.deepEqual(arr, [1,0,1,0,1,0,1,0,1], "can iterate with each")
 
   t.end()
 })
@@ -42,6 +45,6 @@ test('Lazy tests', function (t) {
 // tape test/**/*.js > /dev/null  2.55s user 0.10s system 103% cpu 2.562 total
 
 // Lazy: (latest)
-// tape test/**/*.js > /dev/null  1.48s user 0.10s system 109% cpu 1.437 total
-// tape test/**/*.js > /dev/null  1.50s user 0.08s system 110% cpu 1.429 total
-// tape test/**/*.js > /dev/null  1.46s user 0.08s system 110% cpu 1.389 total
+// tape test/**/*.js > /dev/null  1.54s user 0.08s system 113% cpu 1.423 total
+// tape test/**/*.js > /dev/null  1.52s user 0.08s system 113% cpu 1.411 total
+// tape test/**/*.js > /dev/null  1.47s user 0.07s system 111% cpu 1.382 total

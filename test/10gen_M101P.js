@@ -11,7 +11,7 @@ test('10gen Education: M101P', function (t) {
     type: 'exam',
     score: { $gte: 65 }
   })
-  var student = cursor.sort({ 'score': 1 }).limit(1).first()
+  var student = cursor.sort({ 'score': 1 }).limit(1).next()
   t.equal(student.student_id, 22, 'Student ID with lowest exam score is 22')
 
   var lowest = grades.aggregate([
@@ -33,7 +33,7 @@ test('10gen Education: M101P', function (t) {
   t.equal(ids.length, 200, '200 minimum homework scores found')
   var result = mingo.remove(grades.toJSON(), { '_id': { $in: ids } })
 
-  // var res = Mingo.find(result).sort({'score':-1}).skip(100).limit(1).first();
+  // var res = Mingo.find(result).sort({'score':-1}).skip(100).limit(1).next();
   // console.log(res);
   // Mingo.find(result, {}, {'student_id':1, 'type':1, 'score':1, '_id':0}).sort({'student_id':1, 'score':1}).limit(5);
 

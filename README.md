@@ -96,18 +96,20 @@ cursor.sort({student_id: 1, score: -1})
     .skip(100)
     .limit(100);
 
-// count matches
+// count matches. exhausts cursor
 cursor.count();
 
-// iterate cursor
-// iteration is forward only
+// classic cursor iterator
 while (cursor.hasNext()) {
     console.log(cursor.next());
 }
 
-// use first(), last() and all() to retrieve matched objects
-cursor.first();
-cursor.last();
+// ES6 iterators
+for (let value of cursor) {
+  console.log(value)
+}
+
+// all() to retrieve matched objects
 cursor.all();
 
 // Filter non-matched objects (
@@ -150,7 +152,7 @@ cursor = grades.query({
 }).sort({score: 1, type: -1}).limit(10);
 
 // return grade with the lowest score
-cursor.first();
+cursor.next();
 ```
 
 The collection to mixin needs to provide a method with signature `toJSON() -> Array[Object]`.
