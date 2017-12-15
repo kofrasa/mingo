@@ -3,21 +3,29 @@ var test = require('tape')
 
 test('Lazy tests', function (t) {
 
+  var DATA = [1,2,3,4,5,6,7,8,9]
+
   function newLazy() {
-    return new Lazy([1,2,3,4,5,6,7,8,9]).map(n => n*3)
+    return new Lazy(DATA)
   }
 
   var fixtures = [
-    [ newLazy(), [3, 6, 9, 12, 15, 18, 21, 24, 27], "can map sequence" ],
-    [ newLazy().filter(n => n % 2 == 0), [6, 12, 18, 24], "can filter sequence" ],
-    [ newLazy().skip(3), [12, 15, 18, 21, 24, 27], "can skip with number" ],
-    [ newLazy().take(3), [3, 6, 9], "can take with number"],
-    [ newLazy().skip(n => n < 15), [15, 18, 21, 24, 27], "can skip with predicate" ],
-    [ newLazy().take(n => n < 15), [3, 6, 9, 12], "can take with predicate"],
-    [ newLazy().reverse().take(3), [27, 24, 21], "can reverse sequence" ],
-    [ newLazy().reverse().take(3).sort(), [21, 24, 27], "can sort sequence" ],
-    [ newLazy().count(), 9, "can count sequence" ],
-    [ newLazy().map(n => n/3).reduce((acc,n,xs) => acc + n, 0), 45, "can reduce sequence" ],
+    [ newLazy().map(n => n*3), [3, 6, 9, 12, 15, 18, 21, 24, 27], "can map" ],
+    [ newLazy().filter(n => n % 2 == 0), [2,4,6,8], "can filter" ],
+    [ newLazy().skip(3), [4,5,6,7,8,9], "can skip with number" ],
+    [ newLazy().take(3), [1,2,3], "can take with number"],
+    [ newLazy().skip(n => n < 5), [5,6,7,8,9], "can skip with predicate" ],
+    [ newLazy().take(n => n < 5), [1,2,3,4], "can take with predicate"],
+    [ newLazy().reverse().take(3), [9,8,7], "can reverse" ],
+    [ newLazy().reverse().take(3).sort(), [7,8,9], "can sort" ],
+    [ newLazy().reverse().take(3).sortBy(n => n % 3), [9,7,8], "can sortBy" ],
+    [ newLazy().reduce((acc,n) => acc+n), [45], "can reduce" ],
+    [ Lazy.range(1,10), DATA, "can range from start to end" ],
+    [ Lazy.range(5), [0,1,2,3,4], "can range with only end value" ],
+    [ Lazy.range(0, 10, 2), [0,2,4,6,8], "can range with increment" ],
+    [ Lazy.range(10, 5, -2), [10,8,6], "can range with decrement" ],
+    [ Lazy.range(0, Infinity, -2), [], "can detect invalid range with decrement" ],
+    [ Lazy.range(Infinity, 0, 5), [], "can detect invalid range with increment" ]
   ]
 
   fixtures.forEach(n => {
@@ -27,6 +35,11 @@ test('Lazy tests', function (t) {
   var arr = []
   newLazy().each(o => arr.push(o%2))
   t.deepEqual(arr, [1,0,1,0,1,0,1,0,1], "can iterate with each")
+
+  var sample = new Lazy(DATA).sample().all()
+  t.ok(sample.length > 0, "sample must be non-zero")
+  t.ok(sample.length < DATA.length, "sample must be less than DATA length")
+  t.deepEqual(newLazy().count(), DATA.length, "can count sequence")
 
   t.end()
 })
