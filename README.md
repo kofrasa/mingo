@@ -41,6 +41,9 @@ JavaScript implementation of MongoDB query language
 
 For documentation on using query operators see [mongodb](http://docs.mongodb.org/manual/reference/operator/query/)
 
+## Documentation
+- [API](https://github.com/kofrasa/mingo/wiki/API)
+- [Custom Operators](https://github.com/kofrasa/mingo/wiki/Custom-Operators)
 
 ## Usage
 On the server side
@@ -99,7 +102,7 @@ cursor.sort({student_id: 1, score: -1})
 // count matches. exhausts cursor
 cursor.count();
 
-// classic cursor iterator
+// classic cursor iterator (ES5)
 while (cursor.hasNext()) {
     console.log(cursor.next());
 }
@@ -109,11 +112,8 @@ for (let value of cursor) {
   console.log(value)
 }
 
-// all() to retrieve matched objects
+// all() to retrieve matched objects. exhausts cursor
 cursor.all();
-
-// Filter non-matched objects (
-console.log(query.remove(collection));
 ```
 
 ## Aggregation Pipeline
@@ -124,9 +124,9 @@ let agg = new mingo.Aggregator([
     {'$sort':{'_id': 1, 'score': 1}}
 ]);
 
-let result = agg.run(collection);
+let result = agg.run(collection); // returns all results
 
-// shorthand
+// shorthand for above
 result = mingo.aggregate(
   collection,
   [
@@ -157,12 +157,8 @@ cursor.next();
 
 The collection to mixin needs to provide a method with signature `toJSON() -> Array[Object]`.
 
-## Documentation
-- [API](https://github.com/kofrasa/mingo/wiki/API)
-- [Custom Operators](https://github.com/kofrasa/mingo/wiki/Custom-Operators)
-
 ## Why?
-  - Alternative to writing a lot of custom code for transforming collections of JSON objects
+  - Alternative to writing lots of custom code for transforming collection of objects
   - Quick validation of MongoDB queries without the need for a database
   - MongoDB query language is among the best in the market and is well documented
 

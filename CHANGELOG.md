@@ -1,5 +1,10 @@
 Changelog
 =========
+## 2.1.0
+- Added new `Lazy` iterator to re-implement `Cursor` and pipeline operators
+- Added `Aggregator.stream` to obtain iterator for stream pipeline results
+- Removed `Cursor` methods `first()` and `last()`
+
 ## 2.0.5 / 2017-12-11
 - Add typescript declaration. Fixes [#75](https://github.com/kofrasa/mingo/pull/75)
 
