@@ -1,4 +1,4 @@
-// mingo.js 2.1.0
+// mingo.js 2.1.1
 // Copyright (c) 2017 Francis Asante
 // MIT
 
@@ -4367,7 +4367,7 @@ var CollectionMixin = {
   }
 };
 
-var VERSION = '2.1.0';
+var VERSION = '2.1.1';
 
 // mingo!
 var index = {

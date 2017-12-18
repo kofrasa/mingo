@@ -1,6 +1,10 @@
 Changelog
 =========
-## 2.1.0
+## 2.1.1 / 2017-12-18
+- Use iterator input for Query
+- Don't sort cursor modifiers
+
+## 2.1.0 / 2017-12-17
 - Added new `Lazy` iterator to re-implement `Cursor` and pipeline operators
 - Added `Aggregator.stream` to obtain iterator for stream pipeline results
 - Removed `Cursor` methods `first()` and `last()`

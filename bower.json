@@ -1,7 +1,7 @@
 {
   "name": "mingo",
   "main": "dist/mingo.js",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "homepage": "https://github.com/kofrasa/mingo",
   "authors": [
     "Francis Asante <kofrasa@gmail.com>"
