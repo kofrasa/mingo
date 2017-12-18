@@ -10,7 +10,7 @@ JavaScript implementation of MongoDB query language
 ```$ npm install mingo```
 
 ## Features
-- Supports Dot Notation for both '_<array>.<index>_' and '_<document>.<field>_' selectors
+- Supports Dot Notation for both _`<array>.<index>`_ and _`<document>.<field>`_ selectors
 - Query and Projection Operators
   - [Array Operators](https://docs.mongodb.com/manual/reference/operator/query-array/)
   - [Comparisons Operators](https://docs.mongodb.com/manual/reference/operator/query-comparison/)
