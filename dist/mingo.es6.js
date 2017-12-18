@@ -544,13 +544,12 @@ class Lazy {
   }
 
   /**
-   * Returns the given value as `Lazy` object
+   * Returns the given value as `Lazy` object. Generates an iterator if value is a function
    * @param {*} val Input value or function that returns input value.
    */
   static _iter (val) {
-    if (Lazy._isfunction(val)) {
-      val = { next: val };
-    }
+    if (val instanceof Lazy) return val
+    if (Lazy._isfunction(val)) val = { next: val };
     return new Lazy(val)
   }
 
@@ -939,16 +938,22 @@ function $facet (collection, expr) {
 function $group (collection, expr) {
   // lookup key for grouping
   const ID_KEY = idKey();
-  let objectId = expr[ID_KEY];
+  let id = expr[ID_KEY];
 
   return Lazy.transform(collection, coll => {
-    let partitions = groupBy(coll, (obj) => computeValue(obj, objectId, objectId));
-    let result = [];
+    let partitions = groupBy(coll, obj => computeValue(obj, id, id));
 
     // remove the group key
     delete expr[ID_KEY];
 
-    each(partitions.keys, (value, i) => {
+    let i = 0;
+    let size = partitions.keys.length;
+
+    return () => {
+
+      if (i === size) return Lazy.done()
+
+      let value = partitions.keys[i];
       let obj = {};
 
       // exclude undefined key value
@@ -960,10 +965,10 @@ function $group (collection, expr) {
       each(expr, (val, key) => {
         obj[key] = accumulate(partitions.groups[i], key, val);
       });
-      result.push(obj);
-    });
 
-    return result
+      i++;
+      return Lazy.value(obj)
+    }
   })
 }
 
@@ -1110,7 +1115,6 @@ function $project (collection, expr) {
   if (isEmpty(expr)) return collection
 
   // result collection
-  let projected = [];
   let objKeys = keys(expr);
   let idOnlyExcludedExpression = false;
   const ID_KEY = idKey();
@@ -1263,13 +1267,13 @@ function $sample (collection, expr) {
   assert(isNumber(size), '$sample size must be a positive integer');
 
   return Lazy.transform(collection, xs => {
-    let result = [];
     let len = xs.length;
-    for (let i = 0; i < size; i++) {
+    let i = 0;
+    return () => {
+      if (i++ === size) return Lazy.done()
       let n = Math.floor(Math.random() * len);
-      result.push(xs[n]);
+      return Lazy.value(xs[n])
     }
-    return result
   })
 }
 
@@ -1298,18 +1302,17 @@ function $sort (collection, sortKeys) {
       let modifiers = keys(sortKeys);
 
       each(modifiers.reverse(), (key) => {
-        let grouped = groupBy(coll, (obj) => resolve(obj, key));
+        let grouped = groupBy(coll, obj => resolve(obj, key));
         let sortedIndex = {};
-        let getIndex = (k) => sortedIndex[getHash(k)];
 
-        let indexKeys = sortBy(grouped.keys, (item, i) => {
-          sortedIndex[getHash(item)] = i;
-          return item
+        let indexKeys = sortBy(grouped.keys, (k, i) => {
+          sortedIndex[k] = i;
+          return k
         });
 
         if (sortKeys[key] === -1) indexKeys.reverse();
         coll = [];
-        each(indexKeys, (item) => into(coll, grouped.groups[getIndex(item)]));
+        each(indexKeys, k => into(coll, grouped.groups[sortedIndex[k]]));
       });
       return coll
     })
@@ -1360,44 +1363,42 @@ function $unwind(collection, expr) {
 
   let value;
 
-  return new Lazy({
-    next () {
-      while (true) {
-        // take from lazy sequence if available
-        if (Lazy.isIterator(value)) {
-          let tmp = value.next();
-          if (Lazy.isVal(tmp)) return tmp
-        }
+  return Lazy._iter(() => {
+    while (true) {
+      // take from lazy sequence if available
+      if (Lazy.isIterator(value)) {
+        let tmp = value.next();
+        if (Lazy.isVal(tmp)) return tmp
+      }
 
-        // fetch next object
-        let obj = collection.next();
-        if (Lazy.isDone(obj)) return Lazy.done()
+      // fetch next object
+      let obj = collection.next();
+      if (Lazy.isDone(obj)) return Lazy.done()
 
-        // unwrap value
-        obj = obj.value;
+      // unwrap value
+      obj = obj.value;
 
-        // get the value of the field to unwind
-        value = getValue(obj, field);
+      // get the value of the field to unwind
+      value = getValue(obj, field);
 
-        // throw error if value is not an array???
-        if (isArray(value)) {
-          if (value.length === 0 && preserveNullAndEmptyArrays === true) {
-            value = null; // reset unwind value
+      // throw error if value is not an array???
+      if (isArray(value)) {
+        if (value.length === 0 && preserveNullAndEmptyArrays === true) {
+          value = null; // reset unwind value
+          let tmp = clone(obj);
+          delete tmp[field];
+          return { value: format(tmp, null), done: false }
+        } else {
+          // construct a lazy sequence for elements per value
+          value = new Lazy(value).map((item, i) => {
             let tmp = clone(obj);
-            delete tmp[field];
-            return { value: format(tmp, null), done: false }
-          } else {
-            // construct a lazy sequence for elements per value
-            value = new Lazy(value).map((item, i) => {
-              let tmp = clone(obj);
-              tmp[field] = item;
-              return format(tmp, i)
-            });
-          }
-        } else if (!isEmpty(value) || preserveNullAndEmptyArrays === true) {
-          let tmp = format(clone(obj), null);
-          return { value: tmp, done: false }
+            tmp[field] = item;
+            return format(tmp, i)
+          });
         }
+      } else if (!isEmpty(value) || preserveNullAndEmptyArrays === true) {
+        let tmp = format(clone(obj), null);
+        return { value: tmp, done: false }
       }
     }
   })

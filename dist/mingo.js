@@ -862,16 +862,15 @@ var Lazy = function () {
     }
 
     /**
-     * Returns the given value as `Lazy` object
+     * Returns the given value as `Lazy` object. Generates an iterator if value is a function
      * @param {*} val Input value or function that returns input value.
      */
 
   }, {
     key: '_iter',
     value: function _iter(val) {
-      if (Lazy._isfunction(val)) {
-        val = { next: val };
-      }
+      if (val instanceof Lazy) return val;
+      if (Lazy._isfunction(val)) val = { next: val };
       return new Lazy(val);
     }
 
@@ -1104,18 +1103,24 @@ function $facet(collection, expr) {
 function $group(collection, expr) {
   // lookup key for grouping
   var ID_KEY = idKey();
-  var objectId = expr[ID_KEY];
+  var id = expr[ID_KEY];
 
   return Lazy.transform(collection, function (coll) {
     var partitions = groupBy(coll, function (obj) {
-      return computeValue(obj, objectId, objectId);
+      return computeValue(obj, id, id);
     });
-    var result = [];
 
     // remove the group key
     delete expr[ID_KEY];
 
-    each(partitions.keys, function (value, i) {
+    var i = 0;
+    var size = partitions.keys.length;
+
+    return function () {
+
+      if (i === size) return Lazy.done();
+
+      var value = partitions.keys[i];
       var obj = {};
 
       // exclude undefined key value
@@ -1127,10 +1132,10 @@ function $group(collection, expr) {
       each(expr, function (val, key) {
         obj[key] = accumulate(partitions.groups[i], key, val);
       });
-      result.push(obj);
-    });
 
-    return result;
+      i++;
+      return Lazy.value(obj);
+    };
   });
 }
 
@@ -1281,7 +1286,6 @@ function $project(collection, expr) {
   if (isEmpty(expr)) return collection;
 
   // result collection
-  var projected = [];
   var objKeys = keys(expr);
   var idOnlyExcludedExpression = false;
   var ID_KEY = idKey();
@@ -1438,13 +1442,13 @@ function $sample(collection, expr) {
   assert(isNumber(size), '$sample size must be a positive integer');
 
   return Lazy.transform(collection, function (xs) {
-    var result = [];
     var len = xs.length;
-    for (var i = 0; i < size; i++) {
+    var i = 0;
+    return function () {
+      if (i++ === size) return Lazy.done();
       var n = Math.floor(Math.random() * len);
-      result.push(xs[n]);
-    }
-    return result;
+      return Lazy.value(xs[n]);
+    };
   });
 }
 
@@ -1477,19 +1481,16 @@ function $sort(collection, sortKeys) {
           return resolve(obj, key);
         });
         var sortedIndex = {};
-        var getIndex = function getIndex(k) {
-          return sortedIndex[getHash(k)];
-        };
 
-        var indexKeys = sortBy(grouped.keys, function (item, i) {
-          sortedIndex[getHash(item)] = i;
-          return item;
+        var indexKeys = sortBy(grouped.keys, function (k, i) {
+          sortedIndex[k] = i;
+          return k;
         });
 
         if (sortKeys[key] === -1) indexKeys.reverse();
         coll = [];
-        each(indexKeys, function (item) {
-          return into(coll, grouped.groups[getIndex(item)]);
+        each(indexKeys, function (k) {
+          return into(coll, grouped.groups[sortedIndex[k]]);
         });
       });
       return coll;
@@ -1538,59 +1539,57 @@ function $unwind(collection, expr) {
 
   var value = void 0;
 
-  return new Lazy({
-    next: function next() {
-      var _loop = function _loop() {
-        // take from lazy sequence if available
-        if (Lazy.isIterator(value)) {
-          var tmp = value.next();
-          if (Lazy.isVal(tmp)) return {
-              v: tmp
-            };
-        }
-
-        // fetch next object
-        var obj = collection.next();
-        if (Lazy.isDone(obj)) return {
-            v: Lazy.done()
+  return Lazy._iter(function () {
+    var _loop = function _loop() {
+      // take from lazy sequence if available
+      if (Lazy.isIterator(value)) {
+        var tmp = value.next();
+        if (Lazy.isVal(tmp)) return {
+            v: tmp
           };
-
-        // unwrap value
-        obj = obj.value;
-
-        // get the value of the field to unwind
-        value = getValue(obj, field);
-
-        // throw error if value is not an array???
-        if (isArray(value)) {
-          if (value.length === 0 && preserveNullAndEmptyArrays === true) {
-            value = null; // reset unwind value
-            var _tmp = clone(obj);
-            delete _tmp[field];
-            return {
-              v: { value: format(_tmp, null), done: false }
-            };
-          } else {
-            // construct a lazy sequence for elements per value
-            value = new Lazy(value).map(function (item, i) {
-              var tmp = clone(obj);
-              tmp[field] = item;
-              return format(tmp, i);
-            });
-          }
-        } else if (!isEmpty(value) || preserveNullAndEmptyArrays === true) {
-          var _tmp2 = format(clone(obj), null);
-          return {
-            v: { value: _tmp2, done: false }
-          };
-        }
-      };
-
-      while (true) {
-        var _ret = _loop();
-
-        if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
       }
+
+      // fetch next object
+      var obj = collection.next();
+      if (Lazy.isDone(obj)) return {
+          v: Lazy.done()
+        };
+
+      // unwrap value
+      obj = obj.value;
+
+      // get the value of the field to unwind
+      value = getValue(obj, field);
+
+      // throw error if value is not an array???
+      if (isArray(value)) {
+        if (value.length === 0 && preserveNullAndEmptyArrays === true) {
+          value = null; // reset unwind value
+          var _tmp = clone(obj);
+          delete _tmp[field];
+          return {
+            v: { value: format(_tmp, null), done: false }
+          };
+        } else {
+          // construct a lazy sequence for elements per value
+          value = new Lazy(value).map(function (item, i) {
+            var tmp = clone(obj);
+            tmp[field] = item;
+            return format(tmp, i);
+          });
+        }
+      } else if (!isEmpty(value) || preserveNullAndEmptyArrays === true) {
+        var _tmp2 = format(clone(obj), null);
+        return {
+          v: { value: _tmp2, done: false }
+        };
+      }
+    };
+
+    while (true) {
+      var _ret = _loop();
+
+      if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
     }
   });
 }
