@@ -10,7 +10,7 @@ JavaScript implementation of MongoDB query language
 ```$ npm install mingo```
 
 ## Features
-- Supports Dot Notation for both '_&lt;array&gt;.&lt;index&gt;_' and '_&lt;document&gt;.&lt;field&gt;_' selectors
+- Supports Dot Notation for both '_<array>.<index>_' and '_<document>.<field>_' selectors
 - Query and Projection Operators
   - [Array Operators](https://docs.mongodb.com/manual/reference/operator/query-array/)
   - [Comparisons Operators](https://docs.mongodb.com/manual/reference/operator/query-comparison/)
@@ -35,9 +35,9 @@ JavaScript implementation of MongoDB query language
 - Match against user-defined types
 - Support for aggregaion variables
     - [`$$ROOT`,`$$CURRENT`,`$$DESCEND`,`$$PRUNE`,`$$KEEP`](https://docs.mongodb.com/manual/reference/aggregation-variables/)
-- Fully ES6 module compatible
+- ES6 module compatible
 - Support integrating with custom collections via mixin
-- Query filter and projection streaming. See [mingo-stream](https://github.com/kofrasa/mingo-stream)
+- Query filter and projection streaming.
 
 For documentation on using query operators see [mongodb](http://docs.mongodb.org/manual/reference/operator/query/)
 
@@ -81,39 +81,40 @@ let query = new mingo.Query({
     score: { $gte: 50 }
 });
 
+// test if an object matches query
 query.test(someObject)
 ```
 
 ## Searching and Filtering
 ```js
-// `collection` is an Array of objects you want to query
+// input is either an Array or any iterable source (i.e Object{next:Function}) including ES6 generators.
 
 // filter collection with find()
-let cursor = query.find(collection);
+let cursor = query.find(collection)
 
 // shorthand with query criteria
-// cursor = mingo.find(collection, criteria);
+cursor = mingo.find(collection, criteria)
 
 // sort, skip and limit by chaining
 cursor.sort({student_id: 1, score: -1})
     .skip(100)
-    .limit(100);
+    .limit(100)
 
 // count matches. exhausts cursor
-cursor.count();
+cursor.count()
 
-// classic cursor iterator (ES5)
+// classic cursor iterator (old school)
 while (cursor.hasNext()) {
-    console.log(cursor.next());
+    console.log(cursor.next())
 }
 
-// ES6 iterators
+// ES6 iterators (new cool)
 for (let value of cursor) {
   console.log(value)
 }
 
 // all() to retrieve matched objects. exhausts cursor
-cursor.all();
+cursor.all()
 ```
 
 ## Aggregation Pipeline
@@ -122,37 +123,31 @@ let agg = new mingo.Aggregator([
     {'$match': { "type": "homework"}},
     {'$group':{'_id':'$student_id', 'score':{$min:'$score'}}},
     {'$sort':{'_id': 1, 'score': 1}}
-]);
+])
 
-let result = agg.run(collection); // returns all results
+// return an iterator for streaming results
+let stream = agg.stream(collection)
 
-// shorthand for above
-result = mingo.aggregate(
-  collection,
-  [
-    {'$match': { "type": "homework"}},
-    {'$group':{'_id':'$student_id', 'score':{$min:'$score'}}},
-    {'$sort':{'_id': 1, 'score': 1}}
-  ]
-);
+// return all results. same as `stream.all()`
+let result = agg.run(collection)
 ```
 
 ## Integration with custom collection
 ```js
 // using Backbone.Collection as an example (any user-defined object will do)
-let Grades = Backbone.Collection.extend(mingo.CollectionMixin);
+let Grades = Backbone.Collection.extend(mingo.CollectionMixin)
 
 // `collection` is an array of objects
-let grades = new Grades(collection);
+let grades = new Grades(collection)
 
 // find students with grades less than 50 in homework or quiz
 // sort by score ascending and type descending
 cursor = grades.query({
   $or: [{type: "quiz", score: {$lt: 50}}, {type: "homework", score: {$lt: 50}}]
-}).sort({score: 1, type: -1}).limit(10);
+}).sort({score: 1, type: -1}).limit(10)
 
 // return grade with the lowest score
-cursor.next();
+cursor.next()
 ```
 
 The collection to mixin needs to provide a method with signature `toJSON() -> Array[Object]`.

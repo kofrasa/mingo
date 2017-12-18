@@ -32,7 +32,6 @@ prepare:
 compress: mingo.js
 	@cat ${BANNER} | sed "s/@VERSION/${VERSION}/" | sed "s/@YEAR/${YEAR}/" > dist/${MODULE}.min.js
 	@${UGLIFY} dist/${MODULE}.js --compress --mangle --source-map dist/${MODULE}.min.map >> dist/${MODULE}.min.js
-	@gzip -kf dist/${MODULE}.min.js
 
 
 clean:
