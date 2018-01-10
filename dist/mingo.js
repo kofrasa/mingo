@@ -1,5 +1,5 @@
 // mingo.js 2.1.1
-// Copyright (c) 2017 Francis Asante
+// Copyright (c) 2018 Francis Asante
 // MIT
 
 (function (global, factory) {
@@ -595,29 +595,131 @@ var createClass = function () {
   };
 }();
 
+function Lazy(source, fn) {
+  return new Iterator(source, fn);
+}
+
+Lazy._identity = function (o) {
+  return o;
+};
+
+Lazy._cmp = function (a, b) {
+  return a < b ? -1 : a > b ? 1 : 0;
+};
+
+Lazy._isfunction = function (f) {
+  return f instanceof Function;
+};
+
+Lazy.isDone = function (o) {
+  return !!o && o.done === true;
+};
+
+Lazy.isVal = function (o) {
+  return !!o && o.done === false && o.hasOwnProperty('value');
+};
+
+Lazy.done = function () {
+  return { done: true };
+};
+
+Lazy.isIterator = function (o) {
+  return o instanceof Object && Lazy._isfunction(o.next);
+};
+
+Lazy.value = function (o) {
+  return { value: o, done: false };
+};
+
 /**
- * A lazy sequence for iterable sources
- *
- * Terms
- *  - Lazy:     An object of this class. Supports high order functions such as; map, filter, etc
- *  - Iterator: Any object with the interface Object{next:Function}. Lazy class is an iterator by default
- *  - Sequence: An Array or Iterator
+ * Returns a new `Lazy` from the transforming the entire input sequence
+ * @param {*} xs Finite sequence source
+ * @param {Function} f Function of (Array) => (Any). Accepts the entire input as an array to transform
  */
-var Lazy = function () {
+Lazy.transform = function (xs, f) {
+  return Lazy(f(Lazy.all(xs)));
+};
+
+/**
+ * Returns all values from a sequence as an Array.
+ * @param {*} xs A finite iterator or sequence
+ */
+Lazy.all = function (xs) {
+  if (xs instanceof Array) return xs;
+  if (!Lazy.isIterator(xs)) return [xs];
+
+  var result = [];
+  while (true) {
+    var o = xs.next();
+    if (Lazy.isDone(o)) break;
+    result.push(o.value);
+  }
+  return result;
+};
+
+/**
+ * Return a lazy range
+ * @param {Number} start
+ * @param {Number} end
+ * @param {Number} step
+ */
+Lazy.range = function (start, end, step) {
+  if (end === undefined) {
+    end = start;
+    start = 0;
+  }
+  if (!step) step = start < end ? 1 : -1;
+
+  return Lazy({
+    next: function next() {
+      if (step > 0 && start < end || step < 0 && start > end) {
+        var val = Lazy.value(start);
+        start += step;
+        return val;
+      }
+      return Lazy.done();
+    }
+  });
+};
+
+Lazy.NEXT = function () {};
+
+function arrayIterator(array) {
+  return function (data) {
+    var size = data.length;
+    var index = 0;
+    return {
+      next: function next() {
+        return index < size ? { value: data[index++], done: false } : { done: true };
+      }
+    };
+  }(array);
+}
+
+var Iterator = function () {
   /**
    * @param {*} src Any object as seed for Lazy
    * @param {Function} fn An optional transformation function
    */
-  function Lazy(src, fn) {
-    classCallCheck(this, Lazy);
+  function Iterator(source, fn) {
+    classCallCheck(this, Iterator);
 
-    this.__src = src;
+    this.__src = source;
     this.__fn = fn;
-    this.__index = 0;
     this.__done = false;
+
+    if (Lazy._isfunction(source)) {
+      this.__src = { next: source };
+    } else if (!Lazy.isIterator(source) && !(source instanceof Array)) {
+      source = [source];
+    }
+
+    if (source instanceof Array) {
+      this.__src = arrayIterator(source);
+    }
   }
 
-  createClass(Lazy, [{
+  createClass(Iterator, [{
     key: Symbol.iterator,
     value: function value() {
       return this;
@@ -629,6 +731,11 @@ var Lazy = function () {
       this.__src = null;
     }
   }, {
+    key: '_source',
+    value: function _source() {
+      return this.__src;
+    }
+  }, {
     key: 'all',
     value: function all() {
       return Lazy.all(this);
@@ -637,97 +744,84 @@ var Lazy = function () {
     key: 'next',
     value: function next() {
 
-      var obj = Lazy.done();
-
       while (!this.__done) {
-        if (Lazy.isIterator(this.__src)) {
-          obj = this.__src.next();
-        } else if (this.__src instanceof Array) {
-          if (this.__index < this.__src.length) {
-            obj = { value: this.__src[this.__index++], done: false };
-          }
-        } else {
-          obj = { value: this.__src, done: false };
-          this._end();
-        }
+        var o = this.__src.next();
 
-        if (Lazy.isVal(obj)) {
-          // transform value if we have function
-          if (!!this.__fn) obj = this.__fn(obj);
-          if (Lazy.isVal(obj)) break;
+        if (this.__fn && !Lazy.isDone(o)) o = this.__fn(o);
+        if (o !== Lazy.NEXT) {
+          if (Lazy.isDone(o)) {
+            this._end();
+          } else {
+            return o;
+          }
         }
-        if (Lazy.isDone(obj)) this._end();
       }
 
-      return obj;
+      return Lazy.done();
     }
   }, {
     key: 'each',
     value: function each(f) {
-      // iterate without storing values
-      this.filter(function (x) {
-        f(x);
-      }).all();
+      while (true) {
+        var o = this.next();
+        if (Lazy.isDone(o)) break;
+        f(o.value);
+      }
     }
   }, {
     key: 'map',
     value: function map(f) {
       var i = 0;
-      return new Lazy(this, function (obj) {
-        obj.value = f(obj.value, i++);
-        return obj;
+      return Lazy(this, function (o) {
+        o.value = f(o.value, i++);
+        return o;
       });
     }
   }, {
     key: 'filter',
     value: function filter(pred) {
-      return new Lazy(this, function (obj) {
-        if (pred(obj.value)) return obj;
+      return Lazy(this, function (o) {
+        return pred(o.value) ? o : Lazy.NEXT;
       });
     }
 
     /**
      * Take values from the sequence
-     * @param {Number|Function} n A number or predicate function
+     * @param {Number|Function} f A number or predicate function
      */
 
   }, {
     key: 'take',
-    value: function take(n) {
-      if (Lazy._isfunction(n)) {
-        return new Lazy(this, function (obj) {
-          return n(obj.value) ? obj : Lazy.done();
-        });
-      } else {
+    value: function take(f) {
+      if (!Lazy._isfunction(f)) {
         var i = 0;
-        return new Lazy(this, function (obj) {
-          return n > i++ ? obj : Lazy.done();
-        });
+        var n = f; // number
+        f = function f(o) {
+          return n > i++;
+        };
       }
+      return Lazy(this, function (o) {
+        return f(o.value) ? o : Lazy.done();
+      });
     }
 
     /**
      * Skips values in the sequence
-     * @param {Number|Function} n Number or predicate function
+     * @param {Number|Function} f Number or predicate function
      */
 
   }, {
     key: 'skip',
-    value: function skip(n) {
-      if (Lazy._isfunction(n)) {
-        return new Lazy(this, function (obj) {
-          return n(obj.value) ? null : obj;
-        });
-      } else {
-        var i = n;
-        return new Lazy(this, function (obj) {
-          if (i == 0) {
-            return obj;
-          } else {
-            i--;
-          }
-        });
+    value: function skip(f) {
+      if (!Lazy._isfunction(f)) {
+        var i = f; // number
+        f = function f(o) {
+          return i-- > 0;
+        };
       }
+      return Lazy(this, function (o) {
+        return f(o.value) ? Lazy.NEXT : o;
+      });
     }
 
     /**
@@ -741,7 +835,7 @@ var Lazy = function () {
     value: function reduce(f, init) {
       var self = this;
 
-      return new Lazy._iter(function () {
+      return Lazy(function () {
         var o = self.next();
         if (Lazy.isDone(o)) return o;
 
@@ -815,126 +909,8 @@ var Lazy = function () {
         }
       };
     }
-  }], [{
-    key: '_cmp',
-    value: function _cmp(a, b) {
-      return a < b ? -1 : a > b ? 1 : 0;
-    }
-  }, {
-    key: '_isobject',
-    value: function _isobject(o) {
-      return !!o && o.constructor.name === 'Object';
-    }
-  }, {
-    key: '_isfunction',
-    value: function _isfunction(f) {
-      return f instanceof Function;
-    }
-  }, {
-    key: '_has',
-    value: function _has(o, k) {
-      return o.hasOwnProperty(k);
-    }
-  }, {
-    key: 'isDone',
-    value: function isDone(o) {
-      return Lazy._isobject(o) && Object.keys(o).length === 1 && Lazy._has(o, 'done') && o.done;
-    }
-  }, {
-    key: 'isVal',
-    value: function isVal(o) {
-      return Lazy._isobject(o) && Object.keys(o).length === 2 && Lazy._has(o, 'value') && Lazy._has(o, 'done');
-    }
-  }, {
-    key: 'done',
-    value: function done() {
-      return { done: true };
-    }
-  }, {
-    key: 'isIterator',
-    value: function isIterator(o) {
-      return o instanceof Object && Lazy._isfunction(o.next);
-    }
-  }, {
-    key: 'value',
-    value: function value(o) {
-      return { value: o, done: false };
-    }
-
-    /**
-     * Returns the given value as `Lazy` object. Generates an iterator if value is a function
-     * @param {*} val Input value or function that returns input value.
-     */
-
-  }, {
-    key: '_iter',
-    value: function _iter(val) {
-      if (val instanceof Lazy) return val;
-      if (Lazy._isfunction(val)) val = { next: val };
-      return new Lazy(val);
-    }
-
-    /**
-     * Returns a new `Lazy` from the transforming the entire input sequence
-     * @param {*} xs Finite sequence source
-     * @param {Function} f Function of (Array) => (Any). Accepts the entire input as an array to transform
-     */
-
-  }, {
-    key: 'transform',
-    value: function transform(xs, f) {
-      return Lazy._iter(f(Lazy.all(xs)));
-    }
-
-    /**
-     * Returns all values from a sequence as an Array.
-     * @param {*} xs A finite iterator or sequence
-     */
-
-  }, {
-    key: 'all',
-    value: function all(xs) {
-      if (xs instanceof Array) return xs;
-      if (!Lazy.isIterator(xs)) return [xs];
-
-      var result = [];
-      while (true) {
-        var o = xs.next();
-        if (Lazy.isDone(o)) break;
-        if (Lazy.isVal(o)) result.push(o.value);
-      }
-      return result;
-    }
-
-    /**
-     * Return a lazy range
-     * @param {Number} start
-     * @param {Number} end
-     * @param {Number} step
-     */
-
-  }, {
-    key: 'range',
-    value: function range(start, end, step) {
-      if (end === undefined) {
-        end = start;
-        start = 0;
-      }
-      if (!step) step = start < end ? 1 : -1;
-
-      return new Lazy({
-        next: function next() {
-          if (step > 0 && start < end || step < 0 && start > end) {
-            var val = Lazy.value(start);
-            start += step;
-            return val;
-          }
-          return Lazy.done();
-        }
-      });
-    }
   }]);
-  return Lazy;
+  return Iterator;
 }();
 
 /**
@@ -1539,7 +1515,7 @@ function $unwind(collection, expr) {
 
   var value = void 0;
 
-  return Lazy._iter(function () {
+  return Lazy(function () {
     var _loop = function _loop() {
       // take from lazy sequence if available
       if (Lazy.isIterator(value)) {
