@@ -490,40 +490,28 @@ function $addFields (collection, expr) {
   })
 }
 
+/**
+ * Returns a lazy object
+ * @param {*} source An iterable or generator eg. Object{next:Function} | Array | Function
+ */
 function Lazy (source) {
   return new Iterator(source)
 }
 
-Lazy._identity = function (o) {
-  return o
-};
-
-Lazy._cmp = function (a,b) {
-  return a < b ? -1 : (a > b ? 1 : 0)
-};
-
-Lazy._isfunction = function (f) {
-  return f instanceof Function
-};
-
 Lazy.isDone = function (o) {
   return !!o && o.done === true
-};
-
-Lazy.isVal = function (o) {
-  return !!o && o.done === false && o.hasOwnProperty('value')
 };
 
 Lazy.done = function () {
   return { done: true }
 };
 
-Lazy.isIterator = function (o) {
-  return o instanceof Object && Lazy._isfunction(o.next)
-};
-
 Lazy.value = function (o) {
   return { value: o, done: false }
+};
+
+Lazy.isIterator = function (o) {
+  return o instanceof Object && isFunction$1(o.next)
 };
 
 /**
@@ -540,8 +528,7 @@ Lazy.transform = function (xs, f) {
  * @param {*} xs A finite iterator or sequence
  */
 Lazy.all = function (xs) {
-  if (xs instanceof Array) return xs
-  if (!Lazy.isIterator(xs)) return [xs]
+  if (!Lazy.isIterator(xs)) return xs
 
   let result = [];
   while (true) {
@@ -549,6 +536,7 @@ Lazy.all = function (xs) {
     if (Lazy.isDone(o)) break
     result.push(o.value);
   }
+
   return result
 };
 
@@ -577,25 +565,73 @@ Lazy.range = function (start, end, step) {
   })
 };
 
-Lazy.NEXT = function () {};
-Lazy.DONE = function () {};
+// helpers
+function compare (a,b) {
+  return a < b ? -1 : (a > b ? 1 : 0)
+}
 
-// function arrayIterator (array) {
-//   return (data => {
-//     let size = data.length
-//     let index = 0
-//     return {
-//       getIndex () { return index },
-//       moveNext () { index++ },
-//       current () {
-//         return index < size
-//           ? { value: data[index], done: false}
-//           : { done: true }
-//       },
-//       update (val, i) { data[i] = val }
-//     }
-//   })(array)
-// }
+function isFunction$1 (f) {
+  return f instanceof Function
+}
+
+// enum-like constants
+const NEXT = function () {};
+const DONE = function () {};
+
+function arrayIterator (source, fn) {
+  let index = -1;
+  let size = source.length;
+
+  return function () {
+    if (index >= size) return { done: true }
+
+    let o = source[++index];
+
+    for (let i = 0, len = fn.length; i < len && index < size; i++) {
+      o = fn[i](o);
+      if (o === NEXT) {
+        index++;
+        o = source[index];
+        i = -1;
+      } else if (o === DONE) {
+        size = 0;
+        break
+      }
+    }
+
+    return index < size ? { value: o, done: false } : { done: true }
+  }
+}
+
+function baseIterator (source, fn) {
+  let done = false;
+
+  function markDone () {
+    done = true;
+    return { done: true }
+  }
+
+  return function () {
+    if (done) return markDone()
+
+    while (true) {
+      let o = source.next();
+
+      if (Lazy.isDone(o)) return { done: true }
+
+      o = o.value;
+
+      for (let i = 0, len = fn.length; i < len; i++) {
+        o = fn[i](o);
+        if (o === NEXT) break
+        if (o === DONE) return markDone()
+      }
+
+      if (o !== NEXT) return { value: o, done: false }
+    }
+  }
+}
+
 
 class Iterator {
   /**
@@ -604,64 +640,18 @@ class Iterator {
    */
   constructor (source) {
     this.__fn = []; // lazy function chain
-    this.__done = false;
-    this.__src = source;
 
-    if (Lazy._isfunction(source)) {
-      this.__src = { next: source };
+    if (isFunction$1(source)) {
+      source = { next: source };
     } else if (!Lazy.isIterator(source) && !(source instanceof Array)) {
       source = [source];
     }
 
-    if (source instanceof Array) {
+    // get iterator
+    let iterator = source instanceof Array ? arrayIterator : baseIterator;
 
-      let index = -1;
-      let data = source;
-      let size = source.length;
-
-      this.next = function () {
-        if (this.__done || index >= size) return Lazy.done()
-
-        let o = data[++index];
-
-        for (let i = 0, len = this.__fn.length; i < len && index < size; i++) {
-          o = this.__fn[i](o);
-          if (o === Lazy.NEXT) {
-            index++;
-            o = data[index];
-            i = -1;
-          } else if (o === Lazy.DONE) {
-            return this._end()
-          }
-        }
-
-        return index < size ? { value: o, done: false } : { done: true }
-      };
-
-    } else {
-
-      this.next = function () {
-
-        let o = Lazy.DONE;
-
-        while (!this.__done) {
-          o = this.__src.next();
-
-          if (Lazy.isDone(o)) return this._end()
-          o = o.value;
-
-          for (let i = 0, len = this.__fn.length; i < len; i++) {
-            o = this.__fn[i](o);
-            if (o === Lazy.NEXT) break
-            if (o === Lazy.DONE) return this._end()
-          }
-
-          if (o !== Lazy.NEXT) break
-        }
-
-        return o === Lazy.DONE ? { done: true } : { value: o, done: false }
-      };
-    }
+    // make next function
+    this.next = iterator(source, this.__fn);
   }
 
   [Symbol.iterator] () {
@@ -673,11 +663,6 @@ class Iterator {
     return this
   }
 
-  _end () {
-    this.__done = true;
-    return { done: true }
-  }
-
   all () {
     return Lazy.all(this)
   }
@@ -686,8 +671,9 @@ class Iterator {
     while (true) {
       let o = this.next();
       if (Lazy.isDone(o)) break
-      f(o.value);
+      if (f(o.value) === false) return false
     }
+    return true
   }
 
   map (f) {
@@ -699,7 +685,7 @@ class Iterator {
 
   filter (pred) {
     return this._push(o => {
-      return pred(o) ? o : Lazy.NEXT
+      return pred(o) ? o : NEXT
     })
   }
 
@@ -708,14 +694,14 @@ class Iterator {
    * @param {Number|Function} pred A number or predicate
    */
   take (pred) {
-    if (!Lazy._isfunction(pred)) {
+    if (!isFunction$1(pred)) {
       let i = 0;
       let n = pred;
       pred = (o) => n > i++;
     }
 
     return this._push(o => {
-      return pred(o) ? o : Lazy.DONE
+      return pred(o) ? o : DONE
     })
   }
 
@@ -724,13 +710,13 @@ class Iterator {
    * @param {Number|Function} f Number or predicate function
    */
   skip (f) {
-    if (!Lazy._isfunction(f)) {
+    if (!isFunction$1(f)) {
       let i = f; // number
       f = (o) => i-- > 0;
     }
 
     return this._push(o => {
-      return f(o) ? Lazy.NEXT : o
+      return f(o) ? NEXT : o
     })
   }
 
@@ -757,8 +743,9 @@ class Iterator {
     return init
   }
 
-  sample () {
-    return this.filter(n => Math.random() > 0.5)
+  sample (p) {
+    p = p || 0.5;
+    return this.filter(n => Math.random() < p)
   }
 
   reverse () {
@@ -770,7 +757,7 @@ class Iterator {
 
   sort (cmp) {
     return Lazy.transform(this, xs => {
-      cmp = cmp || Lazy._cmp;
+      cmp = cmp || compare;
       xs.sort(cmp);
       return xs
     })
@@ -778,7 +765,7 @@ class Iterator {
 
   sortBy (f, cmp) {
     return Lazy.transform(this, xs => {
-      cmp = cmp || Lazy._cmp;
+      cmp = cmp || compare;
       xs.sort((a,b) => {
         return cmp(f(a), f(b))
       });
@@ -954,11 +941,6 @@ function $count (collection, expr) {
     done = true;
     return { value: res, done: false }
   }).one()
-
-  // return Lazy(collection.reduce((memo,n) => {
-  //   memo[expr] += 1
-  //   return memo
-  // }, o).one()
 }
 
 /**
@@ -1411,7 +1393,7 @@ function $unwind(collection, expr) {
       // take from lazy sequence if available
       if (Lazy.isIterator(value)) {
         let tmp = value.next();
-        if (Lazy.isVal(tmp)) return tmp
+        if (!Lazy.isDone(tmp)) return tmp
       }
 
       // fetch next object
@@ -1762,7 +1744,7 @@ class Cursor {
     if (this.__stack.length > 0) return this.__stack.pop() // yield value obtains in hasNext()
     let obj = this._fetch().next();
 
-    if (Lazy.isVal(obj)) return obj.value
+    if (!Lazy.isDone(obj)) return obj.value
     this.__stack = null;
     return
   }
@@ -1776,7 +1758,7 @@ class Cursor {
     if (this.__stack.length > 0) return true // there is a value on stack
 
     let o = this._fetch().next();
-    if (Lazy.isVal(o)) {
+    if (!Lazy.isDone(o)) {
       this.__stack.push(o.value);
     } else {
       this.__stack = null;
