@@ -19,7 +19,6 @@ test('Lazy tests', function (t) {
     [ newLazy().reverse().take(3), [9,8,7], "can reverse" ],
     [ newLazy().reverse().take(3).sort(), [7,8,9], "can sort" ],
     [ newLazy().reverse().take(3).sortBy(n => n % 3), [9,7,8], "can sortBy" ],
-    [ newLazy().reduce((acc,n) => acc+n), [45], "can reduce" ],
     [ Lazy.range(1,10), DATA, "can range from start to end" ],
     [ Lazy.range(5), [0,1,2,3,4], "can range with only end value" ],
     [ Lazy.range(0, 10, 2), [0,2,4,6,8], "can range with increment" ],
@@ -31,6 +30,8 @@ test('Lazy tests', function (t) {
   fixtures.forEach(n => {
     t.deepEqual(n[0].all(), n[1], n[2])
   })
+
+  t.equal(newLazy().reduce((acc,n) => acc+n), 45, "can reduce")
 
   var arr = []
   newLazy().each(o => arr.push(o%2))

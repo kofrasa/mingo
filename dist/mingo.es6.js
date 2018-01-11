@@ -104,17 +104,16 @@ function keys (o) { return Object.keys(o) }
  * @param  {*}   ctx  The object to use a context
  * @return {void}
  */
-function each (obj, fn, ctx = null) {
-  assert(obj === Object(obj), "Cannot iterate over object of type '" + jsType(obj) + "'");
-
+function each (obj, fn, ctx) {
+  fn = fn.bind(ctx);
   if (isArrayLike(obj)) {
     for (let i = 0, len = obj.length; i < len; i++) {
-      if (fn.call(ctx, obj[i], i, obj) === false) break
+      if (fn(obj[i], i, obj) === false) break
     }
   } else {
     for (let k in obj) {
       if (has(obj, k)) {
-        if (fn.call(ctx, obj[k], k, obj) === false) break
+        if (fn(obj[k], k, obj) === false) break
       }
     }
   }
@@ -128,13 +127,14 @@ function each (obj, fn, ctx = null) {
  * @param  {*}   ctx The value to use as the "this" context for the transform
  * @return {Array|Object} Result object after applying the transform
  */
-function map (obj, fn, ctx = null) {
+function map (obj, fn, ctx) {
   if (isArray(obj)) {
     return obj.map(fn, ctx)
   } else if (isObject(obj)) {
+    fn = fn.bind(ctx);
     let o = {};
     each(obj, (v, k) => {
-      o[k] = fn.call(ctx, v, k);
+      o[k] = fn(v, k);
     }, obj);
     return o
   }
@@ -347,15 +347,17 @@ function getHash (value) {
  * @param {Object} ctx The context to use for calling `fn`
  * @return {Array} Returns a new sorted array by the given iteratee
  */
-function sortBy (collection, fn, ctx = null) {
+function sortBy (collection, fn, ctx) {
   let sortKeys = {};
   let sorted = [];
   let len = collection.length;
   let result = [];
 
+  fn = fn.bind(ctx);
+
   for (let i = 0; i < len; i++) {
     let obj = collection[i];
-    let key = fn.call(ctx, obj, i);
+    let key = fn(obj, i);
     if (isNil(key)) {
       // objects with null keys will go in first
       result.push(obj);
@@ -394,8 +396,9 @@ function groupBy (collection, fn, ctx) {
     'groups': []
   };
   let lookup = {};
+  fn = fn.bind(ctx);
   each(collection, (obj) => {
-    let key = fn.call(ctx, obj);
+    let key = fn(obj);
     let hash = getHash(key);
     let index = -1;
 
@@ -487,8 +490,8 @@ function $addFields (collection, expr) {
   })
 }
 
-function Lazy (source, fn) {
-  return new Iterator(source, fn)
+function Lazy (source) {
+  return new Iterator(source)
 }
 
 Lazy._identity = function (o) {
@@ -575,30 +578,34 @@ Lazy.range = function (start, end, step) {
 };
 
 Lazy.NEXT = function () {};
+Lazy.DONE = function () {};
 
-function arrayIterator (array) {
-  return (data => {
-    let size = data.length;
-    let index = 0;
-    return {
-      next () {
-        return index < size
-          ? { value: data[index++], done: false}
-          : { done: true }
-      }
-    }
-  })(array)
-}
+// function arrayIterator (array) {
+//   return (data => {
+//     let size = data.length
+//     let index = 0
+//     return {
+//       getIndex () { return index },
+//       moveNext () { index++ },
+//       current () {
+//         return index < size
+//           ? { value: data[index], done: false}
+//           : { done: true }
+//       },
+//       update (val, i) { data[i] = val }
+//     }
+//   })(array)
+// }
 
 class Iterator {
   /**
    * @param {*} src Any object as seed for Lazy
    * @param {Function} fn An optional transformation function
    */
-  constructor (source, fn) {
-    this.__src = source;
-    this.__fn = fn;
+  constructor (source) {
+    this.__fn = []; // lazy function chain
     this.__done = false;
+    this.__src = source;
 
     if (Lazy._isfunction(source)) {
       this.__src = { next: source };
@@ -607,7 +614,53 @@ class Iterator {
     }
 
     if (source instanceof Array) {
-      this.__src = arrayIterator(source);
+
+      let index = -1;
+      let data = source;
+      let size = source.length;
+
+      this.next = function () {
+        if (this.__done || index >= size) return Lazy.done()
+
+        let o = data[++index];
+
+        for (let i = 0, len = this.__fn.length; i < len && index < size; i++) {
+          o = this.__fn[i](o);
+          if (o === Lazy.NEXT) {
+            index++;
+            o = data[index];
+            i = -1;
+          } else if (o === Lazy.DONE) {
+            return this._end()
+          }
+        }
+
+        return index < size ? { value: o, done: false } : { done: true }
+      };
+
+    } else {
+
+      this.next = function () {
+
+        let o = Lazy.DONE;
+
+        while (!this.__done) {
+          o = this.__src.next();
+
+          if (Lazy.isDone(o)) return this._end()
+          o = o.value;
+
+          for (let i = 0, len = this.__fn.length; i < len; i++) {
+            o = this.__fn[i](o);
+            if (o === Lazy.NEXT) break
+            if (o === Lazy.DONE) return this._end()
+          }
+
+          if (o !== Lazy.NEXT) break
+        }
+
+        return o === Lazy.DONE ? { done: true } : { value: o, done: false }
+      };
     }
   }
 
@@ -615,35 +668,18 @@ class Iterator {
     return this
   }
 
-  _end () {
-    this.__done = true;
-    this.__src = null;
+  _push (f) {
+    this.__fn.push(f);
+    return this
   }
 
-  _source () {
-    return this.__src
+  _end () {
+    this.__done = true;
+    return { done: true }
   }
 
   all () {
     return Lazy.all(this)
-  }
-
-  next () {
-
-    while (!this.__done) {
-      let o = this.__src.next();
-
-      if (this.__fn && !Lazy.isDone(o)) o = this.__fn(o);
-      if (o !== Lazy.NEXT) {
-        if (Lazy.isDone(o)) {
-          this._end();
-        } else {
-          return o
-        }
-      }
-    }
-
-    return Lazy.done()
   }
 
   each (f) {
@@ -656,30 +692,30 @@ class Iterator {
 
   map (f) {
     let i = 0;
-    return Lazy(this, o => {
-      o.value = f(o.value, i++);
-      return o
+    return this._push(o => {
+      return f(o, i++)
     })
   }
 
   filter (pred) {
-    return Lazy(this, o => {
-      return pred(o.value) ? o : Lazy.NEXT
+    return this._push(o => {
+      return pred(o) ? o : Lazy.NEXT
     })
   }
 
   /**
    * Take values from the sequence
-   * @param {Number|Function} f A number or predicate function
+   * @param {Number|Function} pred A number or predicate
    */
-  take (f) {
-    if (!Lazy._isfunction(f)) {
+  take (pred) {
+    if (!Lazy._isfunction(pred)) {
       let i = 0;
-      let n = f; // number
-      f = (o) => n > i++;
+      let n = pred;
+      pred = (o) => n > i++;
     }
-    return Lazy(this, o => {
-      return f(o.value) ? o : Lazy.done()
+
+    return this._push(o => {
+      return pred(o) ? o : Lazy.DONE
     })
   }
 
@@ -692,8 +728,9 @@ class Iterator {
       let i = f; // number
       f = (o) => i-- > 0;
     }
-    return Lazy(this, o => {
-      return f(o.value) ? Lazy.NEXT : o
+
+    return this._push(o => {
+      return f(o) ? Lazy.NEXT : o
     })
   }
 
@@ -703,20 +740,21 @@ class Iterator {
    * @param {*} init
    */
   reduce (f, init) {
-    let self = this;
+    let o = this.next();
+    let i = 0;
 
-    return Lazy(() => {
-      let o = self.next();
-      if (Lazy.isDone(o)) return o
+    if (init === undefined && !Lazy.isDone(o)) {
+      init = o.value;
+      o = this.next();
+      i++;
+    }
 
-      let i = 0;
-      while (Lazy.isVal(o)) {
-        init = (i === 0 && init === undefined) ? o.value : f(init, o.value, i);
-        o = self.next();
-        i++;
-      }
-      return Lazy.value(init)
-    })
+    while (!Lazy.isDone(o)) {
+      init = f(init, o.value, i++);
+      o = this.next();
+    }
+
+    return init
   }
 
   sample () {
@@ -749,7 +787,7 @@ class Iterator {
   }
 
   count () {
-    return this.reduce((acc,n) => ++acc).all()[0]
+    return this.reduce((acc,n) => ++acc)
   }
 
   /**
@@ -905,11 +943,22 @@ function $count (collection, expr) {
 
   let o = {};
   o[expr] = 0;
+  let done = false;
 
-  return collection.reduce((memo,n) => {
-    memo[expr] += 1;
-    return memo
-  }, o).one()
+  return Lazy(() => {
+    if (done) return { done: true }
+    let res = collection.reduce((memo,n) => {
+      memo[expr] += 1;
+      return memo
+    }, o);
+    done = true;
+    return { value: res, done: false }
+  }).one()
+
+  // return Lazy(collection.reduce((memo,n) => {
+  //   memo[expr] += 1
+  //   return memo
+  // }, o).one()
 }
 
 /**
@@ -2118,13 +2167,14 @@ const queryOperators = {
 // add simple query operators
 each(simpleOperators, (fn, op) => {
   queryOperators[op] = ((f, ctx) => {
+    f = f.bind(ctx);
     return (selector, value) => {
       return {
         test (obj) {
           // value of field must be fully resolved.
           let lhs = resolve(obj, selector, { meta:true });
           lhs = unwrap(lhs.result, lhs.depth);
-          return f.call(ctx, lhs, value)
+          return f(lhs, value)
         }
       }
     }
@@ -3041,9 +3091,9 @@ const dateOperators = {
 
       if (isArray(hdlr)) {
         // reuse date operators
-        let fn = this[hdlr[0]];
+        let fn = this[hdlr[0]].bind(this);
         let pad = hdlr[1];
-        value = padDigits(fn.call(this, obj, date), pad);
+        value = padDigits(fn(obj, date), pad);
       }
       // replace the match with resolved value
       fmt = fmt.replace(matches[i], value);
@@ -3439,11 +3489,12 @@ function addOperators (opClass, fn) {
       each(newOperators, (fn, op) => {
         wrapped[op] = ((f, ctx) => {
           return (selector, value) => {
+            f = f.bind(ctx);
             return {
               test: (obj) => {
                 // value of field must be fully resolved.
                 let lhs = resolve(obj, selector);
-                let result = f.call(ctx, selector, lhs, value);
+                let result = f(selector, lhs, value);
                 assert(isBoolean(result), `${op} must return a boolean`);
                 return result
               }
@@ -3455,9 +3506,10 @@ function addOperators (opClass, fn) {
     case OP_PROJECTION:
       each(newOperators, (fn, op) => {
         wrapped[op] = ((f, ctx) => {
+          f = f.bind(ctx);
           return (obj, expr, selector) => {
             let lhs = resolve(obj, selector);
-            return f.call(ctx, selector, lhs, expr)
+            return f(selector, lhs, expr)
           }
         })(fn, newOperators);
       });
