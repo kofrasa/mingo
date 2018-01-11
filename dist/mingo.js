@@ -1,4 +1,4 @@
-// mingo.js 2.1.1
+// mingo.js 2.2.0
 // Copyright (c) 2018 Francis Asante
 // MIT
 
@@ -1751,6 +1751,19 @@ function $max(collection, expr) {
 }
 
 /**
+ * Combines multiple documents into a single document.
+ *
+ * @param collection
+ * @param expr
+ * @returns {Array|*}
+ */
+function $mergeObjects(collection, expr) {
+  return reduce(collection, function (memo, o) {
+    return Object.assign(memo, computeValue(o, expr));
+  }, {});
+}
+
+/**
  * Returns the lowest value in a group.
  *
  * @param collection
@@ -1831,6 +1844,7 @@ var groupOperators = {
   $avg: $avg,
   $first: $first,
   $last: $last,
+  $mergeObjects: $mergeObjects,
   $max: $max,
   $min: $min,
   $push: $push,
@@ -3094,6 +3108,22 @@ var arrayOperators = {
     }
 
     return result;
+  },
+
+
+  /**
+   * Combines multiple documents into a single document.
+   * @param {*} obj
+   * @param {*} expr
+   */
+  $mergeObjects: function $mergeObjects(obj, expr) {
+    var docs = computeValue(obj, expr);
+    if (isArray(docs)) {
+      return reduce(docs, function (memo, o) {
+        return Object.assign(memo, o);
+      }, {});
+    }
+    return {};
   }
 };
 
@@ -4369,7 +4399,7 @@ var CollectionMixin = {
   }
 };
 
-var VERSION = '2.1.1';
+var VERSION = '2.2.0';
 
 // mingo!
 var index = {

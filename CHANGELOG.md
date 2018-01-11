@@ -1,5 +1,9 @@
 Changelog
 =========
+## 2.2.0 /
+- More Performance improvements for lazy evaluation
+- Implemented `$mergeObjects`
+
 ## 2.1.1 / 2017-12-18
 - Use iterator input for Query
 - Don't sort cursor modifiers

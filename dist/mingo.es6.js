@@ -1,4 +1,4 @@
-// mingo.js 2.1.1
+// mingo.js 2.2.0
 // Copyright (c) 2018 Francis Asante
 // MIT
 
@@ -1572,6 +1572,17 @@ function $max (collection, expr) {
 }
 
 /**
+ * Combines multiple documents into a single document.
+ *
+ * @param collection
+ * @param expr
+ * @returns {Array|*}
+ */
+function $mergeObjects (collection, expr) {
+  return reduce(collection, (memo, o) => Object.assign(memo, computeValue(o, expr)), {})
+}
+
+/**
  * Returns the lowest value in a group.
  *
  * @param collection
@@ -1646,6 +1657,7 @@ const groupOperators = {
   $avg,
   $first,
   $last,
+  $mergeObjects,
   $max,
   $min,
   $push,
@@ -2779,6 +2791,19 @@ const arrayOperators = {
     }
 
     return result
+  },
+
+  /**
+   * Combines multiple documents into a single document.
+   * @param {*} obj
+   * @param {*} expr
+   */
+  $mergeObjects (obj, expr) {
+    let docs = computeValue(obj, expr);
+    if (isArray(docs)) {
+      return reduce(docs, (memo, o) => Object.assign(memo, o), {})
+    }
+    return {}
   }
 };
 
@@ -3106,7 +3131,7 @@ const setOperators = {
    * @param obj
    * @param expr
    */
-    $setEquals (obj, expr) {
+  $setEquals (obj, expr) {
     let args = computeValue(obj, expr);
     let xs = unique(args[0]);
     let ys = unique(args[1]);
@@ -3118,7 +3143,7 @@ const setOperators = {
    * @param obj
    * @param expr
    */
-    $setIntersection (obj, expr) {
+  $setIntersection (obj, expr) {
     let args = computeValue(obj, expr);
     return intersection(args[0], args[1])
   },
@@ -3128,7 +3153,7 @@ const setOperators = {
    * @param obj
    * @param expr
    */
-    $setDifference (obj, expr) {
+  $setDifference (obj, expr) {
     let args = computeValue(obj, expr);
     return args[0].filter(notInArray.bind(null, args[1]))
   },
@@ -3138,7 +3163,7 @@ const setOperators = {
    * @param obj
    * @param expr
    */
-    $setUnion (obj, expr) {
+  $setUnion (obj, expr) {
     let args = computeValue(obj, expr);
     return union(args[0], args[1])
   },
@@ -3148,7 +3173,7 @@ const setOperators = {
    * @param obj
    * @param expr
    */
-    $setIsSubset (obj, expr) {
+  $setIsSubset (obj, expr) {
     let args = computeValue(obj, expr);
     return intersection(args[0], args[1]).length === args[0].length
   },
@@ -3158,7 +3183,7 @@ const setOperators = {
    * @param obj
    * @param expr
    */
-    $anyElementTrue (obj, expr) {
+  $anyElementTrue (obj, expr) {
     // mongodb nests the array expression in another
     let args = computeValue(obj, expr)[0];
     return args.some(truthy)
@@ -3169,7 +3194,7 @@ const setOperators = {
    * @param obj
    * @param expr
    */
-    $allElementsTrue (obj, expr) {
+  $allElementsTrue (obj, expr) {
     // mongodb nests the array expression in another
     let args = computeValue(obj, expr)[0];
     return args.every(truthy)
@@ -4020,7 +4045,7 @@ const CollectionMixin = {
   }
 };
 
-const VERSION = '2.1.1';
+const VERSION = '2.2.0';
 
 // mingo!
 var index = {
