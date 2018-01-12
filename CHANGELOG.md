@@ -2,7 +2,10 @@ Changelog
 =========
 ## 2.2.0 /
 - More Performance improvements for lazy evaluation
-- Implemented `$mergeObjects`
+- Added `$mergeObjects` operator
+- Remove all Lazy static methods except `transform`,`isIterator`, and `range`
+- Change signature to `Lazy.transform(fn, source)`
+- Fixed `take` and `skip` with predicates to work correctly
 
 ## 2.1.1 / 2017-12-18
 - Use iterator input for Query

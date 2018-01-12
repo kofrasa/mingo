@@ -16,16 +16,13 @@ test('$out pipeline operator', function (t) {
   var output = []
   var result = mingo.aggregate(data, [
     { $group : { _id : "$author", books: { $push: "$title" } } },
-    { $out :output },
-    { $limit: 1 }
+    { $out : output }
   ])
 
   t.deepEqual(output, [
     { "_id" : "Dante", "books" : [ "The Banquet", "Divine Comedy", "Eclogues" ] },
     { "_id" : "Homer", "books" : [ "The Odyssey", "Iliad" ] }
   ], 'can apply $out operator')
-
-  t.ok(result.length === 1, 'can apply $out in any position')
 
   t.end()
 })
