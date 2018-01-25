@@ -22,9 +22,12 @@ test('Test isEqual', function (t) {
     [function () {}, function () {}, false],
     [Object.prototype.toString, Object.prototype.toString, true]
   ]
+  var b = true
   sample.forEach(function (arr) {
-    t.equal(_.isEqual(arr[0], arr[1]), arr[2])
+    b = b && (_.isEqual(arr[0], arr[1]) === arr[2])
+    if (!b) t.ok(false, "failed test: " + JSON.stringify(arr[0]) + " = " + JSON.stringify(arr[1]))
   })
+  t.ok(true, "all pass")
   t.end()
 })
 
