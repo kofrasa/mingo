@@ -491,153 +491,102 @@ function $addFields (collection, expr) {
 }
 
 /**
- * Returns a lazy object
- * @param {*} source An iterable or generator eg. Object{next:Function} | Array | Function
+ * Returns an iterator
+ * @param {*} source An iterable source (Array, Function, Object{next:Function})
  */
 function Lazy (source) {
   return (source instanceof Iterator) ? source : new Iterator(source)
 }
 
-Lazy.isIterator = function (o) {
+Lazy.isIterator = isIterator;
+
+/**
+ * Checks whether the given object is compatible with iterator i.e Object{next:Function}
+ * @param {*} o An object
+ */
+function isIterator (o) {
   return !!o && typeof o === 'object' && isFn(o.next)
-};
-
-/**
- * Returns a Lazy sequence from the transforming the entire input sequence
- * @param {*} xs Finite sequence source
- * @param {Function} f Function of (Array) => (Any). Accepts the entire input as an array to transform
- */
-Lazy.transform = function (transformFn, source) {
-  return Lazy(((fn, src) => {
-    let iter = false;
-    return () => {
-      if (!iter) {
-        iter = Lazy(fn(toArray(src)));
-      }
-      return iter.next()
-    }
-  })(transformFn, source))
-};
-
-/**
- * Return a lazy range
- * @param {Number} start
- * @param {Number} end
- * @param {Number} step
- */
-Lazy.range = function (start, end, step) {
-  if (end === undefined) {
-    end = start;
-    start = 0;
-  }
-  if (!step) step = start < end ? 1 : -1;
-
-  return Lazy(() => {
-    if (step > 0 && start < end || step < 0 && start > end) {
-      let val =  { value: start, done: false };
-      start += step;
-      return val
-    }
-    return { done: true }
-  })
-};
-
-// helpers
-function compare (a,b) {
-  return a < b ? -1 : (a > b ? 1 : 0)
 }
 
 function isFn (f) {
   return !!f && typeof f === 'function'
 }
 
-function toArray (xs) {
-  if (!Lazy.isIterator(xs)) return xs
-
-  let result = [];
-  let o = { done: false };
-
-  while (!o.done) {
-    o = xs.next();
-    if (!o.done) result.push(o.value);
-  }
-
-  return result
+function dropItem (array, i) {
+  let rest = array.slice(i + 1);
+  array.splice(i);
+  Array.prototype.push.apply(array, rest);
 }
+
+// stop iteration error
+const DONE = new Error();
 
 // Lazy function type flags
 const LAZY_MAP = 1;
 const LAZY_FILTER = 2;
 const LAZY_TAKE = 3;
-const LAZY_TAKE_WHILE = 4;
-const LAZY_SKIP = 5;
-const LAZY_SKIP_WHILE = 6;
+const LAZY_DROP = 4;
 
-function baseIterator (nextFn, iteratees) {
-
-  function dropMember (i) {
-    let rest = iteratees.slice(i + 1);
-    iteratees.splice(i);
-    Array.prototype.push.apply(iteratees, rest);
-  }
+function baseIterator (nextFn, iteratees, buffer) {
 
   let done = false;
   let index = -1;
+  let hashes = {}; // used for LAZY_UNIQ
+  let bIndex = 0; // index for the buffer
 
-  return function () {
+  return function (b) {
 
-    outer:
-    while (!done) {
-      let o = nextFn();
+    // special hack to collect all values into buffer
+    b = b === buffer;
 
-      if (o.done) break
+    try {
 
-      o = o.value;
-      ++index;
+      outer: while (!done) {
+        let o = nextFn();
+        index++;
 
-      let mIndex = -1;
-      let mSize = iteratees.length;
-      let innerDone = false;
+        let mIndex = -1;
+        let mSize = iteratees.length;
+        let innerDone = false;
 
-      while (++mIndex < mSize) {
-        let member = iteratees[mIndex],
-          func = member.func,
-          type = member.type;
+        while (++mIndex < mSize) {
+          let member = iteratees[mIndex],
+            func = member.func,
+            type = member.type;
 
-        switch (type) {
-          case LAZY_MAP:
-            o = func(o, index);
-            break
-          case LAZY_FILTER:
-            if (!func(o, index)) continue outer
-            break
-          case LAZY_TAKE:
-            --member.func;
-            if (!member.func) innerDone = true;
-            break
-          case LAZY_TAKE_WHILE:
-            if (!func(o, index)) break outer
-            break
-          case LAZY_SKIP:
-            --member.func;
-            if (!member.func) dropMember(mIndex);
-            continue outer
-          case LAZY_SKIP_WHILE:
-            if (func(o, index)) continue outer
-            dropMember(mIndex);
-            --mSize; // adjust size
-            --mIndex;
-            break
-          default:
-            break outer
+          switch (type) {
+            case LAZY_MAP:
+              o = func(o, index);
+              break
+            case LAZY_FILTER:
+              if (!func(o, index)) continue outer
+              break
+            case LAZY_TAKE:
+              --member.func;
+              if (!member.func) innerDone = true;
+              break
+            case LAZY_DROP:
+              --member.func;
+              if (!member.func) dropItem(iteratees, mIndex);
+              continue outer
+            default:
+              break outer
+          }
+        }
+
+        done = innerDone;
+
+        if (b) {
+          buffer[bIndex++] = o;
+        } else {
+          return { value: o, done: false }
         }
       }
-
-      done = innerDone;
-      // we have a value
-      return { value: o, done: false }
+    } catch (e) {
+      if (e !== DONE) throw e
     }
 
+    hashes = null; // clear the hash cache
     done = true;
     return { done: true }
   }
@@ -645,93 +594,166 @@ function baseIterator (nextFn, iteratees) {
 
 class Iterator {
   /**
-   * @param {*} source An array, function or iterator with signature Object{next:Function}
+   * @param {*} source An iterable object or function.
+   *    Array - return one element per cycle
+   *    Object{next:Function} - call next() for the next value (this also handles generator functions)
+   *    Function - call to return the next value
    * @param {Function} fn An optional transformation function
    */
   constructor (source) {
     this.__iteratees = []; // lazy function chain
+    this.__first = false; // flag whether to return a single value
+    this.__done = false;
+    this.__buf = [];
 
-    if (Lazy.isIterator(source)) {
-      source = (src => () => src.next())(source);
-    } else  if (!isFn(source)) {
-      if (!(source instanceof Array)) source = [source];
+    if (isFn(source)) {
+      // make iterable
+      source = { next: source };
+    }
 
-      source = ((data) => {
-        let dataSize = data.length;
-        let dataIndex = -1;
+    if (isIterator(source)) {
+      source = (src => () => {
+        let o = src.next();
+        if (o.done) throw DONE
+        return o.value
+      })(source);
+    } else if (Array.isArray(source)) {
+      source = (data => {
+        let size = data.length;
+        let index = 0;
         return () => {
-          return ++dataIndex < dataSize
-            ? { value: data[dataIndex], done: false }
-            : { done: true }
+          if (index < size) return data[index++]
+          throw DONE
         }
       })(source);
+    } else if (!isFn(source)) {
+      throw new Error("Source is not iterable. Must be Array, Function or Object{next:Function}")
     }
 
     // create next function
-    this.next = baseIterator(source, this.__iteratees);
+    this.next = baseIterator(source, this.__iteratees, this.__buf);
   }
 
   [Symbol.iterator] () {
     return this
   }
 
+  _validate () {
+    if (this.__first) throw new Error("Cannot add iteratee/transform after `first()`")
+  }
+
+  /**
+   * Add an iteratee to this lazy sequence
+   * @param {Object} iteratee
+   */
   _push (iteratee) {
+    this._validate();
     this.__iteratees.push(iteratee);
     return this
   }
 
-  all () {
-    return toArray(this)
-  }
+  //// Iteratees methods //////
 
-  each (f) {
-    let o = { done: false };
-
-    while (!o.done) {
-      o = this.next();
-      if (o.done) break
-      if (f(o.value) === false) return false
-    }
-
-    return true
-  }
-
+  /**
+   * Transform each item in the sequence to a new value
+   * @param {Function} f
+   */
   map (f) {
     return this._push({ type: LAZY_MAP, func: f })
   }
 
+  /**
+   * Select only items matching the given predicate
+   * @param {Function} pred
+   */
   filter (pred) {
     return this._push({ type: LAZY_FILTER, func: pred })
   }
 
   /**
-   * Take values from the sequence
-   * @param {Number|Function} pred A number or predicate
+   * Take given numbe for values from sequence
+   * @param {Number} n A number greater than 0
    */
-  take (pred) {
-    if (isFn(pred)) {
-      return this._push({ type: LAZY_TAKE_WHILE, func: pred })
-    }
-    return pred > 0 ? this._push({ type: LAZY_TAKE, func: pred }) : this
+  take (n) {
+    return n > 0 ? this._push({ type: LAZY_TAKE, func: n }) : this
   }
 
   /**
-   * Skips values in the sequence
-   * @param {Number|Function} pred Number or predicate function
+   * Drop a number of values from the sequence
+   * @param {Number} n Number of items to drop greater than 0
    */
-  skip (pred) {
-    if (isFn(pred)) {
-      return this._push({ type: LAZY_SKIP_WHILE, func: pred })
-    }
-    return pred > 0 ? this._push({ type: LAZY_SKIP, func: pred }) : this
+  drop (n) {
+    return n > 0 ? this._push({ type: LAZY_DROP, func: n }) : this
+  }
+
+  //////// Transformations ////////
+
+  /**
+   * Returns a new lazy object with results of the transformation
+   * The entire sequence is realized.
+   *
+   * @param {Function} fn Tranform function of type (Array) => (Any)
+   */
+  transform (fn) {
+    this._validate();
+    let self = this;
+    let iter;
+    return Lazy(() => {
+      if (!iter) {
+        iter = Lazy(fn(self.value()));
+      }
+      return iter.next()
+    })
   }
 
   /**
-   * Returns a reduction
+   * Mark this lazy object to return only the first result on `lazy.value()`.
+   * No more iteratees or transformations can be added after this method is called.
+   */
+  first () {
+    this.take(1);
+    this.__first = true;
+    return this
+  }
+
+  ////////////////////////////////////////////////////////////////
+
+  // Terminal methods
+
+  /**
+   * Returns the fully realized values of the iterators.
+   * The return value will be an array unless `lazy.first()` was used.
+   * The realized values are cached for subsequent calls
+   */
+  value () {
+    if (!this.__done) {
+      this.__done = this.next(this.__buf).done;
+    }
+    return this.__first ? this.__buf[0] : this.__buf
+  }
+
+  /**
+   * Execute the funcion for each value. Will stop when an execution returns false.
+   * @param {Function} f
+   * @returns {Boolean} false iff `f` return false for any execution, otherwise true
+   */
+  each (f) {
+    while (1) {
+      let o = this.next();
+      if (o.done) break
+      if (f(o.value) === false) return false
+    }
+    return true
+  }
+
+  /**
+   * Returns the reduction of sequence according the reducing function
+   *
    * @param {*} f a reducing function
    * @param {*} init
    */
   reduce (f, init) {
+
     let o = this.next();
     let i = 0;
 
@@ -749,50 +771,11 @@ class Iterator {
     return init
   }
 
-  sample (p) {
-    p = p || 0.5;
-    return this.filter(n => Math.random() < p)
-  }
-
-  reverse () {
-    return Lazy.transform(xs => {
-      xs.reverse();
-      return xs
-    }, this)
-  }
-
-  sort (cmp) {
-    return Lazy.transform(xs => {
-      cmp = cmp || compare;
-      xs.sort(cmp);
-      return xs
-    }, this)
-  }
-
-  sortBy (f, cmp) {
-    return Lazy.transform(xs => {
-      cmp = cmp || compare;
-      xs.sort((a,b) => {
-        return cmp(f(a), f(b))
-      });
-      return xs
-    }, this)
-  }
-
-  count () {
-    return this.reduce((acc,n) => ++acc)
-  }
-
   /**
-   * Returns an Iterator with an `all()` method which yields only the first value.
-   * This is useful when `reduce` yields a single value which should be returned unwrapped in a call to `all()`
+   * Returns the number of matched items in the sequence
    */
-  one () {
-    let self = this;
-    return {
-      next () { return self.next() },
-      all () { return self.all()[0] }
-    }
+  size () {
+    return this.reduce((acc,n) => ++acc, 0)
   }
 }
 
@@ -826,29 +809,34 @@ function $bucket (collection, expr) {
   // add default key if provided
   if (!isNil(defaultKey)) grouped[defaultKey] = [];
 
-  return Lazy.transform(() => {
-    collection.each(obj => {
-      let key = computeValue(obj, expr.groupBy);
+  let iter = false;
 
-      if (isNil(key) || key < lower || key >= upper) {
-        assert(!isNil(defaultKey), '$bucket require a default for out of range values');
-        grouped[defaultKey].push(obj);
-      } else {
-        assert(key >= lower && key < upper, "$bucket 'groupBy' expression must resolve to a value in range of boundaries");
-        let index = findInsertIndex(boundaries, key);
-        let boundKey = boundaries[Math.max(0, index - 1)];
-        grouped[boundKey].push(obj);
-      }
-    });
+  return Lazy(() => {
+    if (!iter) {
+      collection.each(obj => {
+        let key = computeValue(obj, expr.groupBy);
 
-    // upper bound is exclusive so we remove it
-    boundaries.pop();
-    if (!isNil(defaultKey)) boundaries.push(defaultKey);
+        if (isNil(key) || key < lower || key >= upper) {
+          assert(!isNil(defaultKey), '$bucket require a default for out of range values');
+          grouped[defaultKey].push(obj);
+        } else {
+          assert(key >= lower && key < upper, "$bucket 'groupBy' expression must resolve to a value in range of boundaries");
+          let index = findInsertIndex(boundaries, key);
+          let boundKey = boundaries[Math.max(0, index - 1)];
+          grouped[boundKey].push(obj);
+        }
+      });
 
-    return Lazy(boundaries).map(key => {
-      let acc = accumulate(grouped[key], null, outputExpr);
-      return Object.assign(acc, { '_id': key })
-    })
+      // upper bound is exclusive so we remove it
+      boundaries.pop();
+      if (!isNil(defaultKey)) boundaries.push(defaultKey);
+
+      iter = Lazy(boundaries).map(key => {
+        let acc = accumulate(grouped[key], null, outputExpr);
+        return Object.assign(acc, { '_id': key })
+      });
+    }
+    return iter.next()
   })
 }
 
@@ -859,7 +847,7 @@ function $bucketAuto (collection, expr) {
 
   assert(bucketCount > 0, "The $bucketAuto 'buckets' field must be greater than 0, but found: " + bucketCount);
 
-  return Lazy.transform(coll => {
+  return collection.transform(coll => {
     let approxBucketSize = Math.max(1, Math.round(coll.length / bucketCount));
 
       let computeValueOptimized = memoize(computeValue);
@@ -918,7 +906,7 @@ function $bucketAuto (collection, expr) {
 
       return result
 
-  }, collection)
+  })
 }
 
 /**
@@ -933,19 +921,11 @@ function $count (collection, expr) {
     'Invalid expression value for $count'
   );
 
-  let o = {};
-  o[expr] = 0;
-  let done = false;
-
   return Lazy(() => {
-    if (done) return { done: true }
-    let res = collection.reduce((memo,n) => {
-      memo[expr] += 1;
-      return memo
-    }, o);
-    done = true;
-    return { value: res, done: false }
-  }).one()
+    let o = {};
+    o[expr] = collection.size();
+    return { value: o, done: false }
+  }).first()
 }
 
 /**
@@ -953,9 +933,9 @@ function $count (collection, expr) {
  * Enables the creation of multi-faceted aggregations capable of characterizing data across multiple dimensions, or facets, in a single stage.
  */
 function $facet (collection, expr) {
-  return Lazy.transform(array => {
-    return map(expr, pipeline => aggregate(array, pipeline))
-  }, collection).one()
+  return collection.transform(array => {
+    return [ map(expr, pipeline => aggregate(array, pipeline)) ]
+  }).first()
 }
 
 /**
@@ -970,18 +950,18 @@ function $group (collection, expr) {
   const ID_KEY = idKey();
   let id = expr[ID_KEY];
 
-  return Lazy.transform(coll => {
+  return collection.transform(coll => {
     let partitions = groupBy(coll, obj => computeValue(obj, id, id));
 
     // remove the group key
     delete expr[ID_KEY];
 
-    let i = 0;
+    let i = -1;
     let size = partitions.keys.length;
 
     return () => {
 
-      if (i === size) return { done: true }
+      if (++i === size) return { done: true }
 
       let value = partitions.keys[i];
       let obj = {};
@@ -996,10 +976,9 @@ function $group (collection, expr) {
         obj[key] = accumulate(partitions.groups[i], key, val);
       });
 
-      i++;
       return { value: obj, done: false }
     }
-  }, collection)
+  })
 }
 
 /**
@@ -1296,15 +1275,15 @@ function $sample (collection, expr) {
   let size = expr.size;
   assert(isNumber(size), '$sample size must be a positive integer');
 
-  return Lazy.transform(xs => {
+  return collection.transform(xs => {
     let len = xs.length;
-    let i = 0;
+    let i = -1;
     return () => {
-      if (i++ === size) return { done: true }
+      if (++i === size) return { done: true }
       let n = Math.floor(Math.random() * len);
       return { value: xs[n], done: false }
     }
-  }, collection)
+  })
 }
 
 /**
@@ -1315,7 +1294,7 @@ function $sample (collection, expr) {
  * @returns {*}
  */
 function $skip (collection, value) {
-  return collection.skip(value)
+  return collection.drop(value)
 }
 
 /**
@@ -1328,7 +1307,7 @@ function $skip (collection, value) {
 function $sort (collection, sortKeys) {
   if (!isEmpty(sortKeys) && isObject(sortKeys)) {
 
-    return Lazy.transform(coll => {
+    collection = collection.transform(coll => {
       let modifiers = keys(sortKeys);
 
       each(modifiers.reverse(), (key) => {
@@ -1346,8 +1325,7 @@ function $sort (collection, sortKeys) {
       });
 
       return coll
-
-    }, collection)
+    });
   }
 
   return collection
@@ -1505,13 +1483,13 @@ class Aggregator {
    * @param {*} query
    */
   run (collection, query) {
-    return this.stream(collection, query).all()
+    return this.stream(collection, query).value()
   }
 }
 
 /**
  * Return the result collection after running the aggregation pipeline for the given collection.
- * Shorthand for `agg.run(input).all()`
+ * Shorthand for `agg.run(input).value()`
  *
  * @param collection
  * @param pipeline
@@ -1715,7 +1693,7 @@ class Cursor {
    * @returns {Array}
    */
   all () {
-    return this._fetch().all()
+    return this._fetch().value()
   }
 
   /**
@@ -1794,7 +1772,7 @@ class Cursor {
    * @returns {Array}
    */
   map (callback) {
-    return this._fetch().map(callback).all()
+    return this._fetch().map(callback).value()
   }
 
   /**
