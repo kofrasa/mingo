@@ -46,8 +46,9 @@ function assert(condition, message) {
 function cloneDeep(obj) {
   switch (jsType(obj)) {
     case T_ARRAY:
+      return obj.map(cloneDeep);
     case T_OBJECT:
-      return map(obj, cloneDeep);
+      return objectMap(obj, cloneDeep);
     default:
       return obj;
   }
@@ -84,12 +85,10 @@ function isString(v) {
 function isNumber(v) {
   return jsType(v) === T_NUMBER;
 }
-function isArray(v) {
+var isArray = Array.isArray || function (v) {
   return jsType(v) === T_ARRAY;
-}
-function isArrayLike(v) {
-  return !isNil(v) && has(v, 'length');
-}
+};
+// export function isArrayLike (v) { return !isNil(v) && has(v, 'length') }
 function isObject(v) {
   return jsType(v) === T_OBJECT;
 }
@@ -154,7 +153,7 @@ function keys(o) {
  */
 function each(obj, fn, ctx) {
   fn = fn.bind(ctx);
-  if (isArrayLike(obj)) {
+  if (isArray(obj)) {
     for (var i = 0, len = obj.length; i < len; i++) {
       if (fn(obj[i], i, obj) === false) break;
     }
@@ -168,24 +167,20 @@ function each(obj, fn, ctx) {
 }
 
 /**
- * Transform values in a collection
+ * Transform values in an object
  *
- * @param  {Array|Object}   obj   An array/object whose values to transform
+ * @param  {Object}   obj   An object whose values to transform
  * @param  {Function} fn The transform function
  * @param  {*}   ctx The value to use as the "this" context for the transform
  * @return {Array|Object} Result object after applying the transform
  */
-function map(obj, fn, ctx) {
-  if (isArray(obj)) {
-    return obj.map(fn, ctx);
-  } else if (isObject(obj)) {
-    fn = fn.bind(ctx);
-    var o = {};
-    each(obj, function (v, k) {
-      o[k] = fn(v, k);
-    }, obj);
-    return o;
-  }
+function objectMap(obj, fn, ctx) {
+  fn = fn.bind(ctx);
+  var o = {};
+  each(obj, function (v, k) {
+    o[k] = fn(v, k);
+  }, obj);
+  return o;
 }
 
 /**
@@ -365,12 +360,12 @@ function encode(value) {
     case T_UNDEFINED:
       return type;
     case T_ARRAY:
-      return '[' + map(value, encode) + ']';
+      return '[' + value.map(encode) + ']';
     default:
       var prefix = type === T_OBJECT ? '' : '' + getType(value);
       var objKeys = keys(value);
       objKeys.sort();
-      return prefix + '{' + map(objKeys, function (k) {
+      return prefix + '{' + objKeys.map(function (k) {
         return encode(k) + ':' + encode(value[k]);
       }) + '}';
   }
@@ -1076,7 +1071,7 @@ function $count(collection, expr) {
  */
 function $facet(collection, expr) {
   return collection.transform(function (array) {
-    return [map(expr, function (pipeline) {
+    return [objectMap(expr, function (pipeline) {
       return aggregate(array, pipeline);
     })];
   }).first();
@@ -1775,7 +1770,7 @@ function $min(collection, expr) {
  */
 function $push(collection, expr) {
   if (isNil(expr)) return collection;
-  return map(collection, function (obj) {
+  return collection.map(function (obj) {
     return computeValue(obj, expr);
   });
 }
@@ -1989,7 +1984,7 @@ var Cursor = function () {
 
   }, {
     key: 'map',
-    value: function map$$1(callback) {
+    value: function map(callback) {
       return this._fetch().map(callback).value();
     }
 
@@ -2939,7 +2934,7 @@ var arrayOperators = {
     // which will reduce to that value when invoked. The reference to the as expression will be prefixed with "$$".
     // But since a "$" is stripped of before passing the name to "resolve()" we just need to prepend "$" to the key.
     var tempKey = '$' + asExpr;
-    return map(inputExpr, function (item) {
+    return inputExpr.map(function (item) {
       obj[tempKey] = item;
       return computeValue(obj, inExpr);
     });
@@ -4353,7 +4348,6 @@ function _internal() {
     isString: isString,
     isUndefined: isUndefined,
     keys: keys,
-    map: map,
     ops: ops,
     resolve: resolve,
     resolveObj: resolveObj,

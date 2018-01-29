@@ -39,11 +39,9 @@ function assert (condition, message) {
  */
 function cloneDeep (obj) {
   switch (jsType(obj)) {
-    case T_ARRAY:
-    case T_OBJECT:
-      return map(obj, cloneDeep)
-    default:
-      return obj
+    case T_ARRAY: return obj.map(cloneDeep)
+    case T_OBJECT: return objectMap(obj, cloneDeep)
+    default: return obj
   }
 }
 
@@ -70,8 +68,8 @@ function jsType (v) { return getType(v).toLowerCase() }
 function isBoolean (v) { return jsType(v) === T_BOOLEAN }
 function isString (v) { return jsType(v) === T_STRING }
 function isNumber (v) { return jsType(v) === T_NUMBER }
-function isArray (v) { return jsType(v) === T_ARRAY }
-function isArrayLike (v) { return !isNil(v) && has(v, 'length') }
+const isArray = Array.isArray || (v => jsType(v) === T_ARRAY);
+// export function isArrayLike (v) { return !isNil(v) && has(v, 'length') }
 function isObject (v) { return jsType(v) === T_OBJECT }
 function isObjectLike (v) { return v === Object(v) } // objects, arrays, functions, date, custom object
 function isDate (v) { return jsType(v) === T_DATE }
@@ -106,7 +104,7 @@ function keys (o) { return Object.keys(o) }
  */
 function each (obj, fn, ctx) {
   fn = fn.bind(ctx);
-  if (isArrayLike(obj)) {
+  if (isArray(obj)) {
     for (let i = 0, len = obj.length; i < len; i++) {
       if (fn(obj[i], i, obj) === false) break
     }
@@ -120,24 +118,20 @@ function each (obj, fn, ctx) {
 }
 
 /**
- * Transform values in a collection
+ * Transform values in an object
  *
- * @param  {Array|Object}   obj   An array/object whose values to transform
+ * @param  {Object}   obj   An object whose values to transform
  * @param  {Function} fn The transform function
  * @param  {*}   ctx The value to use as the "this" context for the transform
  * @return {Array|Object} Result object after applying the transform
  */
-function map (obj, fn, ctx) {
-  if (isArray(obj)) {
-    return obj.map(fn, ctx)
-  } else if (isObject(obj)) {
-    fn = fn.bind(ctx);
-    let o = {};
-    each(obj, (v, k) => {
-      o[k] = fn(v, k);
-    }, obj);
-    return o
-  }
+function objectMap (obj, fn, ctx) {
+  fn = fn.bind(ctx);
+  let o = {};
+  each(obj, (v, k) => {
+    o[k] = fn(v, k);
+  }, obj);
+  return o
 }
 
 /**
@@ -312,12 +306,12 @@ function encode (value) {
     case T_UNDEFINED:
       return type
     case T_ARRAY:
-      return '[' + map(value, encode) + ']'
+      return '[' + value.map(encode) + ']'
     default:
       let prefix = (type === T_OBJECT)? '' : `${getType(value)}`;
       let objKeys = keys(value);
       objKeys.sort();
-      return `${prefix}{` + map(objKeys, (k) => `${encode(k)}:${encode(value[k])}`) + '}'
+      return `${prefix}{` + objKeys.map(k => `${encode(k)}:${encode(value[k])}`) + '}'
   }
 }
 
@@ -934,7 +928,7 @@ function $count (collection, expr) {
  */
 function $facet (collection, expr) {
   return collection.transform(array => {
-    return [ map(expr, pipeline => aggregate(array, pipeline)) ]
+    return [ objectMap(expr, pipeline => aggregate(array, pipeline)) ]
   }).first()
 }
 
@@ -1588,7 +1582,7 @@ function $min (collection, expr) {
  */
 function $push (collection, expr) {
   if (isNil(expr)) return collection
-  return map(collection, (obj) => computeValue(obj, expr))
+  return collection.map(obj => computeValue(obj, expr))
 }
 
 /**
@@ -2634,7 +2628,7 @@ const arrayOperators = {
     // which will reduce to that value when invoked. The reference to the as expression will be prefixed with "$$".
     // But since a "$" is stripped of before passing the name to "resolve()" we just need to prepend "$" to the key.
     let tempKey = '$' + asExpr;
-    return map(inputExpr, (item) => {
+    return inputExpr.map(item => {
       obj[tempKey] = item;
       return computeValue(obj, inExpr)
     })
@@ -3891,7 +3885,7 @@ function computeValue (obj, expr, operator = null, opt = {}) {
   // check and return value if already in a resolved state
   switch (jsType(expr)) {
     case T_ARRAY:
-      return expr.map((item) => computeValue(obj, item))
+      return expr.map(item => computeValue(obj, item))
     case T_OBJECT:
       let result = {};
       each(expr, (val, key) => {
@@ -3999,7 +3993,6 @@ function _internal () {
     isString,
     isUndefined,
     keys,
-    map,
     ops,
     resolve,
     resolveObj,
