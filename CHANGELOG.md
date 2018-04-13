@@ -1,5 +1,8 @@
 Changelog
 =========
+## 2.2.1 / 2018-04-14
+- Added `$expr` operator. Fixes [#79](https://github.com/kofrasa/mingo/issues/79)
+
 ## 2.2.0 / 2018-01-25
 - More Performance improvements for lazy evaluation
 - Added `$mergeObjects` operator

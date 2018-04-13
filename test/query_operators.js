@@ -414,3 +414,48 @@ test('$regex test', function (t) {
 
   t.end()
 })
+
+test('$expr tests', function (t) {
+  // https://docs.mongodb.com/manual/reference/operator/query/expr/
+
+  var res = mingo.find([
+      { "_id" : 1, "category" : "food", "budget": 400, "spent": 450 },
+      { "_id" : 2, "category" : "drinks", "budget": 100, "spent": 150 },
+      { "_id" : 3, "category" : "clothes", "budget": 100, "spent": 50 },
+      { "_id" : 4, "category" : "misc", "budget": 500, "spent": 300 },
+      { "_id" : 5, "category" : "travel", "budget": 200, "spent": 650 }
+    ],
+    { $expr: { $gt: [ "$spent" , "$budget" ] } }
+  ).all()
+
+  t.deepEqual(res, [
+    { "_id" : 1, "category" : "food", "budget" : 400, "spent" : 450 },
+    { "_id" : 2, "category" : "drinks", "budget" : 100, "spent" : 150 },
+    { "_id" : 5, "category" : "travel", "budget" : 200, "spent" : 650 }
+  ], "compare two fields from a single document")
+
+  res = mingo.find([
+    { "_id" : 1, "item" : "binder", "qty": 100 , "price": 12 },
+    { "_id" : 2, "item" : "notebook", "qty": 200 , "price": 8 },
+    { "_id" : 3, "item" : "pencil", "qty": 50 , "price": 6 },
+    { "_id" : 4, "item" : "eraser", "qty": 150 , "price": 3 }
+  ], {
+    $expr: {
+       $lt:[ {
+          $cond: {
+             if: { $gte: ["$qty", 100] },
+             then: { $divide: ["$price", 2] },
+             else: { $divide: ["$price", 4] }
+           }
+       },
+       5 ] }
+  }).all()
+
+  t.deepEqual(res, [
+    { "_id" : 2, "item" : "notebook", "qty": 200 , "price": 8 },
+    { "_id" : 3, "item" : "pencil", "qty": 50 , "price": 6 },
+    { "_id" : 4, "item" : "eraser", "qty": 150 , "price": 3 }
+  ], "using $expr with conditional statements")
+
+  t.end()
+})

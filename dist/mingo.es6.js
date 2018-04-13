@@ -1,4 +1,4 @@
-// mingo.js 2.2.0
+// mingo.js 2.2.1
 // Copyright (c) 2018 Francis Asante
 // MIT
 
@@ -2136,6 +2136,21 @@ const queryOperators = {
         return value.call(obj) === true
       }
     }
+  },
+
+  /**
+   * Allows the use of aggregation expressions within the query language.
+   *
+   * @param selector
+   * @param value
+   * @returns {{test: test}}
+   */
+  $expr (selector, value) {
+    return {
+      test (obj) {
+        return computeValue(obj, value)
+      }
+    }
   }
 };
 
@@ -2182,6 +2197,8 @@ class Query {
       // save $where operators to be executed after other operators
       if ('$where' === field) {
         whereOperator = { field: field, expr: expr };
+      } else if ('$expr' === field) {
+        this._processOperator(field, field, expr);
       } else if (inArray(['$and', '$or', '$nor'], field)) {
         this._processOperator(field, field, expr);
       } else {
@@ -4025,7 +4042,7 @@ const CollectionMixin = {
   }
 };
 
-const VERSION = '2.2.0';
+const VERSION = '2.2.1';
 
 // mingo!
 var index = {
