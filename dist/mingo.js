@@ -1,4 +1,4 @@
-// mingo.js 2.2.1
+// mingo.js 2.2.2
 // Copyright (c) 2018 Francis Asante
 // MIT
 
@@ -1544,27 +1544,27 @@ function $unwind(collection, expr) {
       obj = obj.value;
 
       // get the value of the field to unwind
-      value = getValue(obj, field);
+      value = resolve(obj, field);
 
       // throw error if value is not an array???
       if (isArray(value)) {
         if (value.length === 0 && preserveNullAndEmptyArrays === true) {
           value = null; // reset unwind value
-          var _tmp = clone(obj);
-          delete _tmp[field];
+          var _tmp = cloneDeep(obj);
+          removeValue(_tmp, field);
           return {
             v: { value: format(_tmp, null), done: false }
           };
         } else {
           // construct a lazy sequence for elements per value
           value = Lazy(value).map(function (item, i) {
-            var tmp = clone(obj);
-            tmp[field] = item;
+            var tmp = cloneDeep(obj);
+            setValue(tmp, field, item);
             return format(tmp, i);
           });
         }
       } else if (!isEmpty(value) || preserveNullAndEmptyArrays === true) {
-        var _tmp2 = format(clone(obj), null);
+        var _tmp2 = format(cloneDeep(obj), null);
         return {
           v: { value: _tmp2, done: false }
         };
@@ -4399,7 +4399,7 @@ var CollectionMixin = {
   }
 };
 
-var VERSION = '2.2.1';
+var VERSION = '2.2.2';
 
 // mingo!
 var index = {

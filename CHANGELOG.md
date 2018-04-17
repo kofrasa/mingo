@@ -1,5 +1,8 @@
 Changelog
 =========
+## 2.2.2 / 2018-04-17
+- Support `$unwind` for arrays nested in objects. Fixes [#80](https://github.com/kofrasa/mingo/issues/80)
+
 ## 2.2.1 / 2018-04-14
 - Added `$expr` operator. Fixes [#79](https://github.com/kofrasa/mingo/issues/79)
 

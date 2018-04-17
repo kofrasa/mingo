@@ -51,5 +51,21 @@ test("$unwind pipeline operator", function (t) {
     { "_id" : 5, "item" : "XYZ", "sizes" : null }
   ], 'can $unwind with option "preserveNullAndEmptyArrays"')
 
+  //https://github.com/kofrasa/mingo/issues/80
+  result = mingo.aggregate([
+      { "_id" : 1, "item" : "ABC", "a":{"sizes": [ "S", "M", "L"] }},
+      { "_id" : 2, "item" : "EFG", "a":{"sizes" : [ ] }},
+      { "_id" : 3, "item" : "IJK", "a":{"sizes": "M"} },
+      { "_id" : 4, "item" : "LMN", "a":{}},
+      { "_id" : 5, "item" : "XYZ", "a":{"sizes" : null} }
+    ], [ { $unwind: "$a.sizes" } ] )
+
+    t.deepEqual(result, [
+      { "_id" : 1, "item" : "ABC", "a" : { "sizes" : "S" } },
+      { "_id" : 1, "item" : "ABC", "a" : { "sizes" : "M" } },
+      { "_id" : 1, "item" : "ABC", "a" : { "sizes" : "L" } },
+      { "_id" : 3, "item" : "IJK", "a" : { "sizes" : "M" } }
+    ], '$unwind array nested within object')
+
   t.end()
 });
