@@ -1838,6 +1838,9 @@ const simpleOperators = {
    * @returns {*}
    */
   $in (a, b) {
+    // queries for null should be able to find undefined fields
+    if (isNil(a)) return b.some(isNull)
+
     return intersection(ensureArray(a), b).length > 0
   },
 
@@ -1849,7 +1852,7 @@ const simpleOperators = {
    * @returns {*|boolean}
    */
   $nin (a, b) {
-    return isNil(a) || !this.$in(a, b)
+    return !this.$in(a, b)
   },
 
   /**
