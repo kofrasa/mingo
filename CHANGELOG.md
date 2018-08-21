@@ -1,5 +1,8 @@
 Changelog
 =========
+## 2.2.3 / 2018-08-21
+- Match undefined fields with `$in: [null]` queries (#85)
+
 ## 2.2.2 / 2018-04-17
 - Support `$unwind` for arrays nested in objects. Fixes [#80](https://github.com/kofrasa/mingo/issues/80)
 
