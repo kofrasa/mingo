@@ -462,6 +462,568 @@ function memoize (fn) {
   })({/* storage */})
 }
 
+const arithmeticOperators = {
+
+  /**
+   * Returns the absolute value of a number.
+   * https://docs.mongodb.com/manual/reference/operator/aggregation/abs/#exp._S_abs
+   *
+   * @param obj
+   * @param expr
+   * @return {Number|null|NaN}
+   */
+  $abs (obj, expr) {
+    let val = computeValue(obj, expr);
+    return (val === null || val === undefined) ? null : Math.abs(val)
+  },
+
+  /**
+   * Computes the sum of an array of numbers.
+   *
+   * @param obj
+   * @param expr
+   * @returns {Object}
+   */
+  $add (obj, expr) {
+    let args = computeValue(obj, expr);
+    let foundDate = false;
+    let result = reduce(args, (acc, val) => {
+      if (isDate(val)) {
+        assert(!foundDate, "'$add' can only have one date value");
+        foundDate = true;
+        val = val.getTime();
+      }
+      // assume val is a number
+      acc += val;
+      return acc
+    }, 0);
+    return foundDate ? new Date(result) : result
+  },
+
+  /**
+   * Returns the smallest integer greater than or equal to the specified number.
+   *
+   * @param obj
+   * @param expr
+   * @returns {number}
+   */
+  $ceil (obj, expr) {
+    let arg = computeValue(obj, expr);
+    if (isNil(arg)) return null
+    assert(isNumber(arg) || isNaN(arg), '$ceil must be a valid expression that resolves to a number.');
+    return Math.ceil(arg)
+  },
+
+  /**
+   * Takes two numbers and divides the first number by the second.
+   *
+   * @param obj
+   * @param expr
+   * @returns {number}
+   */
+  $divide (obj, expr) {
+    let args = computeValue(obj, expr);
+    return args[0] / args[1]
+  },
+
+  /**
+   * Raises Euler’s number (i.e. e ) to the specified exponent and returns the result.
+   *
+   * @param obj
+   * @param expr
+   * @returns {number}
+   */
+  $exp (obj, expr) {
+    let arg = computeValue(obj, expr);
+    if (isNil(arg)) return null
+    assert(isNumber(arg) || isNaN(arg), '$exp must be a valid expression that resolves to a number.');
+    return Math.exp(arg)
+  },
+
+  /**
+   * Returns the largest integer less than or equal to the specified number.
+   *
+   * @param obj
+   * @param expr
+   * @returns {number}
+   */
+  $floor (obj, expr) {
+    let arg = computeValue(obj, expr);
+    if (isNil(arg)) return null
+    assert(isNumber(arg) || isNaN(arg), '$floor must be a valid expression that resolves to a number.');
+    return Math.floor(arg)
+  },
+
+  /**
+   * Calculates the natural logarithm ln (i.e loge) of a number and returns the result as a double.
+   *
+   * @param obj
+   * @param expr
+   * @returns {number}
+   */
+  $ln (obj, expr) {
+    let arg = computeValue(obj, expr);
+    if (isNil(arg)) return null
+    assert(isNumber(arg) || isNaN(arg), '$ln must be a valid expression that resolves to a number.');
+    return Math.log(arg)
+  },
+
+  /**
+   * Calculates the log of a number in the specified base and returns the result as a double.
+   *
+   * @param obj
+   * @param expr
+   * @returns {number}
+   */
+  $log (obj, expr) {
+    let args = computeValue(obj, expr);
+    assert(isArray(args) && args.length === 2, '$log must be a valid expression that resolves to an array of 2 items');
+    if (args.some(isNil)) return null
+    assert(args.some(isNaN) || args.every(isNumber), '$log expression must resolve to array of 2 numbers');
+    return Math.log10(args[0]) / Math.log10(args[1])
+  },
+
+  /**
+   * Calculates the log base 10 of a number and returns the result as a double.
+   *
+   * @param obj
+   * @param expr
+   * @returns {number}
+   */
+  $log10 (obj, expr) {
+    let arg = computeValue(obj, expr);
+    if (isNil(arg)) return null
+    assert(isNumber(arg) || isNaN(arg), '$log10 must be a valid expression that resolves to a number.');
+    return Math.log10(arg)
+  },
+
+  /**
+   * Takes two numbers and calculates the modulo of the first number divided by the second.
+   *
+   * @param obj
+   * @param expr
+   * @returns {number}
+   */
+  $mod (obj, expr) {
+    let args = computeValue(obj, expr);
+    return args[0] % args[1]
+  },
+
+  /**
+   * Computes the product of an array of numbers.
+   *
+   * @param obj
+   * @param expr
+   * @returns {Object}
+   */
+  $multiply (obj, expr) {
+    let args = computeValue(obj, expr);
+    return reduce(args, (acc, num) => acc * num, 1)
+  },
+
+  /**
+   * Raises a number to the specified exponent and returns the result.
+   *
+   * @param obj
+   * @param expr
+   * @returns {Object}
+   */
+  $pow (obj, expr) {
+    let args = computeValue(obj, expr);
+
+    assert(isArray(args) && args.length === 2 && args.every(isNumber), '$pow expression must resolve to an array of 2 numbers');
+    assert(!(args[0] === 0 && args[1] < 0), '$pow cannot raise 0 to a negative exponent');
+
+    return Math.pow(args[0], args[1])
+  },
+
+  /**
+   * Calculates the square root of a positive number and returns the result as a double.
+   *
+   * @param obj
+   * @param expr
+   * @returns {number}
+   */
+  $sqrt (obj, expr) {
+    let n = computeValue(obj, expr);
+    if (isNil(n)) return null
+    assert(isNumber(n) && n > 0 || isNaN(n), '$sqrt expression must resolve to non-negative number.');
+    return Math.sqrt(n)
+  },
+
+  /**
+   * Takes an array that contains two numbers or two dates and subtracts the second value from the first.
+   *
+   * @param obj
+   * @param expr
+   * @returns {number}
+   */
+  $subtract (obj, expr) {
+    let args = computeValue(obj, expr);
+    return args[0] - args[1]
+  },
+
+  /**
+   * Truncates a number to its integer.
+   *
+   * @param obj
+   * @param expr
+   * @returns {number}
+   */
+  $trunc (obj, expr) {
+    let n = computeValue(obj, expr);
+    if (isNil(n)) return null
+    assert(isNumber(n) || isNaN(n), '$trunc expression must resolve to a number.');
+    return Math.trunc(n)
+  }
+};
+
+const arrayOperators = {
+  /**
+   * Returns the element at the specified array index.
+   *
+   * @param  {Object} obj
+   * @param  {*} expr
+   * @return {*}
+   */
+  $arrayElemAt (obj, expr) {
+    let arr = computeValue(obj, expr);
+    assert(isArray(arr) && arr.length === 2, '$arrayElemAt expression must resolve to an array of 2 elements');
+    assert(isArray(arr[0]), 'First operand to $arrayElemAt must resolve to an array');
+    assert(isNumber(arr[1]), 'Second operand to $arrayElemAt must resolve to an integer');
+    let idx = arr[1];
+    arr = arr[0];
+    if (idx < 0 && Math.abs(idx) <= arr.length) {
+      return arr[idx + arr.length]
+    } else if (idx >= 0 && idx < arr.length) {
+      return arr[idx]
+    }
+    return undefined
+  },
+
+  /**
+   * Converts an array of key value pairs to a document.
+   */
+  $arrayToObject (obj, expr) {
+    let arr = computeValue(obj, expr);
+    assert(isArray(arr), '$arrayToObject expression must resolve to an array');
+    return reduce(arr, (newObj, val) => {
+      if (isArray(val) && val.length == 2) {
+        newObj[val[0]] = val[1];
+      } else {
+        assert(isObject(val) && has(val, 'k') && has(val, 'v'), '$arrayToObject expression is invalid.');
+        newObj[val.k] = val.v;
+      }
+      return newObj
+    }, {})
+  },
+
+  /**
+   * Concatenates arrays to return the concatenated array.
+   *
+   * @param  {Object} obj
+   * @param  {*} expr
+   * @return {*}
+   */
+  $concatArrays (obj, expr) {
+    let arr = computeValue(obj, expr, null);
+    assert(isArray(arr), '$concatArrays must resolve to an array');
+    if (arr.some(isNil)) return null
+    return arr.reduce((acc, item) => into(acc, item), [])
+  },
+
+  /**
+   * Selects a subset of the array to return an array with only the elements that match the filter condition.
+   *
+   * @param  {Object} obj  [description]
+   * @param  {*} expr [description]
+   * @return {*}      [description]
+   */
+  $filter (obj, expr) {
+    let input = computeValue(obj, expr.input);
+    let asVar = expr['as'];
+    let condExpr = expr['cond'];
+
+    assert(isArray(input), "$filter 'input' expression must resolve to an array");
+
+    return input.filter((o) => {
+      // inject variable
+      let tempObj = {};
+      tempObj['$' + asVar] = o;
+      return computeValue(tempObj, condExpr) === true
+    })
+  },
+
+  /**
+   * Returns a boolean indicating whether a specified value is in an array.
+   *
+   * @param {Object} obj
+   * @param {Array} expr
+   */
+  $in (obj, expr) {
+    let val = computeValue(obj, expr[0]);
+    let arr = computeValue(obj, expr[1]);
+    assert(isArray(arr), '$in second argument must be an array');
+    return inArray(arr, val)
+  },
+
+  /**
+   * Searches an array for an occurrence of a specified value and returns the array index of the first occurrence.
+   * If the substring is not found, returns -1.
+   *
+   * @param  {Object} obj
+   * @param  {*} expr
+   * @return {*}
+   */
+  $indexOfArray (obj, expr) {
+    let args = computeValue(obj, expr);
+    if (isNil(args)) return null
+
+    let arr = args[0];
+    let searchValue = args[1];
+    if (isNil(arr)) return null
+
+    assert(isArray(arr), '$indexOfArray expression must resolve to an array.');
+
+    let start = args[2] || 0;
+    let end = args[3];
+    if (isNil(end)) end = arr.length;
+    if (start > end) return -1
+
+    assert(start >= 0 && end >= 0, '$indexOfArray expression is invalid');
+
+    if (start > 0 || end < arr.length) {
+      arr = arr.slice(start, end);
+    }
+    return arr.findIndex(isEqual.bind(null, searchValue)) + start
+  },
+
+  /**
+   * Determines if the operand is an array. Returns a boolean.
+   *
+   * @param  {Object}  obj
+   * @param  {*}  expr
+   * @return {Boolean}
+   */
+  $isArray (obj, expr) {
+    return isArray(computeValue(obj, expr[0]))
+  },
+
+  /**
+   * Applies a sub-expression to each element of an array and returns the array of resulting values in order.
+   *
+   * @param obj
+   * @param expr
+   * @returns {Array|*}
+   */
+  $map (obj, expr) {
+    let inputExpr = computeValue(obj, expr.input);
+    assert(isArray(inputExpr), `$map 'input' expression must resolve to an array`);
+
+    let asExpr = expr['as'];
+    let inExpr = expr['in'];
+
+    // HACK: add the "as" expression as a value on the object to take advantage of "resolve()"
+    // which will reduce to that value when invoked. The reference to the as expression will be prefixed with "$$".
+    // But since a "$" is stripped of before passing the name to "resolve()" we just need to prepend "$" to the key.
+    let tempKey = '$' + asExpr;
+    return inputExpr.map(item => {
+      obj[tempKey] = item;
+      return computeValue(obj, inExpr)
+    })
+  },
+
+  /**
+   * Converts a document to an array of documents representing key-value pairs.
+   */
+  $objectToArray (obj, expr) {
+    let val = computeValue(obj, expr);
+    assert(isObject(val), '$objectToArray expression must resolve to an object');
+    let arr = [];
+    each(val, (v,k) => arr.push({k,v}));
+    return arr
+  },
+
+  /**
+   * Returns an array whose elements are a generated sequence of numbers.
+   *
+   * @param  {Object} obj
+   * @param  {*} expr
+   * @return {*}
+   */
+  $range (obj, expr) {
+    let arr = computeValue(obj, expr);
+    let start = arr[0];
+    let end = arr[1];
+    let step = arr[2] || 1;
+
+    let result = [];
+
+    while ((start < end && step > 0) || (start > end && step < 0)) {
+      result.push(start);
+      start += step;
+    }
+
+    return result
+  },
+
+  /**
+   * Applies an expression to each element in an array and combines them into a single value.
+   *
+   * @param {Object} obj
+   * @param {*} expr
+   */
+  $reduce (obj, expr) {
+    let input = computeValue(obj, expr.input);
+    let initialValue = computeValue(obj, expr.initialValue);
+    let inExpr = expr['in'];
+
+    if (isNil(input)) return null
+    assert(isArray(input), "$reduce 'input' expression must resolve to an array");
+    return reduce(input, (acc, n) => computeValue({ '$value': acc, '$this': n }, inExpr), initialValue)
+  },
+
+  /**
+   * Returns an array with the elements in reverse order.
+   *
+   * @param  {Object} obj
+   * @param  {*} expr
+   * @return {*}
+   */
+  $reverseArray (obj, expr) {
+    let arr = computeValue(obj, expr);
+
+    if (isNil(arr)) return null
+    assert(isArray(arr), '$reverseArray expression must resolve to an array');
+
+    let result = [];
+    into(result, arr);
+    result.reverse();
+    return result
+  },
+
+  /**
+   * Counts and returns the total the number of items in an array.
+   *
+   * @param obj
+   * @param expr
+   */
+  $size (obj, expr) {
+    let value = computeValue(obj, expr);
+    return isArray(value) ? value.length : undefined
+  },
+
+  /**
+   * Returns a subset of an array.
+   *
+   * @param  {Object} obj
+   * @param  {*} expr
+   * @return {*}
+   */
+  $slice (obj, expr) {
+    let arr = computeValue(obj, expr);
+    return slice(arr[0], arr[1], arr[2])
+  },
+
+  /**
+   * Merge two lists together.
+   *
+   * Transposes an array of input arrays so that the first element of the output array would be an array containing,
+   * the first element of the first input array, the first element of the second input array, etc.
+   *
+   * @param  {Obj} obj
+   * @param  {*} expr
+   * @return {*}
+   */
+  $zip (obj, expr) {
+    let inputs = computeValue(obj, expr.inputs);
+    let useLongestLength = expr.useLongestLength || false;
+
+    assert(isArray(inputs), "'inputs' expression must resolve to an array");
+    assert(isBoolean(useLongestLength), "'useLongestLength' must be a boolean");
+
+    if (isArray(expr.defaults)) {
+      assert(truthy(useLongestLength), "'useLongestLength' must be set to true to use 'defaults'");
+    }
+
+    let zipCount = 0;
+
+    for (let i = 0, len = inputs.length; i < len; i++) {
+      let arr = inputs[i];
+
+      if (isNil(arr)) return null
+
+      assert(isArray(arr), "'inputs' expression values must resolve to an array or null");
+
+      zipCount = useLongestLength
+        ? Math.max(zipCount, arr.length)
+        : Math.min(zipCount || arr.length, arr.length);
+    }
+
+    let result = [];
+    let defaults = expr.defaults || [];
+
+    for (let i = 0; i < zipCount; i++) {
+      let temp = inputs.map((val, index) => {
+        return isNil(val[i]) ? (defaults[index] || null) : val[i]
+      });
+      result.push(temp);
+    }
+
+    return result
+  },
+
+  /**
+   * Combines multiple documents into a single document.
+   * @param {*} obj
+   * @param {*} expr
+   */
+  $mergeObjects (obj, expr) {
+    let docs = computeValue(obj, expr);
+    if (isArray(docs)) {
+      return reduce(docs, (memo, o) => Object.assign(memo, o), {})
+    }
+    return {}
+  }
+};
+
+const booleanOperators = {
+  /**
+   * Returns true only when all its expressions evaluate to true. Accepts any number of argument expressions.
+   *
+   * @param obj
+   * @param expr
+   * @returns {boolean}
+   */
+  $and: (obj, expr) => {
+    let value = computeValue(obj, expr);
+    return truthy(value) && value.every(truthy)
+  },
+
+  /**
+   * Returns true when any of its expressions evaluates to true. Accepts any number of argument expressions.
+   *
+   * @param obj
+   * @param expr
+   * @returns {boolean}
+   */
+  $or: (obj, expr) => {
+    let value = computeValue(obj, expr);
+    return truthy(value) && value.some(truthy)
+  },
+
+  /**
+   * Returns the boolean value that is the opposite of its argument expression. Accepts a single argument expression.
+   *
+   * @param obj
+   * @param expr
+   * @returns {boolean}
+   */
+  $not: (obj, expr) => {
+    return !computeValue(obj, expr[0])
+  }
+};
+
 /**
  * Adds new fields to documents.
  * Outputs documents that contain all existing fields from the input documents and newly added fields.
@@ -1495,158 +2057,6 @@ function aggregate (collection, pipeline) {
 }
 
 /**
- * Returns an array of all the unique values for the selected field among for each document in that group.
- *
- * @param collection
- * @param expr
- * @returns {*}
- */
-function $addToSet (collection, expr) {
-  return unique(this.$push(collection, expr))
-}
-
-/**
- * Returns an average of all the values in a group.
- *
- * @param collection
- * @param expr
- * @returns {number}
- */
-function $avg (collection, expr) {
-  let data = this.$push(collection, expr).filter(isNumber);
-  let sum = reduce(data, (acc, n) => acc + n, 0);
-  return sum / (data.length || 1)
-}
-
-/**
- * Returns the first value in a group.
- *
- * @param collection
- * @param expr
- * @returns {*}
- */
-function $first (collection, expr) {
-  return collection.length > 0 ? computeValue(collection[0], expr) : undefined
-}
-
-/**
- * Returns the last value in a group.
- *
- * @param collection
- * @param expr
- * @returns {*}
- */
-function $last (collection, expr) {
-  return collection.length > 0 ? computeValue(collection[collection.length - 1], expr) : undefined
-}
-
-/**
- * Returns the highest value in a group.
- *
- * @param collection
- * @param expr
- * @returns {*}
- */
-function $max (collection, expr) {
-  return reduce(this.$push(collection, expr), (acc, n) => (isNil(acc) || n > acc) ? n : acc, undefined)
-}
-
-/**
- * Combines multiple documents into a single document.
- *
- * @param collection
- * @param expr
- * @returns {Array|*}
- */
-function $mergeObjects (collection, expr) {
-  return reduce(collection, (memo, o) => Object.assign(memo, computeValue(o, expr)), {})
-}
-
-/**
- * Returns the lowest value in a group.
- *
- * @param collection
- * @param expr
- * @returns {*}
- */
-function $min (collection, expr) {
-  return reduce(this.$push(collection, expr), (acc, n) => (isNil(acc) || n < acc) ? n : acc, undefined)
-}
-
-/**
- * Returns an array of all values for the selected field among for each document in that group.
- *
- * @param collection
- * @param expr
- * @returns {Array|*}
- */
-function $push (collection, expr) {
-  if (isNil(expr)) return collection
-  return collection.map(obj => computeValue(obj, expr))
-}
-
-/**
- * Returns the population standard deviation of the input values.
- *
- * @param  {Array} collection
- * @param  {Object} expr
- * @return {Number}
- */
-function $stdDevPop (collection, expr) {
-  return stddev({
-    data: this.$push(collection, expr).filter(isNumber),
-    sampled: false
-  })
-}
-
-/**
- * Returns the sample standard deviation of the input values.
- * @param  {Array} collection
- * @param  {Object} expr
- * @return {Number|null}
- */
-function $stdDevSamp (collection, expr) {
-  return stddev({
-    data: this.$push(collection, expr).filter(isNumber),
-    sampled: true
-  })
-}
-
-/**
- * Returns the sum of all the values in a group.
- *
- * @param collection
- * @param expr
- * @returns {*}
- */
-function $sum (collection, expr) {
-  if (!isArray(collection)) return 0
-
-  // take a short cut if expr is number literal
-  if (isNumber(expr)) return collection.length * expr
-
-  return reduce(this.$push(collection, expr).filter(isNumber), (acc, n) => acc + n, 0)
-}
-
-/**
- * Group stage Accumulator Operators. https://docs.mongodb.com/manual/reference/operator/aggregation-
- */
-
-const groupOperators = {
-  $addToSet,
-  $avg,
-  $first,
-  $last,
-  $mergeObjects,
-  $max,
-  $min,
-  $push,
-  $stdDevPop,
-  $stdDevSamp,
-  $sum
-};
-
-/**
  * Cursor to iterate and perform filtering on matched objects
  * @param collection
  * @param query
@@ -1785,6 +2195,115 @@ class Cursor {
   [Symbol.iterator] () {
     return this._fetch()
   }
+}
+
+/**
+ * Query object to test collection elements with
+ * @param criteria the pass criteria for the query
+ * @param projection optional projection specifiers
+ * @constructor
+ */
+class Query {
+
+  constructor (criteria, projection = {}) {
+    this.__criteria = criteria;
+    this.__projection = projection;
+    this.__compiled = [];
+    this._compile();
+  }
+
+  _compile () {
+    if (isEmpty(this.__criteria)) return
+
+    assert(isObject(this.__criteria), 'Criteria must be of type Object');
+
+    let whereOperator;
+
+    each(this.__criteria, (expr, field) => {
+      // save $where operators to be executed after other operators
+      if ('$where' === field) {
+        whereOperator = { field: field, expr: expr };
+      } else if ('$expr' === field) {
+        this._processOperator(field, field, expr);
+      } else if (inArray(['$and', '$or', '$nor'], field)) {
+        this._processOperator(field, field, expr);
+      } else {
+        // normalize expression
+        expr = normalize(expr);
+        each(expr, (val, op) => {
+          this._processOperator(field, op, val);
+        });
+      }
+
+      if (isObject(whereOperator)) {
+        this._processOperator(whereOperator.field, whereOperator.field, whereOperator.expr);
+      }
+    });
+  }
+
+  _processOperator (field, operator, value) {
+    assert(inArray(ops(OP_QUERY), operator), "Invalid query operator '" + operator + "' detected");
+    this.__compiled.push(queryOperators[operator](field, value));
+  }
+
+  /**
+   * Checks if the object passes the query criteria. Returns true if so, false otherwise.
+   * @param obj
+   * @returns {boolean}
+   */
+  test (obj) {
+    for (let i = 0, len = this.__compiled.length; i < len; i++) {
+      if (!this.__compiled[i].test(obj)) {
+        return false
+      }
+    }
+    return true
+  }
+
+  /**
+   * Performs a query on a collection and returns a cursor object.
+   * @param collection
+   * @param projection
+   * @returns {Cursor}
+   */
+  find (collection, projection) {
+    return new Cursor(collection, this, projection)
+  }
+
+  /**
+   * Remove matched documents from the collection returning the remainder
+   * @param collection
+   * @returns {Array}
+   */
+  remove (collection) {
+    return reduce(collection, (acc, obj) => {
+      if (!this.test(obj)) acc.push(obj);
+      return acc
+    }, [])
+  }
+}
+
+/**
+ * Performs a query on a collection and returns a cursor object.
+ *
+ * @param collection
+ * @param criteria
+ * @param projection
+ * @returns {Cursor}
+ */
+function find (collection, criteria, projection) {
+  return new Query(criteria).find(collection, projection)
+}
+
+/**
+ * Returns a new array without objects which match the criteria
+ *
+ * @param collection
+ * @param criteria
+ * @returns {Array}
+ */
+function remove (collection, criteria) {
+  return new Query(criteria).remove(collection)
 }
 
 /**
@@ -2173,677 +2692,6 @@ each(simpleOperators, (fn, op) => {
     }
   })(fn, simpleOperators);
 });
-
-/**
- * Query object to test collection elements with
- * @param criteria the pass criteria for the query
- * @param projection optional projection specifiers
- * @constructor
- */
-class Query {
-
-  constructor (criteria, projection = {}) {
-    this.__criteria = criteria;
-    this.__projection = projection;
-    this.__compiled = [];
-    this._compile();
-  }
-
-  _compile () {
-    if (isEmpty(this.__criteria)) return
-
-    assert(isObject(this.__criteria), 'Criteria must be of type Object');
-
-    let whereOperator;
-
-    each(this.__criteria, (expr, field) => {
-      // save $where operators to be executed after other operators
-      if ('$where' === field) {
-        whereOperator = { field: field, expr: expr };
-      } else if ('$expr' === field) {
-        this._processOperator(field, field, expr);
-      } else if (inArray(['$and', '$or', '$nor'], field)) {
-        this._processOperator(field, field, expr);
-      } else {
-        // normalize expression
-        expr = normalize(expr);
-        each(expr, (val, op) => {
-          this._processOperator(field, op, val);
-        });
-      }
-
-      if (isObject(whereOperator)) {
-        this._processOperator(whereOperator.field, whereOperator.field, whereOperator.expr);
-      }
-    });
-  }
-
-  _processOperator (field, operator, value) {
-    assert(inArray(ops(OP_QUERY), operator), "Invalid query operator '" + operator + "' detected");
-    this.__compiled.push(queryOperators[operator](field, value));
-  }
-
-  /**
-   * Checks if the object passes the query criteria. Returns true if so, false otherwise.
-   * @param obj
-   * @returns {boolean}
-   */
-  test (obj) {
-    for (let i = 0, len = this.__compiled.length; i < len; i++) {
-      if (!this.__compiled[i].test(obj)) {
-        return false
-      }
-    }
-    return true
-  }
-
-  /**
-   * Performs a query on a collection and returns a cursor object.
-   * @param collection
-   * @param projection
-   * @returns {Cursor}
-   */
-  find (collection, projection) {
-    return new Cursor(collection, this, projection)
-  }
-
-  /**
-   * Remove matched documents from the collection returning the remainder
-   * @param collection
-   * @returns {Array}
-   */
-  remove (collection) {
-    return reduce(collection, (acc, obj) => {
-      if (!this.test(obj)) acc.push(obj);
-      return acc
-    }, [])
-  }
-}
-
-/**
- * Performs a query on a collection and returns a cursor object.
- *
- * @param collection
- * @param criteria
- * @param projection
- * @returns {Cursor}
- */
-function find (collection, criteria, projection) {
-  return new Query(criteria).find(collection, projection)
-}
-
-/**
- * Returns a new array without objects which match the criteria
- *
- * @param collection
- * @param criteria
- * @returns {Array}
- */
-function remove (collection, criteria) {
-  return new Query(criteria).remove(collection)
-}
-
-const arithmeticOperators = {
-
-  /**
-   * Returns the absolute value of a number.
-   * https://docs.mongodb.com/manual/reference/operator/aggregation/abs/#exp._S_abs
-   *
-   * @param obj
-   * @param expr
-   * @return {Number|null|NaN}
-   */
-  $abs (obj, expr) {
-    let val = computeValue(obj, expr);
-    return (val === null || val === undefined) ? null : Math.abs(val)
-  },
-
-  /**
-   * Computes the sum of an array of numbers.
-   *
-   * @param obj
-   * @param expr
-   * @returns {Object}
-   */
-  $add (obj, expr) {
-    let args = computeValue(obj, expr);
-    let foundDate = false;
-    let result = reduce(args, (acc, val) => {
-      if (isDate(val)) {
-        assert(!foundDate, "'$add' can only have one date value");
-        foundDate = true;
-        val = val.getTime();
-      }
-      // assume val is a number
-      acc += val;
-      return acc
-    }, 0);
-    return foundDate ? new Date(result) : result
-  },
-
-  /**
-   * Returns the smallest integer greater than or equal to the specified number.
-   *
-   * @param obj
-   * @param expr
-   * @returns {number}
-   */
-  $ceil (obj, expr) {
-    let arg = computeValue(obj, expr);
-    if (isNil(arg)) return null
-    assert(isNumber(arg) || isNaN(arg), '$ceil must be a valid expression that resolves to a number.');
-    return Math.ceil(arg)
-  },
-
-  /**
-   * Takes two numbers and divides the first number by the second.
-   *
-   * @param obj
-   * @param expr
-   * @returns {number}
-   */
-  $divide (obj, expr) {
-    let args = computeValue(obj, expr);
-    return args[0] / args[1]
-  },
-
-  /**
-   * Raises Euler’s number (i.e. e ) to the specified exponent and returns the result.
-   *
-   * @param obj
-   * @param expr
-   * @returns {number}
-   */
-  $exp (obj, expr) {
-    let arg = computeValue(obj, expr);
-    if (isNil(arg)) return null
-    assert(isNumber(arg) || isNaN(arg), '$exp must be a valid expression that resolves to a number.');
-    return Math.exp(arg)
-  },
-
-  /**
-   * Returns the largest integer less than or equal to the specified number.
-   *
-   * @param obj
-   * @param expr
-   * @returns {number}
-   */
-  $floor (obj, expr) {
-    let arg = computeValue(obj, expr);
-    if (isNil(arg)) return null
-    assert(isNumber(arg) || isNaN(arg), '$floor must be a valid expression that resolves to a number.');
-    return Math.floor(arg)
-  },
-
-  /**
-   * Calculates the natural logarithm ln (i.e loge) of a number and returns the result as a double.
-   *
-   * @param obj
-   * @param expr
-   * @returns {number}
-   */
-  $ln (obj, expr) {
-    let arg = computeValue(obj, expr);
-    if (isNil(arg)) return null
-    assert(isNumber(arg) || isNaN(arg), '$ln must be a valid expression that resolves to a number.');
-    return Math.log(arg)
-  },
-
-  /**
-   * Calculates the log of a number in the specified base and returns the result as a double.
-   *
-   * @param obj
-   * @param expr
-   * @returns {number}
-   */
-  $log (obj, expr) {
-    let args = computeValue(obj, expr);
-    assert(isArray(args) && args.length === 2, '$log must be a valid expression that resolves to an array of 2 items');
-    if (args.some(isNil)) return null
-    assert(args.some(isNaN) || args.every(isNumber), '$log expression must resolve to array of 2 numbers');
-    return Math.log10(args[0]) / Math.log10(args[1])
-  },
-
-  /**
-   * Calculates the log base 10 of a number and returns the result as a double.
-   *
-   * @param obj
-   * @param expr
-   * @returns {number}
-   */
-  $log10 (obj, expr) {
-    let arg = computeValue(obj, expr);
-    if (isNil(arg)) return null
-    assert(isNumber(arg) || isNaN(arg), '$log10 must be a valid expression that resolves to a number.');
-    return Math.log10(arg)
-  },
-
-  /**
-   * Takes two numbers and calculates the modulo of the first number divided by the second.
-   *
-   * @param obj
-   * @param expr
-   * @returns {number}
-   */
-  $mod (obj, expr) {
-    let args = computeValue(obj, expr);
-    return args[0] % args[1]
-  },
-
-  /**
-   * Computes the product of an array of numbers.
-   *
-   * @param obj
-   * @param expr
-   * @returns {Object}
-   */
-  $multiply (obj, expr) {
-    let args = computeValue(obj, expr);
-    return reduce(args, (acc, num) => acc * num, 1)
-  },
-
-  /**
-   * Raises a number to the specified exponent and returns the result.
-   *
-   * @param obj
-   * @param expr
-   * @returns {Object}
-   */
-  $pow (obj, expr) {
-    let args = computeValue(obj, expr);
-
-    assert(isArray(args) && args.length === 2 && args.every(isNumber), '$pow expression must resolve to an array of 2 numbers');
-    assert(!(args[0] === 0 && args[1] < 0), '$pow cannot raise 0 to a negative exponent');
-
-    return Math.pow(args[0], args[1])
-  },
-
-  /**
-   * Calculates the square root of a positive number and returns the result as a double.
-   *
-   * @param obj
-   * @param expr
-   * @returns {number}
-   */
-  $sqrt (obj, expr) {
-    let n = computeValue(obj, expr);
-    if (isNil(n)) return null
-    assert(isNumber(n) && n > 0 || isNaN(n), '$sqrt expression must resolve to non-negative number.');
-    return Math.sqrt(n)
-  },
-
-  /**
-   * Takes an array that contains two numbers or two dates and subtracts the second value from the first.
-   *
-   * @param obj
-   * @param expr
-   * @returns {number}
-   */
-  $subtract (obj, expr) {
-    let args = computeValue(obj, expr);
-    return args[0] - args[1]
-  },
-
-  /**
-   * Truncates a number to its integer.
-   *
-   * @param obj
-   * @param expr
-   * @returns {number}
-   */
-  $trunc (obj, expr) {
-    let n = computeValue(obj, expr);
-    if (isNil(n)) return null
-    assert(isNumber(n) || isNaN(n), '$trunc expression must resolve to a number.');
-    return Math.trunc(n)
-  }
-};
-
-const arrayOperators = {
-  /**
-   * Returns the element at the specified array index.
-   *
-   * @param  {Object} obj
-   * @param  {*} expr
-   * @return {*}
-   */
-  $arrayElemAt (obj, expr) {
-    let arr = computeValue(obj, expr);
-    assert(isArray(arr) && arr.length === 2, '$arrayElemAt expression must resolve to an array of 2 elements');
-    assert(isArray(arr[0]), 'First operand to $arrayElemAt must resolve to an array');
-    assert(isNumber(arr[1]), 'Second operand to $arrayElemAt must resolve to an integer');
-    let idx = arr[1];
-    arr = arr[0];
-    if (idx < 0 && Math.abs(idx) <= arr.length) {
-      return arr[idx + arr.length]
-    } else if (idx >= 0 && idx < arr.length) {
-      return arr[idx]
-    }
-    return undefined
-  },
-
-  /**
-   * Converts an array of key value pairs to a document.
-   */
-  $arrayToObject (obj, expr) {
-    let arr = computeValue(obj, expr);
-    assert(isArray(arr), '$arrayToObject expression must resolve to an array');
-    return reduce(arr, (newObj, val) => {
-      if (isArray(val) && val.length == 2) {
-        newObj[val[0]] = val[1];
-      } else {
-        assert(isObject(val) && has(val, 'k') && has(val, 'v'), '$arrayToObject expression is invalid.');
-        newObj[val.k] = val.v;
-      }
-      return newObj
-    }, {})
-  },
-
-  /**
-   * Concatenates arrays to return the concatenated array.
-   *
-   * @param  {Object} obj
-   * @param  {*} expr
-   * @return {*}
-   */
-  $concatArrays (obj, expr) {
-    let arr = computeValue(obj, expr, null);
-    assert(isArray(arr), '$concatArrays must resolve to an array');
-    if (arr.some(isNil)) return null
-    return arr.reduce((acc, item) => into(acc, item), [])
-  },
-
-  /**
-   * Selects a subset of the array to return an array with only the elements that match the filter condition.
-   *
-   * @param  {Object} obj  [description]
-   * @param  {*} expr [description]
-   * @return {*}      [description]
-   */
-  $filter (obj, expr) {
-    let input = computeValue(obj, expr.input);
-    let asVar = expr['as'];
-    let condExpr = expr['cond'];
-
-    assert(isArray(input), "$filter 'input' expression must resolve to an array");
-
-    return input.filter((o) => {
-      // inject variable
-      let tempObj = {};
-      tempObj['$' + asVar] = o;
-      return computeValue(tempObj, condExpr) === true
-    })
-  },
-
-  /**
-   * Returns a boolean indicating whether a specified value is in an array.
-   *
-   * @param {Object} obj
-   * @param {Array} expr
-   */
-  $in (obj, expr) {
-    let val = computeValue(obj, expr[0]);
-    let arr = computeValue(obj, expr[1]);
-    assert(isArray(arr), '$in second argument must be an array');
-    return inArray(arr, val)
-  },
-
-  /**
-   * Searches an array for an occurrence of a specified value and returns the array index of the first occurrence.
-   * If the substring is not found, returns -1.
-   *
-   * @param  {Object} obj
-   * @param  {*} expr
-   * @return {*}
-   */
-  $indexOfArray (obj, expr) {
-    let args = computeValue(obj, expr);
-    if (isNil(args)) return null
-
-    let arr = args[0];
-    let searchValue = args[1];
-    if (isNil(arr)) return null
-
-    assert(isArray(arr), '$indexOfArray expression must resolve to an array.');
-
-    let start = args[2] || 0;
-    let end = args[3];
-    if (isNil(end)) end = arr.length;
-    if (start > end) return -1
-
-    assert(start >= 0 && end >= 0, '$indexOfArray expression is invalid');
-
-    if (start > 0 || end < arr.length) {
-      arr = arr.slice(start, end);
-    }
-    return arr.findIndex(isEqual.bind(null, searchValue)) + start
-  },
-
-  /**
-   * Determines if the operand is an array. Returns a boolean.
-   *
-   * @param  {Object}  obj
-   * @param  {*}  expr
-   * @return {Boolean}
-   */
-  $isArray (obj, expr) {
-    return isArray(computeValue(obj, expr[0]))
-  },
-
-  /**
-   * Applies a sub-expression to each element of an array and returns the array of resulting values in order.
-   *
-   * @param obj
-   * @param expr
-   * @returns {Array|*}
-   */
-  $map (obj, expr) {
-    let inputExpr = computeValue(obj, expr.input);
-    assert(isArray(inputExpr), `$map 'input' expression must resolve to an array`);
-
-    let asExpr = expr['as'];
-    let inExpr = expr['in'];
-
-    // HACK: add the "as" expression as a value on the object to take advantage of "resolve()"
-    // which will reduce to that value when invoked. The reference to the as expression will be prefixed with "$$".
-    // But since a "$" is stripped of before passing the name to "resolve()" we just need to prepend "$" to the key.
-    let tempKey = '$' + asExpr;
-    return inputExpr.map(item => {
-      obj[tempKey] = item;
-      return computeValue(obj, inExpr)
-    })
-  },
-
-  /**
-   * Converts a document to an array of documents representing key-value pairs.
-   */
-  $objectToArray (obj, expr) {
-    let val = computeValue(obj, expr);
-    assert(isObject(val), '$objectToArray expression must resolve to an object');
-    let arr = [];
-    each(val, (v,k) => arr.push({k,v}));
-    return arr
-  },
-
-  /**
-   * Returns an array whose elements are a generated sequence of numbers.
-   *
-   * @param  {Object} obj
-   * @param  {*} expr
-   * @return {*}
-   */
-  $range (obj, expr) {
-    let arr = computeValue(obj, expr);
-    let start = arr[0];
-    let end = arr[1];
-    let step = arr[2] || 1;
-
-    let result = [];
-
-    while ((start < end && step > 0) || (start > end && step < 0)) {
-      result.push(start);
-      start += step;
-    }
-
-    return result
-  },
-
-  /**
-   * Applies an expression to each element in an array and combines them into a single value.
-   *
-   * @param {Object} obj
-   * @param {*} expr
-   */
-  $reduce (obj, expr) {
-    let input = computeValue(obj, expr.input);
-    let initialValue = computeValue(obj, expr.initialValue);
-    let inExpr = expr['in'];
-
-    if (isNil(input)) return null
-    assert(isArray(input), "$reduce 'input' expression must resolve to an array");
-    return reduce(input, (acc, n) => computeValue({ '$value': acc, '$this': n }, inExpr), initialValue)
-  },
-
-  /**
-   * Returns an array with the elements in reverse order.
-   *
-   * @param  {Object} obj
-   * @param  {*} expr
-   * @return {*}
-   */
-  $reverseArray (obj, expr) {
-    let arr = computeValue(obj, expr);
-
-    if (isNil(arr)) return null
-    assert(isArray(arr), '$reverseArray expression must resolve to an array');
-
-    let result = [];
-    into(result, arr);
-    result.reverse();
-    return result
-  },
-
-  /**
-   * Counts and returns the total the number of items in an array.
-   *
-   * @param obj
-   * @param expr
-   */
-  $size (obj, expr) {
-    let value = computeValue(obj, expr);
-    return isArray(value) ? value.length : undefined
-  },
-
-  /**
-   * Returns a subset of an array.
-   *
-   * @param  {Object} obj
-   * @param  {*} expr
-   * @return {*}
-   */
-  $slice (obj, expr) {
-    let arr = computeValue(obj, expr);
-    return slice(arr[0], arr[1], arr[2])
-  },
-
-  /**
-   * Merge two lists together.
-   *
-   * Transposes an array of input arrays so that the first element of the output array would be an array containing,
-   * the first element of the first input array, the first element of the second input array, etc.
-   *
-   * @param  {Obj} obj
-   * @param  {*} expr
-   * @return {*}
-   */
-  $zip (obj, expr) {
-    let inputs = computeValue(obj, expr.inputs);
-    let useLongestLength = expr.useLongestLength || false;
-
-    assert(isArray(inputs), "'inputs' expression must resolve to an array");
-    assert(isBoolean(useLongestLength), "'useLongestLength' must be a boolean");
-
-    if (isArray(expr.defaults)) {
-      assert(truthy(useLongestLength), "'useLongestLength' must be set to true to use 'defaults'");
-    }
-
-    let zipCount = 0;
-
-    for (let i = 0, len = inputs.length; i < len; i++) {
-      let arr = inputs[i];
-
-      if (isNil(arr)) return null
-
-      assert(isArray(arr), "'inputs' expression values must resolve to an array or null");
-
-      zipCount = useLongestLength
-        ? Math.max(zipCount, arr.length)
-        : Math.min(zipCount || arr.length, arr.length);
-    }
-
-    let result = [];
-    let defaults = expr.defaults || [];
-
-    for (let i = 0; i < zipCount; i++) {
-      let temp = inputs.map((val, index) => {
-        return isNil(val[i]) ? (defaults[index] || null) : val[i]
-      });
-      result.push(temp);
-    }
-
-    return result
-  },
-
-  /**
-   * Combines multiple documents into a single document.
-   * @param {*} obj
-   * @param {*} expr
-   */
-  $mergeObjects (obj, expr) {
-    let docs = computeValue(obj, expr);
-    if (isArray(docs)) {
-      return reduce(docs, (memo, o) => Object.assign(memo, o), {})
-    }
-    return {}
-  }
-};
-
-const booleanOperators = {
-  /**
-   * Returns true only when all its expressions evaluate to true. Accepts any number of argument expressions.
-   *
-   * @param obj
-   * @param expr
-   * @returns {boolean}
-   */
-  $and: (obj, expr) => {
-    let value = computeValue(obj, expr);
-    return truthy(value) && value.every(truthy)
-  },
-
-  /**
-   * Returns true when any of its expressions evaluates to true. Accepts any number of argument expressions.
-   *
-   * @param obj
-   * @param expr
-   * @returns {boolean}
-   */
-  $or: (obj, expr) => {
-    let value = computeValue(obj, expr);
-    return truthy(value) && value.some(truthy)
-  },
-
-  /**
-   * Returns the boolean value that is the opposite of its argument expression. Accepts a single argument expression.
-   *
-   * @param obj
-   * @param expr
-   * @returns {boolean}
-   */
-  $not: (obj, expr) => {
-    return !computeValue(obj, expr[0])
-  }
-};
 
 const comparisonOperators = {
   /**
@@ -3452,6 +3300,158 @@ const expressionOperators = Object.assign(
   stringOperators,
   variableOperators
 );
+
+/**
+ * Returns an array of all the unique values for the selected field among for each document in that group.
+ *
+ * @param collection
+ * @param expr
+ * @returns {*}
+ */
+function $addToSet (collection, expr) {
+  return unique(this.$push(collection, expr))
+}
+
+/**
+ * Returns an average of all the values in a group.
+ *
+ * @param collection
+ * @param expr
+ * @returns {number}
+ */
+function $avg (collection, expr) {
+  let data = this.$push(collection, expr).filter(isNumber);
+  let sum = reduce(data, (acc, n) => acc + n, 0);
+  return sum / (data.length || 1)
+}
+
+/**
+ * Returns the first value in a group.
+ *
+ * @param collection
+ * @param expr
+ * @returns {*}
+ */
+function $first (collection, expr) {
+  return collection.length > 0 ? computeValue(collection[0], expr) : undefined
+}
+
+/**
+ * Returns the last value in a group.
+ *
+ * @param collection
+ * @param expr
+ * @returns {*}
+ */
+function $last (collection, expr) {
+  return collection.length > 0 ? computeValue(collection[collection.length - 1], expr) : undefined
+}
+
+/**
+ * Returns the highest value in a group.
+ *
+ * @param collection
+ * @param expr
+ * @returns {*}
+ */
+function $max (collection, expr) {
+  return reduce(this.$push(collection, expr), (acc, n) => (isNil(acc) || n > acc) ? n : acc, undefined)
+}
+
+/**
+ * Combines multiple documents into a single document.
+ *
+ * @param collection
+ * @param expr
+ * @returns {Array|*}
+ */
+function $mergeObjects (collection, expr) {
+  return reduce(collection, (memo, o) => Object.assign(memo, computeValue(o, expr)), {})
+}
+
+/**
+ * Returns the lowest value in a group.
+ *
+ * @param collection
+ * @param expr
+ * @returns {*}
+ */
+function $min (collection, expr) {
+  return reduce(this.$push(collection, expr), (acc, n) => (isNil(acc) || n < acc) ? n : acc, undefined)
+}
+
+/**
+ * Returns an array of all values for the selected field among for each document in that group.
+ *
+ * @param collection
+ * @param expr
+ * @returns {Array|*}
+ */
+function $push (collection, expr) {
+  if (isNil(expr)) return collection
+  return collection.map(obj => computeValue(obj, expr))
+}
+
+/**
+ * Returns the population standard deviation of the input values.
+ *
+ * @param  {Array} collection
+ * @param  {Object} expr
+ * @return {Number}
+ */
+function $stdDevPop (collection, expr) {
+  return stddev({
+    data: this.$push(collection, expr).filter(isNumber),
+    sampled: false
+  })
+}
+
+/**
+ * Returns the sample standard deviation of the input values.
+ * @param  {Array} collection
+ * @param  {Object} expr
+ * @return {Number|null}
+ */
+function $stdDevSamp (collection, expr) {
+  return stddev({
+    data: this.$push(collection, expr).filter(isNumber),
+    sampled: true
+  })
+}
+
+/**
+ * Returns the sum of all the values in a group.
+ *
+ * @param collection
+ * @param expr
+ * @returns {*}
+ */
+function $sum (collection, expr) {
+  if (!isArray(collection)) return 0
+
+  // take a short cut if expr is number literal
+  if (isNumber(expr)) return collection.length * expr
+
+  return reduce(this.$push(collection, expr).filter(isNumber), (acc, n) => acc + n, 0)
+}
+
+/**
+ * Group stage Accumulator Operators. https://docs.mongodb.com/manual/reference/operator/aggregation-
+ */
+
+const groupOperators = {
+  $addToSet,
+  $avg,
+  $first,
+  $last,
+  $mergeObjects,
+  $max,
+  $min,
+  $push,
+  $stdDevPop,
+  $stdDevSamp,
+  $sum
+};
 
 // operator definitions
 const OPERATORS = {
