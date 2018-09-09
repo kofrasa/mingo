@@ -110,7 +110,7 @@ function each (obj, fn, ctx) {
     }
   } else {
     for (let k in obj) {
-      if (has(obj, k)) {
+      if (obj.hasOwnProperty(k)) {
         if (fn(obj[k], k, obj) === false) break
       }
     }
@@ -128,9 +128,28 @@ function each (obj, fn, ctx) {
 function objectMap (obj, fn, ctx) {
   fn = fn.bind(ctx);
   let o = {};
-  each(obj, (v, k) => {
-    o[k] = fn(v, k);
-  }, obj);
+  let objKeys = keys(obj);
+  for (let i = 0; i < objKeys.length; i++) {
+    let k = objKeys[i];
+    o[k] = fn(obj[k], k);
+  }
+  return o
+}
+
+/**
+ * Deep merge objects
+ * @param  {...any} args Objects to merges
+ */
+function mergeObjects(...args) {
+  let o = args[0];
+  for(var i = 1; i < args.length; i++) {
+    let obj = args[i];
+    let objKeys = keys(obj);
+    for (let j = 0; j < objKeys.length; j++) {
+      let k = objKeys[j];
+      setValue(o, k, obj[k]);
+    }
+  }
   return o
 }
 
@@ -1766,7 +1785,7 @@ function $project (collection, expr) {
 
       // add the value at the path
       if (!isUndefined(objPathValue)) {
-        Object.assign(newObj, objPathValue);
+        mergeObjects(newObj, objPathValue);
       }
 
       // if computed add/or remove accordingly
@@ -3563,6 +3582,9 @@ const systemVariables = {
   },
   '$$CURRENT' (obj, expr, opt) {
     return obj
+  },
+  '$$REMOVE' (obj, expr, opt) {
+    return undefined
   }
 };
 
@@ -3798,7 +3820,11 @@ function traverse (obj, selector, fn, force = false) {
  */
 function setValue (obj, selector, value) {
   traverse(obj, selector, (item, key) => {
-    item[key] = value;
+    if (isObject(item[key]) && isObject(value)) {
+      item[key] = Object.assign(item[key], value);
+    } else {
+      item[key] = value;
+    }
   }, true);
 }
 

@@ -36,7 +36,7 @@ JavaScript implementation of MongoDB query language
 - Support for adding custom operators
 - Match against user-defined types
 - Support for aggregaion variables
-    - [`$$ROOT`,`$$CURRENT`,`$$DESCEND`,`$$PRUNE`,`$$KEEP`](https://docs.mongodb.com/manual/reference/aggregation-variables/)
+    - [`$$ROOT`,`$$CURRENT`,`$$DESCEND`,`$$PRUNE`,`$$KEEP`,`$$REMOVE`](https://docs.mongodb.com/manual/reference/aggregation-variables/)
 - ES6 module compatible
 - Support integrating with custom collections via mixin
 - Query filter and projection streaming.

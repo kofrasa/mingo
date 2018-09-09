@@ -159,7 +159,7 @@ function each(obj, fn, ctx) {
     }
   } else {
     for (var k in obj) {
-      if (has(obj, k)) {
+      if (obj.hasOwnProperty(k)) {
         if (fn(obj[k], k, obj) === false) break;
       }
     }
@@ -177,9 +177,32 @@ function each(obj, fn, ctx) {
 function objectMap(obj, fn, ctx) {
   fn = fn.bind(ctx);
   var o = {};
-  each(obj, function (v, k) {
-    o[k] = fn(v, k);
-  }, obj);
+  var objKeys = keys(obj);
+  for (var i = 0; i < objKeys.length; i++) {
+    var k = objKeys[i];
+    o[k] = fn(obj[k], k);
+  }
+  return o;
+}
+
+/**
+ * Deep merge objects
+ * @param  {...any} args Objects to merges
+ */
+function mergeObjects() {
+  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+    args[_key] = arguments[_key];
+  }
+
+  var o = args[0];
+  for (var i = 1; i < args.length; i++) {
+    var obj = args[i];
+    var objKeys = keys(obj);
+    for (var j = 0; j < objKeys.length; j++) {
+      var k = objKeys[j];
+      setValue(o, k, obj[k]);
+    }
+  }
   return o;
 }
 
@@ -512,8 +535,8 @@ function memoize(fn) {
 
   return function (cache) {
     return function () {
-      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-        args[_key] = arguments[_key];
+      for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+        args[_key2] = arguments[_key2];
       }
 
       var key = getHash(args);
@@ -1958,7 +1981,7 @@ function $project(collection, expr) {
 
       // add the value at the path
       if (!isUndefined(objPathValue)) {
-        Object.assign(newObj, objPathValue);
+        mergeObjects(newObj, objPathValue);
       }
 
       // if computed add/or remove accordingly
@@ -3905,6 +3928,9 @@ var systemVariables = {
   },
   '$$CURRENT': function $$CURRENT(obj, expr, opt) {
     return obj;
+  },
+  '$$REMOVE': function $$REMOVE(obj, expr, opt) {
+    return undefined;
   }
 };
 
@@ -4141,7 +4167,11 @@ function traverse(obj, selector, fn) {
  */
 function setValue(obj, selector, value) {
   traverse(obj, selector, function (item, key) {
-    item[key] = value;
+    if (isObject(item[key]) && isObject(value)) {
+      item[key] = Object.assign(item[key], value);
+    } else {
+      item[key] = value;
+    }
   }, true);
 }
 

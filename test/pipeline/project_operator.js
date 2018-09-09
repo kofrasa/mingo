@@ -140,6 +140,59 @@ samples.runTestPipeline("$project pipeline operator", [
       { "_id": 3, "quizTotal": 14, "labTotal": 11, "examTotal": 148 }
     ],
     message: 'can $project new field with group operator'
+  },
+
+  // Project with $$REMOVE
+  // See: https://docs.mongodb.com/manual/reference/operator/aggregation/project/#remove-example
+  {
+    message: '$project conditionally exclude fields with $$REMOVE ',
+    input: [
+      {
+        "_id" : 1,
+        title: "abc123",
+        isbn: "0001122223334",
+        author: { last: "zzz", first: "aaa" },
+        copies: 5,
+        lastModified: "2016-07-28"
+      },
+      {
+        "_id" : 2,
+        title: "Baked Goods",
+        isbn: "9999999999999",
+        author: { last: "xyz", first: "abc", middle: "" },
+        copies: 2,
+        lastModified: "2017-07-21"
+      },
+      {
+        "_id" : 3,
+        title: "Ice Cream Cakes",
+        isbn: "8888888888888",
+        author: { last: "xyz", first: "abc", middle: "mmm" },
+        copies: 5,
+        lastModified: "2017-07-22"
+      }
+    ],
+    query: [
+      {
+         $project: {
+            title: 1,
+            "author.first": 1,
+            "author.last" : 1,
+            "author.middle": {
+               $cond: {
+                  if: { $eq: [ "", "$author.middle" ] },
+                  then: "$$REMOVE",
+                  else: "$author.middle"
+               }
+            }
+         }
+      }
+    ],
+    check: [
+      { "_id" : 1, "title" : "abc123", "author" : { "last" : "zzz", "first" : "aaa" } },
+      { "_id" : 2, "title" : "Baked Goods", "author" : { "last" : "xyz", "first" : "abc" } },
+      { "_id" : 3, "title" : "Ice Cream Cakes", "author" : { "last" : "xyz", "first" : "abc", "middle" : "mmm" } }
+    ]
   }
 
 ])
