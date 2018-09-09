@@ -1,5 +1,8 @@
 Changelog
 =========
+## 2.2.4 / 2018-09-09
+- Add `$$REMOVE` support to conditionally exclude fields
+
 ## 2.2.3 / 2018-08-21
 - Match undefined fields with `$in: [null]` queries (#85)
 
