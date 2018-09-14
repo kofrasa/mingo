@@ -1,5 +1,8 @@
 Changelog
 =========
+## 2.2.5 / 2018-11-21
+- Fix merge objects to project subdocuments correctly. Fixes #91
+
 ## 2.2.4 / 2018-09-09
 - Add `$$REMOVE` support to conditionally exclude fields
 

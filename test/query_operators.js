@@ -276,6 +276,12 @@ test('Query projection operators', function (t) {
   t.deepEqual(result, {'features': ['eyes']}, 'should select only second element in array')
   t.notDeepEqual(data[0], result, 'should not modify original')
 
+  result = mingo.find([
+    { id: 1, sub: [{ id: 11, name: 'OneOne', test: true }] },
+    { id: 2, sub: [{ id: 22, name: 'TwoTwo', test: false }] }
+  ], {}, { 'sub.id': 1, 'sub.name': 1 }).next()
+  t.deepEqual(result, { "sub" : [ { "id" : 11, "name" : "OneOne" } ] }, 'should project nested elements in array')
+
   t.end()
 })
 

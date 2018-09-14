@@ -1,4 +1,4 @@
-// mingo.js 2.2.4
+// mingo.js 2.2.5
 // Copyright (c) 2018 Francis Asante
 // MIT
 
@@ -76,8 +76,8 @@ function isDate (v) { return jsType(v) === T_DATE }
 function isRegExp (v) { return jsType(v) === T_REGEXP }
 function isFunction (v) { return jsType(v) === T_FUNCTION }
 function isNil (v) { return isNull(v) || isUndefined(v) }
-function isNull (v) { return jsType(v) === T_NULL }
-function isUndefined (v) { return jsType(v) === T_UNDEFINED }
+function isNull (v) { return v === null }
+function isUndefined (v) { return v === undefined }
 function inArray (arr, item) { return arr.some(isEqual.bind(null, item)) }
 function notInArray (arr, item) { return !inArray(arr, item) }
 function truthy (arg) { return !!arg }
@@ -147,7 +147,11 @@ function mergeObjects(...args) {
     let objKeys = keys(obj);
     for (let j = 0; j < objKeys.length; j++) {
       let k = objKeys[j];
-      setValue(o, k, obj[k]);
+      if (isObject(o[k]) || isArray(o[k])) {
+        o[k] = mergeObjects(o[k], obj[k]);
+      } else {
+        setValue(o, k, obj[k]);
+      }
     }
   }
   return o
@@ -415,7 +419,7 @@ function groupBy (collection, fn, ctx) {
     let hash = getHash(key);
     let index = -1;
 
-    if (isUndefined(lookup[hash])) {
+    if (lookup[hash] === undefined) {
       index = result.keys.length;
       lookup[hash] = index;
       result.keys.push(key);
@@ -1542,7 +1546,7 @@ function $group (collection, expr) {
       let obj = {};
 
       // exclude undefined key value
-      if (!isUndefined(value)) {
+      if (value !== undefined) {
         obj[ID_KEY] = value;
       }
 
@@ -1784,13 +1788,13 @@ function $project (collection, expr) {
       let objPathValue = resolveObj(obj, key);
 
       // add the value at the path
-      if (!isUndefined(objPathValue)) {
+      if (objPathValue !== undefined) {
         mergeObjects(newObj, objPathValue);
       }
 
       // if computed add/or remove accordingly
       if (notInArray([0, 1, false, true], subExpr)) {
-        if (isUndefined(value)) {
+        if (value === undefined) {
           removeValue(newObj, key);
         } else {
           setValue(newObj, key, value);
@@ -2401,7 +2405,7 @@ const simpleOperators = {
    * @returns {boolean}
    */
   $lt (a, b) {
-    return !isUndefined(ensureArray(a).find((x) => sameType(x, b) && x < b))
+    return ensureArray(a).find((x) => sameType(x, b) && x < b) !== undefined
   },
 
   /**
@@ -2412,7 +2416,7 @@ const simpleOperators = {
    * @returns {boolean}
    */
   $lte (a, b) {
-    return !isUndefined(ensureArray(a).find((x) => sameType(x, b) && x <= b))
+    return ensureArray(a).find((x) => sameType(x, b) && x <= b) !== undefined
   },
 
   /**
@@ -2423,7 +2427,7 @@ const simpleOperators = {
    * @returns {boolean}
    */
   $gt (a, b) {
-    return !isUndefined(ensureArray(a).find((x) => sameType(x, b) && x > b))
+    return ensureArray(a).find((x) => sameType(x, b) && x > b) !== undefined
   },
 
   /**
@@ -2434,7 +2438,7 @@ const simpleOperators = {
    * @returns {boolean}
    */
   $gte (a, b) {
-    return !isUndefined(ensureArray(a).find((x) => sameType(x, b) && x >= b))
+    return ensureArray(a).find((x) => sameType(x, b) && x >= b) !== undefined
   },
 
   /**
@@ -2445,7 +2449,7 @@ const simpleOperators = {
    * @returns {boolean}
    */
   $mod (a, b) {
-    return !isUndefined(ensureArray(a).find((val) => isNumber(val) && isArray(b) && b.length === 2 && (val % b[0]) === b[1]))
+    return ensureArray(a).find((val) => isNumber(val) && isArray(b) && b.length === 2 && (val % b[0]) === b[1]) !== undefined
   },
 
   /**
@@ -3752,7 +3756,7 @@ function resolveObj (obj, selector) {
         if (hasNext) {
           result = resolveObj(result, next);
         }
-        assert(!isUndefined(result));
+        assert(result !== undefined);
         result = [result];
       } else {
         result = [];
@@ -3793,21 +3797,12 @@ function traverse (obj, selector, fn, force = false) {
 
   if (names.length === 1) {
     fn(obj, key);
-  } else { // nested objects
-    if (isArray(obj) && !/^\d+$/.test(key)) {
-      each(obj, (item) => {
-        traverse(item, selector, fn, force);
-      });
-    } else {
-      // force the rest of the graph while traversing
-      if (force === true) {
-        let exists = has(obj, key);
-        if (!exists || isNil(obj[key])) {
-          obj[key] = {};
-        }
-      }
-      traverse(obj[key], next, fn, force);
+  } else {
+    // force the rest of the graph while traversing
+    if (force === true && isNil(obj[key])) {
+      obj[key] = {};
     }
+    traverse(obj[key], next, fn, force);
   }
 }
 
@@ -3820,11 +3815,7 @@ function traverse (obj, selector, fn, force = false) {
  */
 function setValue (obj, selector, value) {
   traverse(obj, selector, (item, key) => {
-    if (isObject(item[key]) && isObject(value)) {
-      item[key] = Object.assign(item[key], value);
-    } else {
-      item[key] = value;
-    }
+    item[key] = value;
   }, true);
 }
 
@@ -4071,7 +4062,7 @@ const CollectionMixin = {
   }
 };
 
-const VERSION = '2.2.4';
+const VERSION = '2.2.5';
 
 // mingo!
 var index = {

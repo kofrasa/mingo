@@ -1,4 +1,4 @@
-// mingo.js 2.2.4
+// mingo.js 2.2.5
 // Copyright (c) 2018 Francis Asante
 // MIT
 
@@ -108,10 +108,10 @@ function isNil(v) {
   return isNull(v) || isUndefined(v);
 }
 function isNull(v) {
-  return jsType(v) === T_NULL;
+  return v === null;
 }
 function isUndefined(v) {
-  return jsType(v) === T_UNDEFINED;
+  return v === undefined;
 }
 function inArray(arr, item) {
   return arr.some(isEqual.bind(null, item));
@@ -200,7 +200,11 @@ function mergeObjects() {
     var objKeys = keys(obj);
     for (var j = 0; j < objKeys.length; j++) {
       var k = objKeys[j];
-      setValue(o, k, obj[k]);
+      if (isObject(o[k]) || isArray(o[k])) {
+        o[k] = mergeObjects(o[k], obj[k]);
+      } else {
+        setValue(o, k, obj[k]);
+      }
     }
   }
   return o;
@@ -476,7 +480,7 @@ function groupBy(collection, fn, ctx) {
     var hash = getHash(key);
     var index = -1;
 
-    if (isUndefined(lookup[hash])) {
+    if (lookup[hash] === undefined) {
       index = result.keys.length;
       lookup[hash] = index;
       result.keys.push(key);
@@ -1734,7 +1738,7 @@ function $group(collection, expr) {
       var obj = {};
 
       // exclude undefined key value
-      if (!isUndefined(value)) {
+      if (value !== undefined) {
         obj[ID_KEY] = value;
       }
 
@@ -1980,13 +1984,13 @@ function $project(collection, expr) {
       var objPathValue = resolveObj(obj, key);
 
       // add the value at the path
-      if (!isUndefined(objPathValue)) {
+      if (objPathValue !== undefined) {
         mergeObjects(newObj, objPathValue);
       }
 
       // if computed add/or remove accordingly
       if (notInArray([0, 1, false, true], subExpr)) {
-        if (isUndefined(value)) {
+        if (value === undefined) {
           removeValue(newObj, key);
         } else {
           setValue(newObj, key, value);
@@ -2685,9 +2689,9 @@ var simpleOperators = {
    * @returns {boolean}
    */
   $lt: function $lt(a, b) {
-    return !isUndefined(ensureArray(a).find(function (x) {
+    return ensureArray(a).find(function (x) {
       return sameType(x, b) && x < b;
-    }));
+    }) !== undefined;
   },
 
 
@@ -2699,9 +2703,9 @@ var simpleOperators = {
    * @returns {boolean}
    */
   $lte: function $lte(a, b) {
-    return !isUndefined(ensureArray(a).find(function (x) {
+    return ensureArray(a).find(function (x) {
       return sameType(x, b) && x <= b;
-    }));
+    }) !== undefined;
   },
 
 
@@ -2713,9 +2717,9 @@ var simpleOperators = {
    * @returns {boolean}
    */
   $gt: function $gt(a, b) {
-    return !isUndefined(ensureArray(a).find(function (x) {
+    return ensureArray(a).find(function (x) {
       return sameType(x, b) && x > b;
-    }));
+    }) !== undefined;
   },
 
 
@@ -2727,9 +2731,9 @@ var simpleOperators = {
    * @returns {boolean}
    */
   $gte: function $gte(a, b) {
-    return !isUndefined(ensureArray(a).find(function (x) {
+    return ensureArray(a).find(function (x) {
       return sameType(x, b) && x >= b;
-    }));
+    }) !== undefined;
   },
 
 
@@ -2741,9 +2745,9 @@ var simpleOperators = {
    * @returns {boolean}
    */
   $mod: function $mod(a, b) {
-    return !isUndefined(ensureArray(a).find(function (val) {
+    return ensureArray(a).find(function (val) {
       return isNumber(val) && isArray(b) && b.length === 2 && val % b[0] === b[1];
-    }));
+    }) !== undefined;
   },
 
 
@@ -4096,7 +4100,7 @@ function resolveObj(obj, selector) {
         if (hasNext) {
           result = resolveObj(result, next);
         }
-        assert(!isUndefined(result));
+        assert(result !== undefined);
         result = [result];
       } else {
         result = [];
@@ -4140,21 +4144,11 @@ function traverse(obj, selector, fn) {
   if (names.length === 1) {
     fn(obj, key);
   } else {
-    // nested objects
-    if (isArray(obj) && !/^\d+$/.test(key)) {
-      each(obj, function (item) {
-        traverse(item, selector, fn, force);
-      });
-    } else {
-      // force the rest of the graph while traversing
-      if (force === true) {
-        var exists = has(obj, key);
-        if (!exists || isNil(obj[key])) {
-          obj[key] = {};
-        }
-      }
-      traverse(obj[key], next, fn, force);
+    // force the rest of the graph while traversing
+    if (force === true && isNil(obj[key])) {
+      obj[key] = {};
     }
+    traverse(obj[key], next, fn, force);
   }
 }
 
@@ -4167,11 +4161,7 @@ function traverse(obj, selector, fn) {
  */
 function setValue(obj, selector, value) {
   traverse(obj, selector, function (item, key) {
-    if (isObject(item[key]) && isObject(value)) {
-      item[key] = Object.assign(item[key], value);
-    } else {
-      item[key] = value;
-    }
+    item[key] = value;
   }, true);
 }
 
@@ -4432,7 +4422,7 @@ var CollectionMixin = {
   }
 };
 
-var VERSION = '2.2.4';
+var VERSION = '2.2.5';
 
 // mingo!
 var index = {
