@@ -1,5 +1,8 @@
 Changelog
 =========
+## 2.2.6 / 2018-11-22
+- Update `mergeObjects` to handle more use cases.
+
 ## 2.2.5 / 2018-11-21
 - Fix merge objects to project subdocuments correctly. Fixes #91
 

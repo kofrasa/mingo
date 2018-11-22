@@ -1,4 +1,4 @@
-// mingo.js 2.2.5
+// mingo.js 2.2.6
 // Copyright (c) 2018 Francis Asante
 // MIT
 
@@ -137,24 +137,57 @@ function objectMap (obj, fn, ctx) {
 }
 
 /**
- * Deep merge objects
- * @param  {...any} args Objects to merges
+ * Deep merge objects or arrays.
+ * When the inputs have unmergeable types, the source value (right hand side) is returned.
+ * If the target is an array of a single object, this attempts to merge an array of source objects into that element.
+ * If any of the elements are unmergeable, a normal array merge is performed and returned.
+ * @param target {Object|Array} the target to merge into
+ * @param obj {Object|Array} the source object
  */
-function mergeObjects(...args) {
-  let o = args[0];
-  for(var i = 1; i < args.length; i++) {
-    let obj = args[i];
-    let objKeys = keys(obj);
-    for (let j = 0; j < objKeys.length; j++) {
-      let k = objKeys[j];
-      if (isObject(o[k]) || isArray(o[k])) {
-        o[k] = mergeObjects(o[k], obj[k]);
+function mergeObjects(target, obj) {
+  // take care of null inputs
+  if (!target || !obj) return obj
+  let typ = target.constructor;
+  if (typ !== obj.constructor) throw Error('mismatched types. must both be array or object')
+  if (typ !== Object && typ !== Array) return obj
+
+  // handle unit arrays specially
+  let unitArray = typ == Array && target.length === 1;
+
+  var objKeys = Object.keys(obj);
+  for (var j = 0; j < objKeys.length; j++) {
+    var k = objKeys[j];
+    var src = obj[k];
+    if (target.constructor === Array) {
+      if (!!src && src.constructor === Array) {
+        Array.prototype.push.apply(target, src);
       } else {
-        setValue(o, k, obj[k]);
+        target.push(src);
+      }
+    } else {
+      if (target.hasOwnProperty(k)) {
+        target[k] = mergeObjects(target[k], src);
+      } else {
+        target[k] = src;
       }
     }
   }
-  return o
+
+  // special case for unit arrays. attempt to merge all values into first element
+  if (unitArray && !!target[0] && target[0].constructor === Object) {
+    let tgt = cloneDeep(target[0]);
+    try {
+      for (let i = 1; i < target.length; i++) {
+        tgt = mergeObjects(tgt, target[i]);
+      }
+      target.splice(0, target.length);
+      target.push(tgt);
+    } catch (e) {
+      // on error return the already valid merged target
+    }
+  }
+
+  return target;
 }
 
 /**
@@ -4062,7 +4095,7 @@ const CollectionMixin = {
   }
 };
 
-const VERSION = '2.2.5';
+const VERSION = '2.2.6';
 
 // mingo!
 var index = {
