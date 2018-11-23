@@ -68,9 +68,8 @@ function jsType (v) { return getType(v).toLowerCase() }
 function isBoolean (v) { return jsType(v) === T_BOOLEAN }
 function isString (v) { return jsType(v) === T_STRING }
 function isNumber (v) { return jsType(v) === T_NUMBER }
-const isArray = Array.isArray || (v => jsType(v) === T_ARRAY);
-// export function isArrayLike (v) { return !isNil(v) && has(v, 'length') }
-function isObject (v) { return jsType(v) === T_OBJECT }
+const isArray = Array.isArray || (v => !!v && v.constructor === Array);
+function isObject(v) { return !!v && v.constructor === Object }
 function isObjectLike (v) { return v === Object(v) } // objects, arrays, functions, date, custom object
 function isDate (v) { return jsType(v) === T_DATE }
 function isRegExp (v) { return jsType(v) === T_REGEXP }
@@ -144,50 +143,38 @@ function objectMap (obj, fn, ctx) {
  * @param target {Object|Array} the target to merge into
  * @param obj {Object|Array} the source object
  */
-function mergeObjects(target, obj) {
+function merge(target, obj, opt) {
   // take care of null inputs
-  if (!target || !obj) return obj
-  let typ = target.constructor;
-  if (typ !== obj.constructor) throw Error('mismatched types. must both be array or object')
-  if (typ !== Object && typ !== Array) return obj
-
-  // handle unit arrays specially
-  let unitArray = typ == Array && target.length === 1;
-
-  var objKeys = Object.keys(obj);
-  for (var j = 0; j < objKeys.length; j++) {
-    var k = objKeys[j];
-    var src = obj[k];
-    if (target.constructor === Array) {
-      if (!!src && src.constructor === Array) {
-        Array.prototype.push.apply(target, src);
-      } else {
-        target.push(src);
-      }
-    } else {
-      if (target.hasOwnProperty(k)) {
-        target[k] = mergeObjects(target[k], src);
-      } else {
-        target[k] = src;
-      }
-    }
+  if (!isObject(target) && !isArray(obj) || !isObject(target) && !isArray(obj)) return obj
+  if (!(isArray(target) && isArray(obj) || isObject(target) && isObject(obj))) {
+    throw Error('mismatched types. must both be array or object')
   }
 
-  // special case for unit arrays. attempt to merge all values into first element
-  if (unitArray && !!target[0] && target[0].constructor === Object) {
-    let tgt = cloneDeep(target[0]);
-    try {
+  opt = opt || {};
+  opt.flatten = opt.flatten || false;
+
+  if (isArray(target)) {
+    Array.prototype.push.apply(target, obj);
+    let flatten = opt.flatten && target.every(v => isObject(v));
+    if (flatten) {
+      let tgt = target[0];
       for (let i = 1; i < target.length; i++) {
-        tgt = mergeObjects(tgt, target[i]);
+        tgt = merge(tgt, target[i], opt);
       }
       target.splice(0, target.length);
       target.push(tgt);
-    } catch (e) {
-      // on error return the already valid merged target
     }
+  } else {
+    Object.keys(obj).forEach((k,v) => {
+      if (target.hasOwnProperty(k)) {
+        target[k] = merge(target[k], obj[k], opt);
+      } else {
+        target[k] = obj[k];
+      }
+    });
   }
 
-  return target;
+  return target
 }
 
 /**
@@ -1822,7 +1809,7 @@ function $project (collection, expr) {
 
       // add the value at the path
       if (objPathValue !== undefined) {
-        mergeObjects(newObj, objPathValue);
+        merge(newObj, objPathValue, {flatten:true});
       }
 
       // if computed add/or remove accordingly
