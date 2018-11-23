@@ -86,11 +86,10 @@ function isNumber(v) {
   return jsType(v) === T_NUMBER;
 }
 var isArray = Array.isArray || function (v) {
-  return jsType(v) === T_ARRAY;
+  return !!v && v.constructor === Array;
 };
-// export function isArrayLike (v) { return !isNil(v) && has(v, 'length') }
 function isObject(v) {
-  return jsType(v) === T_OBJECT;
+  return !!v && v.constructor === Object;
 }
 function isObjectLike(v) {
   return v === Object(v);
@@ -193,47 +192,37 @@ function objectMap(obj, fn, ctx) {
  * @param target {Object|Array} the target to merge into
  * @param obj {Object|Array} the source object
  */
-function mergeObjects(target, obj) {
+function merge(target, obj, opt) {
   // take care of null inputs
-  if (!target || !obj) return obj;
-  var typ = target.constructor;
-  if (typ !== obj.constructor) throw Error('mismatched types. must both be array or object');
-  if (typ !== Object && typ !== Array) return obj;
-
-  // handle unit arrays specially
-  var unitArray = typ == Array && target.length === 1;
-
-  var objKeys = Object.keys(obj);
-  for (var j = 0; j < objKeys.length; j++) {
-    var k = objKeys[j];
-    var src = obj[k];
-    if (target.constructor === Array) {
-      if (!!src && src.constructor === Array) {
-        Array.prototype.push.apply(target, src);
-      } else {
-        target.push(src);
-      }
-    } else {
-      if (target.hasOwnProperty(k)) {
-        target[k] = mergeObjects(target[k], src);
-      } else {
-        target[k] = src;
-      }
-    }
+  if (!isObject(target) && !isArray(obj) || !isObject(target) && !isArray(obj)) return obj;
+  if (!(isArray(target) && isArray(obj) || isObject(target) && isObject(obj))) {
+    throw Error('mismatched types. must both be array or object');
   }
 
-  // special case for unit arrays. attempt to merge all values into first element
-  if (unitArray && !!target[0] && target[0].constructor === Object) {
-    var tgt = cloneDeep(target[0]);
-    try {
+  opt = opt || {};
+  opt.flatten = opt.flatten || false;
+
+  if (isArray(target)) {
+    Array.prototype.push.apply(target, obj);
+    var _flatten = opt.flatten && target.every(function (v) {
+      return isObject(v);
+    });
+    if (_flatten) {
+      var tgt = target[0];
       for (var i = 1; i < target.length; i++) {
-        tgt = mergeObjects(tgt, target[i]);
+        tgt = merge(tgt, target[i], opt);
       }
       target.splice(0, target.length);
       target.push(tgt);
-    } catch (e) {
-      // on error return the already valid merged target
     }
+  } else {
+    Object.keys(obj).forEach(function (k, v) {
+      if (target.hasOwnProperty(k)) {
+        target[k] = merge(target[k], obj[k], opt);
+      } else {
+        target[k] = obj[k];
+      }
+    });
   }
 
   return target;
@@ -2014,7 +2003,7 @@ function $project(collection, expr) {
 
       // add the value at the path
       if (objPathValue !== undefined) {
-        mergeObjects(newObj, objPathValue);
+        merge(newObj, objPathValue, { flatten: true });
       }
 
       // if computed add/or remove accordingly
