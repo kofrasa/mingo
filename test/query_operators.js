@@ -400,6 +400,20 @@ test('Query array operators', function (t) {
   result = mingo.find(data, { "key0.key1": { "$eq": "value" } }).next()
   t.deepEqual(result, data[0], "should match nested array of objects without indices")
 
+  // https://github.com/kofrasa/mingo/issues/93
+  data = [{
+    id: 1,
+    sub: [
+      { id: 11, name: 'OneOne', test: true },
+      { id: 22, name: 'TwoTwo', test: false }
+    ]
+  }]
+
+  result = mingo.find(data, {}, { 'sub.id': 1, 'sub.name': 1 }).all()
+  t.deepEqual(result, [
+    { sub: [ { id: 11, name: 'OneOne' }, { id: 22, name: 'TwoTwo' } ] }
+  ], "should project all matched elements of nested array")
+
   t.end()
 })
 
