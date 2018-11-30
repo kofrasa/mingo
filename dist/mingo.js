@@ -2793,7 +2793,7 @@ var simpleOperators = {
    * @returns {boolean}
    */
   $exists: function $exists(a, b) {
-    return (b === false || b === 0) && isNil(a) || (b === true || b === 1) && !isNil(a);
+    return (b === false || b === 0) && isUndefined(a) || (b === true || b === 1) && !isUndefined(a);
   },
 
 

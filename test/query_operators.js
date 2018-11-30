@@ -467,3 +467,20 @@ test('$expr tests', function (t) {
 
   t.end()
 })
+
+test('null or missing fields', function (t) {
+  var data = [ { _id: 1, item: null }, { _id: 2 } ]
+  var fixtures = [
+    // query, result, message
+    [ { item: null }, [ { _id: 1, item: null }, { _id: 2 } ], 'should return all documents' ],
+    [ { item : { $type: 10 } }, [ { _id: 1, item: null } ], 'should return one document with null field' ],
+    [ { item : { $exists: false } }, [ { _id: 2 } ], 'should return one document without null field' ],
+    [ { item : { $in: [null, false] } }, [ { _id: 1, item: null }, { _id: 2 } ], '$in should return all documents' ],
+  ]
+  for (var i = 0; i < fixtures.length; i++) {
+    var arr = fixtures[i]
+    var res = mingo.find(data, arr[0]).all()
+    t.deepEqual(res, arr[1], arr[2])
+  }
+  t.end()
+})
