@@ -1,5 +1,8 @@
 Changelog
 =========
+## 2.2.7 / 2018-11-30
+- Match missing fields correctly with `$exists`
+
 ## 2.2.6 / 2018-11-22
 - Update `mergeObjects` to handle more use cases.
 

@@ -1,4 +1,4 @@
-// mingo.js 2.2.6
+// mingo.js 2.2.7
 // Copyright (c) 2018 Francis Asante
 // MIT
 
@@ -2493,7 +2493,7 @@ const simpleOperators = {
    * @returns {boolean}
    */
   $exists (a, b) {
-    return ((b === false || b === 0) && isNil(a)) || ((b === true || b === 1) && !isNil(a))
+    return ((b === false || b === 0) && isUndefined(a)) || ((b === true || b === 1) && !isUndefined(a))
   },
 
   /**
@@ -4082,7 +4082,7 @@ const CollectionMixin = {
   }
 };
 
-const VERSION = '2.2.6';
+const VERSION = '2.2.7';
 
 // mingo!
 var index = {
