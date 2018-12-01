@@ -1,5 +1,8 @@
 Changelog
 =========
+## 2.2.8 / 2018-12-01
+- Project all matched elements of nested array correctly. Fixes #93
+
 ## 2.2.7 / 2018-11-30
 - Match missing fields correctly with `$exists`
 
