@@ -1,5 +1,5 @@
-// mingo.js 2.2.8
-// Copyright (c) 2018 Francis Asante
+// mingo.js 2.2.9
+// Copyright (c) 2019 Francis Asante
 // MIT
 
 // Javascript native types
@@ -29,6 +29,58 @@ const OP_QUERY = 'query';
 /**
  * Utility functions
  */
+
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/includes
+if (!Array.prototype.includes) {
+  Object.defineProperty(Array.prototype, 'includes', {
+    value: function(valueToFind, fromIndex) {
+
+      if (this == null) {
+        throw new TypeError('"this" is null or not defined');
+      }
+
+      // 1. Let O be ? ToObject(this value).
+      var o = Object(this);
+
+      // 2. Let len be ? ToLength(? Get(O, "length")).
+      var len = o.length >>> 0;
+
+      // 3. If len is 0, return false.
+      if (len === 0) {
+        return false;
+      }
+
+      // 4. Let n be ? ToInteger(fromIndex).
+      //    (If fromIndex is undefined, this step produces the value 0.)
+      var n = fromIndex | 0;
+
+      // 5. If n ≥ 0, then
+      //  a. Let k be n.
+      // 6. Else n < 0,
+      //  a. Let k be len + n.
+      //  b. If k < 0, let k be 0.
+      var k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
+
+      function sameValueZero(x, y) {
+        return x === y || (typeof x === 'number' && typeof y === 'number' && isNaN(x) && isNaN(y));
+      }
+
+      // 7. Repeat, while k < len
+      while (k < len) {
+        // a. Let elementK be the result of ? Get(O, ! ToString(k)).
+        // b. If SameValueZero(valueToFind, elementK) is true, return true.
+        if (sameValueZero(o[k], valueToFind)) {
+          return true;
+        }
+        // c. Increase k by 1.
+        k++;
+      }
+
+      // 8. Return false
+      return false;
+    }
+  });
+}
 
 function assert (condition, message) {
   if (falsey(condition)) err(message);
@@ -77,7 +129,7 @@ function isFunction (v) { return jsType(v) === T_FUNCTION }
 function isNil (v) { return isNull(v) || isUndefined(v) }
 function isNull (v) { return v === null }
 function isUndefined (v) { return v === undefined }
-function inArray (arr, item) { return arr.some(isEqual.bind(null, item)) }
+function inArray (arr, item) { return Array.prototype.includes.apply(arr, [item]) }
 function notInArray (arr, item) { return !inArray(arr, item) }
 function truthy (arg) { return !!arg }
 function falsey (arg) { return !arg }
@@ -194,7 +246,8 @@ function reduce (collection, fn, accumulator) {
  * @return {Array}    Result array
  */
 function intersection (xs, ys) {
-  return xs.filter(inArray.bind(null, ys))
+  let hashes = ys.map(v => getHash(v));
+  return xs.filter(v => inArray(hashes, getHash(v)))
 }
 
 /**
@@ -362,6 +415,8 @@ function encode (value) {
  * @returns {*}
  */
 function getHash (value) {
+  if (isNil(value)) return null
+
   let hash = 0;
   let s = encode(value);
   let i = s.length;
@@ -802,7 +857,7 @@ const arrayOperators = {
     let val = computeValue(obj, expr[0]);
     let arr = computeValue(obj, expr[1]);
     assert(isArray(arr), '$in second argument must be an array');
-    return inArray(arr, val)
+    return arr.some(isEqual.bind(null, val))
   },
 
   /**
@@ -1602,18 +1657,14 @@ function $lookup (collection, expr) {
 
   let hash = {};
 
-  function hashCode (v) {
-    return getHash(isNil(v) ? null : v)
-  }
-
   each(joinColl, obj => {
-    let k = hashCode(obj[foreignField]);
+    let k = getHash(obj[foreignField], { nullIfEmpty: true });
     hash[k] = hash[k] || [];
     hash[k].push(obj);
   });
 
   return collection.map(obj => {
-    let k = hashCode(obj[localField]);
+    let k = getHash(obj[localField], { nullIfEmpty: true });
     let newObj = clone(obj);
     newObj[asField] = hash[k] || [];
     return newObj
@@ -4077,7 +4128,7 @@ const CollectionMixin = {
   }
 };
 
-const VERSION = '2.2.8';
+const VERSION = '2.2.9';
 
 // mingo!
 var index = {

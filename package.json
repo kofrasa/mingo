@@ -1,6 +1,6 @@
 {
   "name": "mingo",
-  "version": "2.2.8",
+  "version": "2.2.9",
   "description": "JavaScript implementation of MongoDB query language",
   "main": "dist/mingo.js",
   "module": "index.js",
@@ -34,7 +34,9 @@
     "codecov": "2.3.0",
     "gulp": ">=3.9.x",
     "istanbul": "0.4.0",
+    "lodash": "4.17.x",
     "nyc": "^11.1.0",
+    "perf_hooks": "0.0.1",
     "rollup": "^0.45.2",
     "rollup-plugin-babel": "^2.7.1",
     "rollup-plugin-commonjs": "^8.0.2",

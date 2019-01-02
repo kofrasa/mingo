@@ -1,5 +1,8 @@
 Changelog
 =========
+## 2.2.9 / 2018-01-03
+- Switch `inArray` and `notInArray` to use `Array.prototype.includes` for performance. Fixes #95
+
 ## 2.2.8 / 2018-12-01
 - Project all matched elements of nested array correctly. Fixes #93
 

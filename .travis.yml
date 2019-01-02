@@ -1,8 +1,6 @@
 language: node_js
 node_js:
   - "stable"
-  - "6"
-  - "5"
-  - "4"
+  - "8.11.2"
 
 after_success: npm run coverage
