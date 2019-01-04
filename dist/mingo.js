@@ -1,4 +1,4 @@
-// mingo.js 2.2.9
+// mingo.js 2.2.10
 // Copyright (c) 2019 Francis Asante
 // MIT
 
@@ -88,8 +88,10 @@ if (!Array.prototype.includes) {
   });
 }
 
+var arrayPush = Array.prototype.push;
+
 function assert(condition, message) {
-  if (falsey(condition)) err(message);
+  if (!condition) err(message);
 }
 
 /**
@@ -165,16 +167,13 @@ function isUndefined(v) {
   return v === undefined;
 }
 function inArray(arr, item) {
-  return Array.prototype.includes.apply(arr, [item]);
+  return arr.includes(item);
 }
 function notInArray(arr, item) {
   return !inArray(arr, item);
 }
 function truthy(arg) {
   return !!arg;
-}
-function falsey(arg) {
-  return !arg;
 }
 function isEmpty(x) {
   return isNil(x) || isArray(x) && x.length === 0 || isObject(x) && keys(x).length === 0 || !x;
@@ -262,7 +261,7 @@ function merge(target, obj) {
         merge(target[i], obj[i]);
       }
     } else {
-      Array.prototype.push.apply(target, obj);
+      arrayPush.apply(target, obj);
     }
   } else {
     Object.keys(obj).forEach(function (k) {
@@ -573,7 +572,7 @@ function groupBy(collection, fn, ctx) {
  * @param {*} xs The array of elements to push
  */
 function into(target, xs) {
-  Array.prototype.push.apply(target, xs);
+  arrayPush.apply(target, xs);
   return target;
 }
 
@@ -4492,7 +4491,7 @@ var CollectionMixin = {
   }
 };
 
-var VERSION = '2.2.9';
+var VERSION = '2.2.10';
 
 // mingo!
 var index = {

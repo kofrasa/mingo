@@ -1,6 +1,10 @@
 Changelog
 =========
-## 2.2.9 / 2018-01-03
+## 2.2.10 / 2019-01-04
+- Minor cleanup and refactoring
+- Correct changelog date
+
+## 2.2.9 / 2019-01-03
 - Switch `inArray` and `notInArray` to use `Array.prototype.includes` for performance. Fixes #95
 
 ## 2.2.8 / 2018-12-01
