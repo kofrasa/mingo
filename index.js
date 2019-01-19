@@ -1,7 +1,7 @@
 import { OP_EXPRESSION, OP_GROUP, OP_PIPELINE, OP_PROJECTION, OP_QUERY } from './lib/constants'
 import { _internal, setup } from './lib/internal'
 import { Query, find, remove } from './lib/query'
-import { Aggregator, aggregate } from './lib/aggregator'
+import { Aggregator, aggregate, sort } from './lib/aggregator'
 import { CollectionMixin } from './lib/mixin'
 import { Cursor } from './lib/cursor'
 import { addOperators } from './lib/operators/index'
@@ -27,5 +27,6 @@ export default {
   aggregate,
   find,
   remove,
-  setup
+  setup,
+  sort
 }

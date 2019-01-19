@@ -134,6 +134,13 @@ let stream = agg.stream(collection)
 let result = agg.run(collection)
 ```
 
+## Sorting
+
+```js
+const mingo = require('mingo')
+const sortedCollection = mingo.sort(collection, {student_id: 1, score: -1})
+```
+
 ## Integration with custom collection
 ```js
 // using Backbone.Collection as an example (any user-defined object will do)

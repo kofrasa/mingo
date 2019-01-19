@@ -2147,6 +2147,17 @@ function aggregate (collection, pipeline) {
 }
 
 /**
+ * Return the result collection after sorting.
+ *
+ * @param collection
+ * @param sortKeys
+ * @returns {Array}
+ */
+function sort (collection, sortKeys) {
+  return $sort(Lazy(collection), sortKeys).value();
+}
+
+/**
  * Cursor to iterate and perform filtering on matched objects
  * @param collection
  * @param query
@@ -4149,7 +4160,8 @@ var index = {
   aggregate,
   find,
   remove,
-  setup
+  setup,
+  sort
 };
 
 export default index;

@@ -2374,6 +2374,17 @@ function aggregate(collection, pipeline) {
 }
 
 /**
+ * Return the result collection after sorting.
+ *
+ * @param collection
+ * @param sortKeys
+ * @returns {Array}
+ */
+function sort(collection, sortKeys) {
+  return $sort(Lazy(collection), sortKeys).value();
+}
+
+/**
  * Cursor to iterate and perform filtering on matched objects
  * @param collection
  * @param query
@@ -2468,7 +2479,7 @@ var Cursor = function () {
 
   }, {
     key: 'sort',
-    value: function sort(modifier) {
+    value: function sort$$1(modifier) {
       this.__operators.push({ '$sort': modifier });
       return this;
     }
@@ -4511,7 +4522,8 @@ var index = {
   aggregate: aggregate,
   find: find,
   remove: remove,
-  setup: setup
+  setup: setup,
+  sort: sort
 };
 
 return index;
