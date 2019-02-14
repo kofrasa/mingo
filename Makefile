@@ -57,3 +57,4 @@ test: mingo.js
 
 
 .PHONY: clean test build coverage
+
