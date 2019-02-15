@@ -231,7 +231,7 @@ declare namespace mingo {
      * @param collection an array of objects to process
      * @param query the `Query` object to use as context
      */
-    run<P>(collection: Array<any>, query: Query): P[];
+    run<P>(collection: Array<any>, query?: Query): P[];
   }
 
   /**
