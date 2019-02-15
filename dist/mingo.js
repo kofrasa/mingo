@@ -3899,7 +3899,12 @@ var OPERATORS = {
    * Returns the operators defined for the given operator classes
    */
 };function ops() {
-  return reduce(arguments, function (acc, cls) {
+  // Workaround for browser-compatibility bug: on iPhone 6S Safari (and
+  // probably some other platforms), `arguments` isn't detected as an array,
+  // but has a length field, so functions like `reduce` and up including the
+  // length field in their iteration. Copy to a real array.
+  var args = Array.prototype.slice.call(arguments);
+  return reduce(args, function (acc, cls) {
     return into(acc, keys(OPERATORS[cls]));
   }, []);
 }
