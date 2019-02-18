@@ -1,5 +1,9 @@
 Changelog
 =========
+## 2.2.11 / 2019-02-18
+- Work around iOS 9 Safari compatibility problem (#98)
+- Fixing typing for aggregator.run, make query optional. (#102)
+
 ## 2.2.10 / 2019-01-04
 - Minor cleanup and refactoring
 - Correct changelog date
