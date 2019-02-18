@@ -1,4 +1,4 @@
-// mingo.js 2.2.10
+// mingo.js 2.2.11
 // Copyright (c) 2019 Francis Asante
 // MIT
 
@@ -3899,7 +3899,12 @@ var OPERATORS = {
    * Returns the operators defined for the given operator classes
    */
 };function ops() {
-  return reduce(arguments, function (acc, cls) {
+  // Workaround for browser-compatibility bug: on iPhone 6S Safari (and
+  // probably some other platforms), `arguments` isn't detected as an array,
+  // but has a length field, so functions like `reduce` and up including the
+  // length field in their iteration. Copy to a real array.
+  var args = Array.prototype.slice.call(arguments);
+  return reduce(args, function (acc, cls) {
     return into(acc, keys(OPERATORS[cls]));
   }, []);
 }
@@ -4491,7 +4496,7 @@ var CollectionMixin = {
   }
 };
 
-var VERSION = '2.2.10';
+var VERSION = '2.2.11';
 
 // mingo!
 var index = {
