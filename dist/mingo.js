@@ -1234,8 +1234,9 @@ var booleanOperators = {
  *
  * @param {Array} collection
  * @param {*} expr
+ * @param {Object} opt Pipeline options
  */
-function $addFields(collection, expr) {
+function $addFields(collection, expr, opt) {
   var newFields = keys(expr);
 
   if (newFields.length === 0) return collection;
@@ -1625,10 +1626,13 @@ var Iterator = function () {
 
 /**
  * Categorizes incoming documents into groups, called buckets, based on a specified expression and bucket boundaries.
- *
  * https://docs.mongodb.com/manual/reference/operator/aggregation/bucket/
+ *
+ * @param {*} collection
+ * @param {*} expr
+ * @param {Object} opt Pipeline options
  */
-function $bucket(collection, expr) {
+function $bucket(collection, expr, opt) {
   var boundaries = expr.boundaries;
   var defaultKey = expr['default'];
   var lower = boundaries[0]; // inclusive
@@ -1684,7 +1688,17 @@ function $bucket(collection, expr) {
   });
 }
 
-function $bucketAuto(collection, expr) {
+/**
+ * Categorizes incoming documents into a specific number of groups, called buckets,
+ * based on a specified expression. Bucket boundaries are automatically determined
+ * in an attempt to evenly distribute the documents into the specified number of buckets.
+ * https://docs.mongodb.com/manual/reference/operator/aggregation/bucketAuto/
+ *
+ * @param {*} collection
+ * @param {*} expr
+ * @param {*} opt Pipeline options
+ */
+function $bucketAuto(collection, expr, opt) {
   var outputExpr = expr.output || { 'count': { '$sum': 1 } };
   var groupByExpr = expr.groupBy;
   var bucketCount = expr.buckets;
@@ -1754,11 +1768,13 @@ function $bucketAuto(collection, expr) {
 
 /**
  * Returns a document that contains a count of the number of documents input to the stage.
+ *
  * @param  {Array} collection
  * @param  {String} expr
+ * @param {Object} opt Pipeline options
  * @return {Object}
  */
-function $count(collection, expr) {
+function $count(collection, expr, opt) {
   assert(isString(expr) && expr.trim() !== '' && expr.indexOf('.') === -1 && expr.trim()[0] !== '$', 'Invalid expression value for $count');
 
   return Lazy(function () {
@@ -1772,7 +1788,7 @@ function $count(collection, expr) {
  * Processes multiple aggregation pipelines within a single stage on the same set of input documents.
  * Enables the creation of multi-faceted aggregations capable of characterizing data across multiple dimensions, or facets, in a single stage.
  */
-function $facet(collection, expr) {
+function $facet(collection, expr, opt) {
   return collection.transform(function (array) {
     return [objectMap(expr, function (pipeline) {
       return aggregate(array, pipeline);
@@ -1785,9 +1801,10 @@ function $facet(collection, expr) {
  *
  * @param collection
  * @param expr
+ * @param opt Pipeline options
  * @returns {Array}
  */
-function $group(collection, expr) {
+function $group(collection, expr, opt) {
   // lookup key for grouping
   var ID_KEY = idKey();
   var id = expr[ID_KEY];
@@ -1830,9 +1847,10 @@ function $group(collection, expr) {
  *
  * @param collection
  * @param value
+ * @param opt
  * @returns {Object|*}
  */
-function $limit(collection, value) {
+function $limit(collection, value, opt) {
   return collection.take(value);
 }
 
@@ -1841,8 +1859,9 @@ function $limit(collection, value) {
  *
  * @param collection
  * @param expr
+ * @param opt
  */
-function $lookup(collection, expr) {
+function $lookup(collection, expr, opt) {
   var joinColl = expr.from;
   var localField = expr.localField;
   var foreignField = expr.foreignField;
@@ -1872,9 +1891,10 @@ function $lookup(collection, expr) {
  *
  * @param collection
  * @param expr
+ * @param opt
  * @returns {Array|*}
  */
-function $match(collection, expr) {
+function $match(collection, expr, opt) {
   var q = new Query(expr);
   return collection.filter(function (o) {
     return q.test(o);
@@ -1889,9 +1909,10 @@ function $match(collection, expr) {
  *
  * @param collection
  * @param expr
+ * @param opt
  * @returns {*}
  */
-function $out(collection, expr) {
+function $out(collection, expr, opt) {
   assert(isArray(expr), '$out: argument must be an array');
   return collection.map(function (o) {
     expr.push(o);
@@ -1962,9 +1983,10 @@ var projectionOperators = {
  *
  * @param collection
  * @param expr
+ * @param opt
  * @returns {Array}
  */
-function $project(collection, expr) {
+function $project(collection, expr, opt) {
   if (isEmpty(expr)) return collection;
 
   // result collection
@@ -2087,7 +2109,7 @@ function $project(collection, expr) {
  *
  * https://docs.mongodb.com/manual/reference/operator/aggregation/redact/
  */
-function $redact(collection, expr) {
+function $redact(collection, expr, opt) {
   return collection.map(function (obj) {
     return redactObj(cloneDeep(obj), expr);
   });
@@ -2101,9 +2123,10 @@ function $redact(collection, expr) {
  *
  * @param  {Array} collection
  * @param  {Object} expr
+ * @param  {Object} opt
  * @return {*}
  */
-function $replaceRoot(collection, expr) {
+function $replaceRoot(collection, expr, opt) {
   return collection.map(function (obj) {
     obj = computeValue(obj, expr.newRoot);
     assert(isObject(obj), '$replaceRoot expression must return an object');
@@ -2117,9 +2140,10 @@ function $replaceRoot(collection, expr) {
  *
  * @param  {Array} collection
  * @param  {Object} expr
+ * @param  {Object} opt
  * @return {*}
  */
-function $sample(collection, expr) {
+function $sample(collection, expr, opt) {
   var size = expr.size;
   assert(isNumber(size), '$sample size must be a positive integer');
 
@@ -2139,9 +2163,10 @@ function $sample(collection, expr) {
  *
  * @param collection
  * @param value
+ * @param  {Object} opt
  * @returns {*}
  */
-function $skip(collection, value) {
+function $skip(collection, value, opt) {
   return collection.drop(value);
 }
 
@@ -2150,9 +2175,10 @@ function $skip(collection, value) {
  *
  * @param collection
  * @param sortKeys
+ * @param  {Object} opt
  * @returns {*}
  */
-function $sort(collection, sortKeys) {
+function $sort(collection, sortKeys, opt) {
   if (!isEmpty(sortKeys) && isObject(sortKeys)) {
 
     collection = collection.transform(function (coll) {
@@ -2191,13 +2217,14 @@ function $sort(collection, sortKeys) {
  *
  * @param  {Array} collection
  * @param  {Object} expr
+ * @param  {Object} opt
  * @return {*}
  */
-function $sortByCount(collection, expr) {
+function $sortByCount(collection, expr, opt) {
   var newExpr = { count: { $sum: 1 } };
   newExpr[idKey()] = expr;
 
-  return this.$sort(this.$group(collection, newExpr), { count: -1 });
+  return this.$sort(this.$group(collection, newExpr), { count: -1 }, opt);
 }
 
 /**
@@ -2205,9 +2232,10 @@ function $sortByCount(collection, expr) {
  *
  * @param collection
  * @param expr
+ * @param  {Object} opt
  * @returns {Array}
  */
-function $unwind(collection, expr) {
+function $unwind(collection, expr, opt) {
   if (isString(expr)) {
     expr = { path: expr };
   }
@@ -2309,16 +2337,17 @@ var pipelineOperators = {
  * @constructor
  */
 var Aggregator = function () {
-  function Aggregator(operators) {
+  function Aggregator(operators, options) {
     classCallCheck(this, Aggregator);
 
     this.__operators = operators;
+    this.__options = options;
   }
 
   /**
    * Returns an `Lazy` iterator for processing results of pipeline
    *
-   * @param {*} source an array or iterator object
+   * @param {*} collection An array or iterator object
    * @param {Query} query the `Query` object to use as context
    * @returns {Iterator} an iterator object
    */
@@ -2326,8 +2355,10 @@ var Aggregator = function () {
 
   createClass(Aggregator, [{
     key: 'stream',
-    value: function stream(source, query) {
-      source = Lazy(source);
+    value: function stream(collection, query) {
+      var _this = this;
+
+      collection = Lazy(collection);
 
       if (!isEmpty(this.__operators)) {
         // run aggregation pipeline
@@ -2336,13 +2367,13 @@ var Aggregator = function () {
           assert(key.length === 1 && inArray(ops(OP_PIPELINE), key[0]), 'Invalid aggregation operator ' + key);
           key = key[0];
           if (query && query instanceof Query) {
-            source = pipelineOperators[key].call(query, source, operator[key]);
+            collection = pipelineOperators[key].call(query, collection, operator[key], _this.__options);
           } else {
-            source = pipelineOperators[key](source, operator[key]);
+            collection = pipelineOperators[key](collection, operator[key], _this.__options);
           }
         });
       }
-      return source;
+      return collection;
     }
 
     /**
@@ -2364,13 +2395,13 @@ var Aggregator = function () {
  * Return the result collection after running the aggregation pipeline for the given collection.
  * Shorthand for `agg.run(input).value()`
  *
- * @param collection
- * @param pipeline
+ * @param {Array} collection A collection of objects
+ * @param {Array} pipeline The pipeline operators to use
  * @returns {Array}
  */
-function aggregate(collection, pipeline) {
+function aggregate(collection, pipeline, options) {
   assert(isArray(pipeline), 'Aggregation pipeline must be an array');
-  return new Aggregator(pipeline).run(collection);
+  return new Aggregator(pipeline, options).run(collection);
 }
 
 /**
@@ -2391,6 +2422,7 @@ var Cursor = function () {
     this.__operators = [];
     this.__result = null;
     this.__stack = [];
+    this.__options = {};
   }
 
   createClass(Cursor, [{
@@ -2406,7 +2438,7 @@ var Cursor = function () {
       this.__result = Lazy(this.__source).filter(this.__filterFn);
 
       if (this.__operators.length > 0) {
-        this.__result = new Aggregator(this.__operators).stream(this.__result, this.__query);
+        this.__result = new Aggregator(this.__operators, this.__options).stream(this.__result, this.__query);
       }
 
       return this.__result;
@@ -2470,6 +2502,18 @@ var Cursor = function () {
     key: 'sort',
     value: function sort(modifier) {
       this.__operators.push({ '$sort': modifier });
+      return this;
+    }
+
+    /**
+     * Not yet supported
+     * @param {*} options
+     */
+
+  }, {
+    key: 'collation',
+    value: function collation(options) {
+      this.__options['collation'] = options;
       return this;
     }
 
