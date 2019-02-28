@@ -489,22 +489,32 @@ function getHash(value) {
 }
 
 /**
+ * Default compare function
+ * @param {*} a
+ * @param {*} b
+ */
+function compare(a, b) {
+  if (a < b) return -1;
+  if (a > b) return 1;
+  return 0;
+}
+
+/**
  * Returns a (stably) sorted copy of list, ranked in ascending order by the results of running each value through iteratee
  *
  * This implementation treats null/undefined sort keys as less than every other type
  *
- * @param  {Array}   collection
- * @param  {Function} fn The function used to resolve sort keys
- * @param {Object} ctx The context to use for calling `fn`
+ * @param {Array}   collection
+ * @param {Function} fn The function used to resolve sort keys
+ * @param {Function} cmp The comparator function to use for comparing values
  * @return {Array} Returns a new sorted array by the given iteratee
  */
-function sortBy(collection, fn, ctx) {
+function sortBy(collection, fn, cmp) {
   var sortKeys = {};
   var sorted = [];
   var len = collection.length;
   var result = [];
-
-  fn = fn.bind(ctx);
+  cmp = cmp || compare;
 
   for (var i = 0; i < len; i++) {
     var obj = collection[i];
@@ -524,11 +534,12 @@ function sortBy(collection, fn, ctx) {
   sorted.sort(function (a, b) {
     var A = sortKeys[getHash(a)];
     var B = sortKeys[getHash(b)];
-    if (A[0] < B[0]) return -1;
-    if (A[0] > B[0]) return 1;
-    if (A[1] < B[1]) return -1;
-    if (A[1] > B[1]) return 1;
-    return 0;
+    var res = cmp(A[0], B[0]);
+    if (!res) {
+      if (A[1] < B[1]) return -1;
+      if (A[1] > B[1]) return 1;
+    }
+    return res;
   });
   return into(result, sorted);
 }
@@ -538,16 +549,14 @@ function sortBy(collection, fn, ctx) {
  *
  * @param collection
  * @param fn {Function} to compute the group key of an item in the collection
- * @param ctx {Object} The context to use for calling `fn`
  * @returns {{keys: Array, groups: Array}}
  */
-function groupBy(collection, fn, ctx) {
+function groupBy(collection, fn) {
   var result = {
     'keys': [],
     'groups': []
   };
   var lookup = {};
-  fn = fn.bind(ctx);
   each(collection, function (obj) {
     var key = fn(obj);
     var hash = getHash(key);
@@ -2180,8 +2189,15 @@ function $skip(collection, value, opt) {
  */
 function $sort(collection, sortKeys, opt) {
   if (!isEmpty(sortKeys) && isObject(sortKeys)) {
+    opt = opt || {};
+    var cmp = compare;
+    var collationSpec = opt['collation'];
 
-    collection = collection.transform(function (coll) {
+    if (isObject(collationSpec)) {
+      // TODO: create a new "cmp" based on the collationSpec.
+    }
+
+    return collection.transform(function (coll) {
       var modifiers = keys(sortKeys);
 
       each(modifiers.reverse(), function (key) {
@@ -2193,7 +2209,7 @@ function $sort(collection, sortKeys, opt) {
         var indexKeys = sortBy(grouped.keys, function (k, i) {
           sortedIndex[k] = i;
           return k;
-        });
+        }, cmp);
 
         if (sortKeys[key] === -1) indexKeys.reverse();
         coll = [];
