@@ -2829,8 +2829,15 @@ each(simpleOperators, (fn, op) => {
     return (selector, value) => {
       return {
         test (obj) {
+
+          // primitives cannot be resolved
+          if (inArray(JS_SIMPLE_TYPES, jsType(obj))) {
+            return f(obj, value)
+          }
+
           // value of field must be fully resolved.
-          let lhs = resolve(obj, selector, { meta:true });
+          // we can end up with single types or
+          let lhs = resolve(obj, selector, { meta: true });
           lhs = unwrap(lhs.result, lhs.depth);
           return f(lhs, value)
         }

@@ -1,5 +1,8 @@
 Changelog
 =========
+## 2.2.x /
+- Avoid resolving primitive type operands. Fixes #103
+
 ## 2.2.11 / 2019-02-18
 - Work around iOS 9 Safari compatibility problem (#98)
 - Fixing typing for aggregator.run, make query optional. (#102)

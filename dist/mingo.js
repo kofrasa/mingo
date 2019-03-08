@@ -1,4 +1,4 @@
-// mingo.js 2.2.11
+// mingo.js 2.3.0
 // Copyright (c) 2019 Francis Asante
 // MIT
 
@@ -3150,6 +3150,12 @@ each(simpleOperators, function (fn, op) {
     return function (selector, value) {
       return {
         test: function test(obj) {
+
+          // primitives cannot be resolved
+          // if (inArray(JS_SIMPLE_TYPES, jsType(obj))) {
+          //   return f(obj, value)
+          // }
+
           // value of field must be fully resolved.
           var lhs = resolve(obj, selector, { meta: true });
           lhs = unwrap(lhs.result, lhs.depth);
@@ -4206,7 +4212,7 @@ function resolve(obj, selector, opt) {
     return value;
   }
   opt = opt || { meta: false };
-  obj = resolve2(obj, selector.split('.'));
+  obj = inArray(JS_SIMPLE_TYPES, jsType(obj)) ? obj : resolve2(obj, selector.split('.'));
   return opt.meta ? { result: obj, depth: depth } : obj;
 }
 
@@ -4556,7 +4562,7 @@ var CollectionMixin = {
   }
 };
 
-var VERSION = '2.2.11';
+var VERSION = '2.3.0';
 
 // mingo!
 var index = {

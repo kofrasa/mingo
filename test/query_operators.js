@@ -349,7 +349,6 @@ test('Query array operators', function (t) {
     result = result && q.test(obj)
   })
 
-  // FIXME: this is failing
   t.ok(result, 'can match object using $all with $elemMatch')
 
   data = [{
@@ -413,6 +412,16 @@ test('Query array operators', function (t) {
   t.deepEqual(result, [
     { sub: [ { id: 11, name: 'OneOne' }, { id: 22, name: 'TwoTwo' } ] }
   ], "should project all matched elements of nested array")
+
+  // Test for https://github.com/kofrasa/mingo/issues/103
+  let query = new mingo.Query({
+    scores: {
+      $elemMatch: { $lt: 50 }
+    }
+  });
+
+  // test if an object matches query
+  t.ok(query.test({ scores: [10, 50, 100] }), "can match simple array sequence with $elemMatch")
 
   t.end()
 })
