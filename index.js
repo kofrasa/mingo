@@ -7,7 +7,7 @@ import { Cursor } from './lib/cursor'
 import { addOperators } from './lib/operators/index'
 import { Lazy } from './lib/lazy'
 
-const VERSION = '2.2.11'
+const VERSION = '2.2.12'
 
 // mingo!
 export default {

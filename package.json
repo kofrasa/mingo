@@ -1,6 +1,6 @@
 {
   "name": "mingo",
-  "version": "2.2.11",
+  "version": "2.2.12",
   "description": "JavaScript implementation of MongoDB query language",
   "main": "dist/mingo.js",
   "module": "index.js",

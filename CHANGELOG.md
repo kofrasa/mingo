@@ -1,6 +1,6 @@
 Changelog
 =========
-## 2.2.x /
+## 2.2.12 / 2019-03-09
 - Avoid resolving primitive type operands. Fixes #103
 
 ## 2.2.11 / 2019-02-18

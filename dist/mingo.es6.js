@@ -1,4 +1,4 @@
-// mingo.js 2.2.11
+// mingo.js 2.2.12
 // Copyright (c) 2019 Francis Asante
 // MIT
 
@@ -2829,14 +2829,7 @@ each(simpleOperators, (fn, op) => {
     return (selector, value) => {
       return {
         test (obj) {
-
-          // primitives cannot be resolved
-          if (inArray(JS_SIMPLE_TYPES, jsType(obj))) {
-            return f(obj, value)
-          }
-
           // value of field must be fully resolved.
-          // we can end up with single types or
           let lhs = resolve(obj, selector, { meta: true });
           lhs = unwrap(lhs.result, lhs.depth);
           return f(lhs, value)
@@ -3861,7 +3854,7 @@ function resolve (obj, selector, opt) {
     return value
   }
   opt = opt || { meta: false };
-  obj = resolve2(obj, selector.split('.'));
+  obj = inArray(JS_SIMPLE_TYPES, jsType(obj)) ? obj : resolve2(obj, selector.split('.'));
   return opt.meta
     ? { result: obj, depth: depth }
     : obj
@@ -4197,7 +4190,7 @@ const CollectionMixin = {
   }
 };
 
-const VERSION = '2.2.11';
+const VERSION = '2.2.12';
 
 // mingo!
 var index = {
