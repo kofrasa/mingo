@@ -1470,7 +1470,7 @@ var Iterator = function () {
       return this;
     }
 
-    //// Iteratees methods //////
+    // Iteratees methods
 
     /**
      * Transform each item in the sequence to a new value
@@ -1516,7 +1516,7 @@ var Iterator = function () {
       return n > 0 ? this._push({ type: LAZY_DROP, func: n }) : this;
     }
 
-    //////// Transformations ////////
+    // Transformations
 
     /**
      * Returns a new lazy object with results of the transformation
@@ -1551,8 +1551,6 @@ var Iterator = function () {
       this.__first = true;
       return this;
     }
-
-    ////////////////////////////////////////////////////////////////
 
     // Terminal methods
 
@@ -1879,13 +1877,13 @@ function $lookup(collection, expr, opt) {
   var hash = {};
 
   each(joinColl, function (obj) {
-    var k = hashCode(obj[foreignField], { nullIfEmpty: true });
+    var k = hashCode(obj[foreignField]);
     hash[k] = hash[k] || [];
     hash[k].push(obj);
   });
 
   return collection.map(function (obj) {
-    var k = hashCode(obj[localField], { nullIfEmpty: true });
+    var k = hashCode(obj[localField]);
     var newObj = clone(obj);
     newObj[asField] = hash[k] || [];
     return newObj;
@@ -1920,7 +1918,7 @@ function $match(collection, expr, opt) {
  * @returns {*}
  */
 function $out(collection, expr, opt) {
-  assert(isArray(expr), '$out: argument must be an array');
+  assert(isArray(expr), '$out expression must be an array');
   return collection.map(function (o) {
     expr.push(o);
     return o; // passthrough
@@ -2572,7 +2570,7 @@ var Cursor = function () {
     }
 
     /**
-     * Not yet supported
+     * Specifies the collation for the cursor returned by the `mingo.Query.find`
      * @param {*} options
      */
 
@@ -2791,8 +2789,10 @@ function remove(collection, criteria) {
 /**
  * Query and Projection Operators. https://docs.mongodb.com/manual/reference/operator/query/
  */
-function sameType(a, b) {
-  return getType(a) === getType(b);
+function $cmp(a, b, fn) {
+  return ensureArray(a).some(function (x) {
+    return getType(x) === getType(b) && fn(x, b);
+  });
 }
 
 var simpleOperators = {
@@ -2868,9 +2868,9 @@ var simpleOperators = {
    * @returns {boolean}
    */
   $lt: function $lt(a, b) {
-    return ensureArray(a).find(function (x) {
-      return sameType(x, b) && x < b;
-    }) !== undefined;
+    return $cmp(a, b, function (x, y) {
+      return x < y;
+    });
   },
 
 
@@ -2882,9 +2882,9 @@ var simpleOperators = {
    * @returns {boolean}
    */
   $lte: function $lte(a, b) {
-    return ensureArray(a).find(function (x) {
-      return sameType(x, b) && x <= b;
-    }) !== undefined;
+    return $cmp(a, b, function (x, y) {
+      return x <= y;
+    });
   },
 
 
@@ -2896,9 +2896,9 @@ var simpleOperators = {
    * @returns {boolean}
    */
   $gt: function $gt(a, b) {
-    return ensureArray(a).find(function (x) {
-      return sameType(x, b) && x > b;
-    }) !== undefined;
+    return $cmp(a, b, function (x, y) {
+      return x > y;
+    });
   },
 
 
@@ -2910,9 +2910,9 @@ var simpleOperators = {
    * @returns {boolean}
    */
   $gte: function $gte(a, b) {
-    return ensureArray(a).find(function (x) {
-      return sameType(x, b) && x >= b;
-    }) !== undefined;
+    return $cmp(a, b, function (x, y) {
+      return x >= y;
+    });
   },
 
 
@@ -2924,9 +2924,9 @@ var simpleOperators = {
    * @returns {boolean}
    */
   $mod: function $mod(a, b) {
-    return ensureArray(a).find(function (val) {
-      return isNumber(val) && isArray(b) && b.length === 2 && val % b[0] === b[1];
-    }) !== undefined;
+    return ensureArray(a).some(function (x) {
+      return isNumber(x) && isArray(b) && b.length === 2 && x % b[0] === b[1];
+    });
   },
 
 
@@ -2954,7 +2954,7 @@ var simpleOperators = {
    * @returns {boolean}
    */
   $exists: function $exists(a, b) {
-    return (b === false || b === 0) && isUndefined(a) || (b === true || b === 1) && !isUndefined(a);
+    return (b === false || b === 0) && a === undefined || (b === true || b === 1) && a !== undefined;
   },
 
 
