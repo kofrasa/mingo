@@ -328,7 +328,6 @@ function union(xs, ys) {
 function flatten(xs) {
   var depth = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : -1;
 
-  assert(isArray(xs), 'Input must be an Array');
   var arr = [];
   function flatten2(ys, iter) {
     for (var i = 0, len = ys.length; i < len; i++) {
@@ -684,7 +683,7 @@ var arithmeticOperators = {
   $ceil: function $ceil(obj, expr) {
     var arg = computeValue(obj, expr);
     if (isNil(arg)) return null;
-    assert(isNumber(arg) || isNaN(arg), '$ceil must be a valid expression that resolves to a number.');
+    assert(isNumber(arg) || isNaN(arg), '$ceil expression must resolve to a number.');
     return Math.ceil(arg);
   },
 
@@ -712,7 +711,7 @@ var arithmeticOperators = {
   $exp: function $exp(obj, expr) {
     var arg = computeValue(obj, expr);
     if (isNil(arg)) return null;
-    assert(isNumber(arg) || isNaN(arg), '$exp must be a valid expression that resolves to a number.');
+    assert(isNumber(arg) || isNaN(arg), '$exp expression must resolve to a number.');
     return Math.exp(arg);
   },
 
@@ -727,7 +726,7 @@ var arithmeticOperators = {
   $floor: function $floor(obj, expr) {
     var arg = computeValue(obj, expr);
     if (isNil(arg)) return null;
-    assert(isNumber(arg) || isNaN(arg), '$floor must be a valid expression that resolves to a number.');
+    assert(isNumber(arg) || isNaN(arg), '$floor expression must resolve to a number.');
     return Math.floor(arg);
   },
 
@@ -742,7 +741,7 @@ var arithmeticOperators = {
   $ln: function $ln(obj, expr) {
     var arg = computeValue(obj, expr);
     if (isNil(arg)) return null;
-    assert(isNumber(arg) || isNaN(arg), '$ln must be a valid expression that resolves to a number.');
+    assert(isNumber(arg) || isNaN(arg), '$ln expression must resolve to a number.');
     return Math.log(arg);
   },
 
@@ -756,9 +755,10 @@ var arithmeticOperators = {
    */
   $log: function $log(obj, expr) {
     var args = computeValue(obj, expr);
-    assert(isArray(args) && args.length === 2, '$log must be a valid expression that resolves to an array of 2 items');
+    var msg = '$log expression must resolve to array(2) of numbers';
+    assert(isArray(args) && args.length === 2, msg);
     if (args.some(isNil)) return null;
-    assert(args.some(isNaN) || args.every(isNumber), '$log expression must resolve to array of 2 numbers');
+    assert(args.some(isNaN) || args.every(isNumber), msg);
     return Math.log10(args[0]) / Math.log10(args[1]);
   },
 
@@ -773,7 +773,7 @@ var arithmeticOperators = {
   $log10: function $log10(obj, expr) {
     var arg = computeValue(obj, expr);
     if (isNil(arg)) return null;
-    assert(isNumber(arg) || isNaN(arg), '$log10 must be a valid expression that resolves to a number.');
+    assert(isNumber(arg) || isNaN(arg), '$log10 expression must resolve to a number.');
     return Math.log10(arg);
   },
 
@@ -816,7 +816,7 @@ var arithmeticOperators = {
   $pow: function $pow(obj, expr) {
     var args = computeValue(obj, expr);
 
-    assert(isArray(args) && args.length === 2 && args.every(isNumber), '$pow expression must resolve to an array of 2 numbers');
+    assert(isArray(args) && args.length === 2 && args.every(isNumber), '$pow expression must resolve to array(2) of numbers');
     assert(!(args[0] === 0 && args[1] < 0), '$pow cannot raise 0 to a negative exponent');
 
     return Math.pow(args[0], args[1]);
@@ -876,7 +876,7 @@ var arrayOperators = {
    */
   $arrayElemAt: function $arrayElemAt(obj, expr) {
     var arr = computeValue(obj, expr);
-    assert(isArray(arr) && arr.length === 2, '$arrayElemAt expression must resolve to an array of 2 elements');
+    assert(isArray(arr) && arr.length === 2, '$arrayElemAt expression must resolve to an array(2)');
     assert(isArray(arr[0]), 'First operand to $arrayElemAt must resolve to an array');
     assert(isNumber(arr[1]), 'Second operand to $arrayElemAt must resolve to an integer');
     var idx = arr[1];
@@ -1716,10 +1716,10 @@ function $bucketAuto(collection, expr, opt) {
 
   return collection.transform(function (coll) {
     var approxBucketSize = Math.max(1, Math.round(coll.length / bucketCount));
-
     var computeValueOptimized = memoize(computeValue);
     var grouped = {};
     var remaining = [];
+
     var sorted = sortBy(coll, function (o) {
       var key = computeValueOptimized(o, groupByExpr);
       if (isNil(key)) {
@@ -2359,9 +2359,9 @@ function $unwind(collection, expr, opt) {
           });
         }
       } else if (!isEmpty(value) || preserveNullAndEmptyArrays === true) {
-        var _tmp2 = format(cloneDeep(obj), null);
+        var _tmp2 = cloneDeep(obj);
         return {
-          v: { value: _tmp2, done: false }
+          v: { value: format(_tmp2, null), done: false }
         };
       }
     };
@@ -2432,7 +2432,7 @@ var Aggregator = function () {
         // run aggregation pipeline
         each(this.__operators, function (operator) {
           var key = keys(operator);
-          assert(key.length === 1 && inArray(ops(OP_PIPELINE), key[0]), 'Invalid aggregation operator ' + key);
+          assert(key.length === 1 && inArray(ops(OP_PIPELINE), key[0]), 'invalid aggregation operator ' + key);
           key = key[0];
           if (query && query instanceof Query) {
             collection = pipelineOperators[key].call(query, collection, operator[key], _this.__options);
@@ -2461,9 +2461,9 @@ var Aggregator = function () {
 
 /**
  * Return the result collection after running the aggregation pipeline for the given collection.
- * Shorthand for `agg.run(input).value()`
+ * Shorthand for `(new Aggregator(pipeline, options)).run(collection)`
  *
- * @param {Array} collection A collection of objects
+ * @param {Array} collection Collection or stream of objects
  * @param {Array} pipeline The pipeline operators to use
  * @returns {Array}
  */
@@ -3304,7 +3304,7 @@ var conditionalOperators = {
    * @returns {*}
    */
   $ifNull: function $ifNull(obj, expr) {
-    assert(isArray(expr) && expr.length === 2, 'Invalid arguments for $ifNull operator');
+    assert(isArray(expr) && expr.length === 2, '$ifNull expression must resolve to array(2)');
     var args = computeValue(obj, expr);
     return isNil(args[0]) ? args[1] : args[0];
   }
@@ -3616,7 +3616,7 @@ var stringOperators = {
    */
   $indexOfBytes: function $indexOfBytes(obj, expr) {
     var arr = computeValue(obj, expr);
-    var errorMsg = '$indexOfBytes: expression resolves to invalid arguments';
+    var errorMsg = '$indexOfBytes expression resolves to invalid an argument';
 
     if (isNil(arr[0])) return null;
 
@@ -3652,7 +3652,7 @@ var stringOperators = {
   $split: function $split(obj, expr) {
     var args = computeValue(obj, expr);
     if (isNil(args[0])) return null;
-    assert(args.every(isString), '$split: invalid argument');
+    assert(args.every(isString), '$split expression must result to array(2) of strings');
     return args[0].split(args[1]);
   },
 
@@ -3693,7 +3693,7 @@ var stringOperators = {
     var a = args[0];
     var b = args[1];
     if (isEqual(a, b) || args.every(isNil)) return 0;
-    assert(args.every(isString), '$strcasecmp: invalid argument');
+    assert(args.every(isString), '$strcasecmp must resolve to array(2) of strings');
     a = a.toUpperCase();
     b = b.toUpperCase();
     return a > b && 1 || a < b && -1 || 0;
@@ -3723,7 +3723,7 @@ var stringOperators = {
     }
     var begin = validIndex.indexOf(index);
     var end = validIndex.indexOf(index + count);
-    assert(begin > -1 && end > -1, '$substrBytes: Invalid range, start or end index is a UTF-8 continuation byte.');
+    assert(begin > -1 && end > -1, '$substrBytes: invalid range, start or end index is a UTF-8 continuation byte.');
     return s.substring(begin, end);
   },
 
