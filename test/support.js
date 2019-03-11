@@ -61,14 +61,14 @@ exports.runTestPipeline = function (description, suite) {
       var pipeline = unitTest.query
       var input = unitTest.input
       var check = unitTest.check
-      var hash = _.getHash(input)
+      var hash = _.hashCode(input)
       var actual = mingo.aggregate(input, pipeline)
       if (_.isFunction(check)) {
         check(actual, t)
       } else {
         t.deepEqual(actual, check, unitTest.message || "actual equals expected")
       }
-      _.assert(hash === _.getHash(input), "input changed")
+      _.assert(hash === _.hashCode(input), "input changed")
     })
     t.end()
   })

@@ -300,11 +300,9 @@ function reduce(collection, fn, accumulator) {
  * @return {Array}    Result array
  */
 function intersection(xs, ys) {
-  var hashes = ys.map(function (v) {
-    return getHash(v);
-  });
+  var hashes = ys.map(hashCode);
   return xs.filter(function (v) {
-    return inArray(hashes, getHash(v));
+    return inArray(hashes, hashCode(v));
   });
 }
 
@@ -427,7 +425,7 @@ function unique(xs) {
   var h = {};
   var arr = [];
   each(xs, function (item) {
-    var k = getHash(item);
+    var k = hashCode(item);
     if (!has(h, k)) {
       arr.push(item);
       h[k] = 0;
@@ -476,7 +474,7 @@ function encode(value) {
  * @param value
  * @returns {*}
  */
-function getHash(value) {
+function hashCode(value) {
   if (isNil(value)) return null;
 
   var hash = 0;
@@ -522,7 +520,7 @@ function sortBy(collection, fn, cmp) {
       // objects with null keys will go in first
       result.push(obj);
     } else {
-      var hash = getHash(obj);
+      var hash = hashCode(obj);
       if (!has(sortKeys, hash)) {
         sortKeys[hash] = [key, i];
       }
@@ -531,8 +529,8 @@ function sortBy(collection, fn, cmp) {
   }
   // use native array sorting but enforce stableness
   sorted.sort(function (a, b) {
-    var A = sortKeys[getHash(a)];
-    var B = sortKeys[getHash(b)];
+    var A = sortKeys[hashCode(a)];
+    var B = sortKeys[hashCode(b)];
     var res = cmp(A[0], B[0]);
     if (!res) {
       if (A[1] < B[1]) return -1;
@@ -558,7 +556,7 @@ function groupBy(collection, fn) {
   var lookup = {};
   each(collection, function (obj) {
     var key = fn(obj);
-    var hash = getHash(key);
+    var hash = hashCode(key);
     var index = -1;
 
     if (lookup[hash] === undefined) {
@@ -624,7 +622,7 @@ function memoize(fn) {
         args[_key] = arguments[_key];
       }
 
-      var key = getHash(args);
+      var key = hashCode(args);
       if (!has(cache, key)) {
         cache[key] = fn.apply(_this, args);
       }
@@ -876,7 +874,7 @@ var arrayOperators = {
    */
   $arrayElemAt: function $arrayElemAt(obj, expr) {
     var arr = computeValue(obj, expr);
-    assert(isArray(arr) && arr.length === 2, '$arrayElemAt expression must resolve to an array(2)');
+    assert(isArray(arr) && arr.length === 2, '$arrayElemAt expression must resolve to array(2)');
     assert(isArray(arr[0]), 'First operand to $arrayElemAt must resolve to an array');
     assert(isNumber(arr[1]), 'Second operand to $arrayElemAt must resolve to an integer');
     var idx = arr[1];
@@ -1881,13 +1879,13 @@ function $lookup(collection, expr, opt) {
   var hash = {};
 
   each(joinColl, function (obj) {
-    var k = getHash(obj[foreignField], { nullIfEmpty: true });
+    var k = hashCode(obj[foreignField], { nullIfEmpty: true });
     hash[k] = hash[k] || [];
     hash[k].push(obj);
   });
 
   return collection.map(function (obj) {
-    var k = getHash(obj[localField], { nullIfEmpty: true });
+    var k = hashCode(obj[localField], { nullIfEmpty: true });
     var newObj = clone(obj);
     newObj[asField] = hash[k] || [];
     return newObj;
@@ -4556,7 +4554,7 @@ function _internal() {
     cloneDeep: cloneDeep,
     each: each,
     err: err,
-    getHash: getHash,
+    hashCode: hashCode,
     getType: getType,
     has: has,
     idKey: idKey,
