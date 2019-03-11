@@ -14,10 +14,10 @@ TAPE = node_modules/.bin/tape
 UGLIFY = node_modules/.bin/uglifyjs
 
 # tasks
-all: clean test build
+all: test
 
 
-build: prepare build.es6 compress bower.json package.json
+release: prepare build.es6 compress bower.json package.json
 	@echo "\033[0;32mBUILD SUCCEEDED"
 
 

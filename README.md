@@ -162,7 +162,7 @@ The collection to mixin needs to provide a method with signature `toJSON() -> Ar
 ## Contributing
 * Submit pull requests to the [development](https://github.com/kofrasa/mingo/tree/development) branch
 * Squash changes into one commit
-* Run `make test` to ensure build and tests pass
+* Run `make` to ensure tests pass
 
 ## License
 MIT
