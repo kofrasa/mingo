@@ -17,7 +17,7 @@ UGLIFY = node_modules/.bin/uglifyjs
 all: test
 
 
-release: prepare build.es6 compress bower.json package.json
+release: clean test prepare build.es6 compress bower.json package.json
 	@echo "\033[0;32mBUILD SUCCEEDED"
 
 

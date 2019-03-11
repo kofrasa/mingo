@@ -1,4 +1,4 @@
-// mingo.js 2.2.12
+// mingo.js 2.3.0
 // Copyright (c) 2019 Francis Asante
 // MIT
 
@@ -247,8 +247,8 @@ function reduce (collection, fn, accumulator) {
  * @return {Array}    Result array
  */
 function intersection (xs, ys) {
-  let hashes = ys.map(v => getHash(v));
-  return xs.filter(v => inArray(hashes, getHash(v)))
+  let hashes = ys.map(hashCode);
+  return xs.filter(v => inArray(hashes, hashCode(v)))
 }
 
 /**
@@ -269,7 +269,6 @@ function union (xs, ys) {
  * @param {Number} depth The number of nested lists to iterate
  */
 function flatten (xs, depth = -1) {
-  assert(isArray(xs), 'Input must be an Array');
   let arr = [];
   function flatten2(ys, iter) {
     for (let i = 0, len = ys.length; i < len; i++) {
@@ -368,7 +367,7 @@ function unique (xs) {
   let h = {};
   let arr = [];
   each(xs, (item) => {
-    let k = getHash(item);
+    let k = hashCode(item);
     if (!has(h, k)) {
       arr.push(item);
       h[k] = 0;
@@ -415,7 +414,7 @@ function encode (value) {
  * @param value
  * @returns {*}
  */
-function getHash (value) {
+function hashCode (value) {
   if (isNil(value)) return null
 
   let hash = 0;
@@ -460,7 +459,7 @@ function sortBy (collection, fn, cmp) {
       // objects with null keys will go in first
       result.push(obj);
     } else {
-      let hash = getHash(obj);
+      let hash = hashCode(obj);
       if (!has(sortKeys, hash)) {
         sortKeys[hash] = [key, i];
       }
@@ -469,8 +468,8 @@ function sortBy (collection, fn, cmp) {
   }
   // use native array sorting but enforce stableness
   sorted.sort((a, b) => {
-    let A = sortKeys[getHash(a)];
-    let B = sortKeys[getHash(b)];
+    let A = sortKeys[hashCode(a)];
+    let B = sortKeys[hashCode(b)];
     let res = cmp(A[0], B[0]);
     if (!res) {
       if (A[1] < B[1]) return -1
@@ -496,7 +495,7 @@ function groupBy (collection, fn) {
   let lookup = {};
   each(collection, (obj) => {
     let key = fn(obj);
-    let hash = getHash(key);
+    let hash = hashCode(key);
     let index = -1;
 
     if (lookup[hash] === undefined) {
@@ -556,7 +555,7 @@ function findInsertIndex (array, item) {
 function memoize (fn) {
   return ((cache) => {
     return (...args) => {
-      let key = getHash(args);
+      let key = hashCode(args);
       if (!has(cache, key)) {
         cache[key] = fn.apply(this, args);
       }
@@ -613,7 +612,7 @@ const arithmeticOperators = {
   $ceil (obj, expr) {
     let arg = computeValue(obj, expr);
     if (isNil(arg)) return null
-    assert(isNumber(arg) || isNaN(arg), '$ceil must be a valid expression that resolves to a number.');
+    assert(isNumber(arg) || isNaN(arg), '$ceil expression must resolve to a number.');
     return Math.ceil(arg)
   },
 
@@ -639,7 +638,7 @@ const arithmeticOperators = {
   $exp (obj, expr) {
     let arg = computeValue(obj, expr);
     if (isNil(arg)) return null
-    assert(isNumber(arg) || isNaN(arg), '$exp must be a valid expression that resolves to a number.');
+    assert(isNumber(arg) || isNaN(arg), '$exp expression must resolve to a number.');
     return Math.exp(arg)
   },
 
@@ -653,7 +652,7 @@ const arithmeticOperators = {
   $floor (obj, expr) {
     let arg = computeValue(obj, expr);
     if (isNil(arg)) return null
-    assert(isNumber(arg) || isNaN(arg), '$floor must be a valid expression that resolves to a number.');
+    assert(isNumber(arg) || isNaN(arg), '$floor expression must resolve to a number.');
     return Math.floor(arg)
   },
 
@@ -667,7 +666,7 @@ const arithmeticOperators = {
   $ln (obj, expr) {
     let arg = computeValue(obj, expr);
     if (isNil(arg)) return null
-    assert(isNumber(arg) || isNaN(arg), '$ln must be a valid expression that resolves to a number.');
+    assert(isNumber(arg) || isNaN(arg), '$ln expression must resolve to a number.');
     return Math.log(arg)
   },
 
@@ -680,9 +679,10 @@ const arithmeticOperators = {
    */
   $log (obj, expr) {
     let args = computeValue(obj, expr);
-    assert(isArray(args) && args.length === 2, '$log must be a valid expression that resolves to an array of 2 items');
+    const msg = '$log expression must resolve to array(2) of numbers';
+    assert(isArray(args) && args.length === 2, msg);
     if (args.some(isNil)) return null
-    assert(args.some(isNaN) || args.every(isNumber), '$log expression must resolve to array of 2 numbers');
+    assert(args.some(isNaN) || args.every(isNumber), msg);
     return Math.log10(args[0]) / Math.log10(args[1])
   },
 
@@ -696,7 +696,7 @@ const arithmeticOperators = {
   $log10 (obj, expr) {
     let arg = computeValue(obj, expr);
     if (isNil(arg)) return null
-    assert(isNumber(arg) || isNaN(arg), '$log10 must be a valid expression that resolves to a number.');
+    assert(isNumber(arg) || isNaN(arg), '$log10 expression must resolve to a number.');
     return Math.log10(arg)
   },
 
@@ -734,7 +734,7 @@ const arithmeticOperators = {
   $pow (obj, expr) {
     let args = computeValue(obj, expr);
 
-    assert(isArray(args) && args.length === 2 && args.every(isNumber), '$pow expression must resolve to an array of 2 numbers');
+    assert(isArray(args) && args.length === 2 && args.every(isNumber), '$pow expression must resolve to array(2) of numbers');
     assert(!(args[0] === 0 && args[1] < 0), '$pow cannot raise 0 to a negative exponent');
 
     return Math.pow(args[0], args[1])
@@ -791,7 +791,7 @@ const arrayOperators = {
    */
   $arrayElemAt (obj, expr) {
     let arr = computeValue(obj, expr);
-    assert(isArray(arr) && arr.length === 2, '$arrayElemAt expression must resolve to an array of 2 elements');
+    assert(isArray(arr) && arr.length === 2, '$arrayElemAt expression must resolve to array(2)');
     assert(isArray(arr[0]), 'First operand to $arrayElemAt must resolve to an array');
     assert(isNumber(arr[1]), 'Second operand to $arrayElemAt must resolve to an integer');
     let idx = arr[1];
@@ -1312,7 +1312,7 @@ class Iterator {
     return this
   }
 
-  //// Iteratees methods //////
+  // Iteratees methods
 
   /**
    * Transform each item in the sequence to a new value
@@ -1346,7 +1346,7 @@ class Iterator {
     return n > 0 ? this._push({ type: LAZY_DROP, func: n }) : this
   }
 
-  //////// Transformations ////////
+  // Transformations
 
   /**
    * Returns a new lazy object with results of the transformation
@@ -1375,8 +1375,6 @@ class Iterator {
     this.__first = true;
     return this
   }
-
-  ////////////////////////////////////////////////////////////////
 
   // Terminal methods
 
@@ -1522,63 +1520,62 @@ function $bucketAuto (collection, expr, opt) {
 
   return collection.transform(coll => {
     let approxBucketSize = Math.max(1, Math.round(coll.length / bucketCount));
+    let computeValueOptimized = memoize(computeValue);
+    let grouped = {};
+    let remaining = [];
 
-      let computeValueOptimized = memoize(computeValue);
-      let grouped = {};
-      let remaining = [];
-      let sorted = sortBy(coll, (o) => {
-        let key = computeValueOptimized(o, groupByExpr);
-        if (isNil(key)) {
-          remaining.push(o);
-        } else {
-          grouped[key] || (grouped[key] = []);
-          grouped[key].push(o);
+    let sorted = sortBy(coll, o => {
+      let key = computeValueOptimized(o, groupByExpr);
+      if (isNil(key)) {
+        remaining.push(o);
+      } else {
+        grouped[key] || (grouped[key] = []);
+        grouped[key].push(o);
+      }
+      return key
+    });
+
+    const ID_KEY = idKey();
+    let result = [];
+    let index = 0; // counter for sorted collection
+
+    for (let i = 0, len = sorted.length; i < bucketCount && index < len; i++) {
+      let boundaries = {};
+      let bucketItems = [];
+
+      for (let j = 0; j < approxBucketSize && index < len; j++) {
+        let key = computeValueOptimized(sorted[index], groupByExpr);
+
+        if (isNil(key)) key = null;
+
+        // populate current bucket with all values for current key
+        into(bucketItems, isNil(key) ? remaining : grouped[key]);
+
+        // increase sort index by number of items added
+        index += (isNil(key) ? remaining.length : grouped[key].length);
+
+        // set the min key boundary if not already present
+        if (!has(boundaries, 'min')) boundaries.min = key;
+
+        if (result.length > 0) {
+          let lastBucket = result[result.length - 1];
+          lastBucket[ID_KEY].max = boundaries.min;
         }
-        return key
-      });
-
-      const ID_KEY = idKey();
-      let result = [];
-      let index = 0; // counter for sorted collection
-
-      for (let i = 0, len = sorted.length; i < bucketCount && index < len; i++) {
-        let boundaries = {};
-        let bucketItems = [];
-
-        for (let j = 0; j < approxBucketSize && index < len; j++) {
-          let key = computeValueOptimized(sorted[index], groupByExpr);
-
-          if (isNil(key)) key = null;
-
-          // populate current bucket with all values for current key
-          into(bucketItems, isNil(key) ? remaining : grouped[key]);
-
-          // increase sort index by number of items added
-          index += (isNil(key) ? remaining.length : grouped[key].length);
-
-          // set the min key boundary if not already present
-          if (!has(boundaries, 'min')) boundaries.min = key;
-
-          if (result.length > 0) {
-            let lastBucket = result[result.length - 1];
-            lastBucket[ID_KEY].max = boundaries.min;
-          }
-        }
-
-        // if is last bucket add remaining items
-        if (i == bucketCount - 1) {
-          into(bucketItems, sorted.slice(index));
-        }
-
-        result.push(Object.assign(accumulate(bucketItems, null, outputExpr), { '_id': boundaries }));
       }
 
-      if (result.length > 0) {
-        result[result.length - 1][ID_KEY].max = computeValueOptimized(sorted[sorted.length - 1], groupByExpr);
+      // if is last bucket add remaining items
+      if (i == bucketCount - 1) {
+        into(bucketItems, sorted.slice(index));
       }
 
-      return result
+      result.push(Object.assign(accumulate(bucketItems, null, outputExpr), { '_id': boundaries }));
+    }
 
+    if (result.length > 0) {
+      result[result.length - 1][ID_KEY].max = computeValueOptimized(sorted[sorted.length - 1], groupByExpr);
+    }
+
+    return result
   })
 }
 
@@ -1687,13 +1684,13 @@ function $lookup (collection, expr, opt) {
   let hash = {};
 
   each(joinColl, obj => {
-    let k = getHash(obj[foreignField], { nullIfEmpty: true });
+    let k = hashCode(obj[foreignField]);
     hash[k] = hash[k] || [];
     hash[k].push(obj);
   });
 
   return collection.map(obj => {
-    let k = getHash(obj[localField], { nullIfEmpty: true });
+    let k = hashCode(obj[localField]);
     let newObj = clone(obj);
     newObj[asField] = hash[k] || [];
     return newObj
@@ -1726,7 +1723,7 @@ function $match (collection, expr, opt) {
  * @returns {*}
  */
 function $out (collection, expr, opt) {
-  assert(isArray(expr), '$out: argument must be an array');
+  assert(isArray(expr), '$out expression must be an array');
   return collection.map(o => {
     expr.push(o);
     return o // passthrough
@@ -1991,14 +1988,15 @@ function $sort (collection, sortKeys, opt) {
     let cmp = compare;
     let collationSpec = opt['collation'];
 
-    if (isObject(collationSpec)) {
-      // TODO: create a new "cmp" based on the collationSpec.
+    // use collation comparator if provided
+    if (isObject(collationSpec) && isString(collationSpec.locale)) {
+      cmp = collationComparator(collationSpec);
     }
 
     return collection.transform(coll => {
       let modifiers = keys(sortKeys);
 
-      each(modifiers.reverse(), (key) => {
+      each(modifiers.reverse(), key => {
         let grouped = groupBy(coll, obj => resolve(obj, key));
         let sortedIndex = {};
 
@@ -2017,6 +2015,58 @@ function $sort (collection, sortKeys, opt) {
   }
 
   return collection
+}
+
+// MongoDB collation strength to JS localeCompare sensitivity mapping.
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare
+const COLLATION_STRENGTH = {
+  // Only strings that differ in base letters compare as unequal. Examples: a ≠ b, a = á, a = A.
+  1: 'base',
+  //  Only strings that differ in base letters or accents and other diacritic marks compare as unequal.
+  // Examples: a ≠ b, a ≠ á, a = A.
+  2: 'accent',
+  // Strings that differ in base letters, accents and other diacritic marks, or case compare as unequal.
+  // Other differences may also be taken into consideration. Examples: a ≠ b, a ≠ á, a ≠ A
+  3: 'variant',
+  // case - Only strings that differ in base letters or case compare as unequal. Examples: a ≠ b, a = á, a ≠ A.
+};
+
+/**
+ * Creates a comparator function for the given collation spec. See https://docs.mongodb.com/manual/reference/collation/
+ *
+ * @param spec {Object} The MongoDB collation spec.
+ * {
+ *   locale: <string>,
+ *   caseLevel: <boolean>,
+ *   caseFirst: <string>,
+ *   strength: <int>,
+ *   numericOrdering: <boolean>,
+ *   alternate: <string>,
+ *   maxVariable: <string>, // unsupported
+ *   backwards: <boolean> // unsupported
+ * }
+ */
+function collationComparator(spec) {
+
+  let localeOpt = {
+    sensitivity: COLLATION_STRENGTH[spec.strength || 3],
+    caseFirst: spec.caseFirst === 'off' ? 'false' : (spec.caseFirst || 'false'),
+    numeric: spec.numericOrdering || false,
+    ignorePunctuation: spec.alternate === 'shifted'
+  };
+
+  // when caseLevel is true for strength  1:base and 2:accent, bump sensitivity to the nearest that supports case comparison
+  if ((spec.caseLevel || false) === true) {
+    if (localeOpt.sensitivity === 'base') localeOpt.sensitivity = 'case';
+    if (localeOpt.sensitivity === 'accent') localeOpt.sensitivity = 'variant';
+  }
+
+  return (a, b) => {
+    let i = a.localeCompare(b, spec.locale, localeOpt);
+    if (i < 0) return -1
+    if (i > 0) return 1
+    return 0
+  }
 }
 
 /**
@@ -2099,8 +2149,8 @@ function $unwind(collection, expr, opt) {
           });
         }
       } else if (!isEmpty(value) || preserveNullAndEmptyArrays === true) {
-        let tmp = format(cloneDeep(obj), null);
-        return { value: tmp, done: false }
+        let tmp = cloneDeep(obj);
+        return { value: format(tmp, null), done: false }
       }
     }
   })
@@ -2157,7 +2207,7 @@ class Aggregator {
       // run aggregation pipeline
       each(this.__operators, (operator) => {
         let key = keys(operator);
-        assert(key.length === 1 && inArray(ops(OP_PIPELINE), key[0]), `Invalid aggregation operator ${key}`);
+        assert(key.length === 1 && inArray(ops(OP_PIPELINE), key[0]), `invalid aggregation operator ${key}`);
         key = key[0];
         if (query && query instanceof Query) {
           collection = pipelineOperators[key].call(query, collection, operator[key], this.__options);
@@ -2181,9 +2231,9 @@ class Aggregator {
 
 /**
  * Return the result collection after running the aggregation pipeline for the given collection.
- * Shorthand for `agg.run(input).value()`
+ * Shorthand for `(new Aggregator(pipeline, options)).run(collection)`
  *
- * @param {Array} collection A collection of objects
+ * @param {Array} collection Collection or stream of objects
  * @param {Array} pipeline The pipeline operators to use
  * @returns {Array}
  */
@@ -2276,7 +2326,7 @@ class Cursor {
   }
 
   /**
-   * Not yet supported
+   * Specifies the collation for the cursor returned by the `mingo.Query.find`
    * @param {*} options
    */
   collation (options) {
@@ -2455,8 +2505,8 @@ function remove (collection, criteria) {
 /**
  * Query and Projection Operators. https://docs.mongodb.com/manual/reference/operator/query/
  */
-function sameType(a, b) {
-  return getType(a) === getType(b)
+function $cmp(a, b, fn) {
+  return ensureArray(a).some(x => getType(x) === getType(b) && fn(x,b))
 }
 
 const simpleOperators = {
@@ -2528,7 +2578,7 @@ const simpleOperators = {
    * @returns {boolean}
    */
   $lt (a, b) {
-    return ensureArray(a).find((x) => sameType(x, b) && x < b) !== undefined
+    return $cmp(a, b, (x,y) => x < y)
   },
 
   /**
@@ -2539,7 +2589,7 @@ const simpleOperators = {
    * @returns {boolean}
    */
   $lte (a, b) {
-    return ensureArray(a).find((x) => sameType(x, b) && x <= b) !== undefined
+    return $cmp(a, b, (x,y) => x <= y)
   },
 
   /**
@@ -2550,7 +2600,7 @@ const simpleOperators = {
    * @returns {boolean}
    */
   $gt (a, b) {
-    return ensureArray(a).find((x) => sameType(x, b) && x > b) !== undefined
+    return $cmp(a, b, (x,y) => x > y)
   },
 
   /**
@@ -2561,7 +2611,7 @@ const simpleOperators = {
    * @returns {boolean}
    */
   $gte (a, b) {
-    return ensureArray(a).find((x) => sameType(x, b) && x >= b) !== undefined
+    return $cmp(a, b, (x,y) => x >= y)
   },
 
   /**
@@ -2572,7 +2622,7 @@ const simpleOperators = {
    * @returns {boolean}
    */
   $mod (a, b) {
-    return ensureArray(a).find((val) => isNumber(val) && isArray(b) && b.length === 2 && (val % b[0]) === b[1]) !== undefined
+    return ensureArray(a).some(x => isNumber(x) && isArray(b) && b.length === 2 && (x % b[0]) === b[1])
   },
 
   /**
@@ -2584,7 +2634,7 @@ const simpleOperators = {
    */
   $regex (a, b) {
     a = ensureArray(a);
-    let match = (x) => isString(x) && !!x.match(b);
+    let match = (x => isString(x) && !!x.match(b));
     return a.some(match) || flatten(a, 1).some(match)
   },
 
@@ -2596,7 +2646,7 @@ const simpleOperators = {
    * @returns {boolean}
    */
   $exists (a, b) {
-    return ((b === false || b === 0) && isUndefined(a)) || ((b === true || b === 1) && !isUndefined(a))
+    return ((b === false || b === 0) && a === undefined) || ((b === true || b === 1) && a !== undefined)
   },
 
   /**
@@ -2739,7 +2789,7 @@ const queryOperators = {
     assert(isArray(value),'Invalid expression. $or expects value to be an Array');
 
     let queries = [];
-    each(value, (expr) => queries.push(new Query(expr)));
+    each(value, expr => queries.push(new Query(expr)));
 
     return {
       test (obj) {
@@ -2877,7 +2927,7 @@ const conditionalOperators = {
    */
   $cond (obj, expr) {
     let ifExpr, thenExpr, elseExpr;
-    let errorMsg = '$cond: invalid arguments';
+    const errorMsg = '$cond: invalid arguments';
     if (isArray(expr)) {
       assert(expr.length === 3, errorMsg);
       ifExpr = expr[0];
@@ -2902,7 +2952,7 @@ const conditionalOperators = {
    * @param expr
    */
   $switch (obj, expr) {
-    let errorMsg = 'Invalid arguments for $switch operator';
+    const errorMsg = 'Invalid arguments for $switch operator';
     assert(expr.branches, errorMsg);
 
     let validBranch = expr.branches.find((branch) => {
@@ -2927,7 +2977,7 @@ const conditionalOperators = {
    * @returns {*}
    */
   $ifNull (obj, expr) {
-    assert(isArray(expr) && expr.length === 2, 'Invalid arguments for $ifNull operator');
+    assert(isArray(expr) && expr.length === 2, '$ifNull expression must resolve to array(2)');
     let args = computeValue(obj, expr);
     return isNil(args[0]) ? args[1] : args[0]
   }
@@ -3222,7 +3272,7 @@ const stringOperators = {
    */
   $indexOfBytes (obj, expr) {
     let arr = computeValue(obj, expr);
-    let errorMsg = '$indexOfBytes: expression resolves to invalid arguments';
+    const errorMsg = '$indexOfBytes expression resolves to invalid an argument';
 
     if (isNil(arr[0])) return null
 
@@ -3259,7 +3309,7 @@ const stringOperators = {
   $split (obj, expr) {
     let args = computeValue(obj, expr);
     if (isNil(args[0])) return null
-    assert(args.every(isString), '$split: invalid argument');
+    assert(args.every(isString), '$split expression must result to array(2) of strings');
     return args[0].split(args[1])
   },
 
@@ -3297,7 +3347,7 @@ const stringOperators = {
     let a = args[0];
     let b = args[1];
     if (isEqual(a, b) || args.every(isNil)) return 0
-    assert(args.every(isString), '$strcasecmp: invalid argument');
+    assert(args.every(isString), '$strcasecmp must resolve to array(2) of strings');
     a = a.toUpperCase();
     b = b.toUpperCase();
     return (a > b && 1) || (a < b && -1) || 0
@@ -3326,7 +3376,7 @@ const stringOperators = {
     }
     let begin = validIndex.indexOf(index);
     let end = validIndex.indexOf(index + count);
-    assert(begin > -1 && end > -1, '$substrBytes: Invalid range, start or end index is a UTF-8 continuation byte.');
+    assert(begin > -1 && end > -1, '$substrBytes: invalid range, start or end index is a UTF-8 continuation byte.');
     return s.substring(begin, end)
   },
 
@@ -3422,7 +3472,7 @@ const variableOperators = {
 
     // resolve vars
     let varsKeys = keys(varsExpr);
-    each(varsKeys, (key) => {
+    each(varsKeys, key => {
       let val = computeValue(obj, varsExpr[key]);
       let tempKey = '$' + key;
       obj[tempKey] = val;
@@ -4139,7 +4189,7 @@ function _internal () {
     cloneDeep,
     each,
     err,
-    getHash,
+    hashCode,
     getType,
     has,
     idKey,
@@ -4190,7 +4240,7 @@ const CollectionMixin = {
   }
 };
 
-const VERSION = '2.2.12';
+const VERSION = '2.3.0';
 
 // mingo!
 var index = {
