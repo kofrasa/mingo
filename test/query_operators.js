@@ -186,6 +186,49 @@ test('Projection $elemMatch operator', function (t) {
 
 })
 
+test('Query $elemMatch operator', function (t) {
+  var result = mingo.find([
+    { _id: 1, results: [ 82, 85, 88 ] },
+    { _id: 2, results: [ 75, 88, 89 ] }
+  ], { results: { $elemMatch: { $gte: 80, $lt: 85 } } }).all()[0]
+
+  t.deepEqual(result, { "_id" : 1, "results" : [ 82, 85, 88 ] }, 'simple $elemMatch query')
+
+  var products = [
+    { _id: 1, results: [ { product: "abc", score: 10 }, { product: "xyz", score: 5 } ] },
+    { _id: 2, results: [ { product: "abc", score: 8 }, { product: "xyz", score: 7 } ] },
+    { _id: 3, results: [ { product: "abc", score: 7 }, { product: "xyz", score: 8 } ] }
+  ]
+  result = mingo.find(products, { results: { $elemMatch: { product: "xyz", score: { $gte: 8 } } } }).all()[0]
+
+  t.deepEqual(
+    result,
+    { "_id" : 3, "results" : [ { "product" : "abc", "score" : 7 }, { "product" : "xyz", "score" : 8 } ] },
+    '$elemMatch on embedded documents'
+  )
+
+  result = mingo.find(products, { results: { $elemMatch: { product: "xyz" } } }).all()
+  t.deepEqual(result, products, '$elemMatch single document')
+
+  // Test for https://github.com/kofrasa/mingo/issues/103
+  var fixtures = [
+    [ { $eq: 50 } ],
+    [ { $lt: 50 } ],
+    [ { $lte: 50 } ],
+    [ { $gt: 50 } ],
+    [ { $gte: 50 } ]
+  ]
+
+  fixtures.forEach(function (args) {
+    let query = new mingo.Query({ scores: { $elemMatch: args[0] } })
+    let op = Object.keys(args[0])[0]
+    // test if an object matches query
+    t.ok(query.test({ scores: [10, 50, 100] }), "$elemMatch: should filter with " + op)
+  })
+
+  t.end()
+})
+
 test('Evaluate $where last', function (t) {
   t.plan(2)
 
@@ -412,16 +455,6 @@ test('Query array operators', function (t) {
   t.deepEqual(result, [
     { sub: [ { id: 11, name: 'OneOne' }, { id: 22, name: 'TwoTwo' } ] }
   ], "should project all matched elements of nested array")
-
-  // Test for https://github.com/kofrasa/mingo/issues/103
-  let query = new mingo.Query({
-    scores: {
-      $elemMatch: { $lt: 50 }
-    }
-  });
-
-  // test if an object matches query
-  t.ok(query.test({ scores: [10, 50, 100] }), "can match simple array sequence with $elemMatch")
 
   t.end()
 })

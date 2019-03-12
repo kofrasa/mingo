@@ -6,7 +6,7 @@ var _ = mingo._internal()
 
 test('Mingo.Cursor tests', function (t) {
   // create a query with no criteria
-  var query = new mingo.Query()
+  var query = new mingo.Query({})
   function newCursor() {
     return query.find(samples.simpleGradesData)
   }
