@@ -1,6 +1,6 @@
 Changelog
 =========
-## 2.3.0 / 2019-03-11
+## 2.3.0 / 2019-03-12
 - Add support for collation on `Cursor` objects. Fixes #100
 
 ## 2.2.12 / 2019-03-09
