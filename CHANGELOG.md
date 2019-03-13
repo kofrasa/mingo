@@ -1,10 +1,13 @@
 Changelog
 =========
+## 2.3.0 / 2019-03-13
+- Correctly handle subqueries for `$elemMatch`. Fixes #103
+
 ## 2.3.0 / 2019-03-12
 - Add support for collation on `Cursor` objects. Fixes #100
 
 ## 2.2.12 / 2019-03-09
-- Avoid resolving primitive type operands. Fixes #103
+- Avoid resolving primitive type operands.
 
 ## 2.2.11 / 2019-02-18
 - Work around iOS 9 Safari compatibility problem (#98)
