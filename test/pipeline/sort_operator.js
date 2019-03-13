@@ -36,7 +36,7 @@ test('sort with collation', function (t) {
     { "name" : "21" },
     { "name" : "100" },
   ]
-  result = mingo.find(english).collation({locale: "en"}).sort({name: 1}).all()
+  result = mingo.find(english, {}).collation({locale: "en"}).sort({name: 1}).all()
   t.deepEqual(result, [
     { "name" : "100" },
     { "name" : "21" },
@@ -46,7 +46,7 @@ test('sort with collation', function (t) {
     { "name" : "Tom" },
   ], 'can sort with locale')
 
-  result = mingo.find(english).collation({locale: "en", numericOrdering: true}).sort({name: 1}).all()
+  result = mingo.find(english, {}).collation({locale: "en", numericOrdering: true}).sort({name: 1}).all()
   t.deepEqual(result, [
     { "name" : "21" },
     { "name" : "100" },
@@ -65,7 +65,7 @@ test('sort with collation', function (t) {
     {"name": "á"},
     {"name": "A"}
   ]
-  result = mingo.find(french).collation({locale: "fr"}).sort({name: 1}).all()
+  result = mingo.find(french, {}).collation({locale: "fr"}).sort({name: 1}).all()
   t.deepEqual(result, [
     { name: 'a' },
     { name: 'A' },
@@ -76,7 +76,7 @@ test('sort with collation', function (t) {
   ], 'can sort with accented letters')
 
   // upper case letters should come before lower case letters
-  result = mingo.find(french).collation({locale: "fr", caseFirst: 'upper'}).sort({name: 1}).all()
+  result = mingo.find(french, {}).collation({locale: "fr", caseFirst: 'upper'}).sort({name: 1}).all()
   t.deepEqual(result, [
     { name: 'A' },
     { name: 'a' },
@@ -87,7 +87,7 @@ test('sort with collation', function (t) {
   ], 'can sort upper case letters before lower case')
 
   // 1:base compare strength
-  result = mingo.find(french).collation({locale: "fr", strength: 1}).sort({name: 1}).all()
+  result = mingo.find(french, {}).collation({locale: "fr", strength: 1}).sort({name: 1}).all()
   t.deepEqual(result, [
     {"name": "a"},
     {"name": "á"},
@@ -98,7 +98,7 @@ test('sort with collation', function (t) {
   ], 'sort should consider only base differences')
 
   // 2:accent compare strength
-  result = mingo.find(french).collation({locale: "fr", strength: 2}).sort({name: 1}).all()
+  result = mingo.find(french, {}).collation({locale: "fr", strength: 2}).sort({name: 1}).all()
   t.deepEqual(result, [
     {"name": "a"},
     {"name": "A"},
@@ -117,7 +117,7 @@ test('sort with collation', function (t) {
     { "name": "¡Hola!"},
     { "name": "¿qué?" }
   ]
-  result = mingo.find(spanish).collation({locale: 'es'}).sort({name: -1}).all()
+  result = mingo.find(spanish, {}).collation({locale: 'es'}).sort({name: -1}).all()
   t.deepEqual(result, [
     { name: 'Óscar' },
     { name: 'Niño' },
@@ -133,7 +133,7 @@ test('sort with collation', function (t) {
     {name: 'Hello,there'},
     {name: 'Hello  there'},
     {name: 'Hello,there'},
-  ]).collation({locale: 'en', alternate: 'shifted'}).sort().all()
+  ], {}).collation({locale: 'en', alternate: 'shifted'}).sort().all()
   t.deepEqual(result, [
     {name: 'Hello there'},
     {name: 'Hello,there'},

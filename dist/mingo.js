@@ -188,9 +188,7 @@ function has(obj, prop) {
 function err(s) {
   throw new Error(s);
 }
-function keys(o) {
-  return Object.keys(o);
-}
+var keys = Object.keys;
 
 // ////////////////// UTILS ////////////////////
 
@@ -2664,12 +2662,11 @@ var Cursor = function () {
  * @constructor
  */
 var Query = function () {
-  function Query(criteria) {
-    var projection = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  function Query(criteria, projection) {
     classCallCheck(this, Query);
 
     this.__criteria = criteria;
-    this.__projection = projection;
+    this.__projection = projection || {};
     this.__compiled = [];
     this._compile();
   }
@@ -2679,9 +2676,7 @@ var Query = function () {
     value: function _compile() {
       var _this = this;
 
-      if (isEmpty(this.__criteria)) return;
-
-      assert(isObject(this.__criteria), 'Criteria must be of type Object');
+      assert(isObject(this.__criteria), 'query criteria must be an object');
 
       var whereOperator = void 0;
 
@@ -2695,6 +2690,7 @@ var Query = function () {
           _this._processOperator(field, field, expr);
         } else {
           // normalize expression
+          assert(!isOperator(field), 'unknown top level operator: ' + field);
           expr = normalize(expr);
           each(expr, function (val, op) {
             _this._processOperator(field, op, val);
@@ -2996,14 +2992,27 @@ var simpleOperators = {
   /**
    * Selects documents if element in the array field matches all the specified $elemMatch condition.
    *
-   * @param a
-   * @param b
+   * @param a {Array} element to match against
+   * @param b {Object} subquery
    */
   $elemMatch: function $elemMatch(a, b) {
     if (isArray(a) && !isEmpty(a)) {
-      var query = new Query(b);
+      var format = function format(x) {
+        return x;
+      };
+      var criteria = b;
+
+      // If we find an operator in the subquery, we fake a field to point to it.
+      // This is an attempt to ensure that it a valid criteria.
+      if (keys(b).every(isOperator)) {
+        criteria = { temp: b };
+        format = function format(x) {
+          return { temp: x };
+        };
+      }
+      var query = new Query(criteria);
       for (var i = 0, len = a.length; i < len; i++) {
-        if (query.test(a[i])) {
+        if (query.test(format(a[i]))) {
           return true;
         }
       }
@@ -4360,6 +4369,15 @@ function removeValue(obj, selector) {
 }
 
 /**
+ * Check whether the given name is an operator. We assume any field name starting with '$' is an operator.
+ * This is cheap and safe to do since keys beginning with '$' should be reserved for internal use.
+ * @param {String} name
+ */
+function isOperator(name) {
+  return !!name && name[0] === '$';
+}
+
+/**
  * Simplify expression for easy evaluation with query operators map
  * @param expr
  * @returns {*}
@@ -4373,10 +4391,9 @@ function normalize(expr) {
   // normalize object expression
   if (isObjectLike(expr)) {
     var exprKeys = keys(expr);
-    var noQuery = intersection(ops(OP_QUERY), exprKeys).length === 0;
 
     // no valid query operator found, so we do simple comparison
-    if (noQuery) {
+    if (!exprKeys.some(isOperator)) {
       return { '$eq': expr };
     }
 
