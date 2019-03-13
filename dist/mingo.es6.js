@@ -143,7 +143,7 @@ function isEmpty (x) {
 function ensureArray (x) { return isArray(x) ? x : [x] }
 function has (obj, prop) { return obj.hasOwnProperty(prop) }
 function err (s) { throw new Error(s) }
-function keys (o) { return Object.keys(o) }
+const keys = Object.keys;
 
 // ////////////////// UTILS ////////////////////
 
@@ -2401,17 +2401,15 @@ class Cursor {
  */
 class Query {
 
-  constructor (criteria, projection = {}) {
+  constructor (criteria, projection) {
     this.__criteria = criteria;
-    this.__projection = projection;
+    this.__projection = projection || {};
     this.__compiled = [];
     this._compile();
   }
 
   _compile () {
-    if (isEmpty(this.__criteria)) return
-
-    assert(isObject(this.__criteria), 'Criteria must be of type Object');
+    assert(isObject(this.__criteria), 'query criteria must be an object');
 
     let whereOperator;
 
@@ -2425,6 +2423,7 @@ class Query {
         this._processOperator(field, field, expr);
       } else {
         // normalize expression
+        assert(!isOperator(field), `unknown top level operator: ${field}`);
         expr = normalize(expr);
         each(expr, (val, op) => {
           this._processOperator(field, op, val);
@@ -2685,14 +2684,23 @@ const simpleOperators = {
   /**
    * Selects documents if element in the array field matches all the specified $elemMatch condition.
    *
-   * @param a
-   * @param b
+   * @param a {Array} element to match against
+   * @param b {Object} subquery
    */
   $elemMatch (a, b) {
     if (isArray(a) && !isEmpty(a)) {
-      let query = new Query(b);
+      let format = x => x;
+      let criteria = b;
+
+      // If we find an operator in the subquery, we fake a field to point to it.
+      // This is an attempt to ensure that it a valid criteria.
+      if (keys(b).every(isOperator)) {
+        criteria = { temp: b };
+        format = x => { return { temp: x } };
+      }
+      let query = new Query(criteria);
       for (let i = 0, len = a.length; i < len; i++) {
-        if (query.test(a[i])) {
+        if (query.test(format(a[i]))) {
           return true
         }
       }
@@ -4008,6 +4016,15 @@ function removeValue (obj, selector) {
 }
 
 /**
+ * Check whether the given name is an operator. We assume any field name starting with '$' is an operator.
+ * This is cheap and safe to do since keys beginning with '$' should be reserved for internal use.
+ * @param {String} name
+ */
+function isOperator(name) {
+  return !!name && name[0] === '$'
+}
+
+/**
  * Simplify expression for easy evaluation with query operators map
  * @param expr
  * @returns {*}
@@ -4021,10 +4038,9 @@ function normalize (expr) {
   // normalize object expression
   if (isObjectLike(expr)) {
     let exprKeys = keys(expr);
-    let noQuery = intersection(ops(OP_QUERY), exprKeys).length === 0;
 
     // no valid query operator found, so we do simple comparison
-    if (noQuery) {
+    if (!exprKeys.some(isOperator)) {
       return { '$eq': expr }
     }
 
