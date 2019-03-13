@@ -1,6 +1,6 @@
 Changelog
 =========
-## 2.3.0 / 2019-03-13
+## 2.3.1 / 2019-03-13
 - Correctly handle subqueries for `$elemMatch`. Fixes #103
 
 ## 2.3.0 / 2019-03-12
