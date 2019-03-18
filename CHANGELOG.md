@@ -1,6 +1,6 @@
 Changelog
 =========
-## 2.3.2 / 2019-03-x
+## 2.3.2 / 2019-03-18
 - Fix sorting non-string values when collation is enabled.
 
 ## 2.3.1 / 2019-03-13

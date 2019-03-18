@@ -1,4 +1,4 @@
-// mingo.js 2.3.1
+// mingo.js 2.3.2
 // Copyright (c) 2019 Francis Asante
 // MIT
 
@@ -198,13 +198,12 @@ function objectMap (obj, fn, ctx) {
  */
 function merge(target, obj) {
   // take care of null inputs
-  if (!isObject(target) && !isArray(obj) || !isObject(target) && !isArray(obj)) return obj
-  if (!(isArray(target) && isArray(obj) || isObject(target) && isObject(obj))) {
-    throw Error('mismatched types. must both be array or object')
-  }
+  const inputs = [target, obj];
+
+  if (!(inputs.every(isObject) || inputs.every(isArray))) throw Error('mismatched types. must both be array or object')
 
   if (isArray(target)) {
-    let flatten = target.every(v => isObject(v)) && obj.every(v => isObject(v)) && target.length === obj.length;
+    let flatten = target.length === obj.length && target.every(isObject) && obj.every(isObject);
     if (flatten) {
       for (let i = 0; i < target.length; i++) {
         merge(target[i], obj[i]);
@@ -2062,6 +2061,10 @@ function collationComparator(spec) {
   }
 
   return (a, b) => {
+    // non strings
+    if (!isString(a) || !isString(b)) return compare(a, b)
+
+    // only for strings
     let i = a.localeCompare(b, spec.locale, localeOpt);
     if (i < 0) return -1
     if (i > 0) return 1
@@ -4256,7 +4259,7 @@ const CollectionMixin = {
   }
 };
 
-const VERSION = '2.3.1';
+const VERSION = '2.3.2';
 
 // mingo!
 var index = {
