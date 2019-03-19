@@ -1,5 +1,8 @@
 Changelog
 =========
+## 2.3.3 / 2019-03-20
+- Improve sort performance
+
 ## 2.3.2 / 2019-03-18
 - Fix sorting non-string values when collation is enabled.
 

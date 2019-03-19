@@ -1,4 +1,4 @@
-// mingo.js 2.3.2
+// mingo.js 2.3.3
 // Copyright (c) 2019 Francis Asante
 // MIT
 
@@ -500,38 +500,38 @@ function compare(a, b) {
  * @return {Array} Returns a new sorted array by the given iteratee
  */
 function sortBy(collection, fn, cmp) {
-  var sortKeys = {};
   var sorted = [];
-  var len = collection.length;
   var result = [];
+  var hash = {};
   cmp = cmp || compare;
 
-  for (var i = 0; i < len; i++) {
+  if (isEmpty(collection)) return collection;
+
+  for (var i = 0; i < collection.length; i++) {
     var obj = collection[i];
     var key = fn(obj, i);
+
+    // objects with nil keys will go in first
     if (isNil(key)) {
-      // objects with null keys will go in first
       result.push(obj);
     } else {
-      var hash = hashCode(obj);
-      if (!has(sortKeys, hash)) {
-        sortKeys[hash] = [key, i];
+      if (hash[key]) {
+        hash[key].push(obj);
+      } else {
+        hash[key] = [obj];
       }
-      sorted.push(obj);
+      sorted.push(key);
     }
   }
+
   // use native array sorting but enforce stableness
-  sorted.sort(function (a, b) {
-    var A = sortKeys[hashCode(a)];
-    var B = sortKeys[hashCode(b)];
-    var res = cmp(A[0], B[0]);
-    if (!res) {
-      if (A[1] < B[1]) return -1;
-      if (A[1] > B[1]) return 1;
-    }
-    return res;
-  });
-  return into(result, sorted);
+  sorted.sort(cmp);
+
+  for (var _i = 0; _i < sorted.length; _i++) {
+    into(result, hash[sorted[_i]]);
+  }
+
+  return result;
 }
 
 /**
@@ -2177,42 +2177,40 @@ function $skip(collection, value, opt) {
  * @returns {*}
  */
 function $sort(collection, sortKeys, opt) {
-  if (!isEmpty(sortKeys) && isObject(sortKeys)) {
-    opt = opt || {};
-    var cmp = compare;
-    var collationSpec = opt['collation'];
+  if (isEmpty(sortKeys) || !isObject(sortKeys)) return collection;
 
-    // use collation comparator if provided
-    if (isObject(collationSpec) && isString(collationSpec.locale)) {
-      cmp = collationComparator(collationSpec);
-    }
+  opt = opt || {};
+  var cmp = compare;
+  var collationSpec = opt['collation'];
 
-    return collection.transform(function (coll) {
-      var modifiers = keys(sortKeys);
-
-      each(modifiers.reverse(), function (key) {
-        var grouped = groupBy(coll, function (obj) {
-          return resolve(obj, key);
-        });
-        var sortedIndex = {};
-
-        var indexKeys = sortBy(grouped.keys, function (k, i) {
-          sortedIndex[k] = i;
-          return k;
-        }, cmp);
-
-        if (sortKeys[key] === -1) indexKeys.reverse();
-        coll = [];
-        each(indexKeys, function (k) {
-          return into(coll, grouped.groups[sortedIndex[k]]);
-        });
-      });
-
-      return coll;
-    });
+  // use collation comparator if provided
+  if (isObject(collationSpec) && isString(collationSpec.locale)) {
+    cmp = collationComparator(collationSpec);
   }
 
-  return collection;
+  return collection.transform(function (coll) {
+    var modifiers = keys(sortKeys);
+
+    each(modifiers.reverse(), function (key) {
+      var grouped = groupBy(coll, function (obj) {
+        return resolve(obj, key);
+      });
+      var sortedIndex = {};
+
+      var indexKeys = sortBy(grouped.keys, function (k, i) {
+        sortedIndex[k] = i;
+        return k;
+      }, cmp);
+
+      if (sortKeys[key] === -1) indexKeys.reverse();
+      coll = [];
+      each(indexKeys, function (k) {
+        return into(coll, grouped.groups[sortedIndex[k]]);
+      });
+    });
+
+    return coll;
+  });
 }
 
 // MongoDB collation strength to JS localeCompare sensitivity mapping.
@@ -2258,12 +2256,14 @@ var COLLATION_STRENGTH = {
     if (localeOpt.sensitivity === 'accent') localeOpt.sensitivity = 'variant';
   }
 
+  var collator = new Intl.Collator(spec.locale, localeOpt);
+
   return function (a, b) {
     // non strings
     if (!isString(a) || !isString(b)) return compare(a, b);
 
     // only for strings
-    var i = a.localeCompare(b, spec.locale, localeOpt);
+    var i = collator.compare(a, b);
     if (i < 0) return -1;
     if (i > 0) return 1;
     return 0;
@@ -4622,7 +4622,7 @@ var CollectionMixin = {
   }
 };
 
-var VERSION = '2.3.2';
+var VERSION = '2.3.3';
 
 // mingo!
 var index = {
