@@ -1,4 +1,4 @@
-// mingo.js 2.3.2
+// mingo.js 2.3.3
 // Copyright (c) 2019 Francis Asante
 // MIT
 
@@ -445,38 +445,38 @@ function compare (a, b) {
  * @return {Array} Returns a new sorted array by the given iteratee
  */
 function sortBy (collection, fn, cmp) {
-  let sortKeys = {};
   let sorted = [];
-  let len = collection.length;
   let result = [];
+  let hash = {};
   cmp = cmp || compare;
 
-  for (let i = 0; i < len; i++) {
+  if (isEmpty(collection)) return collection
+
+  for (let i = 0; i < collection.length; i++) {
     let obj = collection[i];
     let key = fn(obj, i);
+
+    // objects with nil keys will go in first
     if (isNil(key)) {
-      // objects with null keys will go in first
       result.push(obj);
     } else {
-      let hash = hashCode(obj);
-      if (!has(sortKeys, hash)) {
-        sortKeys[hash] = [key, i];
+      if (hash[key]) {
+        hash[key].push(obj);
+      } else {
+        hash[key] = [obj];
       }
-      sorted.push(obj);
+      sorted.push(key);
     }
   }
+
   // use native array sorting but enforce stableness
-  sorted.sort((a, b) => {
-    let A = sortKeys[hashCode(a)];
-    let B = sortKeys[hashCode(b)];
-    let res = cmp(A[0], B[0]);
-    if (!res) {
-      if (A[1] < B[1]) return -1
-      if (A[1] > B[1]) return 1
-    }
-    return res
-  });
-  return into(result, sorted)
+  sorted.sort(cmp);
+
+  for (let i = 0; i < sorted.length; i++) {
+    into(result, hash[sorted[i]]);
+  }
+
+  return result
 }
 
 /**
@@ -492,7 +492,7 @@ function groupBy (collection, fn) {
     'groups': []
   };
   let lookup = {};
-  each(collection, (obj) => {
+  each(collection, obj => {
     let key = fn(obj);
     let hash = hashCode(key);
     let index = -1;
@@ -1982,38 +1982,36 @@ function $skip (collection, value, opt) {
  * @returns {*}
  */
 function $sort (collection, sortKeys, opt) {
-  if (!isEmpty(sortKeys) && isObject(sortKeys)) {
-    opt = opt || {};
-    let cmp = compare;
-    let collationSpec = opt['collation'];
+  if (isEmpty(sortKeys) || !isObject(sortKeys)) return collection
 
-    // use collation comparator if provided
-    if (isObject(collationSpec) && isString(collationSpec.locale)) {
-      cmp = collationComparator(collationSpec);
-    }
+  opt = opt || {};
+  let cmp = compare;
+  let collationSpec = opt['collation'];
 
-    return collection.transform(coll => {
-      let modifiers = keys(sortKeys);
-
-      each(modifiers.reverse(), key => {
-        let grouped = groupBy(coll, obj => resolve(obj, key));
-        let sortedIndex = {};
-
-        let indexKeys = sortBy(grouped.keys, (k, i) => {
-          sortedIndex[k] = i;
-          return k
-        }, cmp);
-
-        if (sortKeys[key] === -1) indexKeys.reverse();
-        coll = [];
-        each(indexKeys, k => into(coll, grouped.groups[sortedIndex[k]]));
-      });
-
-      return coll
-    })
+  // use collation comparator if provided
+  if (isObject(collationSpec) && isString(collationSpec.locale)) {
+    cmp = collationComparator(collationSpec);
   }
 
-  return collection
+  return collection.transform(coll => {
+    let modifiers = keys(sortKeys);
+
+    each(modifiers.reverse(), key => {
+      let grouped = groupBy(coll, obj => resolve(obj, key));
+      let sortedIndex = {};
+
+      let indexKeys = sortBy(grouped.keys, (k, i) => {
+        sortedIndex[k] = i;
+        return k
+      }, cmp);
+
+      if (sortKeys[key] === -1) indexKeys.reverse();
+      coll = [];
+      each(indexKeys, k => into(coll, grouped.groups[sortedIndex[k]]));
+    });
+
+    return coll
+  })
 }
 
 // MongoDB collation strength to JS localeCompare sensitivity mapping.
@@ -2060,12 +2058,14 @@ function collationComparator(spec) {
     if (localeOpt.sensitivity === 'accent') localeOpt.sensitivity = 'variant';
   }
 
+  const collator = new Intl.Collator(spec.locale, localeOpt);
+
   return (a, b) => {
     // non strings
     if (!isString(a) || !isString(b)) return compare(a, b)
 
     // only for strings
-    let i = a.localeCompare(b, spec.locale, localeOpt);
+    let i = collator.compare(a, b);
     if (i < 0) return -1
     if (i > 0) return 1
     return 0
@@ -4259,7 +4259,7 @@ const CollectionMixin = {
   }
 };
 
-const VERSION = '2.3.2';
+const VERSION = '2.3.3';
 
 // mingo!
 var index = {
