@@ -456,13 +456,47 @@ test('Query array operators', function (t) {
     { sub: [ { id: 11, name: 'OneOne' }, { id: 22, name: 'TwoTwo' } ] }
   ], "should project all matched elements of nested array")
 
-  // https://github.com/kofrasa/mingo/issues/105
+  // https://github.com/kofrasa/mingo/issues/105 - fix merging distinct objects during projection
   var result = mingo.find([ { items: [ { from: 1 }, { to: 2 } ] } ], {}, { 'items.from': 1, 'items.to': 1 }).all();
-  t.deepEqual(result, [ { items: [ { from: 1 }, { to: 2 } ] } ], "should project nested elements")
+  t.deepEqual(result, [ { items: [ { from: 1 }, { to: 2 } ] } ], "should project multiple nested elements")
 
   // extended test for missing keys of nested values
   var result = mingo.find([ { items: [ { from: 1, to: null }, { to: 2 } ] } ], {}, { 'items.from': 1, 'items.to': 1 }).all();
-  t.deepEqual(result, [ { items: [ { from: 1, to: null }, { to: 2 } ] } ], "should project nested elements with missing keys")
+  t.deepEqual(result, [ { items: [ { from: 1, to: null }, { to: 2 } ] } ], "project multiple nested elements with missing keys")
+
+  // https://github.com/kofrasa/mingo/issues/106 - fix nested elements splitting after projection due to out of order matching
+  result = mingo.find(
+    [
+      {
+        history: [
+          {
+              "user" : "Jeff",
+              "notes" : "asdf"
+          }, {
+              "user" : "Gary",
+          }
+        ]
+      }
+    ],
+    {},
+    {
+      'history.user' : 1,
+      'history.notes' : 1
+    }
+  ).all()
+
+  t.deepEqual(result, [
+    {
+      history: [
+        {
+            "user" : "Jeff",
+            "notes" : "asdf"
+        }, {
+            "user" : "Gary",
+        }
+      ]
+    }
+  ], "project multiple nested objects with missing keys and matched out of order")
 
   t.end()
 })
