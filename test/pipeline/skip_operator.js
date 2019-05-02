@@ -1,7 +1,6 @@
 var test = require('tape')
 var mingo = require('../../dist/mingo')
 var samples = require('../support')
-var _ = mingo._internal()
 
 test("$skip pipeline operator", function (t) {
   t.plan(1);

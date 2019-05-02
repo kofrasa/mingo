@@ -1,7 +1,4 @@
-var test = require('tape')
-var mingo = require('../../dist/mingo')
 var samples = require('../support')
-var _ = mingo._internal()
 
 samples.runTestPipeline("$match pipeline operator", [
   {

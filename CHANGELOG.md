@@ -1,5 +1,8 @@
 Changelog
 =========
+## 2.3.4 / 2019-05-02
+- Properly flatten projected nested objects. Fixes #105
+
 ## 2.3.3 / 2019-03-20
 - Improve sort performance
 

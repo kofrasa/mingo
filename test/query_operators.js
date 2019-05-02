@@ -456,6 +456,14 @@ test('Query array operators', function (t) {
     { sub: [ { id: 11, name: 'OneOne' }, { id: 22, name: 'TwoTwo' } ] }
   ], "should project all matched elements of nested array")
 
+  // https://github.com/kofrasa/mingo/issues/105
+  var result = mingo.find([ { items: [ { from: 1 }, { to: 2 } ] } ], {}, { 'items.from': 1, 'items.to': 1 }).all();
+  t.deepEqual(result, [ { items: [ { from: 1 }, { to: 2 } ] } ], "should project nested elements")
+
+  // extended test for missing keys of nested values
+  var result = mingo.find([ { items: [ { from: 1, to: null }, { to: 2 } ] } ], {}, { 'items.from': 1, 'items.to': 1 }).all();
+  t.deepEqual(result, [ { items: [ { from: 1, to: null }, { to: 2 } ] } ], "should project nested elements with missing keys")
+
   t.end()
 })
 

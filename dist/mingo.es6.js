@@ -1,4 +1,4 @@
-// mingo.js 2.3.3
+// mingo.js 2.3.4
 // Copyright (c) 2019 Francis Asante
 // MIT
 
@@ -196,17 +196,22 @@ function objectMap (obj, fn, ctx) {
  * @param target {Object|Array} the target to merge into
  * @param obj {Object|Array} the source object
  */
-function merge(target, obj) {
+function merge(target, obj, opt) {
   // take care of null inputs
   const inputs = [target, obj];
+  opt = opt || { flatten: true };
 
   if (!(inputs.every(isObject) || inputs.every(isArray))) throw Error('mismatched types. must both be array or object')
 
   if (isArray(target)) {
-    let flatten = target.length === obj.length && target.every(isObject) && obj.every(isObject);
-    if (flatten) {
-      for (let i = 0; i < target.length; i++) {
-        merge(target[i], obj[i]);
+    if (opt.flatten) {
+      let i = 0;
+      let j = 0;
+      while (i < target.length && j < obj.length) {
+        merge(target[i++], obj[j++], opt);
+      }
+      while (j < obj.length) {
+        target.push(obj[j++]);
       }
     } else {
       arrayPush.apply(target, obj);
@@ -214,7 +219,7 @@ function merge(target, obj) {
   } else {
     Object.keys(obj).forEach((k) => {
       if (target.hasOwnProperty(k)) {
-        target[k] = merge(target[k], obj[k]);
+        target[k] = merge(target[k], obj[k], opt);
       } else {
         target[k] = obj[k];
       }
@@ -1878,12 +1883,34 @@ function $project (collection, expr, opt) {
         return
       }
 
+      // determine the parent value if we have received a nested key
+      let parentKey;
+      let parentValue;
+      if (key.indexOf(".") > -1) {
+        let parts = key.split(".");
+        parts.pop(); // remove the leaf
+        parentKey = parts.join(".");
+        parentValue = resolve(obj, parentKey);
+      }
+
+      // if we have an array parent value, flatten the merge if the size is the same as what we have obtained so far.
+      let mergeOpt = { flatten: true };
+
       // get value with object graph
       let objPathValue = resolveObj(obj, key);
 
+      // To correctly determine whether to flatten a merge for nested keys,
+      // we check that the size of the parent from the root object matches the parent of the current resolved key.
+      if (parentValue !== undefined) {
+        let tempParentValue = resolve(objPathValue, parentKey);
+        if (tempParentValue !== undefined) {
+          mergeOpt.flatten = isArray(parentValue) && parentValue.length === tempParentValue.length;
+        }
+      }
+
       // add the value at the path
       if (objPathValue !== undefined) {
-        merge(newObj, objPathValue);
+        merge(newObj, objPathValue, mergeOpt);
       }
 
       // if computed add/or remove accordingly
@@ -4005,6 +4032,11 @@ function traverse (obj, selector, fn, force = false) {
 function setValue (obj, selector, value) {
   traverse(obj, selector, (item, key) => {
     item[key] = value;
+    // if (isArray(item) && !/^\d+$/.test(key)) {
+    //   item.push(value)
+    // } else {
+    //   item[key] = value
+    // }
   }, true);
 }
 
@@ -4259,7 +4291,7 @@ const CollectionMixin = {
   }
 };
 
-const VERSION = '2.3.3';
+const VERSION = '2.3.4';
 
 // mingo!
 var index = {
