@@ -241,17 +241,22 @@ function objectMap(obj, fn, ctx) {
  * @param target {Object|Array} the target to merge into
  * @param obj {Object|Array} the source object
  */
-function merge(target, obj) {
+function merge(target, obj, opt) {
   // take care of null inputs
   var inputs = [target, obj];
+  opt = opt || { flatten: true };
 
   if (!(inputs.every(isObject) || inputs.every(isArray))) throw Error('mismatched types. must both be array or object');
 
   if (isArray(target)) {
-    var _flatten = target.length === obj.length && target.every(isObject) && obj.every(isObject);
-    if (_flatten) {
-      for (var i = 0; i < target.length; i++) {
-        merge(target[i], obj[i]);
+    if (opt.flatten) {
+      var i = 0;
+      var j = 0;
+      while (i < target.length && j < obj.length) {
+        merge(target[i++], obj[j++], opt);
+      }
+      while (j < obj.length) {
+        target.push(obj[j++]);
       }
     } else {
       arrayPush.apply(target, obj);
@@ -259,7 +264,7 @@ function merge(target, obj) {
   } else {
     Object.keys(obj).forEach(function (k) {
       if (target.hasOwnProperty(k)) {
-        target[k] = merge(target[k], obj[k]);
+        target[k] = merge(target[k], obj[k], opt);
       } else {
         target[k] = obj[k];
       }
@@ -2069,12 +2074,34 @@ function $project(collection, expr, opt) {
         return;
       }
 
-      // get value with object graph
-      var objPathValue = resolveObj(obj, key);
+      // determine the parent value if we have received a nested key
+      var parentKey = void 0;
+      var parentValue = void 0;
+      if (key.indexOf(".") > -1) {
+        var parts = key.split(".");
+        parts.pop(); // remove the leaf
+        parentKey = parts.join(".");
+        parentValue = resolve(obj, parentKey);
+      }
+
+      // if we have an array parent value, flatten the merge if the size is the same as what we have obtained so far.
+      var mergeOpt = { flatten: true
+
+        // get value with object graph
+      };var objPathValue = resolveObj(obj, key);
+
+      // To correctly determine whether to flatten a merge for nested keys,
+      // we check that the size of the parent from the root object matches the parent of the current resolved key.
+      if (parentValue !== undefined) {
+        var tempParentValue = resolve(objPathValue, parentKey);
+        if (tempParentValue !== undefined) {
+          mergeOpt.flatten = isArray(parentValue) && parentValue.length === tempParentValue.length;
+        }
+      }
 
       // add the value at the path
       if (objPathValue !== undefined) {
-        merge(newObj, objPathValue);
+        merge(newObj, objPathValue, mergeOpt);
       }
 
       // if computed add/or remove accordingly
@@ -4354,6 +4381,11 @@ function traverse(obj, selector, fn) {
 function setValue(obj, selector, value) {
   traverse(obj, selector, function (item, key) {
     item[key] = value;
+    // if (isArray(item) && !/^\d+$/.test(key)) {
+    //   item.push(value)
+    // } else {
+    //   item[key] = value
+    // }
   }, true);
 }
 

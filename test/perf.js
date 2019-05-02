@@ -52,8 +52,9 @@ test('Aggregation performance', function (t) {
 
   const time2 = performance.now()
   const elapsed = (time2 - time1)
-  // allow 2sec because GC times are longer on less powerful hardware.
-  t.assert(elapsed < 2000, `elapsed time ${elapsed}ms should be less than a 2sec`)
+
+  // allow 3sec because GC times are longer on less powerful hardware.
+  t.assert(elapsed < 3000, `elapsed time ${elapsed}ms should be less than a 3sec`)
   t.end()
 })
 
