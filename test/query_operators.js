@@ -466,18 +466,7 @@ test('Query array operators', function (t) {
 
   // https://github.com/kofrasa/mingo/issues/106 - fix nested elements splitting after projection due to out of order matching
   result = mingo.find(
-    [
-      {
-        history: [
-          {
-              "user" : "Jeff",
-              "notes" : "asdf"
-          }, {
-              "user" : "Gary",
-          }
-        ]
-      }
-    ],
+    [ { history: [ { "user" : "Jeff", "notes" : "asdf"}, { "user" : "Gary" } ] } ],
     {},
     {
       'history.user' : 1,

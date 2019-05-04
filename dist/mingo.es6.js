@@ -1,4 +1,4 @@
-// mingo.js 2.3.4
+// mingo.js 2.3.5
 // Copyright (c) 2019 Francis Asante
 // MIT
 
@@ -25,6 +25,8 @@ const OP_GROUP = 'group';
 const OP_PIPELINE = 'pipeline';
 const OP_PROJECTION = 'projection';
 const OP_QUERY = 'query';
+
+const MISSING = () => {};
 
 /**
  * Utility functions
@@ -196,19 +198,26 @@ function objectMap (obj, fn, ctx) {
  * @param target {Object|Array} the target to merge into
  * @param obj {Object|Array} the source object
  */
-function merge(target, obj, opt) {
-  // take care of null inputs
-  const inputs = [target, obj];
-  opt = opt || { flatten: true };
+function merge(target, obj, opt = {}) {
+  // take care of missing inputs
+  if (target === MISSING) return obj
+  if (obj === MISSING) return target
 
-  if (!(inputs.every(isObject) || inputs.every(isArray))) throw Error('mismatched types. must both be array or object')
+  const inputs = [target, obj];
+
+  if (!(inputs.every(isObject) || inputs.every(isArray))) {
+    throw Error('mismatched types. must both be array or object')
+  }
+
+  // default options
+  opt.flatten = opt.flatten || false;
 
   if (isArray(target)) {
     if (opt.flatten) {
       let i = 0;
       let j = 0;
       while (i < target.length && j < obj.length) {
-        merge(target[i++], obj[j++], opt);
+        target[i] = merge(target[i++], obj[j++], opt);
       }
       while (j < obj.length) {
         target.push(obj[j++]);
@@ -1883,34 +1892,12 @@ function $project (collection, expr, opt) {
         return
       }
 
-      // determine the parent value if we have received a nested key
-      let parentKey;
-      let parentValue;
-      if (key.indexOf(".") > -1) {
-        let parts = key.split(".");
-        parts.pop(); // remove the leaf
-        parentKey = parts.join(".");
-        parentValue = resolve(obj, parentKey);
-      }
-
-      // if we have an array parent value, flatten the merge if the size is the same as what we have obtained so far.
-      let mergeOpt = { flatten: true };
-
       // get value with object graph
-      let objPathValue = resolveObj(obj, key);
-
-      // To correctly determine whether to flatten a merge for nested keys,
-      // we check that the size of the parent from the root object matches the parent of the current resolved key.
-      if (parentValue !== undefined) {
-        let tempParentValue = resolve(objPathValue, parentKey);
-        if (tempParentValue !== undefined) {
-          mergeOpt.flatten = isArray(parentValue) && parentValue.length === tempParentValue.length;
-        }
-      }
+      let objPathValue = resolveObj(obj, key, { preserveMissingValues: true });
 
       // add the value at the path
       if (objPathValue !== undefined) {
-        merge(newObj, objPathValue, mergeOpt);
+        merge(newObj, objPathValue, { flatten: true });
       }
 
       // if computed add/or remove accordingly
@@ -1922,6 +1909,10 @@ function $project (collection, expr, opt) {
         }
       }
     });
+
+    // filter out all missing values preserved to support correct merging
+    filterMissing(newObj);
+
     // if projection included $slice operator
     // Also if exclusion fields are found or we want to exclude only the id field
     // include keys that were not explicitly excluded
@@ -1929,9 +1920,10 @@ function $project (collection, expr, opt) {
       newObj = Object.assign({}, obj, newObj);
       if (dropKeys.length > 0) {
         newObj = cloneDeep(newObj);
-        each(dropKeys, (key) => removeValue(newObj, key));
+        each(dropKeys, k => removeValue(newObj, k));
       }
     }
+
     return newObj
   })
 }
@@ -3911,8 +3903,12 @@ function accumulate (collection, field, expr) {
  * @param selector {String} dot separated path to field
  * @returns {*}
  */
-function resolve (obj, selector, opt) {
+function resolve (obj, selector, opt = {}) {
   let depth = 0;
+
+  // options
+  opt.meta = opt.meta || false;
+
   function resolve2(o, path) {
     let value = o;
     for (let i = 0; i < path.length; i++) {
@@ -3941,7 +3937,7 @@ function resolve (obj, selector, opt) {
     }
     return value
   }
-  opt = opt || { meta: false };
+
   obj = inArray(JS_SIMPLE_TYPES, jsType(obj)) ? obj : resolve2(obj, selector.split('.'));
   return opt.meta
     ? { result: obj, depth: depth }
@@ -3955,7 +3951,10 @@ function resolve (obj, selector, opt) {
  * @param obj {Object} the object context
  * @param selector {String} dot separated path to field
  */
-function resolveObj (obj, selector) {
+function resolveObj (obj, selector, opt = {}) {
+  // options
+  opt.preserveMissingValues = opt.preserveMissingValues || false;
+
   let names = selector.split('.');
   let key = names[0];
   // get the next part of the selector
@@ -3968,24 +3967,29 @@ function resolveObj (obj, selector) {
   try {
     if (isArray(obj)) {
       if (isIndex) {
-        result = getValue(obj, key);
+        result = getValue(obj, Number(key));
         if (hasNext) {
-          result = resolveObj(result, next);
+          result = resolveObj(result, next, opt);
         }
-        assert(result !== undefined);
         result = [result];
       } else {
         result = [];
-        each(obj, (item) => {
-          value = resolveObj(item, selector);
-          if (value !== undefined) result.push(value);
+        each(obj, item => {
+          value = resolveObj(item, selector, opt);
+          if (opt.preserveMissingValues) {
+            if (value === undefined) {
+              value = MISSING;
+            }
+            result.push(value);
+          } else if (value !== undefined) {
+            result.push(value);
+          }
         });
-        assert(result.length > 0);
       }
     } else {
       value = getValue(obj, key);
       if (hasNext) {
-        value = resolveObj(value, next);
+        value = resolveObj(value, next, opt);
       }
       assert(value !== undefined);
       result = {};
@@ -3996,6 +4000,29 @@ function resolveObj (obj, selector) {
   }
 
   return result
+}
+
+/**
+ * Filter out all MISSING values from the object in-place
+ * @param {*} obj The object the filter
+ */
+function filterMissing(obj) {
+  if (isArray(obj)) {
+    for (let i = obj.length - 1; i >= 0; i--) {
+      if (obj[i] === MISSING) {
+        obj.splice(i,1);
+      } else {
+        filterMissing(obj[i]);
+      }
+    }
+  } else if (isObject(obj)) {
+    for (let k in obj) {
+      if (obj.hasOwnProperty(k)) {
+        filterMissing(obj[k]);
+      }
+    }
+  }
+  return obj
 }
 
 /**
@@ -4032,11 +4059,6 @@ function traverse (obj, selector, fn, force = false) {
 function setValue (obj, selector, value) {
   traverse(obj, selector, (item, key) => {
     item[key] = value;
-    // if (isArray(item) && !/^\d+$/.test(key)) {
-    //   item.push(value)
-    // } else {
-    //   item[key] = value
-    // }
   }, true);
 }
 
@@ -4291,7 +4313,7 @@ const CollectionMixin = {
   }
 };
 
-const VERSION = '2.3.4';
+const VERSION = '2.3.5';
 
 // mingo!
 var index = {

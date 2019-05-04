@@ -1,5 +1,8 @@
 Changelog
 =========
+## 2.3.5 / 2019-05-04
+- Correctly project and merge nested objects with missing keys.
+
 ## 2.3.4 / 2019-05-02
 - Properly flatten projected nested objects. Fixes #105
 
