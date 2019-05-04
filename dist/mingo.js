@@ -1420,22 +1420,20 @@ var Iterator = function () {
     }
 
     if (isIterator(source)) {
-      source = function (src) {
-        return function () {
-          var o = src.next();
-          if (o.done) throw DONE;
-          return o.value;
-        };
-      }(source);
+      var src = source;
+      source = function source() {
+        var o = src.next();
+        if (o.done) throw DONE;
+        return o.value;
+      };
     } else if (Array.isArray(source)) {
-      source = function (data) {
-        var size = data.length;
-        var index = 0;
-        return function () {
-          if (index < size) return data[index++];
-          throw DONE;
-        };
-      }(source);
+      var data = source;
+      var size = data.length;
+      var index = 0;
+      source = function source() {
+        if (index < size) return data[index++];
+        throw DONE;
+      };
     } else if (!isFn(source)) {
       throw new Error("Source is not iterable. Must be Array, Function or Object{next:Function}");
     }
@@ -3230,19 +3228,18 @@ var queryOperators = {
 
 // add simple query operators
 each(simpleOperators, function (fn, op) {
-  queryOperators[op] = function (f, ctx) {
-    f = f.bind(ctx);
-    return function (selector, value) {
-      return {
-        test: function test(obj) {
-          // value of field must be fully resolved.
-          var lhs = resolve(obj, selector, { meta: true });
-          lhs = unwrap(lhs.result, lhs.depth);
-          return f(lhs, value);
-        }
-      };
+  fn = fn.bind(simpleOperators);
+
+  queryOperators[op] = function (selector, value) {
+    return {
+      test: function test(obj) {
+        // value of field must be fully resolved.
+        var lhs = resolve(obj, selector, { meta: true });
+        lhs = unwrap(lhs.result, lhs.depth);
+        return fn(lhs, value);
+      }
     };
-  }(fn, simpleOperators);
+  };
 });
 
 var comparisonOperators = {
@@ -4080,44 +4077,38 @@ function addOperators(opClass, fn) {
   switch (opClass) {
     case OP_QUERY:
       each(newOperators, function (fn, op) {
-        wrapped[op] = function (f, ctx) {
-          return function (selector, value) {
-            f = f.bind(ctx);
-            return {
-              test: function test(obj) {
-                // value of field must be fully resolved.
-                var lhs = resolve(obj, selector);
-                var result = f(selector, lhs, value);
-                assert(isBoolean(result), op + ' must return a boolean');
-                return result;
-              }
-            };
+        fn = fn.bind(newOperators);
+        wrapped[op] = function (selector, value) {
+          return {
+            test: function test(obj) {
+              // value of field must be fully resolved.
+              var lhs = resolve(obj, selector);
+              var result = fn(selector, lhs, value);
+              assert(isBoolean(result), op + ' must return a boolean');
+              return result;
+            }
           };
-        }(fn, newOperators);
+        };
       });
       break;
     case OP_PROJECTION:
       each(newOperators, function (fn, op) {
-        wrapped[op] = function (f, ctx) {
-          f = f.bind(ctx);
-          return function (obj, expr, selector) {
-            var lhs = resolve(obj, selector);
-            return f(selector, lhs, expr);
-          };
-        }(fn, newOperators);
+        fn = fn.bind(newOperators);
+        wrapped[op] = function (obj, expr, selector) {
+          var lhs = resolve(obj, selector);
+          return fn(selector, lhs, expr);
+        };
       });
       break;
     default:
       each(newOperators, function (fn, op) {
-        wrapped[op] = function (f, ctx) {
-          return function () {
-            for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-              args[_key] = arguments[_key];
-            }
+        wrapped[op] = function () {
+          for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+            args[_key] = arguments[_key];
+          }
 
-            return f.apply(ctx, args);
-          };
-        }(fn, newOperators);
+          return fn.apply(newOperators, args);
+        };
       });
   }
 
