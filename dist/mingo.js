@@ -2920,294 +2920,282 @@ function remove(collection, criteria) {
 /**
  * Query and Projection Operators. https://docs.mongodb.com/manual/reference/operator/query/
  */
+var simpleOperators = {
+  $eq: $eq, $ne: $ne, $in: $in, $nin: $nin, $lt: $lt, $lte: $lte, $gt: $gt, $gte: $gte, $mod: $mod, $regex: $regex, $exists: $exists, $all: $all, $size: $size, $elemMatch: $elemMatch, $type: $type
+};
+
 function $cmp(a, b, fn) {
   return ensureArray(a).some(function (x) {
     return getType(x) === getType(b) && fn(x, b);
   });
 }
 
-var simpleOperators = {
+/**
+ * Checks that two values are equal.
+ *
+ * @param a         The lhs operand as resolved from the object by the given selector
+ * @param b         The rhs operand provided by the user
+ * @returns {*}
+ */
+function $eq(a, b) {
+  // start with simple equality check
+  if (isEqual(a, b)) return true;
 
-  /**
-   * Checks that two values are equal.
-   *
-   * @param a         The lhs operand as resolved from the object by the given selector
-   * @param b         The rhs operand provided by the user
-   * @returns {*}
-   */
-  $eq: function $eq(a, b) {
-    // start with simple equality check
-    if (isEqual(a, b)) return true;
+  // https://docs.mongodb.com/manual/tutorial/query-for-null-fields/
+  if (isNil(a) && isNil(b)) return true;
 
-    // https://docs.mongodb.com/manual/tutorial/query-for-null-fields/
-    if (isNil(a) && isNil(b)) return true;
+  // check
+  if (isArray(a)) {
+    var eq = isEqual.bind(null, b);
+    return a.some(eq) || flatten(a, 1).some(eq);
+  }
 
-    // check
-    if (isArray(a)) {
-      var eq = isEqual.bind(null, b);
-      return a.some(eq) || flatten(a, 1).some(eq);
-    }
+  return false;
+}
 
-    return false;
-  },
+/**
+ * Matches all values that are not equal to the value specified in the query.
+ *
+ * @param a
+ * @param b
+ * @returns {boolean}
+ */
+function $ne(a, b) {
+  return !$eq(a, b);
+}
 
+/**
+ * Matches any of the values that exist in an array specified in the query.
+ *
+ * @param a
+ * @param b
+ * @returns {*}
+ */
+function $in(a, b) {
+  // queries for null should be able to find undefined fields
+  if (isNil(a)) return b.some(isNull);
 
-  /**
-   * Matches all values that are not equal to the value specified in the query.
-   *
-   * @param a
-   * @param b
-   * @returns {boolean}
-   */
-  $ne: function $ne(a, b) {
-    return !this.$eq(a, b);
-  },
+  return intersection(ensureArray(a), b).length > 0;
+}
 
+/**
+ * Matches values that do not exist in an array specified to the query.
+ *
+ * @param a
+ * @param b
+ * @returns {*|boolean}
+ */
+function $nin(a, b) {
+  return !$in(a, b);
+}
 
-  /**
-   * Matches any of the values that exist in an array specified in the query.
-   *
-   * @param a
-   * @param b
-   * @returns {*}
-   */
-  $in: function $in(a, b) {
-    // queries for null should be able to find undefined fields
-    if (isNil(a)) return b.some(isNull);
+/**
+ * Matches values that are less than the value specified in the query.
+ *
+ * @param a
+ * @param b
+ * @returns {boolean}
+ */
+function $lt(a, b) {
+  return $cmp(a, b, function (x, y) {
+    return x < y;
+  });
+}
 
-    return intersection(ensureArray(a), b).length > 0;
-  },
+/**
+ * Matches values that are less than or equal to the value specified in the query.
+ *
+ * @param a
+ * @param b
+ * @returns {boolean}
+ */
+function $lte(a, b) {
+  return $cmp(a, b, function (x, y) {
+    return x <= y;
+  });
+}
 
+/**
+ * Matches values that are greater than the value specified in the query.
+ *
+ * @param a
+ * @param b
+ * @returns {boolean}
+ */
+function $gt(a, b) {
+  return $cmp(a, b, function (x, y) {
+    return x > y;
+  });
+}
 
-  /**
-   * Matches values that do not exist in an array specified to the query.
-   *
-   * @param a
-   * @param b
-   * @returns {*|boolean}
-   */
-  $nin: function $nin(a, b) {
-    return !this.$in(a, b);
-  },
+/**
+ * Matches values that are greater than or equal to the value specified in the query.
+ *
+ * @param a
+ * @param b
+ * @returns {boolean}
+ */
+function $gte(a, b) {
+  return $cmp(a, b, function (x, y) {
+    return x >= y;
+  });
+}
 
+/**
+ * Performs a modulo operation on the value of a field and selects documents with a specified result.
+ *
+ * @param a
+ * @param b
+ * @returns {boolean}
+ */
+function $mod(a, b) {
+  return ensureArray(a).some(function (x) {
+    return isNumber(x) && isArray(b) && b.length === 2 && x % b[0] === b[1];
+  });
+}
 
-  /**
-   * Matches values that are less than the value specified in the query.
-   *
-   * @param a
-   * @param b
-   * @returns {boolean}
-   */
-  $lt: function $lt(a, b) {
-    return $cmp(a, b, function (x, y) {
-      return x < y;
-    });
-  },
+/**
+ * Selects documents where values match a specified regular expression.
+ *
+ * @param a
+ * @param b
+ * @returns {boolean}
+ */
+function $regex(a, b) {
+  a = ensureArray(a);
+  var match = function match(x) {
+    return isString(x) && !!x.match(b);
+  };
+  return a.some(match) || flatten(a, 1).some(match);
+}
 
+/**
+ * Matches documents that have the specified field.
+ *
+ * @param a
+ * @param b
+ * @returns {boolean}
+ */
+function $exists(a, b) {
+  return (b === false || b === 0) && a === undefined || (b === true || b === 1) && a !== undefined;
+}
 
-  /**
-   * Matches values that are less than or equal to the value specified in the query.
-   *
-   * @param a
-   * @param b
-   * @returns {boolean}
-   */
-  $lte: function $lte(a, b) {
-    return $cmp(a, b, function (x, y) {
-      return x <= y;
-    });
-  },
-
-
-  /**
-   * Matches values that are greater than the value specified in the query.
-   *
-   * @param a
-   * @param b
-   * @returns {boolean}
-   */
-  $gt: function $gt(a, b) {
-    return $cmp(a, b, function (x, y) {
-      return x > y;
-    });
-  },
-
-
-  /**
-   * Matches values that are greater than or equal to the value specified in the query.
-   *
-   * @param a
-   * @param b
-   * @returns {boolean}
-   */
-  $gte: function $gte(a, b) {
-    return $cmp(a, b, function (x, y) {
-      return x >= y;
-    });
-  },
-
-
-  /**
-   * Performs a modulo operation on the value of a field and selects documents with a specified result.
-   *
-   * @param a
-   * @param b
-   * @returns {boolean}
-   */
-  $mod: function $mod(a, b) {
-    return ensureArray(a).some(function (x) {
-      return isNumber(x) && isArray(b) && b.length === 2 && x % b[0] === b[1];
-    });
-  },
-
-
-  /**
-   * Selects documents where values match a specified regular expression.
-   *
-   * @param a
-   * @param b
-   * @returns {boolean}
-   */
-  $regex: function $regex(a, b) {
-    a = ensureArray(a);
-    var match = function match(x) {
-      return isString(x) && !!x.match(b);
-    };
-    return a.some(match) || flatten(a, 1).some(match);
-  },
-
-
-  /**
-   * Matches documents that have the specified field.
-   *
-   * @param a
-   * @param b
-   * @returns {boolean}
-   */
-  $exists: function $exists(a, b) {
-    return (b === false || b === 0) && a === undefined || (b === true || b === 1) && a !== undefined;
-  },
-
-
-  /**
-   * Matches arrays that contain all elements specified in the query.
-   *
-   * @param a
-   * @param b
-   * @returns boolean
-   */
-  $all: function $all(a, b) {
-    var matched = false;
-    if (isArray(a) && isArray(b)) {
-      for (var i = 0, len = b.length; i < len; i++) {
-        if (isObject(b[i]) && inArray(keys(b[i]), '$elemMatch')) {
-          matched = matched || this.$elemMatch(a, b[i].$elemMatch);
-        } else {
-          // order of arguments matter
-          return intersection(b, a).length === len;
-        }
+/**
+ * Matches arrays that contain all elements specified in the query.
+ *
+ * @param a
+ * @param b
+ * @returns boolean
+ */
+function $all(a, b) {
+  var matched = false;
+  if (isArray(a) && isArray(b)) {
+    for (var i = 0, len = b.length; i < len; i++) {
+      if (isObject(b[i]) && inArray(keys(b[i]), '$elemMatch')) {
+        matched = matched || $elemMatch(a, b[i].$elemMatch);
+      } else {
+        // order of arguments matter
+        return intersection(b, a).length === len;
       }
-    }
-    return matched;
-  },
-
-
-  /**
-   * Selects documents if the array field is a specified size.
-   *
-   * @param a
-   * @param b
-   * @returns {*|boolean}
-   */
-  $size: function $size(a, b) {
-    return isArray(a) && isNumber(b) && a.length === b;
-  },
-
-
-  /**
-   * Selects documents if element in the array field matches all the specified $elemMatch condition.
-   *
-   * @param a {Array} element to match against
-   * @param b {Object} subquery
-   */
-  $elemMatch: function $elemMatch(a, b) {
-    if (isArray(a) && !isEmpty(a)) {
-      var format = function format(x) {
-        return x;
-      };
-      var criteria = b;
-
-      // If we find an operator in the subquery, we fake a field to point to it.
-      // This is an attempt to ensure that it a valid criteria.
-      if (keys(b).every(isOperator)) {
-        criteria = { temp: b };
-        format = function format(x) {
-          return { temp: x };
-        };
-      }
-      var query = new Query(criteria);
-      for (var i = 0, len = a.length; i < len; i++) {
-        if (query.test(format(a[i]))) {
-          return true;
-        }
-      }
-    }
-    return false;
-  },
-
-
-  /**
-   * Selects documents if a field is of the specified type.
-   *
-   * @param a
-   * @param b
-   * @returns {boolean}
-   */
-  $type: function $type(a, b) {
-    switch (b) {
-      case 1:
-      case 'double':
-        return isNumber(a) && (a + '').indexOf('.') !== -1;
-      case 2:
-      case T_STRING:
-        return isString(a);
-      case 3:
-      case T_OBJECT:
-        return isObject(a);
-      case 4:
-      case T_ARRAY:
-        return isArray(a);
-      case 6:
-      case T_UNDEFINED:
-        return isNil(a);
-      case 8:
-      case T_BOOL:
-        return isBoolean(a);
-      case 9:
-      case T_DATE:
-        return isDate(a);
-      case 10:
-      case T_NULL:
-        return isNull(a);
-      case 11:
-      case T_REGEX:
-        return isRegExp(a);
-      case 16:
-      case 'int':
-        return isNumber(a) && a <= 2147483647 && (a + '').indexOf('.') === -1;
-      case 18:
-      case 'long':
-        return isNumber(a) && a > 2147483647 && a <= 9223372036854775807 && (a + '').indexOf('.') === -1;
-      case 19:
-      case 'decimal':
-        return isNumber(a);
-      default:
-        return false;
     }
   }
-};
+  return matched;
+}
+
+/**
+ * Selects documents if the array field is a specified size.
+ *
+ * @param a
+ * @param b
+ * @returns {*|boolean}
+ */
+function $size(a, b) {
+  return isArray(a) && isNumber(b) && a.length === b;
+}
+
+/**
+ * Selects documents if element in the array field matches all the specified $elemMatch condition.
+ *
+ * @param a {Array} element to match against
+ * @param b {Object} subquery
+ */
+function $elemMatch(a, b) {
+  if (isArray(a) && !isEmpty(a)) {
+    var format = function format(x) {
+      return x;
+    };
+    var criteria = b;
+
+    // If we find an operator in the subquery, we fake a field to point to it.
+    // This is an attempt to ensure that it a valid criteria.
+    if (keys(b).every(isOperator)) {
+      criteria = { temp: b };
+      format = function format(x) {
+        return { temp: x };
+      };
+    }
+    var query = new Query(criteria);
+    for (var i = 0, len = a.length; i < len; i++) {
+      if (query.test(format(a[i]))) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+/**
+ * Selects documents if a field is of the specified type.
+ *
+ * @param a
+ * @param b
+ * @returns {boolean}
+ */
+function $type(a, b) {
+  switch (b) {
+    case 1:
+    case 'double':
+      return isNumber(a) && (a + '').indexOf('.') !== -1;
+    case 2:
+    case T_STRING:
+      return isString(a);
+    case 3:
+    case T_OBJECT:
+      return isObject(a);
+    case 4:
+    case T_ARRAY:
+      return isArray(a);
+    case 6:
+    case T_UNDEFINED:
+      return isNil(a);
+    case 8:
+    case T_BOOL:
+      return isBoolean(a);
+    case 9:
+    case T_DATE:
+      return isDate(a);
+    case 10:
+    case T_NULL:
+      return isNull(a);
+    case 11:
+    case T_REGEX:
+      return isRegExp(a);
+    case 16:
+    case 'int':
+      return isNumber(a) && a <= 2147483647 && (a + '').indexOf('.') === -1;
+    case 18:
+    case 'long':
+      return isNumber(a) && a > 2147483647 && a <= 9223372036854775807 && (a + '').indexOf('.') === -1;
+    case 19:
+    case 'decimal':
+      return isNumber(a);
+    default:
+      return false;
+  }
+}
 
 var queryOperators = {
+  $and: $and, $or: $or, $nor: $nor, $not: $not, $where: $where, $expr: $expr
 
   /**
    * Joins query clauses with a logical AND returns all documents that match the conditions of both clauses.
@@ -3216,126 +3204,120 @@ var queryOperators = {
    * @param value
    * @returns {{test: Function}}
    */
-  $and: function $and(selector, value) {
-    assert(isArray(value), 'Invalid expression: $and expects value to be an Array');
+};function $and(selector, value) {
+  assert(isArray(value), 'Invalid expression: $and expects value to be an Array');
 
-    var queries = [];
-    each(value, function (expr) {
-      return queries.push(new Query(expr));
-    });
+  var queries = [];
+  each(value, function (expr) {
+    return queries.push(new Query(expr));
+  });
 
-    return {
-      test: function test(obj) {
-        for (var i = 0; i < queries.length; i++) {
-          if (!queries[i].test(obj)) {
-            return false;
-          }
+  return {
+    test: function test(obj) {
+      for (var i = 0; i < queries.length; i++) {
+        if (!queries[i].test(obj)) {
+          return false;
         }
-        return true;
       }
-    };
-  },
-
-
-  /**
-   * Joins query clauses with a logical OR returns all documents that match the conditions of either clause.
-   *
-   * @param selector
-   * @param value
-   * @returns {{test: Function}}
-   */
-  $or: function $or(selector, value) {
-    assert(isArray(value), 'Invalid expression. $or expects value to be an Array');
-
-    var queries = [];
-    each(value, function (expr) {
-      return queries.push(new Query(expr));
-    });
-
-    return {
-      test: function test(obj) {
-        for (var i = 0; i < queries.length; i++) {
-          if (queries[i].test(obj)) {
-            return true;
-          }
-        }
-        return false;
-      }
-    };
-  },
-
-
-  /**
-   * Joins query clauses with a logical NOR returns all documents that fail to match both clauses.
-   *
-   * @param selector
-   * @param value
-   * @returns {{test: Function}}
-   */
-  $nor: function $nor(selector, value) {
-    assert(isArray(value), 'Invalid expression. $nor expects value to be an Array');
-    var query = this.$or('$or', value);
-    return {
-      test: function test(obj) {
-        return !query.test(obj);
-      }
-    };
-  },
-
-
-  /**
-   * Inverts the effect of a query expression and returns documents that do not match the query expression.
-   *
-   * @param selector
-   * @param value
-   * @returns {{test: Function}}
-   */
-  $not: function $not(selector, value) {
-    var criteria = {};
-    criteria[selector] = normalize(value);
-    var query = new Query(criteria);
-    return {
-      test: function test(obj) {
-        return !query.test(obj);
-      }
-    };
-  },
-
-
-  /**
-   * Matches documents that satisfy a JavaScript expression.
-   *
-   * @param selector
-   * @param value
-   * @returns {{test: test}}
-   */
-  $where: function $where(selector, value) {
-    if (!isFunction(value)) {
-      value = new Function('return ' + value + ';');
+      return true;
     }
-    return {
-      test: function test(obj) {
-        return value.call(obj) === true;
-      }
-    };
-  },
+  };
+}
 
+/**
+ * Joins query clauses with a logical OR returns all documents that match the conditions of either clause.
+ *
+ * @param selector
+ * @param value
+ * @returns {{test: Function}}
+ */
+function $or(selector, value) {
+  assert(isArray(value), 'Invalid expression. $or expects value to be an Array');
 
-  /**
-   * Allows the use of aggregation expressions within the query language.
-   *
-   * @param selector
-   * @param value
-   * @returns {{test: test}}
-   */
-  $expr: function $expr(selector, value) {
-    return {
-      test: function test(obj) {
-        return computeValue(obj, value);
+  var queries = [];
+  each(value, function (expr) {
+    return queries.push(new Query(expr));
+  });
+
+  return {
+    test: function test(obj) {
+      for (var i = 0; i < queries.length; i++) {
+        if (queries[i].test(obj)) {
+          return true;
+        }
       }
-    };
+      return false;
+    }
+  };
+}
+
+/**
+ * Joins query clauses with a logical NOR returns all documents that fail to match both clauses.
+ *
+ * @param selector
+ * @param value
+ * @returns {{test: Function}}
+ */
+function $nor(selector, value) {
+  assert(isArray(value), 'Invalid expression. $nor expects value to be an Array');
+  var query = $or('$or', value);
+  return {
+    test: function test(obj) {
+      return !query.test(obj);
+    }
+  };
+}
+
+/**
+ * Inverts the effect of a query expression and returns documents that do not match the query expression.
+ *
+ * @param selector
+ * @param value
+ * @returns {{test: Function}}
+ */
+function $not(selector, value) {
+  var criteria = {};
+  criteria[selector] = normalize(value);
+  var query = new Query(criteria);
+  return {
+    test: function test(obj) {
+      return !query.test(obj);
+    }
+  };
+}
+
+/**
+ * Matches documents that satisfy a JavaScript expression.
+ *
+ * @param selector
+ * @param value
+ * @returns {{test: test}}
+ */
+function $where(selector, value) {
+  if (!isFunction(value)) {
+    value = new Function('return ' + value + ';');
   }
-};
+  return {
+    test: function test(obj) {
+      return value.call(obj) === true;
+    }
+  };
+}
+
+/**
+ * Allows the use of aggregation expressions within the query language.
+ *
+ * @param selector
+ * @param value
+ * @returns {{test: test}}
+ */
+function $expr(selector, value) {
+  return {
+    test: function test(obj) {
+      return computeValue(obj, value);
+    }
+  };
+}
 
 // add simple query operators
 each(simpleOperators, function (fn, op) {
@@ -3361,7 +3343,7 @@ var comparisonOperators = {
    * @param expr
    * @returns {number}
    */
-  $cmp: function $cmp(obj, expr) {
+  $cmp: function $cmp$$1(obj, expr) {
     var args = computeValue(obj, expr);
     if (args[0] > args[1]) return 1;
     if (args[0] < args[1]) return -1;
