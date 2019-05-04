@@ -3,10 +3,10 @@
 //! MIT
 
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-	typeof define === 'function' && define.amd ? define(factory) :
-	(global.mingo = factory());
-}(this, (function () { 'use strict';
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+	typeof define === 'function' && define.amd ? define(['exports'], factory) :
+	(factory((global.mingo = {})));
+}(this, (function (exports) { 'use strict';
 
 // Javascript native types
 var T_NULL = 'null';
@@ -4772,29 +4772,27 @@ var CollectionMixin = {
   }
 };
 
+// mingo!
 var VERSION = '2.5.0';
 
-// mingo!
-var index = {
-  _internal: _internal,
-  Aggregator: Aggregator,
-  CollectionMixin: CollectionMixin,
-  Cursor: Cursor,
-  Lazy: Lazy,
-  OP_EXPRESSION: OP_EXPRESSION,
-  OP_GROUP: OP_GROUP,
-  OP_PIPELINE: OP_PIPELINE,
-  OP_PROJECTION: OP_PROJECTION,
-  OP_QUERY: OP_QUERY,
-  Query: Query,
-  VERSION: VERSION,
-  addOperators: addOperators,
-  aggregate: aggregate,
-  find: find,
-  remove: remove,
-  setup: setup
-};
+exports.VERSION = VERSION;
+exports.OP_EXPRESSION = OP_EXPRESSION;
+exports.OP_GROUP = OP_GROUP;
+exports.OP_PIPELINE = OP_PIPELINE;
+exports.OP_PROJECTION = OP_PROJECTION;
+exports.OP_QUERY = OP_QUERY;
+exports._internal = _internal;
+exports.setup = setup;
+exports.Query = Query;
+exports.find = find;
+exports.remove = remove;
+exports.Aggregator = Aggregator;
+exports.aggregate = aggregate;
+exports.CollectionMixin = CollectionMixin;
+exports.Cursor = Cursor;
+exports.addOperators = addOperators;
+exports.Lazy = Lazy;
 
-return index;
+Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
