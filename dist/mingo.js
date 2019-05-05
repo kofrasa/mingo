@@ -640,6 +640,492 @@ function memoize(fn) {
   }({/* storage */});
 }
 
+// mingo internal
+
+/**
+ * Retrieve the value of a given key on an object
+ * @param obj
+ * @param field
+ * @returns {*}
+ * @private
+ */
+function getValue(obj, field) {
+  return isObjectLike(obj) ? obj[field] : undefined;
+}
+
+/**
+ * Resolve the value of the field (dot separated) on the given object
+ * @param obj {Object} the object context
+ * @param selector {String} dot separated path to field
+ * @returns {*}
+ */
+function resolve(obj, selector) {
+  var opt = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+  var depth = 0;
+
+  // options
+  opt.meta = opt.meta || false;
+
+  function resolve2(o, path) {
+    var value = o;
+    for (var i = 0; i < path.length; i++) {
+      var field = path[i];
+      var isText = field.match(/^\d+$/) === null;
+
+      if (isText && isArray(value)) {
+        // On the first iteration, we check if we received a stop flag.
+        // If so, we stop to prevent iterating over a nested array value
+        // on consecutive object keys in the selector.
+        if (i === 0 && depth > 0) break;
+
+        depth += 1;
+        path = path.slice(i);
+
+        value = reduce(value, function (acc, item) {
+          var v = resolve2(item, path);
+          if (v !== undefined) acc.push(v);
+          return acc;
+        }, []);
+        break;
+      } else {
+        value = getValue(value, field);
+      }
+      if (value === undefined) break;
+    }
+    return value;
+  }
+
+  obj = inArray(JS_SIMPLE_TYPES, jsType(obj)) ? obj : resolve2(obj, selector.split('.'));
+  return opt.meta ? { result: obj, depth: depth } : obj;
+}
+
+/**
+ * Returns the full object to the resolved value given by the selector.
+ * This function excludes empty values as they aren't practically useful.
+ *
+ * @param obj {Object} the object context
+ * @param selector {String} dot separated path to field
+ */
+function resolveObj(obj, selector) {
+  var opt = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+  // options
+  opt.preserveMissingValues = opt.preserveMissingValues || false;
+
+  var names = selector.split('.');
+  var key = names[0];
+  // get the next part of the selector
+  var next = names.length === 1 || names.slice(1).join('.');
+  var isIndex = key.match(/^\d+$/) !== null;
+  var hasNext = names.length > 1;
+  var result = void 0;
+  var value = void 0;
+
+  try {
+    if (isArray(obj)) {
+      if (isIndex) {
+        result = getValue(obj, Number(key));
+        if (hasNext) {
+          result = resolveObj(result, next, opt);
+        }
+        result = [result];
+      } else {
+        result = [];
+        each(obj, function (item) {
+          value = resolveObj(item, selector, opt);
+          if (opt.preserveMissingValues) {
+            if (value === undefined) {
+              value = MISSING;
+            }
+            result.push(value);
+          } else if (value !== undefined) {
+            result.push(value);
+          }
+        });
+      }
+    } else {
+      value = getValue(obj, key);
+      if (hasNext) {
+        value = resolveObj(value, next, opt);
+      }
+      assert(value !== undefined);
+      result = {};
+      result[key] = value;
+    }
+  } catch (e) {
+    result = undefined;
+  }
+
+  return result;
+}
+
+/**
+ * Filter out all MISSING values from the object in-place
+ * @param {*} obj The object the filter
+ */
+function filterMissing(obj) {
+  if (isArray(obj)) {
+    for (var i = obj.length - 1; i >= 0; i--) {
+      if (obj[i] === MISSING) {
+        obj.splice(i, 1);
+      } else {
+        filterMissing(obj[i]);
+      }
+    }
+  } else if (isObject(obj)) {
+    for (var k in obj) {
+      if (obj.hasOwnProperty(k)) {
+        filterMissing(obj[k]);
+      }
+    }
+  }
+  return obj;
+}
+
+/**
+ * Walk the object graph and execute the given transform function
+ * @param  {Object|Array} obj   The object to traverse
+ * @param  {String} selector    The selector
+ * @param  {Function} fn Function to execute for value at the end the traversal
+ * @param  {Boolean} force Force generating missing parts of object graph
+ * @return {*}
+ */
+function traverse(obj, selector, fn) {
+  var force = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
+
+  var names = selector.split('.');
+  var key = names[0];
+  var next = names.length === 1 || names.slice(1).join('.');
+
+  if (names.length === 1) {
+    fn(obj, key);
+  } else {
+    // force the rest of the graph while traversing
+    if (force === true && isNil(obj[key])) {
+      obj[key] = {};
+    }
+    traverse(obj[key], next, fn, force);
+  }
+}
+
+/**
+ * Set the value of the given object field
+ *
+ * @param obj {Object|Array} the object context
+ * @param selector {String} path to field
+ * @param value {*} the value to set
+ */
+function setValue(obj, selector, value) {
+  traverse(obj, selector, function (item, key) {
+    item[key] = value;
+  }, true);
+}
+
+function removeValue(obj, selector) {
+  traverse(obj, selector, function (item, key) {
+    if (isArray(item) && /^\d+$/.test(key)) {
+      item.splice(parseInt(key), 1);
+    } else if (isObject(item)) {
+      delete item[key];
+    }
+  });
+}
+
+/**
+ * Check whether the given name is an operator. We assume any field name starting with '$' is an operator.
+ * This is cheap and safe to do since keys beginning with '$' should be reserved for internal use.
+ * @param {String} name
+ */
+function isOperator(name) {
+  return !!name && name[0] === '$';
+}
+
+/**
+ * Simplify expression for easy evaluation with query operators map
+ * @param expr
+ * @returns {*}
+ */
+function normalize(expr) {
+  // normalized primitives
+  if (inArray(JS_SIMPLE_TYPES, jsType(expr))) {
+    return isRegExp(expr) ? { '$regex': expr } : { '$eq': expr };
+  }
+
+  // normalize object expression
+  if (isObjectLike(expr)) {
+    var exprKeys = keys(expr);
+
+    // no valid query operator found, so we do simple comparison
+    if (!exprKeys.some(isOperator)) {
+      return { '$eq': expr };
+    }
+
+    // ensure valid regex
+    if (inArray(exprKeys, '$regex')) {
+      var regex = expr['$regex'];
+      var options = expr['$options'] || '';
+      var modifiers = '';
+      if (isString(regex)) {
+        modifiers += regex.ignoreCase || options.indexOf('i') >= 0 ? 'i' : '';
+        modifiers += regex.multiline || options.indexOf('m') >= 0 ? 'm' : '';
+        modifiers += regex.global || options.indexOf('g') >= 0 ? 'g' : '';
+        regex = new RegExp(regex, modifiers);
+      }
+      expr['$regex'] = regex;
+      delete expr['$options'];
+    }
+  }
+
+  return expr;
+}
+
+/**
+ * Returns a slice of the array
+ *
+ * @param  {Array} xs
+ * @param  {Number} skip
+ * @param  {Number} limit
+ * @return {Array}
+ */
+function slice(xs, skip) {
+  var limit = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+
+  // MongoDB $slice works a bit differently from Array.slice
+  // Uses single argument for 'limit' and array argument [skip, limit]
+  if (isNil(limit)) {
+    if (skip < 0) {
+      skip = Math.max(0, xs.length + skip);
+      limit = xs.length - skip + 1;
+    } else {
+      limit = skip;
+      skip = 0;
+    }
+  } else {
+    if (skip < 0) {
+      skip = Math.max(0, xs.length + skip);
+    }
+    assert(limit > 0, 'Invalid argument value for $slice operator. Limit must be a positive number');
+    limit += skip;
+  }
+  return xs.slice(skip, limit);
+}
+
+/**
+ * Compute the standard deviation of the data set
+ * @param  {Object} ctx An object of the context. Includes "data:Array" and "sampled:Boolean".
+ * @return {Number}
+ */
+function stddev(ctx) {
+  var sum = reduce(ctx.data, function (acc, n) {
+    return acc + n;
+  }, 0);
+  var N = ctx.data.length || 1;
+  var correction = ctx.sampled && 1 || 0;
+  var avg = sum / N;
+  return Math.sqrt(reduce(ctx.data, function (acc, n) {
+    return acc + Math.pow(n - avg, 2);
+  }, 0) / (N - correction));
+}
+
+/**
+ * Exported to the users to allow writing custom operators
+ */
+function moduleApi() {
+  return {
+    assert: assert,
+    clone: clone,
+    cloneDeep: cloneDeep,
+    each: each,
+    err: err,
+    hashCode: hashCode,
+    getType: getType,
+    has: has,
+    includes: inArray.bind(null),
+    isArray: isArray,
+    isBoolean: isBoolean,
+    isDate: isDate,
+    isEmpty: isEmpty,
+    isEqual: isEqual,
+    isFunction: isFunction,
+    isNil: isNil,
+    isNull: isNull,
+    isNumber: isNumber,
+    isObject: isObject,
+    isRegExp: isRegExp,
+    isString: isString,
+    isUndefined: isUndefined,
+    keys: keys,
+    reduce: reduce,
+    resolve: resolve,
+    resolveObj: resolveObj
+  };
+}
+
+/**
+ * Returns an array of all the unique values for the selected field among for each document in that group.
+ *
+ * @param collection
+ * @param expr
+ * @returns {*}
+ */
+function $addToSet(collection, expr) {
+  return unique(this.$push(collection, expr));
+}
+
+/**
+ * Returns an average of all the values in a group.
+ *
+ * @param collection
+ * @param expr
+ * @returns {number}
+ */
+function $avg(collection, expr) {
+  var data = this.$push(collection, expr).filter(isNumber);
+  var sum = reduce(data, function (acc, n) {
+    return acc + n;
+  }, 0);
+  return sum / (data.length || 1);
+}
+
+/**
+ * Returns the first value in a group.
+ *
+ * @param collection
+ * @param expr
+ * @returns {*}
+ */
+function $first(collection, expr) {
+  return collection.length > 0 ? computeValue(collection[0], expr) : undefined;
+}
+
+/**
+ * Returns the last value in a group.
+ *
+ * @param collection
+ * @param expr
+ * @returns {*}
+ */
+function $last(collection, expr) {
+  return collection.length > 0 ? computeValue(collection[collection.length - 1], expr) : undefined;
+}
+
+/**
+ * Returns the highest value in a group.
+ *
+ * @param collection
+ * @param expr
+ * @returns {*}
+ */
+function $max(collection, expr) {
+  return reduce(this.$push(collection, expr), function (acc, n) {
+    return isNil(acc) || n > acc ? n : acc;
+  }, undefined);
+}
+
+/**
+ * Combines multiple documents into a single document.
+ *
+ * @param collection
+ * @param expr
+ * @returns {Array|*}
+ */
+function $mergeObjects(collection, expr) {
+  return reduce(collection, function (memo, o) {
+    return Object.assign(memo, computeValue(o, expr));
+  }, {});
+}
+
+/**
+ * Returns the lowest value in a group.
+ *
+ * @param collection
+ * @param expr
+ * @returns {*}
+ */
+function $min(collection, expr) {
+  return reduce(this.$push(collection, expr), function (acc, n) {
+    return isNil(acc) || n < acc ? n : acc;
+  }, undefined);
+}
+
+/**
+ * Returns an array of all values for the selected field among for each document in that group.
+ *
+ * @param collection
+ * @param expr
+ * @returns {Array|*}
+ */
+function $push(collection, expr) {
+  if (isNil(expr)) return collection;
+  return collection.map(function (obj) {
+    return computeValue(obj, expr);
+  });
+}
+
+/**
+ * Returns the population standard deviation of the input values.
+ *
+ * @param  {Array} collection
+ * @param  {Object} expr
+ * @return {Number}
+ */
+function $stdDevPop(collection, expr) {
+  return stddev({
+    data: this.$push(collection, expr).filter(isNumber),
+    sampled: false
+  });
+}
+
+/**
+ * Returns the sample standard deviation of the input values.
+ * @param  {Array} collection
+ * @param  {Object} expr
+ * @return {Number|null}
+ */
+function $stdDevSamp(collection, expr) {
+  return stddev({
+    data: this.$push(collection, expr).filter(isNumber),
+    sampled: true
+  });
+}
+
+/**
+ * Returns the sum of all the values in a group.
+ *
+ * @param collection
+ * @param expr
+ * @returns {*}
+ */
+function $sum(collection, expr) {
+  if (!isArray(collection)) return 0;
+
+  // take a short cut if expr is number literal
+  if (isNumber(expr)) return collection.length * expr;
+
+  return reduce(this.$push(collection, expr).filter(isNumber), function (acc, n) {
+    return acc + n;
+  }, 0);
+}
+
+/**
+ * Group stage Accumulator Operators. https://docs.mongodb.com/manual/reference/operator/aggregation-
+ */
+
+var groupOperators = {
+  $addToSet: $addToSet,
+  $avg: $avg,
+  $first: $first,
+  $last: $last,
+  $mergeObjects: $mergeObjects,
+  $max: $max,
+  $min: $min,
+  $push: $push,
+  $stdDevPop: $stdDevPop,
+  $stdDevSamp: $stdDevSamp,
+  $sum: $sum
+};
+
 var arithmeticOperators = {
 
   /**
@@ -1340,14 +1826,8 @@ function $addFields(collection, expr, opt) {
 
 /**
  * Alias for $addFields.
- *
- * @param {Array} collection
- * @param {*} expr
- * @param {Object} opt Pipeline options
  */
-function $set() {
-  return $addFields.apply(undefined, arguments);
-}
+var $set = $addFields;
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
   return typeof obj;
@@ -2110,6 +2590,14 @@ function $project(collection, expr, opt) {
   });
 }
 
+/**
+ * Process the expression value for $project operators
+ *
+ * @param {Object} obj The object to use as context
+ * @param {Object} expr The experssion object of $project operator
+ * @param {Array} expressionKeys The key in the 'expr' object
+ * @param {Boolean} idOnlyExcludedExpression Boolean value indicating whether only the ID key is excluded
+ */
 function processObject(obj, expr, expressionKeys, idOnlyExcludedExpression) {
   var ID_KEY = idKey();
 
@@ -2223,7 +2711,11 @@ function processObject(obj, expr, expressionKeys, idOnlyExcludedExpression) {
   return newObj;
 }
 
-// validate inclusion and exclusion
+/**
+ * Validate inclusion and exclusion values in expression
+ *
+ * @param {Object} expr The expression given for the projection
+ */
 function validateExpression(expr) {
   var ID_KEY = idKey();
   var check = [false, false];
@@ -3958,191 +4450,13 @@ var variableOperators = {
 // combine aggregate operators
 var expressionOperators = Object.assign({}, arithmeticOperators, arrayOperators, booleanOperators, comparisonOperators, conditionalOperators, dateOperators, literalOperators, setOperators, stringOperators, variableOperators);
 
-/**
- * Returns an array of all the unique values for the selected field among for each document in that group.
- *
- * @param collection
- * @param expr
- * @returns {*}
- */
-function $addToSet(collection, expr) {
-  return unique(this.$push(collection, expr));
-}
-
-/**
- * Returns an average of all the values in a group.
- *
- * @param collection
- * @param expr
- * @returns {number}
- */
-function $avg(collection, expr) {
-  var data = this.$push(collection, expr).filter(isNumber);
-  var sum = reduce(data, function (acc, n) {
-    return acc + n;
-  }, 0);
-  return sum / (data.length || 1);
-}
-
-/**
- * Returns the first value in a group.
- *
- * @param collection
- * @param expr
- * @returns {*}
- */
-function $first(collection, expr) {
-  return collection.length > 0 ? computeValue(collection[0], expr) : undefined;
-}
-
-/**
- * Returns the last value in a group.
- *
- * @param collection
- * @param expr
- * @returns {*}
- */
-function $last(collection, expr) {
-  return collection.length > 0 ? computeValue(collection[collection.length - 1], expr) : undefined;
-}
-
-/**
- * Returns the highest value in a group.
- *
- * @param collection
- * @param expr
- * @returns {*}
- */
-function $max(collection, expr) {
-  return reduce(this.$push(collection, expr), function (acc, n) {
-    return isNil(acc) || n > acc ? n : acc;
-  }, undefined);
-}
-
-/**
- * Combines multiple documents into a single document.
- *
- * @param collection
- * @param expr
- * @returns {Array|*}
- */
-function $mergeObjects(collection, expr) {
-  return reduce(collection, function (memo, o) {
-    return Object.assign(memo, computeValue(o, expr));
-  }, {});
-}
-
-/**
- * Returns the lowest value in a group.
- *
- * @param collection
- * @param expr
- * @returns {*}
- */
-function $min(collection, expr) {
-  return reduce(this.$push(collection, expr), function (acc, n) {
-    return isNil(acc) || n < acc ? n : acc;
-  }, undefined);
-}
-
-/**
- * Returns an array of all values for the selected field among for each document in that group.
- *
- * @param collection
- * @param expr
- * @returns {Array|*}
- */
-function $push(collection, expr) {
-  if (isNil(expr)) return collection;
-  return collection.map(function (obj) {
-    return computeValue(obj, expr);
-  });
-}
-
-/**
- * Returns the population standard deviation of the input values.
- *
- * @param  {Array} collection
- * @param  {Object} expr
- * @return {Number}
- */
-function $stdDevPop(collection, expr) {
-  return stddev({
-    data: this.$push(collection, expr).filter(isNumber),
-    sampled: false
-  });
-}
-
-/**
- * Returns the sample standard deviation of the input values.
- * @param  {Array} collection
- * @param  {Object} expr
- * @return {Number|null}
- */
-function $stdDevSamp(collection, expr) {
-  return stddev({
-    data: this.$push(collection, expr).filter(isNumber),
-    sampled: true
-  });
-}
-
-/**
- * Returns the sum of all the values in a group.
- *
- * @param collection
- * @param expr
- * @returns {*}
- */
-function $sum(collection, expr) {
-  if (!isArray(collection)) return 0;
-
-  // take a short cut if expr is number literal
-  if (isNumber(expr)) return collection.length * expr;
-
-  return reduce(this.$push(collection, expr).filter(isNumber), function (acc, n) {
-    return acc + n;
-  }, 0);
-}
-
-/**
- * Group stage Accumulator Operators. https://docs.mongodb.com/manual/reference/operator/aggregation-
- */
-
-var groupOperators = {
-  $addToSet: $addToSet,
-  $avg: $avg,
-  $first: $first,
-  $last: $last,
-  $mergeObjects: $mergeObjects,
-  $max: $max,
-  $min: $min,
-  $push: $push,
-  $stdDevPop: $stdDevPop,
-  $stdDevSamp: $stdDevSamp,
-  $sum: $sum
-};
-
 // operator definitions
-var OPERATORS = {
-  'expression': expressionOperators,
-  'group': groupOperators,
-  'pipeline': pipelineOperators,
-  'projection': projectionOperators,
-  'query': queryOperators
-
-  /**
-   * Returns the operators defined for the given operator classes
-   */
-};function ops() {
-  // Workaround for browser-compatibility bug: on iPhone 6S Safari (and
-  // probably some other platforms), `arguments` isn't detected as an array,
-  // but has a length field, so functions like `reduce` and up including the
-  // length field in their iteration. Copy to a real array.
-  var args = Array.prototype.slice.call(arguments);
-  return reduce(args, function (acc, cls) {
-    return into(acc, keys(OPERATORS[cls]));
-  }, []);
-}
+var OPERATORS = {};
+OPERATORS[OP_EXPRESSION] = expressionOperators;
+OPERATORS[OP_GROUP] = groupOperators;
+OPERATORS[OP_PIPELINE] = pipelineOperators;
+OPERATORS[OP_PROJECTION] = projectionOperators;
+OPERATORS[OP_QUERY] = queryOperators;
 
 /**
  * Add new operators
@@ -4209,9 +4523,10 @@ function addOperators(opClass, fn) {
   Object.assign(OPERATORS[opClass], wrapped);
 }
 
-/**
- * Internal functions
- */
+// internal functions available to external operators
+var _internal = function _internal() {
+  return Object.assign({ computeValue: computeValue, ops: ops }, moduleApi());
+};
 
 // Settings used by Mingo internally
 var settings = {
@@ -4298,14 +4613,17 @@ function idKey() {
 }
 
 /**
- * Retrieve the value of a given key on an object
- * @param obj
- * @param field
- * @returns {*}
- * @private
+ * Returns the operators defined for the given operator classes
  */
-function getValue(obj, field) {
-  return isObjectLike(obj) ? obj[field] : undefined;
+function ops() {
+  // Workaround for browser-compatibility bug: on iPhone 6S Safari (and
+  // probably some other platforms), `arguments` isn't detected as an array,
+  // but has a length field, so functions like `reduce` and up including the
+  // length field in their iteration. Copy to a real array.
+  var args = Array.prototype.slice.call(arguments);
+  return reduce(args, function (acc, cls) {
+    return into(acc, keys(OPERATORS[cls]));
+  }, []);
 }
 
 /**
@@ -4336,233 +4654,6 @@ function accumulate(collection, field, expr) {
     });
     return result;
   }
-}
-
-/**
- * Resolve the value of the field (dot separated) on the given object
- * @param obj {Object} the object context
- * @param selector {String} dot separated path to field
- * @returns {*}
- */
-function resolve(obj, selector) {
-  var opt = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-
-  var depth = 0;
-
-  // options
-  opt.meta = opt.meta || false;
-
-  function resolve2(o, path) {
-    var value = o;
-    for (var i = 0; i < path.length; i++) {
-      var field = path[i];
-      var isText = field.match(/^\d+$/) === null;
-
-      if (isText && isArray(value)) {
-        // On the first iteration, we check if we received a stop flag.
-        // If so, we stop to prevent iterating over a nested array value
-        // on consecutive object keys in the selector.
-        if (i === 0 && depth > 0) break;
-
-        depth += 1;
-        path = path.slice(i);
-
-        value = reduce(value, function (acc, item) {
-          var v = resolve2(item, path);
-          if (v !== undefined) acc.push(v);
-          return acc;
-        }, []);
-        break;
-      } else {
-        value = getValue(value, field);
-      }
-      if (value === undefined) break;
-    }
-    return value;
-  }
-
-  obj = inArray(JS_SIMPLE_TYPES, jsType(obj)) ? obj : resolve2(obj, selector.split('.'));
-  return opt.meta ? { result: obj, depth: depth } : obj;
-}
-
-/**
- * Returns the full object to the resolved value given by the selector.
- * This function excludes empty values as they aren't practically useful.
- *
- * @param obj {Object} the object context
- * @param selector {String} dot separated path to field
- */
-function resolveObj(obj, selector) {
-  var opt = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-
-  // options
-  opt.preserveMissingValues = opt.preserveMissingValues || false;
-
-  var names = selector.split('.');
-  var key = names[0];
-  // get the next part of the selector
-  var next = names.length === 1 || names.slice(1).join('.');
-  var isIndex = key.match(/^\d+$/) !== null;
-  var hasNext = names.length > 1;
-  var result = void 0;
-  var value = void 0;
-
-  try {
-    if (isArray(obj)) {
-      if (isIndex) {
-        result = getValue(obj, Number(key));
-        if (hasNext) {
-          result = resolveObj(result, next, opt);
-        }
-        result = [result];
-      } else {
-        result = [];
-        each(obj, function (item) {
-          value = resolveObj(item, selector, opt);
-          if (opt.preserveMissingValues) {
-            if (value === undefined) {
-              value = MISSING;
-            }
-            result.push(value);
-          } else if (value !== undefined) {
-            result.push(value);
-          }
-        });
-      }
-    } else {
-      value = getValue(obj, key);
-      if (hasNext) {
-        value = resolveObj(value, next, opt);
-      }
-      assert(value !== undefined);
-      result = {};
-      result[key] = value;
-    }
-  } catch (e) {
-    result = undefined;
-  }
-
-  return result;
-}
-
-/**
- * Filter out all MISSING values from the object in-place
- * @param {*} obj The object the filter
- */
-function filterMissing(obj) {
-  if (isArray(obj)) {
-    for (var i = obj.length - 1; i >= 0; i--) {
-      if (obj[i] === MISSING) {
-        obj.splice(i, 1);
-      } else {
-        filterMissing(obj[i]);
-      }
-    }
-  } else if (isObject(obj)) {
-    for (var k in obj) {
-      if (obj.hasOwnProperty(k)) {
-        filterMissing(obj[k]);
-      }
-    }
-  }
-  return obj;
-}
-
-/**
- * Walk the object graph and execute the given transform function
- * @param  {Object|Array} obj   The object to traverse
- * @param  {String} selector    The selector
- * @param  {Function} fn Function to execute for value at the end the traversal
- * @param  {Boolean} force Force generating missing parts of object graph
- * @return {*}
- */
-function traverse(obj, selector, fn) {
-  var force = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
-
-  var names = selector.split('.');
-  var key = names[0];
-  var next = names.length === 1 || names.slice(1).join('.');
-
-  if (names.length === 1) {
-    fn(obj, key);
-  } else {
-    // force the rest of the graph while traversing
-    if (force === true && isNil(obj[key])) {
-      obj[key] = {};
-    }
-    traverse(obj[key], next, fn, force);
-  }
-}
-
-/**
- * Set the value of the given object field
- *
- * @param obj {Object|Array} the object context
- * @param selector {String} path to field
- * @param value {*} the value to set
- */
-function setValue(obj, selector, value) {
-  traverse(obj, selector, function (item, key) {
-    item[key] = value;
-  }, true);
-}
-
-function removeValue(obj, selector) {
-  traverse(obj, selector, function (item, key) {
-    if (isArray(item) && /^\d+$/.test(key)) {
-      item.splice(parseInt(key), 1);
-    } else if (isObject(item)) {
-      delete item[key];
-    }
-  });
-}
-
-/**
- * Check whether the given name is an operator. We assume any field name starting with '$' is an operator.
- * This is cheap and safe to do since keys beginning with '$' should be reserved for internal use.
- * @param {String} name
- */
-function isOperator(name) {
-  return !!name && name[0] === '$';
-}
-
-/**
- * Simplify expression for easy evaluation with query operators map
- * @param expr
- * @returns {*}
- */
-function normalize(expr) {
-  // normalized primitives
-  if (inArray(JS_SIMPLE_TYPES, jsType(expr))) {
-    return isRegExp(expr) ? { '$regex': expr } : { '$eq': expr };
-  }
-
-  // normalize object expression
-  if (isObjectLike(expr)) {
-    var exprKeys = keys(expr);
-
-    // no valid query operator found, so we do simple comparison
-    if (!exprKeys.some(isOperator)) {
-      return { '$eq': expr };
-    }
-
-    // ensure valid regex
-    if (inArray(exprKeys, '$regex')) {
-      var regex = expr['$regex'];
-      var options = expr['$options'] || '';
-      var modifiers = '';
-      if (isString(regex)) {
-        modifiers += regex.ignoreCase || options.indexOf('i') >= 0 ? 'i' : '';
-        modifiers += regex.multiline || options.indexOf('m') >= 0 ? 'm' : '';
-        modifiers += regex.global || options.indexOf('g') >= 0 ? 'g' : '';
-        regex = new RegExp(regex, modifiers);
-      }
-      expr['$regex'] = regex;
-      delete expr['$options'];
-    }
-  }
-
-  return expr;
 }
 
 /**
@@ -4646,54 +4737,6 @@ function computeValue(obj, expr) {
 }
 
 /**
- * Returns a slice of the array
- *
- * @param  {Array} xs
- * @param  {Number} skip
- * @param  {Number} limit
- * @return {Array}
- */
-function slice(xs, skip) {
-  var limit = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-
-  // MongoDB $slice works a bit differently from Array.slice
-  // Uses single argument for 'limit' and array argument [skip, limit]
-  if (isNil(limit)) {
-    if (skip < 0) {
-      skip = Math.max(0, xs.length + skip);
-      limit = xs.length - skip + 1;
-    } else {
-      limit = skip;
-      skip = 0;
-    }
-  } else {
-    if (skip < 0) {
-      skip = Math.max(0, xs.length + skip);
-    }
-    assert(limit > 0, 'Invalid argument value for $slice operator. Limit must be a positive number');
-    limit += skip;
-  }
-  return xs.slice(skip, limit);
-}
-
-/**
- * Compute the standard deviation of the data set
- * @param  {Object} ctx An object of the context. Includes "data:Array" and "sampled:Boolean".
- * @return {Number}
- */
-function stddev(ctx) {
-  var sum = reduce(ctx.data, function (acc, n) {
-    return acc + n;
-  }, 0);
-  var N = ctx.data.length || 1;
-  var correction = ctx.sampled && 1 || 0;
-  var avg = sum / N;
-  return Math.sqrt(reduce(ctx.data, function (acc, n) {
-    return acc + Math.pow(n - avg, 2);
-  }, 0) / (N - correction));
-}
-
-/**
  * Redact an object
  * @param  {Object} obj The object to redact
  * @param  {*} expr The redact expression
@@ -4707,43 +4750,6 @@ function redactObj(obj, expr) {
 
   var result = computeValue(obj, expr, null, opt);
   return inArray(REDACT_VARS, result) ? redactVariables[result](obj, expr, opt) : result;
-}
-
-/**
- * Exported to the users to allow writing custom operators
- */
-function _internal() {
-  return {
-    assert: assert,
-    computeValue: computeValue,
-    clone: clone,
-    cloneDeep: cloneDeep,
-    each: each,
-    err: err,
-    hashCode: hashCode,
-    getType: getType,
-    has: has,
-    idKey: idKey,
-    includes: inArray.bind(null),
-    isArray: isArray,
-    isBoolean: isBoolean,
-    isDate: isDate,
-    isEmpty: isEmpty,
-    isEqual: isEqual,
-    isFunction: isFunction,
-    isNil: isNil,
-    isNull: isNull,
-    isNumber: isNumber,
-    isObject: isObject,
-    isRegExp: isRegExp,
-    isString: isString,
-    isUndefined: isUndefined,
-    keys: keys,
-    ops: ops,
-    resolve: resolve,
-    resolveObj: resolveObj,
-    reduce: reduce
-  };
 }
 
 /**
