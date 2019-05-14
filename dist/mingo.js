@@ -660,12 +660,12 @@ function getValue(obj, field) {
  * @returns {*}
  */
 function resolve(obj, selector) {
-  var opt = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+  var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
   var depth = 0;
 
   // options
-  opt.meta = opt.meta || false;
+  options.meta = options.meta || false;
 
   function resolve2(o, path) {
     var value = o;
@@ -697,7 +697,7 @@ function resolve(obj, selector) {
   }
 
   obj = inArray(JS_SIMPLE_TYPES, jsType(obj)) ? obj : resolve2(obj, selector.split('.'));
-  return opt.meta ? { result: obj, depth: depth } : obj;
+  return options.meta ? { result: obj, depth: depth } : obj;
 }
 
 /**
@@ -708,10 +708,10 @@ function resolve(obj, selector) {
  * @param selector {String} dot separated path to field
  */
 function resolveObj(obj, selector) {
-  var opt = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+  var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
   // options
-  opt.preserveMissingValues = opt.preserveMissingValues || false;
+  options.preserveMissingValues = options.preserveMissingValues || false;
 
   var names = selector.split('.');
   var key = names[0];
@@ -727,14 +727,14 @@ function resolveObj(obj, selector) {
       if (isIndex) {
         result = getValue(obj, Number(key));
         if (hasNext) {
-          result = resolveObj(result, next, opt);
+          result = resolveObj(result, next, options);
         }
         result = [result];
       } else {
         result = [];
         each(obj, function (item) {
-          value = resolveObj(item, selector, opt);
-          if (opt.preserveMissingValues) {
+          value = resolveObj(item, selector, options);
+          if (options.preserveMissingValues) {
             if (value === undefined) {
               value = MISSING;
             }
@@ -747,7 +747,7 @@ function resolveObj(obj, selector) {
     } else {
       value = getValue(obj, key);
       if (hasNext) {
-        value = resolveObj(value, next, opt);
+        value = resolveObj(value, next, options);
       }
       assert(value !== undefined);
       result = {};
@@ -913,17 +913,18 @@ function slice(xs, skip) {
 
 /**
  * Compute the standard deviation of the data set
- * @param  {Object} ctx An object of the context. Includes "data:Array" and "sampled:Boolean".
+ * @param {Array} array of numbers
+ * @param {Boolean} if true calculates a sample standard deviation, otherwise calculates a population stddev
  * @return {Number}
  */
-function stddev(ctx) {
-  var sum = reduce(ctx.data, function (acc, n) {
+function stddev(data, sampled) {
+  var sum = reduce(data, function (acc, n) {
     return acc + n;
   }, 0);
-  var N = ctx.data.length || 1;
-  var correction = ctx.sampled && 1 || 0;
+  var N = data.length || 1;
+  var correction = sampled && 1 || 0;
   var avg = sum / N;
-  return Math.sqrt(reduce(ctx.data, function (acc, n) {
+  return Math.sqrt(reduce(data, function (acc, n) {
     return acc + Math.pow(n - avg, 2);
   }, 0) / (N - correction));
 }
@@ -1071,10 +1072,7 @@ function $push(collection, expr) {
  * @return {Number}
  */
 function $stdDevPop(collection, expr) {
-  return stddev({
-    data: this.$push(collection, expr).filter(isNumber),
-    sampled: false
-  });
+  return stddev(this.$push(collection, expr).filter(isNumber), false);
 }
 
 /**
@@ -1084,10 +1082,7 @@ function $stdDevPop(collection, expr) {
  * @return {Number|null}
  */
 function $stdDevSamp(collection, expr) {
-  return stddev({
-    data: this.$push(collection, expr).filter(isNumber),
-    sampled: true
-  });
+  return stddev(this.$push(collection, expr).filter(isNumber), true);
 }
 
 /**
@@ -4474,7 +4469,7 @@ function addOperators(opClass, fn) {
   var operators = OPERATORS[opClass];
 
   // check for existing operators
-  each(newOperators, function (fn, op) {
+  each(newOperators, function (_, op) {
     assert(/^\$\w+$/.test(op), 'Invalid operator name ' + op);
     assert(!has(operators, op), op + ' already exists for \'' + opClass + '\' operators');
   });
