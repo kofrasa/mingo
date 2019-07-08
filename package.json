@@ -3,12 +3,15 @@
   "version": "2.3.5",
   "description": "JavaScript implementation of MongoDB query language",
   "main": "dist/mingo.js",
-  "module": "index.js",
+  "module": "dist/mingo.es6.js",
   "scripts": {
-    "build": "make build",
-    "prepublishOnly": "make build",
-    "test": "NODE_ENV=test make test",
-    "coverage": "make coverage"
+    "build.umd": "rollup -c config/rollup.umd.js",
+    "build.es": "rollup -c config/rollup.es.js",
+    "build": "npm run build.umd && npm run build.es",
+    "release": "npm test && npm run build",
+    "postrelease": "uglifyjs dist/mingo.js --comments '/^!/' --compress --mangle --source-map dist/mingo.min.map > dist/mingo.min.js",
+    "test": "NODE_ENV=test nyc --reporter=lcov --reporter=text tape test/*.js test/**/*.js",
+    "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov"
   },
   "repository": {
     "type": "git",
@@ -16,13 +19,10 @@
   },
   "files": [
     "dist",
-    "lib",
     "index.d.ts",
-    "index.js",
     "LICENSE",
     "README.md",
-    "CHANGELOG.md",
-    "VERSION"
+    "CHANGELOG.md"
   ],
   "devDependencies": {
     "babel-plugin-external-helpers": "^6.22.0",
@@ -32,7 +32,6 @@
     "benchmark": "2.1.4",
     "bson": "1.x.x",
     "codecov": "2.3.0",
-    "gulp": ">=3.9.x",
     "istanbul": "0.4.0",
     "lodash": "4.17.x",
     "nyc": "^11.1.0",
