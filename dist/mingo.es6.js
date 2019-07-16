@@ -1,6 +1,6 @@
-// mingo.js 2.3.5
-// Copyright (c) 2019 Francis Asante
-// MIT
+//! mingo.js 2.3.5
+//! Copyright (c) 2019 Francis Asante
+//! MIT
 
 // Javascript native types
 const T_NULL = 'null';
