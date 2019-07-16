@@ -1285,20 +1285,20 @@ class Iterator {
     }
 
     if (isIterator(source)) {
-      source = (src => () => {
+      const src = source;
+      source = () => {
         let o = src.next();
         if (o.done) throw DONE
         return o.value
-      })(source);
+      };
     } else if (Array.isArray(source)) {
-      source = (data => {
-        let size = data.length;
-        let index = 0;
-        return () => {
-          if (index < size) return data[index++]
-          throw DONE
-        }
-      })(source);
+      const data = source;
+      const size = data.length;
+      let index = 0;
+      source = () => {
+        if (index < size) return data[index++]
+        throw DONE
+      };
     } else if (!isFn(source)) {
       throw new Error("Source is not iterable. Must be Array, Function or Object{next:Function}")
     }
@@ -2904,19 +2904,16 @@ const queryOperators = {
 
 // add simple query operators
 each(simpleOperators, (fn, op) => {
-  queryOperators[op] = ((f, ctx) => {
-    f = f.bind(ctx);
-    return (selector, value) => {
-      return {
-        test (obj) {
-          // value of field must be fully resolved.
-          let lhs = resolve(obj, selector, { meta: true });
-          lhs = unwrap(lhs.result, lhs.depth);
-          return f(lhs, value)
-        }
-      }
+  fn = fn.bind(simpleOperators);
+
+  queryOperators[op] = (selector, value) => ({
+    test (obj) {
+      // value of field must be fully resolved.
+      let lhs = resolve(obj, selector, { meta: true });
+      lhs = unwrap(lhs.result, lhs.depth);
+      return fn(lhs, value)
     }
-  })(fn, simpleOperators);
+  });
 });
 
 const comparisonOperators = {
@@ -3726,40 +3723,30 @@ function addOperators (opClass, fn) {
   switch (opClass) {
     case OP_QUERY:
       each(newOperators, (fn, op) => {
-        wrapped[op] = ((f, ctx) => {
-          return (selector, value) => {
-            f = f.bind(ctx);
-            return {
-              test: (obj) => {
-                // value of field must be fully resolved.
-                let lhs = resolve(obj, selector);
-                let result = f(selector, lhs, value);
-                assert(isBoolean(result), `${op} must return a boolean`);
-                return result
-              }
-            }
+        fn = fn.bind(newOperators);
+        wrapped[op] = (selector, value) => ({
+          test (obj) {
+            // value of field must be fully resolved.
+            let lhs = resolve(obj, selector);
+            let result = fn(selector, lhs, value);
+            assert(isBoolean(result), `${op} must return a boolean`);
+            return result
           }
-        })(fn, newOperators);
+        });
       });
       break
     case OP_PROJECTION:
       each(newOperators, (fn, op) => {
-        wrapped[op] = ((f, ctx) => {
-          f = f.bind(ctx);
-          return (obj, expr, selector) => {
-            let lhs = resolve(obj, selector);
-            return f(selector, lhs, expr)
-          }
-        })(fn, newOperators);
+        fn = fn.bind(newOperators);
+        wrapped[op] = (obj, expr, selector) => {
+          let lhs = resolve(obj, selector);
+          return fn(selector, lhs, expr)
+        };
       });
       break
     default:
       each(newOperators, (fn, op) => {
-        wrapped[op] = ((f, ctx) => {
-          return (...args) => {
-            return f.apply(ctx, args)
-          }
-        })(fn, newOperators);
+        wrapped[op] = (...args) => fn.apply(newOperators, args);
       });
   }
 

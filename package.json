@@ -5,10 +5,11 @@
   "main": "dist/mingo.js",
   "module": "dist/mingo.es6.js",
   "scripts": {
+    "clean": "rm -fr dist/*",
     "build.umd": "rollup -c config/rollup.umd.js",
     "build.es": "rollup -c config/rollup.es.js",
     "build": "npm run build.umd && npm run build.es",
-    "release": "npm test && npm run build",
+    "release": "npm run clean && npm run build && npm test",
     "postrelease": "uglifyjs dist/mingo.js --comments '/^!/' --compress --mangle --source-map dist/mingo.min.map > dist/mingo.min.js",
     "test": "NODE_ENV=test nyc --reporter=lcov --reporter=text tape test/*.js test/**/*.js",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov"
