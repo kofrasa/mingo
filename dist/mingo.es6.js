@@ -1164,6 +1164,17 @@ function $addFields (collection, expr, opt) {
 }
 
 /**
+ * Alias for $addFields.
+ *
+ * @param {Array} collection
+ * @param {*} expr
+ * @param {Object} opt Pipeline options
+ */
+function $set () {
+  return $addFields(...arguments)
+}
+
+/**
  * Returns an iterator
  * @param {*} source An iterable source (Array, Function, Object{next:Function})
  */
@@ -2196,6 +2207,7 @@ const pipelineOperators = {
   $redact,
   $replaceRoot,
   $sample,
+  $set,
   $skip,
   $sort,
   $sortByCount,

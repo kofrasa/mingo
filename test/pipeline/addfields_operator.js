@@ -145,5 +145,15 @@ test("$addFields pipeline operator", function (t) {
 
   t.deepEqual(actual, expected, 'can $addField with boolean values')
 
+  actual = mingo.aggregate(col, [{
+    $set: {
+      accountInfo: {
+        $arrayElemAt: ['$accounts', 0],
+      },
+    },
+  }])
+
+  t.deepEqual(actual, expected, 'can be aliased as $set')
+
   t.end();
 });
