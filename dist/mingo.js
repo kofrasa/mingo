@@ -1827,6 +1827,7 @@ function $group(collection, expr, opt) {
     });
 
     // remove the group key
+    expr = clone(expr);
     delete expr[ID_KEY];
 
     var i = -1;

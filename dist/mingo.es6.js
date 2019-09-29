@@ -1640,6 +1640,7 @@ function $group (collection, expr, opt) {
     let partitions = groupBy(coll, obj => computeValue(obj, id, id));
 
     // remove the group key
+    expr = clone(expr);
     delete expr[ID_KEY];
 
     let i = -1;
