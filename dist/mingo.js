@@ -1267,6 +1267,17 @@ function $addFields(collection, expr, opt) {
   });
 }
 
+/**
+ * Alias for $addFields.
+ *
+ * @param {Array} collection
+ * @param {*} expr
+ * @param {Object} opt Pipeline options
+ */
+function $set() {
+  return $addFields.apply(undefined, arguments);
+}
+
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
   return typeof obj;
 } : function (obj) {
@@ -2405,6 +2416,7 @@ var pipelineOperators = {
   $redact: $redact,
   $replaceRoot: $replaceRoot,
   $sample: $sample,
+  $set: $set,
   $skip: $skip,
   $sort: $sort,
   $sortByCount: $sortByCount,
