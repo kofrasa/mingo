@@ -1,5 +1,6 @@
 var test = require('tape')
 var mingo = require('../../dist/mingo')
+var { cloneDeep } = mingo._internal()
 var samples = require('../support')
 
 test('$group pipeline operator', function (t) {
@@ -168,4 +169,30 @@ test("$group pipeline operator: more examples", function (t) {
 
   t.end();
 
+});
+
+test("$group pipeline operator is idempotent", function (t) {
+  var aggregator = [{
+    $group: {
+      _id: "$student_id",
+      score: { $min: '$score' }
+    }
+  }];
+  var aggregatorClone = cloneDeep(aggregator)
+  var input = [
+    { type: "exam", student_id: 2, score: 5 },
+    { type: "exam", student_id: 1, score: 5 },
+    { type: "homework", student_id: 1, score: 7 },
+    { type: "homework", student_id: 2, score: 10 }
+  ];
+
+  var passOne = mingo.aggregate(input, aggregator);
+
+  t.deepEqual(aggregator, aggregatorClone, 'aggregate does not mutate the original aggregator object.')
+
+  var passTwo = mingo.aggregate(input, aggregator);
+
+  t.deepEqual(passTwo, passOne, '2nd-pass $group result is identical to the 1st-pass results.')
+
+  t.end();
 });
