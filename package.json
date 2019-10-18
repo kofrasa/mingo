@@ -35,7 +35,7 @@
     "codecov": "3.6.1",
     "istanbul": "0.4.5",
     "lodash": "4.17.15",
-    "nyc": "11.9.0",
+    "nyc": "14.1.1",
     "perf_hooks": "0.0.1",
     "rollup": "0.45.2",
     "rollup-plugin-babel": "2.7.1",
