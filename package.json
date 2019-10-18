@@ -42,7 +42,7 @@
     "rollup-plugin-commonjs": "8.4.1",
     "rollup-plugin-node-resolve": "3.4.0",
     "tape": "4.11.0",
-    "uglify-js": "2.6.4"
+    "uglify-js": "3.6.2"
   },
   "keywords": [
     "util",
