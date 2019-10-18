@@ -33,7 +33,7 @@
     "benchmark": "2.1.4",
     "bson": "1.1.1",
     "codecov": "2.3.0",
-    "istanbul": "0.4.0",
+    "istanbul": "0.4.5",
     "lodash": "4.17.15",
     "nyc": "11.9.0",
     "perf_hooks": "0.0.1",
