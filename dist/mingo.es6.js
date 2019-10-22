@@ -1,4 +1,4 @@
-//! mingo.js 2.3.5
+//! mingo.js 2.3.6
 //! Copyright (c) 2019 Francis Asante
 //! MIT
 
@@ -4313,7 +4313,7 @@ const CollectionMixin = {
   }
 };
 
-const VERSION = '2.3.5';
+const VERSION = '2.3.6';
 
 // mingo!
 var index = {
