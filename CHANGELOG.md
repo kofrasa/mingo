@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.3.5 / 2019-10-23
+## 2.3.6 / 2019-10-23
 
 - Add $set as $addFields alias. Fixes #113
 - Fix $group operator idempotency issue. #82 (#114)
