@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.4.0 / 2019-10-25
+
+- Do not enforce single value for `$facet` aggregation pipeline operations. Fixes #110
+
 ## 2.3.6 / 2019-10-23
 
 - Add $set as $addFields alias. Fixes #113

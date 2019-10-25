@@ -1,4 +1,4 @@
-//! mingo.js 2.3.6
+//! mingo.js 2.4.0
 //! Copyright (c) 2019 Francis Asante
 //! MIT
 
@@ -1816,7 +1816,7 @@ function $facet(collection, expr, opt) {
     return [objectMap(expr, function (pipeline) {
       return aggregate(array, pipeline);
     })];
-  }).first();
+  });
 }
 
 /**
@@ -4686,7 +4686,7 @@ var CollectionMixin = {
   }
 };
 
-var VERSION = '2.3.6';
+var VERSION = '2.4.0';
 
 // mingo!
 var index = {
