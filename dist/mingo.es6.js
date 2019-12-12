@@ -1,4 +1,4 @@
-//! mingo.js 2.3.6
+//! mingo.js 2.4.0
 //! Copyright (c) 2019 Francis Asante
 //! MIT
 
@@ -169,6 +169,26 @@ function each (obj, fn, ctx) {
       }
     }
   }
+}
+
+function fulfill (docs) {
+  if (!Array.isArray(docs)) return docs
+
+  let promised = docs.find(
+    doc => Object.values(doc).find(value => value && !!value.then)
+  );
+
+  if (!promised) return docs
+
+  return Promise.all(
+    docs.map(doc => Promise
+      .all(Object.entries(doc).map(entry => Promise.all(entry)))
+      .then(entries => entries.reduce(
+        (carry, entry) => Object.assign(carry, { [entry[0]]: entry[1] }),
+        {}
+      ))
+    )
+  )
 }
 
 /**
@@ -1631,7 +1651,7 @@ function $count (collection, expr, opt) {
 function $facet (collection, expr, opt) {
   return collection.transform(array => {
     return [ objectMap(expr, pipeline => aggregate(array, pipeline)) ]
-  }).first()
+  })
 }
 
 /**
@@ -2260,7 +2280,7 @@ class Aggregator {
    * @param {*} query
    */
   run (collection, query) {
-    return this.stream(collection, query).value()
+    return fulfill(this.stream(collection, query).value())
   }
 }
 
@@ -4313,7 +4333,7 @@ const CollectionMixin = {
   }
 };
 
-const VERSION = '2.3.6';
+const VERSION = '2.4.0';
 
 // mingo!
 var index = {

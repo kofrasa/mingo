@@ -20,6 +20,53 @@ test('Custom Operators', function (t) {
     t.ok(typeof result[0] === 'number', 'can add new pipeline operator')
   })
 
+  t.test('custom expression operator', function (t) {
+    t.plan(1)
+
+    mingo.addOperators(mingo.OP_EXPRESSION, function (m) {
+      return {
+        '$reverse': function (collection, expr) {
+          return expr.split('').reverse().join('')
+        }
+      }
+    })
+
+    var result = mingo.aggregate([{}], [
+      {$set: {reality: {$reverse: 'freedom'}}}
+    ])
+
+    t.ok(result[0].reality === 'modeerf', 'can add new expression operator')
+  })
+
+  t.test('custom async expression operator', function (t) {
+    t.plan(1)
+
+    mingo.addOperators(mingo.OP_EXPRESSION, function (m) {
+      return {
+        '$promisify': function (collection, expr) {
+          return Promise.resolve(expr)
+        },
+        '$deliver': function (collection, expr) {
+          return m
+            .computeValue(collection, expr)
+            .then(promisified => promisified.split('').reverse().join(''))
+        }
+      }
+    })
+
+    mingo
+      .aggregate([{poor: 'people'}], [
+        {$set: {promise: {$promisify: 'freedom'}}},
+        {$set: {reality: {$deliver: '$promise'}}}
+      ])
+      .then(result => {
+        t.ok(
+          result[0].reality === 'modeerf',
+          'can fulfill the promise of an async expression operator'
+        )
+      })
+  })
+
   t.test('custom query operator', function (t) {
     t.plan(2)
 

@@ -34,6 +34,65 @@ var OP_QUERY = 'query';
 
 var MISSING = function MISSING() {};
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+  return typeof obj;
+} : function (obj) {
+  return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+};
+
+
+
+
+
+
+
+
+
+
+
+var classCallCheck = function (instance, Constructor) {
+  if (!(instance instanceof Constructor)) {
+    throw new TypeError("Cannot call a class as a function");
+  }
+};
+
+var createClass = function () {
+  function defineProperties(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  return function (Constructor, protoProps, staticProps) {
+    if (protoProps) defineProperties(Constructor.prototype, protoProps);
+    if (staticProps) defineProperties(Constructor, staticProps);
+    return Constructor;
+  };
+}();
+
+
+
+
+
+var defineProperty = function (obj, key, value) {
+  if (key in obj) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true
+    });
+  } else {
+    obj[key] = value;
+  }
+
+  return obj;
+};
+
 /**
  * Utility functions
  */
@@ -214,6 +273,28 @@ function each(obj, fn, ctx) {
       }
     }
   }
+}
+
+function fulfill(docs) {
+  if (!Array.isArray(docs)) return docs;
+
+  var promised = docs.find(function (doc) {
+    return Object.values(doc).find(function (value) {
+      return value && !!value.then;
+    });
+  });
+
+  if (!promised) return docs;
+
+  return Promise.all(docs.map(function (doc) {
+    return Promise.all(Object.entries(doc).map(function (entry) {
+      return Promise.all(entry);
+    })).then(function (entries) {
+      return entries.reduce(function (carry, entry) {
+        return Object.assign(carry, defineProperty({}, entry[0], entry[1]));
+      }, {});
+    });
+  }));
 }
 
 /**
@@ -1277,46 +1358,6 @@ function $addFields(collection, expr, opt) {
 function $set() {
   return $addFields.apply(undefined, arguments);
 }
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
-  return typeof obj;
-} : function (obj) {
-  return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-};
-
-
-
-
-
-
-
-
-
-
-
-var classCallCheck = function (instance, Constructor) {
-  if (!(instance instanceof Constructor)) {
-    throw new TypeError("Cannot call a class as a function");
-  }
-};
-
-var createClass = function () {
-  function defineProperties(target, props) {
-    for (var i = 0; i < props.length; i++) {
-      var descriptor = props[i];
-      descriptor.enumerable = descriptor.enumerable || false;
-      descriptor.configurable = true;
-      if ("value" in descriptor) descriptor.writable = true;
-      Object.defineProperty(target, descriptor.key, descriptor);
-    }
-  }
-
-  return function (Constructor, protoProps, staticProps) {
-    if (protoProps) defineProperties(Constructor.prototype, protoProps);
-    if (staticProps) defineProperties(Constructor, staticProps);
-    return Constructor;
-  };
-}();
 
 /**
  * Returns an iterator
@@ -2478,7 +2519,7 @@ var Aggregator = function () {
   }, {
     key: 'run',
     value: function run(collection, query) {
-      return this.stream(collection, query).value();
+      return fulfill(this.stream(collection, query).value());
     }
   }]);
   return Aggregator;
