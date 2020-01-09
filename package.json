@@ -31,7 +31,7 @@
     "babel-preset-env": "1.7.0",
     "backbone": "1.4.0",
     "benchmark": "2.1.4",
-    "bson": "4.0.2",
+    "bson": "4.0.3",
     "codecov": "3.6.1",
     "istanbul": "0.4.5",
     "lodash": "4.17.15",
