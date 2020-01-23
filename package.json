@@ -32,7 +32,7 @@
     "backbone": "1.4.0",
     "benchmark": "2.1.4",
     "bson": "4.0.3",
-    "codecov": "3.6.1",
+    "codecov": "3.6.2",
     "istanbul": "0.4.5",
     "lodash": "4.17.15",
     "nyc": "15.0.0",
