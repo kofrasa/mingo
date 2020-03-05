@@ -1,5 +1,5 @@
 //! mingo.js 2.4.0
-//! Copyright (c) 2019 Francis Asante
+//! Copyright (c) 2020 Francis Asante
 //! MIT
 
 (function (global, factory) {
@@ -160,7 +160,7 @@ function isFunction(v) {
   return jsType(v) === T_FUNCTION;
 }
 function isNil(v) {
-  return isNull(v) || isUndefined(v);
+  return v === null || v === undefined;
 }
 function isNull(v) {
   return v === null;
@@ -831,6 +831,21 @@ var arithmeticOperators = {
 
 
   /**
+   * Rounds a number to to a whole integer or to a specified decimal place.
+   * @param {*} obj
+   * @param {*} expr
+   */
+  $round: function $round(obj, expr) {
+    var args = computeValue(obj, expr);
+    var num = args[0];
+    var place = args[1];
+    if (isNil(num) || num === NaN || Math.abs(num) === Infinity) return num;
+    assert(isNumber(num), '$round expression must resolve to a number.');
+    return truncate(num, place, true);
+  },
+
+
+  /**
    * Calculates the square root of a positive number and returns the result as a double.
    *
    * @param obj
@@ -859,19 +874,75 @@ var arithmeticOperators = {
 
 
   /**
-   * Truncates a number to its integer.
+   * Truncates a number to a whole integer or to a specified decimal place.
    *
    * @param obj
    * @param expr
    * @returns {number}
    */
   $trunc: function $trunc(obj, expr) {
-    var n = computeValue(obj, expr);
-    if (isNil(n)) return null;
-    assert(isNumber(n) || isNaN(n), '$trunc expression must resolve to a number.');
-    return Math.trunc(n);
+    var arr = computeValue(obj, expr);
+    var num = arr[0];
+    var places = arr[1];
+    if (isNil(num) || num === NaN || Math.abs(num) === Infinity) return num;
+    assert(isNumber(num), '$trunc expression must resolve to a number.');
+    assert(isNil(places) || isNumber(places) && places > -20 && places < 100, "$trunc expression has invalid place");
+    return truncate(num, places, false);
   }
 };
+
+/**
+ * Truncates integer value to number of places. If roundOff is specified round value instead to the number of places
+ * @param {Number} num
+ * @param {Number} places
+ * @param {Boolean} roundOff
+ */
+function truncate(num, places, roundOff) {
+  places = places || 0;
+  var sign = Math.abs(num) === num ? 1 : -1;
+  num = Math.abs(num);
+
+  var result = Math.trunc(num);
+  var decimals = num - result;
+
+  if (places === 0) {
+    var firstDigit = Math.trunc(10 * decimals);
+    if (roundOff && result & 1 === 1 && firstDigit >= 5) {
+      result++;
+    }
+  } else if (places > 0) {
+    var offset = Math.pow(10, places);
+    var remainder = Math.trunc(decimals * offset);
+
+    // last digit before cut off
+    var lastDigit = Math.trunc(decimals * offset * 10) % 10;
+
+    // add one if last digit is greater than 5
+    if (roundOff && lastDigit > 5) {
+      remainder += 1;
+    }
+
+    // compute decimal remainder and add to whole number
+    result += remainder / offset;
+  } else if (places < 0) {
+    // handle negative decimal places
+    var _offset = Math.pow(10, -1 * places);
+    var excess = result % _offset;
+    result = Math.max(0, result - excess);
+
+    // for negative values the absolute must increase so we round up the last digit if >= 5
+    if (roundOff && sign === -1) {
+      while (excess > 10) {
+        excess -= excess % 10;
+      }
+      if (roundOff && result > 0 && excess >= 5) {
+        result += _offset;
+      }
+    }
+  }
+
+  return result * sign;
+}
 
 var arrayOperators = {
   /**

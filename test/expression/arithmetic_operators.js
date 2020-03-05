@@ -4,18 +4,18 @@ var runTest = require('./../support').runTest
 
 
 // hook in custom operator to round value
-mingo.addOperators(mingo.OP_EXPRESSION, (_) => {
-  return {
-    $round: (obj, expr) => {
-      var args = _.computeValue(obj, expr)
-      var n = args[0].toString()
-      var parts = n.toString().split('.')
-      return (parts.length > 1)
-        ? Number(parts[0] + '.' + parts[1].substr(0, args[1]))
-        : n
-    }
-  }
-})
+// mingo.addOperators(mingo.OP_EXPRESSION, (_) => {
+//   return {
+//     $round: (obj, expr) => {
+//       var args = _.computeValue(obj, expr)
+//       var n = args[0].toString()
+//       var parts = n.toString().split('.')
+//       return (parts.length > 1)
+//         ? Number(parts[0] + '.' + parts[1].substr(0, args[1]))
+//         : n
+//     }
+//   }
+// })
 
 runTest("Arithmetic Operators", {
   $abs: [
@@ -92,6 +92,27 @@ runTest("Arithmetic Operators", {
     [{ $pow: [ 5, -2 ] },	0.04],
     [{ $pow: [ -5, 0.5 ] },	NaN]
   ],
+  $round: [
+    [[10.5, 0], 10],
+    [[11.5, 0], 12],
+    [[12.5, 0], 12],
+    [[13.5, 0], 14],
+    // rounded to the first decimal place
+    [[19.25, 1], 19.2],
+    [[28.73, 1], 28.7],
+    [[34.32, 1], 34.3],
+    [[-45.39, 1], -45.4],
+    // rounded using the first digit to the left of the decimal
+    [[19.25, -1], 10],
+    [[28.73, -1], 20],
+    [[34.32, -1], 30],
+    [[-45.39, -1], -50],
+    // rounded to the whole integer
+    [[19.25, 0], 19],
+    [[28.73, 0], 28],
+    [[34.32, 0], 34],
+    [[-45.39, 0], -45]
+  ],
   $sqrt: [
     [{ $sqrt: null },	null],
     [{ $sqrt: NaN },	NaN],
@@ -103,11 +124,24 @@ runTest("Arithmetic Operators", {
     [[-1, 2], -3],
     [[2, -1], 3]
   ],
-  $truc: [
-    [{ $trunc: NaN }, NaN],
-    [{ $trunc: null }, null],
-    [{ $trunc: 0 },	0],
-    [{ $trunc: 7.80 }, 7],
-    [{ $trunc: -2.3 }, -2]
+  $trunc: [
+    [[NaN, 0], NaN],
+    [[null, 0], null],
+    [[0, 0],	0],
+    // truncate to the first decimal place
+    [[19.25, 1], 19.2],
+    [[28.73, 1], 28.7],
+    [[34.32, 1], 34.3],
+    [[-45.39, 1], -45.3],
+    // truncated to the first place
+    [[19.25, -1], 10],
+    [[28.73, -1], 20],
+    [[34.32, -1], 30],
+    [[-45.39, -1], -40],
+    // truncate to the whole integer
+    [[19.25, 0], 19],
+    [[28.73, 0], 28],
+    [[34.32, 0], 34],
+    [[-45.39, 0], -45]
   ]
 })
