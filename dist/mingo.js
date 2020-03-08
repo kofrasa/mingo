@@ -1536,11 +1536,6 @@ var Iterator = function () {
   }
 
   createClass(Iterator, [{
-    key: Symbol.iterator,
-    value: function value() {
-      return this;
-    }
-  }, {
     key: '_validate',
     value: function _validate() {
       if (this.__first) throw new Error("Cannot add iteratee/transform after `first()`");
@@ -1717,6 +1712,12 @@ var Iterator = function () {
   }]);
   return Iterator;
 }();
+
+if (typeof Symbol === 'function') {
+  Iterator.prototype[Symbol.iterator] = function () {
+    return this;
+  };
+}
 
 /**
  * Categorizes incoming documents into groups, called buckets, based on a specified expression and bucket boundaries.
@@ -2774,21 +2775,20 @@ var Cursor = function () {
     value: function forEach(callback) {
       this._fetch().each(callback);
     }
-
-    /**
-     * Applies an [ES2015 Iteration protocol][] compatible implementation
-     * [ES2015 Iteration protocol]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols
-     * @returns {Object}
-     */
-
-  }, {
-    key: Symbol.iterator,
-    value: function value() {
-      return this._fetch();
-    }
   }]);
   return Cursor;
 }();
+
+if (typeof Symbol === 'function') {
+  /**
+   * Applies an [ES2015 Iteration protocol][] compatible implementation
+   * [ES2015 Iteration protocol]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols
+   * @returns {Object}
+   */
+  Cursor.prototype[Symbol.iterator] = function () {
+    return this._fetch();
+  };
+}
 
 /**
  * Query object to test collection elements with

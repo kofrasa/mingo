@@ -2,6 +2,7 @@
 
 ## 2.5.0 / 2020-03-08
 
+- Optionally add `Symbol.iterator` support if available in runtime environment. Closes [#124](https://github.com/kofrasa/mingo/issues/124)
 - Allow matching with nested fields in $lookup. Fixes [#123](https://github.com/kofrasa/mingo/issues/123)
 - Add $round operator and support 'place' argument for `$trunc`. Fixes [#121](https://github.com/kofrasa/mingo/issues/121)
 - Support new array fields. Fixes [#119](https://github.com/kofrasa/mingo/issues/119)
