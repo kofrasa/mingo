@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.5.0 / 2020-03-08
+
+- Allow matching with nested fields in $lookup. Fixes [#123](https://github.com/kofrasa/mingo/issues/123)
+- Add $round operator and support 'place' argument for `$trunc`. Fixes [#121](https://github.com/kofrasa/mingo/issues/121)
+- Support new array fields. Fixes [#119](https://github.com/kofrasa/mingo/issues/119)
+- Handle embedded document exclusions
+
 ## 2.4.0 / 2019-10-25
 
 - Do not enforce single value for `$facet` aggregation pipeline operations. Fixes #110
