@@ -7,8 +7,8 @@ var mingo = require('../../dist/mingo')
  */
 test('$lookup pipeline operator', function (t) {
   var orders = [
-    { "_id": 1, "item": "abc", "price": 12, "quantity": 2 },
-    { "_id": 2, "item": "jkl", "price": 20, "quantity": 1 },
+    { "_id": 1, "item": { name: "abc" }, "price": 12, "quantity": 2 },
+    { "_id": 2, "item": { name: "jkl" }, "price": 20, "quantity": 1 },
     { "_id": 3 }
   ]
 
@@ -25,7 +25,7 @@ test('$lookup pipeline operator', function (t) {
     {
       $lookup: {
         from: inventory,
-        localField: "item",
+        localField: "item.name",
         foreignField: "sku",
         as: "inventory_docs"
       }
@@ -35,7 +35,7 @@ test('$lookup pipeline operator', function (t) {
   t.deepEqual(result, [
     {
       "_id": 1,
-      "item": "abc",
+      "item": { name: "abc" },
       "price": 12,
       "quantity": 2,
       "inventory_docs": [
@@ -44,7 +44,7 @@ test('$lookup pipeline operator', function (t) {
     },
     {
       "_id": 2,
-      "item": "jkl",
+      "item": { name: "jkl" },
       "price": 20,
       "quantity": 1,
       "inventory_docs": [

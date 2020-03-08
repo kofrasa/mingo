@@ -1967,13 +1967,13 @@ function $lookup(collection, expr, opt) {
   var hash = {};
 
   each(joinColl, function (obj) {
-    var k = hashCode(obj[foreignField]);
+    var k = hashCode(resolve(obj, foreignField));
     hash[k] = hash[k] || [];
     hash[k].push(obj);
   });
 
   return collection.map(function (obj) {
-    var k = hashCode(obj[localField]);
+    var k = hashCode(resolve(obj, localField));
     var newObj = clone(obj);
     newObj[asField] = hash[k] || [];
     return newObj;
