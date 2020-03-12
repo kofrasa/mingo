@@ -963,164 +963,6 @@ function moduleApi() {
   };
 }
 
-/**
- * Returns an array of all the unique values for the selected field among for each document in that group.
- *
- * @param collection
- * @param expr
- * @returns {*}
- */
-function $addToSet(collection, expr) {
-  return unique(this.$push(collection, expr));
-}
-
-/**
- * Returns an average of all the values in a group.
- *
- * @param collection
- * @param expr
- * @returns {number}
- */
-function $avg(collection, expr) {
-  var data = this.$push(collection, expr).filter(isNumber);
-  var sum = reduce(data, function (acc, n) {
-    return acc + n;
-  }, 0);
-  return sum / (data.length || 1);
-}
-
-/**
- * Returns the first value in a group.
- *
- * @param collection
- * @param expr
- * @returns {*}
- */
-function $first(collection, expr) {
-  return collection.length > 0 ? computeValue(collection[0], expr) : undefined;
-}
-
-/**
- * Returns the last value in a group.
- *
- * @param collection
- * @param expr
- * @returns {*}
- */
-function $last(collection, expr) {
-  return collection.length > 0 ? computeValue(collection[collection.length - 1], expr) : undefined;
-}
-
-/**
- * Returns the highest value in a group.
- *
- * @param collection
- * @param expr
- * @returns {*}
- */
-function $max(collection, expr) {
-  return reduce(this.$push(collection, expr), function (acc, n) {
-    return isNil(acc) || n > acc ? n : acc;
-  }, undefined);
-}
-
-/**
- * Combines multiple documents into a single document.
- *
- * @param collection
- * @param expr
- * @returns {Array|*}
- */
-function $mergeObjects(collection, expr) {
-  return reduce(collection, function (memo, o) {
-    return Object.assign(memo, computeValue(o, expr));
-  }, {});
-}
-
-/**
- * Returns the lowest value in a group.
- *
- * @param collection
- * @param expr
- * @returns {*}
- */
-function $min(collection, expr) {
-  return reduce(this.$push(collection, expr), function (acc, n) {
-    return isNil(acc) || n < acc ? n : acc;
-  }, undefined);
-}
-
-/**
- * Returns an array of all values for the selected field among for each document in that group.
- *
- * @param collection
- * @param expr
- * @returns {Array|*}
- */
-function $push(collection, expr) {
-  if (isNil(expr)) return collection;
-  return collection.map(function (obj) {
-    return computeValue(obj, expr);
-  });
-}
-
-/**
- * Returns the population standard deviation of the input values.
- *
- * @param  {Array} collection
- * @param  {Object} expr
- * @return {Number}
- */
-function $stdDevPop(collection, expr) {
-  return stddev(this.$push(collection, expr).filter(isNumber), false);
-}
-
-/**
- * Returns the sample standard deviation of the input values.
- * @param  {Array} collection
- * @param  {Object} expr
- * @return {Number|null}
- */
-function $stdDevSamp(collection, expr) {
-  return stddev(this.$push(collection, expr).filter(isNumber), true);
-}
-
-/**
- * Returns the sum of all the values in a group.
- *
- * @param collection
- * @param expr
- * @returns {*}
- */
-function $sum(collection, expr) {
-  if (!isArray(collection)) return 0;
-
-  // take a short cut if expr is number literal
-  if (isNumber(expr)) return collection.length * expr;
-
-  return reduce(this.$push(collection, expr).filter(isNumber), function (acc, n) {
-    return acc + n;
-  }, 0);
-}
-
-/**
- * Group stage Accumulator Operators. https://docs.mongodb.com/manual/reference/operator/aggregation-
- */
-
-var groupOperators = {
-  $addToSet: $addToSet,
-  $avg: $avg,
-  $first: $first,
-  $last: $last,
-  $mergeObjects: $mergeObjects,
-  $max: $max,
-  $min: $min,
-  $push: $push,
-  $stdDevPop: $stdDevPop,
-  $stdDevSamp: $stdDevSamp,
-  $sum: $sum
-};
-
 var arithmeticOperators = {
   $abs: $abs,
   $add: $add,
@@ -1434,7 +1276,7 @@ var arrayOperators = {
   $indexOfArray: $indexOfArray,
   $isArray: $isArray,
   $map: $map,
-  $mergeObjects: $mergeObjects$1,
+  $mergeObjects: $mergeObjects,
   $objectToArray: $objectToArray,
   $range: $range,
   $reduce: $reduce,
@@ -1750,7 +1592,7 @@ function $zip(obj, expr) {
  * @param {*} obj
  * @param {*} expr
  */
-function $mergeObjects$1(obj, expr) {
+function $mergeObjects(obj, expr) {
   var docs = computeValue(obj, expr);
   if (isArray(docs)) {
     return reduce(docs, function (memo, o) {
@@ -1799,34 +1641,6 @@ function $or(obj, expr) {
 function $not(obj, expr) {
   return !computeValue(obj, expr[0]);
 }
-
-/**
- * Adds new fields to documents.
- * Outputs documents that contain all existing fields from the input documents and newly added fields.
- *
- * @param {Array} collection
- * @param {*} expr
- * @param {Object} opt Pipeline options
- */
-function $addFields(collection, expr, opt) {
-  var newFields = keys(expr);
-
-  if (newFields.length === 0) return collection;
-
-  return collection.map(function (obj) {
-    var newObj = cloneDeep(obj);
-    each(newFields, function (field) {
-      var newValue = computeValue(obj, expr[field]);
-      setValue(newObj, field, newValue);
-    });
-    return newObj;
-  });
-}
-
-/**
- * Alias for $addFields.
- */
-var $set = $addFields;
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
   return typeof obj;
@@ -2199,827 +2013,6 @@ if (typeof Symbol === 'function') {
 }
 
 /**
- * Categorizes incoming documents into groups, called buckets, based on a specified expression and bucket boundaries.
- * https://docs.mongodb.com/manual/reference/operator/aggregation/bucket/
- *
- * @param {*} collection
- * @param {*} expr
- * @param {Object} opt Pipeline options
- */
-function $bucket(collection, expr, opt) {
-  var boundaries = expr.boundaries;
-  var defaultKey = expr['default'];
-  var lower = boundaries[0]; // inclusive
-  var upper = boundaries[boundaries.length - 1]; // exclusive
-  var outputExpr = expr.output || { 'count': { '$sum': 1 } };
-
-  assert(boundaries.length > 2, "$bucket 'boundaries' expression must have at least 3 elements");
-  var boundType = getType(lower);
-
-  for (var i = 0, len = boundaries.length - 1; i < len; i++) {
-    assert(boundType === getType(boundaries[i + 1]), "$bucket 'boundaries' must all be of the same type");
-    assert(boundaries[i] < boundaries[i + 1], "$bucket 'boundaries' must be sorted in ascending order");
-  }
-
-  !isNil(defaultKey) && getType(expr.default) === getType(lower) && assert(lower > expr.default || upper < expr.default, "$bucket 'default' expression must be out of boundaries range");
-
-  var grouped = {};
-  each(boundaries, function (k) {
-    return grouped[k] = [];
-  });
-
-  // add default key if provided
-  if (!isNil(defaultKey)) grouped[defaultKey] = [];
-
-  var iterator = false;
-
-  return Lazy(function () {
-    if (!iterator) {
-      collection.each(function (obj) {
-        var key = computeValue(obj, expr.groupBy);
-
-        if (isNil(key) || key < lower || key >= upper) {
-          assert(!isNil(defaultKey), '$bucket require a default for out of range values');
-          grouped[defaultKey].push(obj);
-        } else {
-          assert(key >= lower && key < upper, "$bucket 'groupBy' expression must resolve to a value in range of boundaries");
-          var index = findInsertIndex(boundaries, key);
-          var boundKey = boundaries[Math.max(0, index - 1)];
-          grouped[boundKey].push(obj);
-        }
-      });
-
-      // upper bound is exclusive so we remove it
-      boundaries.pop();
-      if (!isNil(defaultKey)) boundaries.push(defaultKey);
-
-      iterator = Lazy(boundaries).map(function (key) {
-        var acc = accumulate(grouped[key], null, outputExpr);
-        return Object.assign(acc, { '_id': key });
-      });
-    }
-    return iterator.next();
-  });
-}
-
-/**
- * Categorizes incoming documents into a specific number of groups, called buckets,
- * based on a specified expression. Bucket boundaries are automatically determined
- * in an attempt to evenly distribute the documents into the specified number of buckets.
- * https://docs.mongodb.com/manual/reference/operator/aggregation/bucketAuto/
- *
- * @param {*} collection
- * @param {*} expr
- * @param {*} opt Pipeline options
- */
-function $bucketAuto(collection, expr, opt) {
-  var outputExpr = expr.output || { 'count': { '$sum': 1 } };
-  var groupByExpr = expr.groupBy;
-  var bucketCount = expr.buckets;
-
-  assert(bucketCount > 0, "The $bucketAuto 'buckets' field must be greater than 0, but found: " + bucketCount);
-
-  return collection.transform(function (coll) {
-    var approxBucketSize = Math.max(1, Math.round(coll.length / bucketCount));
-    var computeValueOptimized = memoize(computeValue);
-    var grouped = {};
-    var remaining = [];
-
-    var sorted = sortBy(coll, function (o) {
-      var key = computeValueOptimized(o, groupByExpr);
-      if (isNil(key)) {
-        remaining.push(o);
-      } else {
-        grouped[key] || (grouped[key] = []);
-        grouped[key].push(o);
-      }
-      return key;
-    });
-
-    var ID_KEY = idKey();
-    var result = [];
-    var index = 0; // counter for sorted collection
-
-    for (var i = 0, len = sorted.length; i < bucketCount && index < len; i++) {
-      var boundaries = {};
-      var bucketItems = [];
-
-      for (var j = 0; j < approxBucketSize && index < len; j++) {
-        var key = computeValueOptimized(sorted[index], groupByExpr);
-
-        if (isNil(key)) key = null;
-
-        // populate current bucket with all values for current key
-        into(bucketItems, isNil(key) ? remaining : grouped[key]);
-
-        // increase sort index by number of items added
-        index += isNil(key) ? remaining.length : grouped[key].length;
-
-        // set the min key boundary if not already present
-        if (!has(boundaries, 'min')) boundaries.min = key;
-
-        if (result.length > 0) {
-          var lastBucket = result[result.length - 1];
-          lastBucket[ID_KEY].max = boundaries.min;
-        }
-      }
-
-      // if is last bucket add remaining items
-      if (i == bucketCount - 1) {
-        into(bucketItems, sorted.slice(index));
-      }
-
-      result.push(Object.assign(accumulate(bucketItems, null, outputExpr), { '_id': boundaries }));
-    }
-
-    if (result.length > 0) {
-      result[result.length - 1][ID_KEY].max = computeValueOptimized(sorted[sorted.length - 1], groupByExpr);
-    }
-
-    return result;
-  });
-}
-
-/**
- * Returns a document that contains a count of the number of documents input to the stage.
- *
- * @param  {Array} collection
- * @param  {String} expr
- * @param {Object} opt Pipeline options
- * @return {Object}
- */
-function $count(collection, expr, opt) {
-  assert(isString(expr) && expr.trim() !== '' && expr.indexOf('.') === -1 && expr.trim()[0] !== '$', 'Invalid expression value for $count');
-
-  return Lazy(function () {
-    var o = {};
-    o[expr] = collection.size();
-    return { value: o, done: false };
-  }).first();
-}
-
-/**
- * Processes multiple aggregation pipelines within a single stage on the same set of input documents.
- * Enables the creation of multi-faceted aggregations capable of characterizing data across multiple dimensions, or facets, in a single stage.
- */
-function $facet(collection, expr, opt) {
-  return collection.transform(function (array) {
-    return [objectMap(expr, function (pipeline) {
-      return aggregate(array, pipeline);
-    })];
-  });
-}
-
-/**
- * Groups documents together for the purpose of calculating aggregate values based on a collection of documents.
- *
- * @param collection
- * @param expr
- * @param opt Pipeline options
- * @returns {Array}
- */
-function $group(collection, expr, opt) {
-  // lookup key for grouping
-  var ID_KEY = idKey();
-  var id = expr[ID_KEY];
-
-  return collection.transform(function (coll) {
-    var partitions = groupBy(coll, function (obj) {
-      return computeValue(obj, id, id);
-    });
-
-    // remove the group key
-    expr = clone(expr);
-    delete expr[ID_KEY];
-
-    var i = -1;
-    var size = partitions.keys.length;
-
-    return function () {
-
-      if (++i === size) return { done: true };
-
-      var value = partitions.keys[i];
-      var obj = {};
-
-      // exclude undefined key value
-      if (value !== undefined) {
-        obj[ID_KEY] = value;
-      }
-
-      // compute remaining keys in expression
-      each(expr, function (val, key) {
-        obj[key] = accumulate(partitions.groups[i], key, val);
-      });
-
-      return { value: obj, done: false };
-    };
-  });
-}
-
-/**
- * Restricts the number of documents in an aggregation pipeline.
- *
- * @param collection
- * @param value
- * @param opt
- * @returns {Object|*}
- */
-function $limit(collection, value, opt) {
-  return collection.take(value);
-}
-
-/**
- * Performs a left outer join to another collection in the same database to filter in documents from the “joined” collection for processing.
- *
- * @param collection
- * @param expr
- * @param opt
- */
-function $lookup(collection, expr, opt) {
-  var joinColl = expr.from;
-  var localField = expr.localField;
-  var foreignField = expr.foreignField;
-  var asField = expr.as;
-
-  assert(isArray(joinColl) && isString(foreignField) && isString(localField) && isString(asField), '$lookup: invalid argument');
-
-  var hash = {};
-
-  each(joinColl, function (obj) {
-    var k = hashCode(resolve(obj, foreignField));
-    hash[k] = hash[k] || [];
-    hash[k].push(obj);
-  });
-
-  return collection.map(function (obj) {
-    var k = hashCode(resolve(obj, localField));
-    var newObj = clone(obj);
-    newObj[asField] = hash[k] || [];
-    return newObj;
-  });
-}
-
-/**
- * Filters the document stream, and only allows matching documents to pass into the next pipeline stage.
- * $match uses standard MongoDB queries.
- *
- * @param collection
- * @param expr
- * @param opt
- * @returns {Array|*}
- */
-function $match(collection, expr, opt) {
-  var q = new Query(expr);
-  return collection.filter(function (o) {
-    return q.test(o);
-  });
-}
-
-/**
- * Takes the documents returned by the aggregation pipeline and writes them to a specified collection.
- *
- * Unlike the $out operator in MongoDB, this operator can appear in any position in the pipeline and is
- * useful for collecting intermediate results of an aggregation operation.
- *
- * @param collection
- * @param expr
- * @param opt
- * @returns {*}
- */
-function $out(collection, expr, opt) {
-  assert(isArray(expr), '$out expression must be an array');
-  return collection.map(function (o) {
-    expr.push(o);
-    return o; // passthrough
-  });
-}
-
-/**
- * Projection Operators. https://docs.mongodb.com/manual/reference/operator/projection/
- */
-var projectionOperators = {
-  $: $, $elemMatch: $elemMatch$1, $slice: $slice$1
-
-  /**
-   * Projects the first element in an array that matches the query condition.
-   *
-   * @param obj
-   * @param field
-   * @param expr
-   */
-};function $(obj, expr, field) {
-  err('$ not implemented');
-}
-
-/**
- * Projects only the first element from an array that matches the specified $elemMatch condition.
- *
- * @param obj
- * @param field
- * @param expr
- * @returns {*}
- */
-function $elemMatch$1(obj, expr, field) {
-  var arr = resolve(obj, field);
-  var query = new Query(expr);
-
-  assert(isArray(arr), '$elemMatch: invalid argument');
-
-  for (var i = 0; i < arr.length; i++) {
-    if (query.test(arr[i])) return [arr[i]];
-  }
-  return undefined;
-}
-
-/**
- * Limits the number of elements projected from an array. Supports skip and limit slices.
- *
- * @param obj
- * @param field
- * @param expr
- */
-function $slice$1(obj, expr, field) {
-  var xs = resolve(obj, field);
-
-  if (!isArray(xs)) return xs;
-
-  if (isArray(expr)) {
-    return slice(xs, expr[0], expr[1]);
-  } else {
-    assert(isNumber(expr), '$slice: invalid arguments for projection');
-    return slice(xs, expr);
-  }
-}
-
-/**
- * Reshapes a document stream.
- * $project can rename, add, or remove fields as well as create computed values and sub-documents.
- *
- * @param collection
- * @param expr
- * @param opt
- * @returns {Array}
- */
-function $project(collection, expr, opt) {
-  if (isEmpty(expr)) return collection;
-
-  // result collection
-  var expressionKeys = keys(expr);
-  var idOnlyExcludedExpression = false;
-  var ID_KEY = idKey();
-
-  // validate inclusion and exclusion
-  validateExpression(expr);
-
-  if (inArray(expressionKeys, ID_KEY)) {
-    var id = expr[ID_KEY];
-    if (id === 0 || id === false) {
-      expressionKeys = expressionKeys.filter(notInArray.bind(null, [ID_KEY]));
-      assert(notInArray(expressionKeys, ID_KEY), 'Must not contain collections id key');
-      idOnlyExcludedExpression = isEmpty(expressionKeys);
-    }
-  } else {
-    // if not specified the add the ID field
-    expressionKeys.push(ID_KEY);
-  }
-
-  return collection.map(function (obj) {
-    return processObject(obj, expr, expressionKeys, idOnlyExcludedExpression);
-  });
-}
-
-/**
- * Process the expression value for $project operators
- *
- * @param {Object} obj The object to use as context
- * @param {Object} expr The experssion object of $project operator
- * @param {Array} expressionKeys The key in the 'expr' object
- * @param {Boolean} idOnlyExcludedExpression Boolean value indicating whether only the ID key is excluded
- */
-function processObject(obj, expr, expressionKeys, idOnlyExcludedExpression) {
-  var ID_KEY = idKey();
-
-  var newObj = {};
-  var foundSlice = false;
-  var foundExclusion = false;
-  var dropKeys = [];
-
-  if (idOnlyExcludedExpression) {
-    dropKeys.push(ID_KEY);
-  }
-
-  expressionKeys.forEach(function (key) {
-    // final computed value of the key
-    var value = void 0;
-
-    // expression to associate with key
-    var subExpr = expr[key];
-
-    if (key !== ID_KEY && inArray([0, false], subExpr)) {
-      foundExclusion = true;
-    }
-
-    if (key === ID_KEY && isEmpty(subExpr)) {
-      // tiny optimization here to skip over id
-      value = obj[key];
-    } else if (isString(subExpr)) {
-      value = computeValue(obj, subExpr, key);
-    } else if (inArray([1, true], subExpr)) {
-      // For direct projections, we use the resolved object value
-    } else if (isArray(subExpr)) {
-      value = subExpr.map(function (v) {
-        var r = computeValue(obj, v);
-        if (isNil(r)) return null;
-        return r;
-      });
-    } else if (isObject(subExpr)) {
-      var subExprKeys = keys(subExpr);
-      var operator = subExprKeys.length > 1 ? false : subExprKeys[0];
-
-      if (inArray(ops(OP_PROJECTION), operator)) {
-        // apply the projection operator on the operator expression for the key
-        if (operator === '$slice') {
-          // $slice is handled differently for aggregation and projection operations
-          if (ensureArray(subExpr[operator]).every(isNumber)) {
-            // $slice for projection operation
-            value = projectionOperators[operator](obj, subExpr[operator], key);
-            foundSlice = true;
-          } else {
-            // $slice for aggregation operation
-            value = computeValue(obj, subExpr, key);
-          }
-        } else {
-          value = projectionOperators[operator](obj, subExpr[operator], key);
-        }
-      } else {
-        // compute the value for the sub expression for the key
-        if (has(obj, key)) {
-          validateExpression(subExpr);
-          var nestedObj = obj[key];
-          value = isArray(nestedObj) ? nestedObj.map(function (o) {
-            return processObject(o, subExpr, subExprKeys, false);
-          }) : processObject(nestedObj, subExpr, subExprKeys, false);
-        } else {
-          value = computeValue(obj, subExpr, key);
-        }
-      }
-    } else {
-      dropKeys.push(key);
-      return;
-    }
-
-    // get value with object graph
-    var objPathValue = resolveObj(obj, key, {
-      preserveMissingValues: true
-    });
-
-    // add the value at the path
-    if (objPathValue !== undefined) {
-      merge(newObj, objPathValue, {
-        flatten: true
-      });
-    }
-
-    // if computed add/or remove accordingly
-    if (notInArray([0, 1, false, true], subExpr)) {
-      if (value === undefined) {
-        removeValue(newObj, key);
-      } else {
-        setValue(newObj, key, value);
-      }
-    }
-  });
-
-  // filter out all missing values preserved to support correct merging
-  filterMissing(newObj);
-
-  // if projection included $slice operator
-  // Also if exclusion fields are found or we want to exclude only the id field
-  // include keys that were not explicitly excluded
-  if (foundSlice || foundExclusion || idOnlyExcludedExpression) {
-    newObj = Object.assign({}, obj, newObj);
-    if (dropKeys.length > 0) {
-      newObj = cloneDeep(newObj);
-      each(dropKeys, function (k) {
-        return removeValue(newObj, k);
-      });
-    }
-  }
-
-  return newObj;
-}
-
-/**
- * Validate inclusion and exclusion values in expression
- *
- * @param {Object} expr The expression given for the projection
- */
-function validateExpression(expr) {
-  var ID_KEY = idKey();
-  var check = [false, false];
-  each(expr, function (v, k) {
-    if (k === ID_KEY) return;
-    if (v === 0 || v === false) {
-      check[0] = true;
-    } else if (v === 1 || v === true) {
-      check[1] = true;
-    }
-    assert(!(check[0] && check[1]), 'Projection cannot have a mix of inclusion and exclusion.');
-  });
-}
-
-/**
- * Restricts the contents of the documents based on information stored in the documents themselves.
- *
- * https://docs.mongodb.com/manual/reference/operator/aggregation/redact/
- */
-function $redact(collection, expr, opt) {
-  return collection.map(function (obj) {
-    return redactObj(cloneDeep(obj), expr);
-  });
-}
-
-/**
- * Replaces a document with the specified embedded document or new one.
- * The replacement document can be any valid expression that resolves to a document.
- *
- * https://docs.mongodb.com/manual/reference/operator/aggregation/replaceRoot/
- *
- * @param  {Array} collection
- * @param  {Object} expr
- * @param  {Object} opt
- * @return {*}
- */
-function $replaceRoot(collection, expr, opt) {
-  return collection.map(function (obj) {
-    obj = computeValue(obj, expr.newRoot);
-    assert(isObject(obj), '$replaceRoot expression must return an object');
-    return obj;
-  });
-}
-
-/**
- * Randomly selects the specified number of documents from its input.
- * https://docs.mongodb.com/manual/reference/operator/aggregation/sample/
- *
- * @param  {Array} collection
- * @param  {Object} expr
- * @param  {Object} opt
- * @return {*}
- */
-function $sample(collection, expr, opt) {
-  var size = expr.size;
-  assert(isNumber(size), '$sample size must be a positive integer');
-
-  return collection.transform(function (xs) {
-    var len = xs.length;
-    var i = -1;
-    return function () {
-      if (++i === size) return { done: true };
-      var n = Math.floor(Math.random() * len);
-      return { value: xs[n], done: false };
-    };
-  });
-}
-
-/**
- * Skips over a specified number of documents from the pipeline and returns the rest.
- *
- * @param collection
- * @param value
- * @param  {Object} opt
- * @returns {*}
- */
-function $skip(collection, value, opt) {
-  return collection.drop(value);
-}
-
-/**
- * Takes all input documents and returns them in a stream of sorted documents.
- *
- * @param collection
- * @param sortKeys
- * @param  {Object} opt
- * @returns {*}
- */
-function $sort(collection, sortKeys, opt) {
-  if (isEmpty(sortKeys) || !isObject(sortKeys)) return collection;
-
-  opt = opt || {};
-  var cmp = compare;
-  var collationSpec = opt['collation'];
-
-  // use collation comparator if provided
-  if (isObject(collationSpec) && isString(collationSpec.locale)) {
-    cmp = collationComparator(collationSpec);
-  }
-
-  return collection.transform(function (coll) {
-    var modifiers = keys(sortKeys);
-
-    each(modifiers.reverse(), function (key) {
-      var grouped = groupBy(coll, function (obj) {
-        return resolve(obj, key);
-      });
-      var sortedIndex = {};
-
-      var indexKeys = sortBy(grouped.keys, function (k, i) {
-        sortedIndex[k] = i;
-        return k;
-      }, cmp);
-
-      if (sortKeys[key] === -1) indexKeys.reverse();
-      coll = [];
-      each(indexKeys, function (k) {
-        return into(coll, grouped.groups[sortedIndex[k]]);
-      });
-    });
-
-    return coll;
-  });
-}
-
-// MongoDB collation strength to JS localeCompare sensitivity mapping.
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare
-var COLLATION_STRENGTH = {
-  // Only strings that differ in base letters compare as unequal. Examples: a ≠ b, a = á, a = A.
-  1: 'base',
-  //  Only strings that differ in base letters or accents and other diacritic marks compare as unequal.
-  // Examples: a ≠ b, a ≠ á, a = A.
-  2: 'accent',
-  // Strings that differ in base letters, accents and other diacritic marks, or case compare as unequal.
-  // Other differences may also be taken into consideration. Examples: a ≠ b, a ≠ á, a ≠ A
-  3: 'variant'
-  // case - Only strings that differ in base letters or case compare as unequal. Examples: a ≠ b, a = á, a ≠ A.
-
-
-  /**
-   * Creates a comparator function for the given collation spec. See https://docs.mongodb.com/manual/reference/collation/
-   *
-   * @param spec {Object} The MongoDB collation spec.
-   * {
-   *   locale: <string>,
-   *   caseLevel: <boolean>,
-   *   caseFirst: <string>,
-   *   strength: <int>,
-   *   numericOrdering: <boolean>,
-   *   alternate: <string>,
-   *   maxVariable: <string>, // unsupported
-   *   backwards: <boolean> // unsupported
-   * }
-   */
-};function collationComparator(spec) {
-
-  var localeOpt = {
-    sensitivity: COLLATION_STRENGTH[spec.strength || 3],
-    caseFirst: spec.caseFirst === 'off' ? 'false' : spec.caseFirst || 'false',
-    numeric: spec.numericOrdering || false,
-    ignorePunctuation: spec.alternate === 'shifted'
-
-    // when caseLevel is true for strength  1:base and 2:accent, bump sensitivity to the nearest that supports case comparison
-  };if ((spec.caseLevel || false) === true) {
-    if (localeOpt.sensitivity === 'base') localeOpt.sensitivity = 'case';
-    if (localeOpt.sensitivity === 'accent') localeOpt.sensitivity = 'variant';
-  }
-
-  var collator = new Intl.Collator(spec.locale, localeOpt);
-
-  return function (a, b) {
-    // non strings
-    if (!isString(a) || !isString(b)) return compare(a, b);
-
-    // only for strings
-    var i = collator.compare(a, b);
-    if (i < 0) return -1;
-    if (i > 0) return 1;
-    return 0;
-  };
-}
-
-/**
- * Groups incoming documents based on the value of a specified expression,
- * then computes the count of documents in each distinct group.
- *
- * https://docs.mongodb.com/manual/reference/operator/aggregation/sortByCount/
- *
- * @param  {Array} collection
- * @param  {Object} expr
- * @param  {Object} opt
- * @return {*}
- */
-function $sortByCount(collection, expr, opt) {
-  var newExpr = { count: { $sum: 1 } };
-  newExpr[idKey()] = expr;
-
-  return this.$sort(this.$group(collection, newExpr), { count: -1 }, opt);
-}
-
-/**
- * Takes an array of documents and returns them as a stream of documents.
- *
- * @param collection
- * @param expr
- * @param  {Object} opt
- * @returns {Array}
- */
-function $unwind(collection, expr, opt) {
-  if (isString(expr)) {
-    expr = { path: expr };
-  }
-
-  var field = expr.path.substr(1);
-  var includeArrayIndex = expr.includeArrayIndex || false;
-  var preserveNullAndEmptyArrays = expr.preserveNullAndEmptyArrays || false;
-
-  var format = function format(o, i) {
-    if (includeArrayIndex !== false) o[includeArrayIndex] = i;
-    return o;
-  };
-
-  var value = void 0;
-
-  return Lazy(function () {
-    var _loop = function _loop() {
-      // take from lazy sequence if available
-      if (Lazy.isIterator(value)) {
-        var tmp = value.next();
-        if (!tmp.done) return {
-            v: tmp
-          };
-      }
-
-      // fetch next object
-      var obj = collection.next();
-      if (obj.done) return {
-          v: obj
-        };
-
-      // unwrap value
-      obj = obj.value;
-
-      // get the value of the field to unwind
-      value = resolve(obj, field);
-
-      // throw error if value is not an array???
-      if (isArray(value)) {
-        if (value.length === 0 && preserveNullAndEmptyArrays === true) {
-          value = null; // reset unwind value
-          var _tmp = cloneDeep(obj);
-          removeValue(_tmp, field);
-          return {
-            v: { value: format(_tmp, null), done: false }
-          };
-        } else {
-          // construct a lazy sequence for elements per value
-          value = Lazy(value).map(function (item, i) {
-            var tmp = cloneDeep(obj);
-            setValue(tmp, field, item);
-            return format(tmp, i);
-          });
-        }
-      } else if (!isEmpty(value) || preserveNullAndEmptyArrays === true) {
-        var _tmp2 = cloneDeep(obj);
-        return {
-          v: { value: format(_tmp2, null), done: false }
-        };
-      }
-    };
-
-    while (true) {
-      var _ret = _loop();
-
-      if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
-    }
-  });
-}
-
-/**
- * Pipeline Aggregation Stages. https://docs.mongodb.com/manual/reference/operator/aggregation-
- */
-var pipelineOperators = {
-  $addFields: $addFields,
-  $bucket: $bucket,
-  $bucketAuto: $bucketAuto,
-  $count: $count,
-  $facet: $facet,
-  $group: $group,
-  $limit: $limit,
-  $lookup: $lookup,
-  $match: $match,
-  $out: $out,
-  $project: $project,
-  $redact: $redact,
-  $replaceRoot: $replaceRoot,
-  $sample: $sample,
-  $set: $set,
-  $skip: $skip,
-  $sort: $sort,
-  $sortByCount: $sortByCount,
-  $unwind: $unwind
-};
-
-/**
  * Aggregator for defining filter using mongoDB aggregation pipeline syntax
  *
  * @param operators an Array of pipeline operators
@@ -3048,6 +2041,8 @@ var Aggregator = function () {
       var _this = this;
 
       collection = Lazy(collection);
+
+      var pipelineOperators = OPERATORS[OP_PIPELINE];
 
       if (!isEmpty(this.__operators)) {
         // run aggregation pipeline
@@ -3332,7 +2327,7 @@ var Query = function () {
     key: '_processOperator',
     value: function _processOperator(field, operator, value) {
       assert(inArray(ops(OP_QUERY), operator), "Invalid query operator '" + operator + "' detected");
-      this.__compiled.push(queryOperators[operator](field, value));
+      this.__compiled.push(OPERATORS[OP_QUERY][operator](field, value));
     }
 
     /**
@@ -4491,6 +3486,1013 @@ var variableOperators = { $let: $let
 // combine aggregate operators
 var expressionOperators = Object.assign({}, arithmeticOperators, arrayOperators, booleanOperators, comparisonOperators, conditionalOperators, dateOperators, literalOperators, setOperators, stringOperators, variableOperators);
 
+/**
+ * Returns an array of all the unique values for the selected field among for each document in that group.
+ *
+ * @param collection
+ * @param expr
+ * @returns {*}
+ */
+function $addToSet(collection, expr) {
+  return unique(this.$push(collection, expr));
+}
+
+/**
+ * Returns an average of all the values in a group.
+ *
+ * @param collection
+ * @param expr
+ * @returns {number}
+ */
+function $avg(collection, expr) {
+  var data = this.$push(collection, expr).filter(isNumber);
+  var sum = reduce(data, function (acc, n) {
+    return acc + n;
+  }, 0);
+  return sum / (data.length || 1);
+}
+
+/**
+ * Returns the first value in a group.
+ *
+ * @param collection
+ * @param expr
+ * @returns {*}
+ */
+function $first(collection, expr) {
+  return collection.length > 0 ? computeValue(collection[0], expr) : undefined;
+}
+
+/**
+ * Returns the last value in a group.
+ *
+ * @param collection
+ * @param expr
+ * @returns {*}
+ */
+function $last(collection, expr) {
+  return collection.length > 0 ? computeValue(collection[collection.length - 1], expr) : undefined;
+}
+
+/**
+ * Returns the highest value in a group.
+ *
+ * @param collection
+ * @param expr
+ * @returns {*}
+ */
+function $max(collection, expr) {
+  return reduce(this.$push(collection, expr), function (acc, n) {
+    return isNil(acc) || n > acc ? n : acc;
+  }, undefined);
+}
+
+/**
+ * Combines multiple documents into a single document.
+ *
+ * @param collection
+ * @param expr
+ * @returns {Array|*}
+ */
+function $mergeObjects$1(collection, expr) {
+  return reduce(collection, function (memo, o) {
+    return Object.assign(memo, computeValue(o, expr));
+  }, {});
+}
+
+/**
+ * Returns the lowest value in a group.
+ *
+ * @param collection
+ * @param expr
+ * @returns {*}
+ */
+function $min(collection, expr) {
+  return reduce(this.$push(collection, expr), function (acc, n) {
+    return isNil(acc) || n < acc ? n : acc;
+  }, undefined);
+}
+
+/**
+ * Returns an array of all values for the selected field among for each document in that group.
+ *
+ * @param collection
+ * @param expr
+ * @returns {Array|*}
+ */
+function $push(collection, expr) {
+  if (isNil(expr)) return collection;
+  return collection.map(function (obj) {
+    return computeValue(obj, expr);
+  });
+}
+
+/**
+ * Returns the population standard deviation of the input values.
+ *
+ * @param  {Array} collection
+ * @param  {Object} expr
+ * @return {Number}
+ */
+function $stdDevPop(collection, expr) {
+  return stddev(this.$push(collection, expr).filter(isNumber), false);
+}
+
+/**
+ * Returns the sample standard deviation of the input values.
+ * @param  {Array} collection
+ * @param  {Object} expr
+ * @return {Number|null}
+ */
+function $stdDevSamp(collection, expr) {
+  return stddev(this.$push(collection, expr).filter(isNumber), true);
+}
+
+/**
+ * Returns the sum of all the values in a group.
+ *
+ * @param collection
+ * @param expr
+ * @returns {*}
+ */
+function $sum(collection, expr) {
+  if (!isArray(collection)) return 0;
+
+  // take a short cut if expr is number literal
+  if (isNumber(expr)) return collection.length * expr;
+
+  return reduce(this.$push(collection, expr).filter(isNumber), function (acc, n) {
+    return acc + n;
+  }, 0);
+}
+
+/**
+ * Group stage Accumulator Operators. https://docs.mongodb.com/manual/reference/operator/aggregation-
+ */
+
+var groupOperators = {
+  $addToSet: $addToSet,
+  $avg: $avg,
+  $first: $first,
+  $last: $last,
+  $mergeObjects: $mergeObjects$1,
+  $max: $max,
+  $min: $min,
+  $push: $push,
+  $stdDevPop: $stdDevPop,
+  $stdDevSamp: $stdDevSamp,
+  $sum: $sum
+};
+
+/**
+ * Adds new fields to documents.
+ * Outputs documents that contain all existing fields from the input documents and newly added fields.
+ *
+ * @param {Array} collection
+ * @param {*} expr
+ * @param {Object} opt Pipeline options
+ */
+function $addFields(collection, expr, opt) {
+  var newFields = keys(expr);
+
+  if (newFields.length === 0) return collection;
+
+  return collection.map(function (obj) {
+    var newObj = cloneDeep(obj);
+    each(newFields, function (field) {
+      var newValue = computeValue(obj, expr[field]);
+      setValue(newObj, field, newValue);
+    });
+    return newObj;
+  });
+}
+
+/**
+ * Alias for $addFields.
+ */
+var $set = $addFields;
+
+/**
+ * Categorizes incoming documents into groups, called buckets, based on a specified expression and bucket boundaries.
+ * https://docs.mongodb.com/manual/reference/operator/aggregation/bucket/
+ *
+ * @param {*} collection
+ * @param {*} expr
+ * @param {Object} opt Pipeline options
+ */
+function $bucket(collection, expr, opt) {
+  var boundaries = expr.boundaries;
+  var defaultKey = expr['default'];
+  var lower = boundaries[0]; // inclusive
+  var upper = boundaries[boundaries.length - 1]; // exclusive
+  var outputExpr = expr.output || { 'count': { '$sum': 1 } };
+
+  assert(boundaries.length > 2, "$bucket 'boundaries' expression must have at least 3 elements");
+  var boundType = getType(lower);
+
+  for (var i = 0, len = boundaries.length - 1; i < len; i++) {
+    assert(boundType === getType(boundaries[i + 1]), "$bucket 'boundaries' must all be of the same type");
+    assert(boundaries[i] < boundaries[i + 1], "$bucket 'boundaries' must be sorted in ascending order");
+  }
+
+  !isNil(defaultKey) && getType(expr.default) === getType(lower) && assert(lower > expr.default || upper < expr.default, "$bucket 'default' expression must be out of boundaries range");
+
+  var grouped = {};
+  each(boundaries, function (k) {
+    return grouped[k] = [];
+  });
+
+  // add default key if provided
+  if (!isNil(defaultKey)) grouped[defaultKey] = [];
+
+  var iterator = false;
+
+  return Lazy(function () {
+    if (!iterator) {
+      collection.each(function (obj) {
+        var key = computeValue(obj, expr.groupBy);
+
+        if (isNil(key) || key < lower || key >= upper) {
+          assert(!isNil(defaultKey), '$bucket require a default for out of range values');
+          grouped[defaultKey].push(obj);
+        } else {
+          assert(key >= lower && key < upper, "$bucket 'groupBy' expression must resolve to a value in range of boundaries");
+          var index = findInsertIndex(boundaries, key);
+          var boundKey = boundaries[Math.max(0, index - 1)];
+          grouped[boundKey].push(obj);
+        }
+      });
+
+      // upper bound is exclusive so we remove it
+      boundaries.pop();
+      if (!isNil(defaultKey)) boundaries.push(defaultKey);
+
+      iterator = Lazy(boundaries).map(function (key) {
+        var acc = accumulate(grouped[key], null, outputExpr);
+        return Object.assign(acc, { '_id': key });
+      });
+    }
+    return iterator.next();
+  });
+}
+
+/**
+ * Categorizes incoming documents into a specific number of groups, called buckets,
+ * based on a specified expression. Bucket boundaries are automatically determined
+ * in an attempt to evenly distribute the documents into the specified number of buckets.
+ * https://docs.mongodb.com/manual/reference/operator/aggregation/bucketAuto/
+ *
+ * @param {*} collection
+ * @param {*} expr
+ * @param {*} opt Pipeline options
+ */
+function $bucketAuto(collection, expr, opt) {
+  var outputExpr = expr.output || { 'count': { '$sum': 1 } };
+  var groupByExpr = expr.groupBy;
+  var bucketCount = expr.buckets;
+
+  assert(bucketCount > 0, "The $bucketAuto 'buckets' field must be greater than 0, but found: " + bucketCount);
+
+  return collection.transform(function (coll) {
+    var approxBucketSize = Math.max(1, Math.round(coll.length / bucketCount));
+    var computeValueOptimized = memoize(computeValue);
+    var grouped = {};
+    var remaining = [];
+
+    var sorted = sortBy(coll, function (o) {
+      var key = computeValueOptimized(o, groupByExpr);
+      if (isNil(key)) {
+        remaining.push(o);
+      } else {
+        grouped[key] || (grouped[key] = []);
+        grouped[key].push(o);
+      }
+      return key;
+    });
+
+    var ID_KEY = idKey();
+    var result = [];
+    var index = 0; // counter for sorted collection
+
+    for (var i = 0, len = sorted.length; i < bucketCount && index < len; i++) {
+      var boundaries = {};
+      var bucketItems = [];
+
+      for (var j = 0; j < approxBucketSize && index < len; j++) {
+        var key = computeValueOptimized(sorted[index], groupByExpr);
+
+        if (isNil(key)) key = null;
+
+        // populate current bucket with all values for current key
+        into(bucketItems, isNil(key) ? remaining : grouped[key]);
+
+        // increase sort index by number of items added
+        index += isNil(key) ? remaining.length : grouped[key].length;
+
+        // set the min key boundary if not already present
+        if (!has(boundaries, 'min')) boundaries.min = key;
+
+        if (result.length > 0) {
+          var lastBucket = result[result.length - 1];
+          lastBucket[ID_KEY].max = boundaries.min;
+        }
+      }
+
+      // if is last bucket add remaining items
+      if (i == bucketCount - 1) {
+        into(bucketItems, sorted.slice(index));
+      }
+
+      result.push(Object.assign(accumulate(bucketItems, null, outputExpr), { '_id': boundaries }));
+    }
+
+    if (result.length > 0) {
+      result[result.length - 1][ID_KEY].max = computeValueOptimized(sorted[sorted.length - 1], groupByExpr);
+    }
+
+    return result;
+  });
+}
+
+/**
+ * Returns a document that contains a count of the number of documents input to the stage.
+ *
+ * @param  {Array} collection
+ * @param  {String} expr
+ * @param {Object} opt Pipeline options
+ * @return {Object}
+ */
+function $count(collection, expr, opt) {
+  assert(isString(expr) && expr.trim() !== '' && expr.indexOf('.') === -1 && expr.trim()[0] !== '$', 'Invalid expression value for $count');
+
+  return Lazy(function () {
+    var o = {};
+    o[expr] = collection.size();
+    return { value: o, done: false };
+  }).first();
+}
+
+/**
+ * Processes multiple aggregation pipelines within a single stage on the same set of input documents.
+ * Enables the creation of multi-faceted aggregations capable of characterizing data across multiple dimensions, or facets, in a single stage.
+ */
+function $facet(collection, expr, opt) {
+  return collection.transform(function (array) {
+    return [objectMap(expr, function (pipeline) {
+      return aggregate(array, pipeline);
+    })];
+  });
+}
+
+/**
+ * Groups documents together for the purpose of calculating aggregate values based on a collection of documents.
+ *
+ * @param collection
+ * @param expr
+ * @param opt Pipeline options
+ * @returns {Array}
+ */
+function $group(collection, expr, opt) {
+  // lookup key for grouping
+  var ID_KEY = idKey();
+  var id = expr[ID_KEY];
+
+  return collection.transform(function (coll) {
+    var partitions = groupBy(coll, function (obj) {
+      return computeValue(obj, id, id);
+    });
+
+    // remove the group key
+    expr = clone(expr);
+    delete expr[ID_KEY];
+
+    var i = -1;
+    var size = partitions.keys.length;
+
+    return function () {
+
+      if (++i === size) return { done: true };
+
+      var value = partitions.keys[i];
+      var obj = {};
+
+      // exclude undefined key value
+      if (value !== undefined) {
+        obj[ID_KEY] = value;
+      }
+
+      // compute remaining keys in expression
+      each(expr, function (val, key) {
+        obj[key] = accumulate(partitions.groups[i], key, val);
+      });
+
+      return { value: obj, done: false };
+    };
+  });
+}
+
+/**
+ * Restricts the number of documents in an aggregation pipeline.
+ *
+ * @param collection
+ * @param value
+ * @param opt
+ * @returns {Object|*}
+ */
+function $limit(collection, value, opt) {
+  return collection.take(value);
+}
+
+/**
+ * Performs a left outer join to another collection in the same database to filter in documents from the “joined” collection for processing.
+ *
+ * @param collection
+ * @param expr
+ * @param opt
+ */
+function $lookup(collection, expr, opt) {
+  var joinColl = expr.from;
+  var localField = expr.localField;
+  var foreignField = expr.foreignField;
+  var asField = expr.as;
+
+  assert(isArray(joinColl) && isString(foreignField) && isString(localField) && isString(asField), '$lookup: invalid argument');
+
+  var hash = {};
+
+  each(joinColl, function (obj) {
+    var k = hashCode(resolve(obj, foreignField));
+    hash[k] = hash[k] || [];
+    hash[k].push(obj);
+  });
+
+  return collection.map(function (obj) {
+    var k = hashCode(resolve(obj, localField));
+    var newObj = clone(obj);
+    newObj[asField] = hash[k] || [];
+    return newObj;
+  });
+}
+
+/**
+ * Filters the document stream, and only allows matching documents to pass into the next pipeline stage.
+ * $match uses standard MongoDB queries.
+ *
+ * @param collection
+ * @param expr
+ * @param opt
+ * @returns {Array|*}
+ */
+function $match(collection, expr, opt) {
+  var q = new Query(expr);
+  return collection.filter(function (o) {
+    return q.test(o);
+  });
+}
+
+/**
+ * Takes the documents returned by the aggregation pipeline and writes them to a specified collection.
+ *
+ * Unlike the $out operator in MongoDB, this operator can appear in any position in the pipeline and is
+ * useful for collecting intermediate results of an aggregation operation.
+ *
+ * @param collection
+ * @param expr
+ * @param opt
+ * @returns {*}
+ */
+function $out(collection, expr, opt) {
+  assert(isArray(expr), '$out expression must be an array');
+  return collection.map(function (o) {
+    expr.push(o);
+    return o; // passthrough
+  });
+}
+
+/**
+ * Projection Operators. https://docs.mongodb.com/manual/reference/operator/projection/
+ */
+var projectionOperators = {
+  $: $, $elemMatch: $elemMatch$1, $slice: $slice$1
+
+  /**
+   * Projects the first element in an array that matches the query condition.
+   *
+   * @param obj
+   * @param field
+   * @param expr
+   */
+};function $(obj, expr, field) {
+  err('$ not implemented');
+}
+
+/**
+ * Projects only the first element from an array that matches the specified $elemMatch condition.
+ *
+ * @param obj
+ * @param field
+ * @param expr
+ * @returns {*}
+ */
+function $elemMatch$1(obj, expr, field) {
+  var arr = resolve(obj, field);
+  var query = new Query(expr);
+
+  assert(isArray(arr), '$elemMatch: invalid argument');
+
+  for (var i = 0; i < arr.length; i++) {
+    if (query.test(arr[i])) return [arr[i]];
+  }
+  return undefined;
+}
+
+/**
+ * Limits the number of elements projected from an array. Supports skip and limit slices.
+ *
+ * @param obj
+ * @param field
+ * @param expr
+ */
+function $slice$1(obj, expr, field) {
+  var xs = resolve(obj, field);
+
+  if (!isArray(xs)) return xs;
+
+  if (isArray(expr)) {
+    return slice(xs, expr[0], expr[1]);
+  } else {
+    assert(isNumber(expr), '$slice: invalid arguments for projection');
+    return slice(xs, expr);
+  }
+}
+
+/**
+ * Reshapes a document stream.
+ * $project can rename, add, or remove fields as well as create computed values and sub-documents.
+ *
+ * @param collection
+ * @param expr
+ * @param opt
+ * @returns {Array}
+ */
+function $project(collection, expr, opt) {
+  if (isEmpty(expr)) return collection;
+
+  // result collection
+  var expressionKeys = keys(expr);
+  var idOnlyExcludedExpression = false;
+  var ID_KEY = idKey();
+
+  // validate inclusion and exclusion
+  validateExpression(expr);
+
+  if (inArray(expressionKeys, ID_KEY)) {
+    var id = expr[ID_KEY];
+    if (id === 0 || id === false) {
+      expressionKeys = expressionKeys.filter(notInArray.bind(null, [ID_KEY]));
+      assert(notInArray(expressionKeys, ID_KEY), 'Must not contain collections id key');
+      idOnlyExcludedExpression = isEmpty(expressionKeys);
+    }
+  } else {
+    // if not specified the add the ID field
+    expressionKeys.push(ID_KEY);
+  }
+
+  return collection.map(function (obj) {
+    return processObject(obj, expr, expressionKeys, idOnlyExcludedExpression);
+  });
+}
+
+/**
+ * Process the expression value for $project operators
+ *
+ * @param {Object} obj The object to use as context
+ * @param {Object} expr The experssion object of $project operator
+ * @param {Array} expressionKeys The key in the 'expr' object
+ * @param {Boolean} idOnlyExcludedExpression Boolean value indicating whether only the ID key is excluded
+ */
+function processObject(obj, expr, expressionKeys, idOnlyExcludedExpression) {
+  var ID_KEY = idKey();
+
+  var newObj = {};
+  var foundSlice = false;
+  var foundExclusion = false;
+  var dropKeys = [];
+
+  if (idOnlyExcludedExpression) {
+    dropKeys.push(ID_KEY);
+  }
+
+  expressionKeys.forEach(function (key) {
+    // final computed value of the key
+    var value = void 0;
+
+    // expression to associate with key
+    var subExpr = expr[key];
+
+    if (key !== ID_KEY && inArray([0, false], subExpr)) {
+      foundExclusion = true;
+    }
+
+    if (key === ID_KEY && isEmpty(subExpr)) {
+      // tiny optimization here to skip over id
+      value = obj[key];
+    } else if (isString(subExpr)) {
+      value = computeValue(obj, subExpr, key);
+    } else if (inArray([1, true], subExpr)) {
+      // For direct projections, we use the resolved object value
+    } else if (isArray(subExpr)) {
+      value = subExpr.map(function (v) {
+        var r = computeValue(obj, v);
+        if (isNil(r)) return null;
+        return r;
+      });
+    } else if (isObject(subExpr)) {
+      var subExprKeys = keys(subExpr);
+      var operator = subExprKeys.length > 1 ? false : subExprKeys[0];
+
+      if (inArray(ops(OP_PROJECTION), operator)) {
+        // apply the projection operator on the operator expression for the key
+        if (operator === '$slice') {
+          // $slice is handled differently for aggregation and projection operations
+          if (ensureArray(subExpr[operator]).every(isNumber)) {
+            // $slice for projection operation
+            value = projectionOperators[operator](obj, subExpr[operator], key);
+            foundSlice = true;
+          } else {
+            // $slice for aggregation operation
+            value = computeValue(obj, subExpr, key);
+          }
+        } else {
+          value = projectionOperators[operator](obj, subExpr[operator], key);
+        }
+      } else {
+        // compute the value for the sub expression for the key
+        if (has(obj, key)) {
+          validateExpression(subExpr);
+          var nestedObj = obj[key];
+          value = isArray(nestedObj) ? nestedObj.map(function (o) {
+            return processObject(o, subExpr, subExprKeys, false);
+          }) : processObject(nestedObj, subExpr, subExprKeys, false);
+        } else {
+          value = computeValue(obj, subExpr, key);
+        }
+      }
+    } else {
+      dropKeys.push(key);
+      return;
+    }
+
+    // get value with object graph
+    var objPathValue = resolveObj(obj, key, {
+      preserveMissingValues: true
+    });
+
+    // add the value at the path
+    if (objPathValue !== undefined) {
+      merge(newObj, objPathValue, {
+        flatten: true
+      });
+    }
+
+    // if computed add/or remove accordingly
+    if (notInArray([0, 1, false, true], subExpr)) {
+      if (value === undefined) {
+        removeValue(newObj, key);
+      } else {
+        setValue(newObj, key, value);
+      }
+    }
+  });
+
+  // filter out all missing values preserved to support correct merging
+  filterMissing(newObj);
+
+  // if projection included $slice operator
+  // Also if exclusion fields are found or we want to exclude only the id field
+  // include keys that were not explicitly excluded
+  if (foundSlice || foundExclusion || idOnlyExcludedExpression) {
+    newObj = Object.assign({}, obj, newObj);
+    if (dropKeys.length > 0) {
+      newObj = cloneDeep(newObj);
+      each(dropKeys, function (k) {
+        return removeValue(newObj, k);
+      });
+    }
+  }
+
+  return newObj;
+}
+
+/**
+ * Validate inclusion and exclusion values in expression
+ *
+ * @param {Object} expr The expression given for the projection
+ */
+function validateExpression(expr) {
+  var ID_KEY = idKey();
+  var check = [false, false];
+  each(expr, function (v, k) {
+    if (k === ID_KEY) return;
+    if (v === 0 || v === false) {
+      check[0] = true;
+    } else if (v === 1 || v === true) {
+      check[1] = true;
+    }
+    assert(!(check[0] && check[1]), 'Projection cannot have a mix of inclusion and exclusion.');
+  });
+}
+
+/**
+ * Restricts the contents of the documents based on information stored in the documents themselves.
+ *
+ * https://docs.mongodb.com/manual/reference/operator/aggregation/redact/
+ */
+function $redact(collection, expr, opt) {
+  return collection.map(function (obj) {
+    return redactObj(cloneDeep(obj), expr);
+  });
+}
+
+/**
+ * Replaces a document with the specified embedded document or new one.
+ * The replacement document can be any valid expression that resolves to a document.
+ *
+ * https://docs.mongodb.com/manual/reference/operator/aggregation/replaceRoot/
+ *
+ * @param  {Array} collection
+ * @param  {Object} expr
+ * @param  {Object} opt
+ * @return {*}
+ */
+function $replaceRoot(collection, expr, opt) {
+  return collection.map(function (obj) {
+    obj = computeValue(obj, expr.newRoot);
+    assert(isObject(obj), '$replaceRoot expression must return an object');
+    return obj;
+  });
+}
+
+/**
+ * Randomly selects the specified number of documents from its input.
+ * https://docs.mongodb.com/manual/reference/operator/aggregation/sample/
+ *
+ * @param  {Array} collection
+ * @param  {Object} expr
+ * @param  {Object} opt
+ * @return {*}
+ */
+function $sample(collection, expr, opt) {
+  var size = expr.size;
+  assert(isNumber(size), '$sample size must be a positive integer');
+
+  return collection.transform(function (xs) {
+    var len = xs.length;
+    var i = -1;
+    return function () {
+      if (++i === size) return { done: true };
+      var n = Math.floor(Math.random() * len);
+      return { value: xs[n], done: false };
+    };
+  });
+}
+
+/**
+ * Skips over a specified number of documents from the pipeline and returns the rest.
+ *
+ * @param collection
+ * @param value
+ * @param  {Object} opt
+ * @returns {*}
+ */
+function $skip(collection, value, opt) {
+  return collection.drop(value);
+}
+
+/**
+ * Takes all input documents and returns them in a stream of sorted documents.
+ *
+ * @param collection
+ * @param sortKeys
+ * @param  {Object} opt
+ * @returns {*}
+ */
+function $sort(collection, sortKeys, opt) {
+  if (isEmpty(sortKeys) || !isObject(sortKeys)) return collection;
+
+  opt = opt || {};
+  var cmp = compare;
+  var collationSpec = opt['collation'];
+
+  // use collation comparator if provided
+  if (isObject(collationSpec) && isString(collationSpec.locale)) {
+    cmp = collationComparator(collationSpec);
+  }
+
+  return collection.transform(function (coll) {
+    var modifiers = keys(sortKeys);
+
+    each(modifiers.reverse(), function (key) {
+      var grouped = groupBy(coll, function (obj) {
+        return resolve(obj, key);
+      });
+      var sortedIndex = {};
+
+      var indexKeys = sortBy(grouped.keys, function (k, i) {
+        sortedIndex[k] = i;
+        return k;
+      }, cmp);
+
+      if (sortKeys[key] === -1) indexKeys.reverse();
+      coll = [];
+      each(indexKeys, function (k) {
+        return into(coll, grouped.groups[sortedIndex[k]]);
+      });
+    });
+
+    return coll;
+  });
+}
+
+// MongoDB collation strength to JS localeCompare sensitivity mapping.
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare
+var COLLATION_STRENGTH = {
+  // Only strings that differ in base letters compare as unequal. Examples: a ≠ b, a = á, a = A.
+  1: 'base',
+  //  Only strings that differ in base letters or accents and other diacritic marks compare as unequal.
+  // Examples: a ≠ b, a ≠ á, a = A.
+  2: 'accent',
+  // Strings that differ in base letters, accents and other diacritic marks, or case compare as unequal.
+  // Other differences may also be taken into consideration. Examples: a ≠ b, a ≠ á, a ≠ A
+  3: 'variant'
+  // case - Only strings that differ in base letters or case compare as unequal. Examples: a ≠ b, a = á, a ≠ A.
+
+
+  /**
+   * Creates a comparator function for the given collation spec. See https://docs.mongodb.com/manual/reference/collation/
+   *
+   * @param spec {Object} The MongoDB collation spec.
+   * {
+   *   locale: <string>,
+   *   caseLevel: <boolean>,
+   *   caseFirst: <string>,
+   *   strength: <int>,
+   *   numericOrdering: <boolean>,
+   *   alternate: <string>,
+   *   maxVariable: <string>, // unsupported
+   *   backwards: <boolean> // unsupported
+   * }
+   */
+};function collationComparator(spec) {
+
+  var localeOpt = {
+    sensitivity: COLLATION_STRENGTH[spec.strength || 3],
+    caseFirst: spec.caseFirst === 'off' ? 'false' : spec.caseFirst || 'false',
+    numeric: spec.numericOrdering || false,
+    ignorePunctuation: spec.alternate === 'shifted'
+
+    // when caseLevel is true for strength  1:base and 2:accent, bump sensitivity to the nearest that supports case comparison
+  };if ((spec.caseLevel || false) === true) {
+    if (localeOpt.sensitivity === 'base') localeOpt.sensitivity = 'case';
+    if (localeOpt.sensitivity === 'accent') localeOpt.sensitivity = 'variant';
+  }
+
+  var collator = new Intl.Collator(spec.locale, localeOpt);
+
+  return function (a, b) {
+    // non strings
+    if (!isString(a) || !isString(b)) return compare(a, b);
+
+    // only for strings
+    var i = collator.compare(a, b);
+    if (i < 0) return -1;
+    if (i > 0) return 1;
+    return 0;
+  };
+}
+
+/**
+ * Groups incoming documents based on the value of a specified expression,
+ * then computes the count of documents in each distinct group.
+ *
+ * https://docs.mongodb.com/manual/reference/operator/aggregation/sortByCount/
+ *
+ * @param  {Array} collection
+ * @param  {Object} expr
+ * @param  {Object} opt
+ * @return {*}
+ */
+function $sortByCount(collection, expr, opt) {
+  var newExpr = { count: { $sum: 1 } };
+  newExpr[idKey()] = expr;
+
+  return this.$sort(this.$group(collection, newExpr), { count: -1 }, opt);
+}
+
+/**
+ * Takes an array of documents and returns them as a stream of documents.
+ *
+ * @param collection
+ * @param expr
+ * @param  {Object} opt
+ * @returns {Array}
+ */
+function $unwind(collection, expr, opt) {
+  if (isString(expr)) {
+    expr = { path: expr };
+  }
+
+  var field = expr.path.substr(1);
+  var includeArrayIndex = expr.includeArrayIndex || false;
+  var preserveNullAndEmptyArrays = expr.preserveNullAndEmptyArrays || false;
+
+  var format = function format(o, i) {
+    if (includeArrayIndex !== false) o[includeArrayIndex] = i;
+    return o;
+  };
+
+  var value = void 0;
+
+  return Lazy(function () {
+    var _loop = function _loop() {
+      // take from lazy sequence if available
+      if (Lazy.isIterator(value)) {
+        var tmp = value.next();
+        if (!tmp.done) return {
+            v: tmp
+          };
+      }
+
+      // fetch next object
+      var obj = collection.next();
+      if (obj.done) return {
+          v: obj
+        };
+
+      // unwrap value
+      obj = obj.value;
+
+      // get the value of the field to unwind
+      value = resolve(obj, field);
+
+      // throw error if value is not an array???
+      if (isArray(value)) {
+        if (value.length === 0 && preserveNullAndEmptyArrays === true) {
+          value = null; // reset unwind value
+          var _tmp = cloneDeep(obj);
+          removeValue(_tmp, field);
+          return {
+            v: { value: format(_tmp, null), done: false }
+          };
+        } else {
+          // construct a lazy sequence for elements per value
+          value = Lazy(value).map(function (item, i) {
+            var tmp = cloneDeep(obj);
+            setValue(tmp, field, item);
+            return format(tmp, i);
+          });
+        }
+      } else if (!isEmpty(value) || preserveNullAndEmptyArrays === true) {
+        var _tmp2 = cloneDeep(obj);
+        return {
+          v: { value: format(_tmp2, null), done: false }
+        };
+      }
+    };
+
+    while (true) {
+      var _ret = _loop();
+
+      if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
+    }
+  });
+}
+
+/**
+ * Pipeline Aggregation Stages. https://docs.mongodb.com/manual/reference/operator/aggregation-
+ */
+var pipelineOperators = {
+  $addFields: $addFields,
+  $bucket: $bucket,
+  $bucketAuto: $bucketAuto,
+  $count: $count,
+  $facet: $facet,
+  $group: $group,
+  $limit: $limit,
+  $lookup: $lookup,
+  $match: $match,
+  $out: $out,
+  $project: $project,
+  $redact: $redact,
+  $replaceRoot: $replaceRoot,
+  $sample: $sample,
+  $set: $set,
+  $skip: $skip,
+  $sort: $sort,
+  $sortByCount: $sortByCount,
+  $unwind: $unwind
+};
+
 // operator definitions
 var OPERATORS = {};
 OPERATORS[OP_EXPRESSION] = expressionOperators;
@@ -4677,7 +4679,7 @@ function ops() {
  */
 function accumulate(collection, field, expr) {
   if (inArray(ops(OP_GROUP), field)) {
-    return groupOperators[field](collection, expr);
+    return OPERATORS[OP_GROUP][field](collection, expr);
   }
 
   if (isObject(expr)) {
@@ -4714,7 +4716,7 @@ function computeValue(obj, expr) {
 
   // if the field of the object is a valid operator
   if (inArray(ops(OP_EXPRESSION), operator)) {
-    return expressionOperators[operator](obj, expr, opt);
+    return OPERATORS[OP_EXPRESSION][operator](obj, expr, opt);
   }
 
   // we also handle $group accumulator operators
@@ -4723,7 +4725,7 @@ function computeValue(obj, expr) {
     obj = computeValue(obj, expr, null, opt);
     assert(isArray(obj), operator + ' expression must resolve to an array');
     // we pass a null expression because all values have been resolved
-    return groupOperators[operator](obj, null, opt);
+    return OPERATORS[OP_GROUP][operator](obj, null, opt);
   }
 
   // if expr is a variable for an object field
