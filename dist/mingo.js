@@ -1122,6 +1122,22 @@ var groupOperators = {
 };
 
 var arithmeticOperators = {
+  $abs: $abs,
+  $add: $add,
+  $ceil: $ceil,
+  $divide: $divide,
+  $exp: $exp,
+  $floor: $floor,
+  $ln: $ln,
+  $log: $log,
+  $log10: $log10,
+  $mod: $mod,
+  $multiply: $multiply,
+  $pow: $pow,
+  $round: $round,
+  $sqrt: $sqrt,
+  $subtract: $subtract,
+  $trunc: $trunc
 
   /**
    * Returns the absolute value of a number.
@@ -1131,246 +1147,230 @@ var arithmeticOperators = {
    * @param expr
    * @return {Number|null|NaN}
    */
-  $abs: function $abs(obj, expr) {
-    var val = computeValue(obj, expr);
-    return val === null || val === undefined ? null : Math.abs(val);
-  },
+};function $abs(obj, expr) {
+  var val = computeValue(obj, expr);
+  return val === null || val === undefined ? null : Math.abs(val);
+}
 
+/**
+ * Computes the sum of an array of numbers.
+ *
+ * @param obj
+ * @param expr
+ * @returns {Object}
+ */
+function $add(obj, expr) {
+  var args = computeValue(obj, expr);
+  var foundDate = false;
+  var result = reduce(args, function (acc, val) {
+    if (isDate(val)) {
+      assert(!foundDate, "'$add' can only have one date value");
+      foundDate = true;
+      val = val.getTime();
+    }
+    // assume val is a number
+    acc += val;
+    return acc;
+  }, 0);
+  return foundDate ? new Date(result) : result;
+}
 
-  /**
-   * Computes the sum of an array of numbers.
-   *
-   * @param obj
-   * @param expr
-   * @returns {Object}
-   */
-  $add: function $add(obj, expr) {
-    var args = computeValue(obj, expr);
-    var foundDate = false;
-    var result = reduce(args, function (acc, val) {
-      if (isDate(val)) {
-        assert(!foundDate, "'$add' can only have one date value");
-        foundDate = true;
-        val = val.getTime();
-      }
-      // assume val is a number
-      acc += val;
-      return acc;
-    }, 0);
-    return foundDate ? new Date(result) : result;
-  },
+/**
+ * Returns the smallest integer greater than or equal to the specified number.
+ *
+ * @param obj
+ * @param expr
+ * @returns {number}
+ */
+function $ceil(obj, expr) {
+  var arg = computeValue(obj, expr);
+  if (isNil(arg)) return null;
+  assert(isNumber(arg) || isNaN(arg), '$ceil expression must resolve to a number.');
+  return Math.ceil(arg);
+}
 
+/**
+ * Takes two numbers and divides the first number by the second.
+ *
+ * @param obj
+ * @param expr
+ * @returns {number}
+ */
+function $divide(obj, expr) {
+  var args = computeValue(obj, expr);
+  return args[0] / args[1];
+}
 
-  /**
-   * Returns the smallest integer greater than or equal to the specified number.
-   *
-   * @param obj
-   * @param expr
-   * @returns {number}
-   */
-  $ceil: function $ceil(obj, expr) {
-    var arg = computeValue(obj, expr);
-    if (isNil(arg)) return null;
-    assert(isNumber(arg) || isNaN(arg), '$ceil expression must resolve to a number.');
-    return Math.ceil(arg);
-  },
+/**
+ * Raises Euler’s number (i.e. e ) to the specified exponent and returns the result.
+ *
+ * @param obj
+ * @param expr
+ * @returns {number}
+ */
+function $exp(obj, expr) {
+  var arg = computeValue(obj, expr);
+  if (isNil(arg)) return null;
+  assert(isNumber(arg) || isNaN(arg), '$exp expression must resolve to a number.');
+  return Math.exp(arg);
+}
 
+/**
+ * Returns the largest integer less than or equal to the specified number.
+ *
+ * @param obj
+ * @param expr
+ * @returns {number}
+ */
+function $floor(obj, expr) {
+  var arg = computeValue(obj, expr);
+  if (isNil(arg)) return null;
+  assert(isNumber(arg) || isNaN(arg), '$floor expression must resolve to a number.');
+  return Math.floor(arg);
+}
 
-  /**
-   * Takes two numbers and divides the first number by the second.
-   *
-   * @param obj
-   * @param expr
-   * @returns {number}
-   */
-  $divide: function $divide(obj, expr) {
-    var args = computeValue(obj, expr);
-    return args[0] / args[1];
-  },
+/**
+ * Calculates the natural logarithm ln (i.e loge) of a number and returns the result as a double.
+ *
+ * @param obj
+ * @param expr
+ * @returns {number}
+ */
+function $ln(obj, expr) {
+  var arg = computeValue(obj, expr);
+  if (isNil(arg)) return null;
+  assert(isNumber(arg) || isNaN(arg), '$ln expression must resolve to a number.');
+  return Math.log(arg);
+}
 
+/**
+ * Calculates the log of a number in the specified base and returns the result as a double.
+ *
+ * @param obj
+ * @param expr
+ * @returns {number}
+ */
+function $log(obj, expr) {
+  var args = computeValue(obj, expr);
+  var msg = '$log expression must resolve to array(2) of numbers';
+  assert(isArray(args) && args.length === 2, msg);
+  if (args.some(isNil)) return null;
+  assert(args.some(isNaN) || args.every(isNumber), msg);
+  return Math.log10(args[0]) / Math.log10(args[1]);
+}
 
-  /**
-   * Raises Euler’s number (i.e. e ) to the specified exponent and returns the result.
-   *
-   * @param obj
-   * @param expr
-   * @returns {number}
-   */
-  $exp: function $exp(obj, expr) {
-    var arg = computeValue(obj, expr);
-    if (isNil(arg)) return null;
-    assert(isNumber(arg) || isNaN(arg), '$exp expression must resolve to a number.');
-    return Math.exp(arg);
-  },
+/**
+ * Calculates the log base 10 of a number and returns the result as a double.
+ *
+ * @param obj
+ * @param expr
+ * @returns {number}
+ */
+function $log10(obj, expr) {
+  var arg = computeValue(obj, expr);
+  if (isNil(arg)) return null;
+  assert(isNumber(arg) || isNaN(arg), '$log10 expression must resolve to a number.');
+  return Math.log10(arg);
+}
 
+/**
+ * Takes two numbers and calculates the modulo of the first number divided by the second.
+ *
+ * @param obj
+ * @param expr
+ * @returns {number}
+ */
+function $mod(obj, expr) {
+  var args = computeValue(obj, expr);
+  return args[0] % args[1];
+}
 
-  /**
-   * Returns the largest integer less than or equal to the specified number.
-   *
-   * @param obj
-   * @param expr
-   * @returns {number}
-   */
-  $floor: function $floor(obj, expr) {
-    var arg = computeValue(obj, expr);
-    if (isNil(arg)) return null;
-    assert(isNumber(arg) || isNaN(arg), '$floor expression must resolve to a number.');
-    return Math.floor(arg);
-  },
+/**
+ * Computes the product of an array of numbers.
+ *
+ * @param obj
+ * @param expr
+ * @returns {Object}
+ */
+function $multiply(obj, expr) {
+  var args = computeValue(obj, expr);
+  return reduce(args, function (acc, num) {
+    return acc * num;
+  }, 1);
+}
 
+/**
+ * Raises a number to the specified exponent and returns the result.
+ *
+ * @param obj
+ * @param expr
+ * @returns {Object}
+ */
+function $pow(obj, expr) {
+  var args = computeValue(obj, expr);
 
-  /**
-   * Calculates the natural logarithm ln (i.e loge) of a number and returns the result as a double.
-   *
-   * @param obj
-   * @param expr
-   * @returns {number}
-   */
-  $ln: function $ln(obj, expr) {
-    var arg = computeValue(obj, expr);
-    if (isNil(arg)) return null;
-    assert(isNumber(arg) || isNaN(arg), '$ln expression must resolve to a number.');
-    return Math.log(arg);
-  },
+  assert(isArray(args) && args.length === 2 && args.every(isNumber), '$pow expression must resolve to array(2) of numbers');
+  assert(!(args[0] === 0 && args[1] < 0), '$pow cannot raise 0 to a negative exponent');
 
+  return Math.pow(args[0], args[1]);
+}
 
-  /**
-   * Calculates the log of a number in the specified base and returns the result as a double.
-   *
-   * @param obj
-   * @param expr
-   * @returns {number}
-   */
-  $log: function $log(obj, expr) {
-    var args = computeValue(obj, expr);
-    var msg = '$log expression must resolve to array(2) of numbers';
-    assert(isArray(args) && args.length === 2, msg);
-    if (args.some(isNil)) return null;
-    assert(args.some(isNaN) || args.every(isNumber), msg);
-    return Math.log10(args[0]) / Math.log10(args[1]);
-  },
+/**
+ * Rounds a number to to a whole integer or to a specified decimal place.
+ * @param {*} obj
+ * @param {*} expr
+ */
+function $round(obj, expr) {
+  var args = computeValue(obj, expr);
+  var num = args[0];
+  var place = args[1];
+  if (isNil(num) || num === NaN || Math.abs(num) === Infinity) return num;
+  assert(isNumber(num), '$round expression must resolve to a number.');
+  return truncate(num, place, true);
+}
 
+/**
+ * Calculates the square root of a positive number and returns the result as a double.
+ *
+ * @param obj
+ * @param expr
+ * @returns {number}
+ */
+function $sqrt(obj, expr) {
+  var n = computeValue(obj, expr);
+  if (isNil(n)) return null;
+  assert(isNumber(n) && n > 0 || isNaN(n), '$sqrt expression must resolve to non-negative number.');
+  return Math.sqrt(n);
+}
 
-  /**
-   * Calculates the log base 10 of a number and returns the result as a double.
-   *
-   * @param obj
-   * @param expr
-   * @returns {number}
-   */
-  $log10: function $log10(obj, expr) {
-    var arg = computeValue(obj, expr);
-    if (isNil(arg)) return null;
-    assert(isNumber(arg) || isNaN(arg), '$log10 expression must resolve to a number.');
-    return Math.log10(arg);
-  },
+/**
+ * Takes an array that contains two numbers or two dates and subtracts the second value from the first.
+ *
+ * @param obj
+ * @param expr
+ * @returns {number}
+ */
+function $subtract(obj, expr) {
+  var args = computeValue(obj, expr);
+  return args[0] - args[1];
+}
 
-
-  /**
-   * Takes two numbers and calculates the modulo of the first number divided by the second.
-   *
-   * @param obj
-   * @param expr
-   * @returns {number}
-   */
-  $mod: function $mod(obj, expr) {
-    var args = computeValue(obj, expr);
-    return args[0] % args[1];
-  },
-
-
-  /**
-   * Computes the product of an array of numbers.
-   *
-   * @param obj
-   * @param expr
-   * @returns {Object}
-   */
-  $multiply: function $multiply(obj, expr) {
-    var args = computeValue(obj, expr);
-    return reduce(args, function (acc, num) {
-      return acc * num;
-    }, 1);
-  },
-
-
-  /**
-   * Raises a number to the specified exponent and returns the result.
-   *
-   * @param obj
-   * @param expr
-   * @returns {Object}
-   */
-  $pow: function $pow(obj, expr) {
-    var args = computeValue(obj, expr);
-
-    assert(isArray(args) && args.length === 2 && args.every(isNumber), '$pow expression must resolve to array(2) of numbers');
-    assert(!(args[0] === 0 && args[1] < 0), '$pow cannot raise 0 to a negative exponent');
-
-    return Math.pow(args[0], args[1]);
-  },
-
-
-  /**
-   * Rounds a number to to a whole integer or to a specified decimal place.
-   * @param {*} obj
-   * @param {*} expr
-   */
-  $round: function $round(obj, expr) {
-    var args = computeValue(obj, expr);
-    var num = args[0];
-    var place = args[1];
-    if (isNil(num) || num === NaN || Math.abs(num) === Infinity) return num;
-    assert(isNumber(num), '$round expression must resolve to a number.');
-    return truncate(num, place, true);
-  },
-
-
-  /**
-   * Calculates the square root of a positive number and returns the result as a double.
-   *
-   * @param obj
-   * @param expr
-   * @returns {number}
-   */
-  $sqrt: function $sqrt(obj, expr) {
-    var n = computeValue(obj, expr);
-    if (isNil(n)) return null;
-    assert(isNumber(n) && n > 0 || isNaN(n), '$sqrt expression must resolve to non-negative number.');
-    return Math.sqrt(n);
-  },
-
-
-  /**
-   * Takes an array that contains two numbers or two dates and subtracts the second value from the first.
-   *
-   * @param obj
-   * @param expr
-   * @returns {number}
-   */
-  $subtract: function $subtract(obj, expr) {
-    var args = computeValue(obj, expr);
-    return args[0] - args[1];
-  },
-
-
-  /**
-   * Truncates a number to a whole integer or to a specified decimal place.
-   *
-   * @param obj
-   * @param expr
-   * @returns {number}
-   */
-  $trunc: function $trunc(obj, expr) {
-    var arr = computeValue(obj, expr);
-    var num = arr[0];
-    var places = arr[1];
-    if (isNil(num) || num === NaN || Math.abs(num) === Infinity) return num;
-    assert(isNumber(num), '$trunc expression must resolve to a number.');
-    assert(isNil(places) || isNumber(places) && places > -20 && places < 100, "$trunc expression has invalid place");
-    return truncate(num, places, false);
-  }
-};
+/**
+ * Truncates a number to a whole integer or to a specified decimal place.
+ *
+ * @param obj
+ * @param expr
+ * @returns {number}
+ */
+function $trunc(obj, expr) {
+  var arr = computeValue(obj, expr);
+  var num = arr[0];
+  var places = arr[1];
+  if (isNil(num) || num === NaN || Math.abs(num) === Infinity) return num;
+  assert(isNumber(num), '$trunc expression must resolve to a number.');
+  assert(isNil(places) || isNumber(places) && places > -20 && places < 100, "$trunc expression has invalid place");
+  return truncate(num, places, false);
+}
 
 /**
  * Truncates integer value to number of places. If roundOff is specified round value instead to the number of places
@@ -1426,6 +1426,23 @@ function truncate(num, places, roundOff) {
 }
 
 var arrayOperators = {
+  $arrayElemAt: $arrayElemAt,
+  $arrayToObject: $arrayToObject,
+  $concatArrays: $concatArrays,
+  $filter: $filter,
+  $in: $in,
+  $indexOfArray: $indexOfArray,
+  $isArray: $isArray,
+  $map: $map,
+  $mergeObjects: $mergeObjects$1,
+  $objectToArray: $objectToArray,
+  $range: $range,
+  $reduce: $reduce,
+  $reverseArray: $reverseArray,
+  $size: $size,
+  $slice: $slice,
+  $zip: $zip
+
   /**
    * Returns the element at the specified array index.
    *
@@ -1433,333 +1450,321 @@ var arrayOperators = {
    * @param  {*} expr
    * @return {*}
    */
-  $arrayElemAt: function $arrayElemAt(obj, expr) {
-    var arr = computeValue(obj, expr);
-    assert(isArray(arr) && arr.length === 2, '$arrayElemAt expression must resolve to array(2)');
-    assert(isArray(arr[0]), 'First operand to $arrayElemAt must resolve to an array');
-    assert(isNumber(arr[1]), 'Second operand to $arrayElemAt must resolve to an integer');
-    var idx = arr[1];
-    arr = arr[0];
-    if (idx < 0 && Math.abs(idx) <= arr.length) {
-      return arr[idx + arr.length];
-    } else if (idx >= 0 && idx < arr.length) {
-      return arr[idx];
-    }
-    return undefined;
-  },
-
-
-  /**
-   * Converts an array of key value pairs to a document.
-   */
-  $arrayToObject: function $arrayToObject(obj, expr) {
-    var arr = computeValue(obj, expr);
-    assert(isArray(arr), '$arrayToObject expression must resolve to an array');
-    return reduce(arr, function (newObj, val) {
-      if (isArray(val) && val.length == 2) {
-        newObj[val[0]] = val[1];
-      } else {
-        assert(isObject(val) && has(val, 'k') && has(val, 'v'), '$arrayToObject expression is invalid.');
-        newObj[val.k] = val.v;
-      }
-      return newObj;
-    }, {});
-  },
-
-
-  /**
-   * Concatenates arrays to return the concatenated array.
-   *
-   * @param  {Object} obj
-   * @param  {*} expr
-   * @return {*}
-   */
-  $concatArrays: function $concatArrays(obj, expr) {
-    var arr = computeValue(obj, expr, null);
-    assert(isArray(arr), '$concatArrays must resolve to an array');
-    if (arr.some(isNil)) return null;
-    return arr.reduce(function (acc, item) {
-      return into(acc, item);
-    }, []);
-  },
-
-
-  /**
-   * Selects a subset of the array to return an array with only the elements that match the filter condition.
-   *
-   * @param  {Object} obj  [description]
-   * @param  {*} expr [description]
-   * @return {*}      [description]
-   */
-  $filter: function $filter(obj, expr) {
-    var input = computeValue(obj, expr.input);
-    var asVar = expr['as'];
-    var condExpr = expr['cond'];
-
-    assert(isArray(input), "$filter 'input' expression must resolve to an array");
-
-    return input.filter(function (o) {
-      // inject variable
-      var tempObj = {};
-      tempObj['$' + asVar] = o;
-      return computeValue(tempObj, condExpr) === true;
-    });
-  },
-
-
-  /**
-   * Returns a boolean indicating whether a specified value is in an array.
-   *
-   * @param {Object} obj
-   * @param {Array} expr
-   */
-  $in: function $in(obj, expr) {
-    var val = computeValue(obj, expr[0]);
-    var arr = computeValue(obj, expr[1]);
-    assert(isArray(arr), '$in second argument must be an array');
-    return arr.some(isEqual.bind(null, val));
-  },
-
-
-  /**
-   * Searches an array for an occurrence of a specified value and returns the array index of the first occurrence.
-   * If the substring is not found, returns -1.
-   *
-   * @param  {Object} obj
-   * @param  {*} expr
-   * @return {*}
-   */
-  $indexOfArray: function $indexOfArray(obj, expr) {
-    var args = computeValue(obj, expr);
-    if (isNil(args)) return null;
-
-    var arr = args[0];
-    var searchValue = args[1];
-    if (isNil(arr)) return null;
-
-    assert(isArray(arr), '$indexOfArray expression must resolve to an array.');
-
-    var start = args[2] || 0;
-    var end = args[3];
-    if (isNil(end)) end = arr.length;
-    if (start > end) return -1;
-
-    assert(start >= 0 && end >= 0, '$indexOfArray expression is invalid');
-
-    if (start > 0 || end < arr.length) {
-      arr = arr.slice(start, end);
-    }
-    return arr.findIndex(isEqual.bind(null, searchValue)) + start;
-  },
-
-
-  /**
-   * Determines if the operand is an array. Returns a boolean.
-   *
-   * @param  {Object}  obj
-   * @param  {*}  expr
-   * @return {Boolean}
-   */
-  $isArray: function $isArray(obj, expr) {
-    return isArray(computeValue(obj, expr[0]));
-  },
-
-
-  /**
-   * Applies a sub-expression to each element of an array and returns the array of resulting values in order.
-   *
-   * @param obj
-   * @param expr
-   * @returns {Array|*}
-   */
-  $map: function $map(obj, expr) {
-    var inputExpr = computeValue(obj, expr.input);
-    assert(isArray(inputExpr), '$map \'input\' expression must resolve to an array');
-
-    var asExpr = expr['as'];
-    var inExpr = expr['in'];
-
-    // HACK: add the "as" expression as a value on the object to take advantage of "resolve()"
-    // which will reduce to that value when invoked. The reference to the as expression will be prefixed with "$$".
-    // But since a "$" is stripped of before passing the name to "resolve()" we just need to prepend "$" to the key.
-    var tempKey = '$' + asExpr;
-    return inputExpr.map(function (item) {
-      obj[tempKey] = item;
-      return computeValue(obj, inExpr);
-    });
-  },
-
-
-  /**
-   * Converts a document to an array of documents representing key-value pairs.
-   */
-  $objectToArray: function $objectToArray(obj, expr) {
-    var val = computeValue(obj, expr);
-    assert(isObject(val), '$objectToArray expression must resolve to an object');
-    var arr = [];
-    each(val, function (v, k) {
-      return arr.push({ k: k, v: v });
-    });
-    return arr;
-  },
-
-
-  /**
-   * Returns an array whose elements are a generated sequence of numbers.
-   *
-   * @param  {Object} obj
-   * @param  {*} expr
-   * @return {*}
-   */
-  $range: function $range(obj, expr) {
-    var arr = computeValue(obj, expr);
-    var start = arr[0];
-    var end = arr[1];
-    var step = arr[2] || 1;
-
-    var result = [];
-
-    while (start < end && step > 0 || start > end && step < 0) {
-      result.push(start);
-      start += step;
-    }
-
-    return result;
-  },
-
-
-  /**
-   * Applies an expression to each element in an array and combines them into a single value.
-   *
-   * @param {Object} obj
-   * @param {*} expr
-   */
-  $reduce: function $reduce(obj, expr) {
-    var input = computeValue(obj, expr.input);
-    var initialValue = computeValue(obj, expr.initialValue);
-    var inExpr = expr['in'];
-
-    if (isNil(input)) return null;
-    assert(isArray(input), "$reduce 'input' expression must resolve to an array");
-    return reduce(input, function (acc, n) {
-      return computeValue({ '$value': acc, '$this': n }, inExpr);
-    }, initialValue);
-  },
-
-
-  /**
-   * Returns an array with the elements in reverse order.
-   *
-   * @param  {Object} obj
-   * @param  {*} expr
-   * @return {*}
-   */
-  $reverseArray: function $reverseArray(obj, expr) {
-    var arr = computeValue(obj, expr);
-
-    if (isNil(arr)) return null;
-    assert(isArray(arr), '$reverseArray expression must resolve to an array');
-
-    var result = [];
-    into(result, arr);
-    result.reverse();
-    return result;
-  },
-
-
-  /**
-   * Counts and returns the total the number of items in an array.
-   *
-   * @param obj
-   * @param expr
-   */
-  $size: function $size(obj, expr) {
-    var value = computeValue(obj, expr);
-    return isArray(value) ? value.length : undefined;
-  },
-
-
-  /**
-   * Returns a subset of an array.
-   *
-   * @param  {Object} obj
-   * @param  {*} expr
-   * @return {*}
-   */
-  $slice: function $slice(obj, expr) {
-    var arr = computeValue(obj, expr);
-    return slice(arr[0], arr[1], arr[2]);
-  },
-
-
-  /**
-   * Merge two lists together.
-   *
-   * Transposes an array of input arrays so that the first element of the output array would be an array containing,
-   * the first element of the first input array, the first element of the second input array, etc.
-   *
-   * @param  {Obj} obj
-   * @param  {*} expr
-   * @return {*}
-   */
-  $zip: function $zip(obj, expr) {
-    var inputs = computeValue(obj, expr.inputs);
-    var useLongestLength = expr.useLongestLength || false;
-
-    assert(isArray(inputs), "'inputs' expression must resolve to an array");
-    assert(isBoolean(useLongestLength), "'useLongestLength' must be a boolean");
-
-    if (isArray(expr.defaults)) {
-      assert(truthy(useLongestLength), "'useLongestLength' must be set to true to use 'defaults'");
-    }
-
-    var zipCount = 0;
-
-    for (var i = 0, len = inputs.length; i < len; i++) {
-      var arr = inputs[i];
-
-      if (isNil(arr)) return null;
-
-      assert(isArray(arr), "'inputs' expression values must resolve to an array or null");
-
-      zipCount = useLongestLength ? Math.max(zipCount, arr.length) : Math.min(zipCount || arr.length, arr.length);
-    }
-
-    var result = [];
-    var defaults = expr.defaults || [];
-
-    var _loop = function _loop(_i) {
-      var temp = inputs.map(function (val, index) {
-        return isNil(val[_i]) ? defaults[index] || null : val[_i];
-      });
-      result.push(temp);
-    };
-
-    for (var _i = 0; _i < zipCount; _i++) {
-      _loop(_i);
-    }
-
-    return result;
-  },
-
-
-  /**
-   * Combines multiple documents into a single document.
-   * @param {*} obj
-   * @param {*} expr
-   */
-  $mergeObjects: function $mergeObjects(obj, expr) {
-    var docs = computeValue(obj, expr);
-    if (isArray(docs)) {
-      return reduce(docs, function (memo, o) {
-        return Object.assign(memo, o);
-      }, {});
-    }
-    return {};
+};function $arrayElemAt(obj, expr) {
+  var arr = computeValue(obj, expr);
+  assert(isArray(arr) && arr.length === 2, '$arrayElemAt expression must resolve to array(2)');
+  assert(isArray(arr[0]), 'First operand to $arrayElemAt must resolve to an array');
+  assert(isNumber(arr[1]), 'Second operand to $arrayElemAt must resolve to an integer');
+  var idx = arr[1];
+  arr = arr[0];
+  if (idx < 0 && Math.abs(idx) <= arr.length) {
+    return arr[idx + arr.length];
+  } else if (idx >= 0 && idx < arr.length) {
+    return arr[idx];
   }
-};
+  return undefined;
+}
+
+/**
+ * Converts an array of key value pairs to a document.
+ */
+function $arrayToObject(obj, expr) {
+  var arr = computeValue(obj, expr);
+  assert(isArray(arr), '$arrayToObject expression must resolve to an array');
+  return reduce(arr, function (newObj, val) {
+    if (isArray(val) && val.length == 2) {
+      newObj[val[0]] = val[1];
+    } else {
+      assert(isObject(val) && has(val, 'k') && has(val, 'v'), '$arrayToObject expression is invalid.');
+      newObj[val.k] = val.v;
+    }
+    return newObj;
+  }, {});
+}
+
+/**
+ * Concatenates arrays to return the concatenated array.
+ *
+ * @param  {Object} obj
+ * @param  {*} expr
+ * @return {*}
+ */
+function $concatArrays(obj, expr) {
+  var arr = computeValue(obj, expr, null);
+  assert(isArray(arr), '$concatArrays must resolve to an array');
+  if (arr.some(isNil)) return null;
+  return arr.reduce(function (acc, item) {
+    return into(acc, item);
+  }, []);
+}
+
+/**
+ * Selects a subset of the array to return an array with only the elements that match the filter condition.
+ *
+ * @param  {Object} obj  [description]
+ * @param  {*} expr [description]
+ * @return {*}      [description]
+ */
+function $filter(obj, expr) {
+  var input = computeValue(obj, expr.input);
+  var asVar = expr['as'];
+  var condExpr = expr['cond'];
+
+  assert(isArray(input), "$filter 'input' expression must resolve to an array");
+
+  return input.filter(function (o) {
+    // inject variable
+    var tempObj = {};
+    tempObj['$' + asVar] = o;
+    return computeValue(tempObj, condExpr) === true;
+  });
+}
+
+/**
+ * Returns a boolean indicating whether a specified value is in an array.
+ *
+ * @param {Object} obj
+ * @param {Array} expr
+ */
+function $in(obj, expr) {
+  var val = computeValue(obj, expr[0]);
+  var arr = computeValue(obj, expr[1]);
+  assert(isArray(arr), '$in second argument must be an array');
+  return arr.some(isEqual.bind(null, val));
+}
+
+/**
+ * Searches an array for an occurrence of a specified value and returns the array index of the first occurrence.
+ * If the substring is not found, returns -1.
+ *
+ * @param  {Object} obj
+ * @param  {*} expr
+ * @return {*}
+ */
+function $indexOfArray(obj, expr) {
+  var args = computeValue(obj, expr);
+  if (isNil(args)) return null;
+
+  var arr = args[0];
+  var searchValue = args[1];
+  if (isNil(arr)) return null;
+
+  assert(isArray(arr), '$indexOfArray expression must resolve to an array.');
+
+  var start = args[2] || 0;
+  var end = args[3];
+  if (isNil(end)) end = arr.length;
+  if (start > end) return -1;
+
+  assert(start >= 0 && end >= 0, '$indexOfArray expression is invalid');
+
+  if (start > 0 || end < arr.length) {
+    arr = arr.slice(start, end);
+  }
+  return arr.findIndex(isEqual.bind(null, searchValue)) + start;
+}
+
+/**
+ * Determines if the operand is an array. Returns a boolean.
+ *
+ * @param  {Object}  obj
+ * @param  {*}  expr
+ * @return {Boolean}
+ */
+function $isArray(obj, expr) {
+  return isArray(computeValue(obj, expr[0]));
+}
+
+/**
+ * Applies a sub-expression to each element of an array and returns the array of resulting values in order.
+ *
+ * @param obj
+ * @param expr
+ * @returns {Array|*}
+ */
+function $map(obj, expr) {
+  var inputExpr = computeValue(obj, expr.input);
+  assert(isArray(inputExpr), '$map \'input\' expression must resolve to an array');
+
+  var asExpr = expr['as'];
+  var inExpr = expr['in'];
+
+  // HACK: add the "as" expression as a value on the object to take advantage of "resolve()"
+  // which will reduce to that value when invoked. The reference to the as expression will be prefixed with "$$".
+  // But since a "$" is stripped of before passing the name to "resolve()" we just need to prepend "$" to the key.
+  var tempKey = '$' + asExpr;
+  return inputExpr.map(function (item) {
+    obj[tempKey] = item;
+    return computeValue(obj, inExpr);
+  });
+}
+
+/**
+ * Converts a document to an array of documents representing key-value pairs.
+ */
+function $objectToArray(obj, expr) {
+  var val = computeValue(obj, expr);
+  assert(isObject(val), '$objectToArray expression must resolve to an object');
+  var arr = [];
+  each(val, function (v, k) {
+    return arr.push({ k: k, v: v });
+  });
+  return arr;
+}
+
+/**
+ * Returns an array whose elements are a generated sequence of numbers.
+ *
+ * @param  {Object} obj
+ * @param  {*} expr
+ * @return {*}
+ */
+function $range(obj, expr) {
+  var arr = computeValue(obj, expr);
+  var start = arr[0];
+  var end = arr[1];
+  var step = arr[2] || 1;
+
+  var result = [];
+
+  while (start < end && step > 0 || start > end && step < 0) {
+    result.push(start);
+    start += step;
+  }
+
+  return result;
+}
+
+/**
+ * Applies an expression to each element in an array and combines them into a single value.
+ *
+ * @param {Object} obj
+ * @param {*} expr
+ */
+function $reduce(obj, expr) {
+  var input = computeValue(obj, expr.input);
+  var initialValue = computeValue(obj, expr.initialValue);
+  var inExpr = expr['in'];
+
+  if (isNil(input)) return null;
+  assert(isArray(input), "$reduce 'input' expression must resolve to an array");
+  return reduce(input, function (acc, n) {
+    return computeValue({ '$value': acc, '$this': n }, inExpr);
+  }, initialValue);
+}
+
+/**
+ * Returns an array with the elements in reverse order.
+ *
+ * @param  {Object} obj
+ * @param  {*} expr
+ * @return {*}
+ */
+function $reverseArray(obj, expr) {
+  var arr = computeValue(obj, expr);
+
+  if (isNil(arr)) return null;
+  assert(isArray(arr), '$reverseArray expression must resolve to an array');
+
+  var result = [];
+  into(result, arr);
+  result.reverse();
+  return result;
+}
+
+/**
+ * Counts and returns the total the number of items in an array.
+ *
+ * @param obj
+ * @param expr
+ */
+function $size(obj, expr) {
+  var value = computeValue(obj, expr);
+  return isArray(value) ? value.length : undefined;
+}
+
+/**
+ * Returns a subset of an array.
+ *
+ * @param  {Object} obj
+ * @param  {*} expr
+ * @return {*}
+ */
+function $slice(obj, expr) {
+  var arr = computeValue(obj, expr);
+  return slice(arr[0], arr[1], arr[2]);
+}
+
+/**
+ * Merge two lists together.
+ *
+ * Transposes an array of input arrays so that the first element of the output array would be an array containing,
+ * the first element of the first input array, the first element of the second input array, etc.
+ *
+ * @param  {Obj} obj
+ * @param  {*} expr
+ * @return {*}
+ */
+function $zip(obj, expr) {
+  var inputs = computeValue(obj, expr.inputs);
+  var useLongestLength = expr.useLongestLength || false;
+
+  assert(isArray(inputs), "'inputs' expression must resolve to an array");
+  assert(isBoolean(useLongestLength), "'useLongestLength' must be a boolean");
+
+  if (isArray(expr.defaults)) {
+    assert(truthy(useLongestLength), "'useLongestLength' must be set to true to use 'defaults'");
+  }
+
+  var zipCount = 0;
+
+  for (var i = 0, len = inputs.length; i < len; i++) {
+    var arr = inputs[i];
+
+    if (isNil(arr)) return null;
+
+    assert(isArray(arr), "'inputs' expression values must resolve to an array or null");
+
+    zipCount = useLongestLength ? Math.max(zipCount, arr.length) : Math.min(zipCount || arr.length, arr.length);
+  }
+
+  var result = [];
+  var defaults = expr.defaults || [];
+
+  var _loop = function _loop(_i) {
+    var temp = inputs.map(function (val, index) {
+      return isNil(val[_i]) ? defaults[index] || null : val[_i];
+    });
+    result.push(temp);
+  };
+
+  for (var _i = 0; _i < zipCount; _i++) {
+    _loop(_i);
+  }
+
+  return result;
+}
+
+/**
+ * Combines multiple documents into a single document.
+ * @param {*} obj
+ * @param {*} expr
+ */
+function $mergeObjects$1(obj, expr) {
+  var docs = computeValue(obj, expr);
+  if (isArray(docs)) {
+    return reduce(docs, function (memo, o) {
+      return Object.assign(memo, o);
+    }, {});
+  }
+  return {};
+}
 
 var booleanOperators = {
+  $and: $and,
+  $or: $or,
+  $not: $not
+
   /**
    * Returns true only when all its expressions evaluate to true. Accepts any number of argument expressions.
    *
@@ -1767,34 +1772,33 @@ var booleanOperators = {
    * @param expr
    * @returns {boolean}
    */
-  $and: function $and(obj, expr) {
-    var value = computeValue(obj, expr);
-    return truthy(value) && value.every(truthy);
-  },
+};function $and(obj, expr) {
+  var value = computeValue(obj, expr);
+  return truthy(value) && value.every(truthy);
+}
 
-  /**
-   * Returns true when any of its expressions evaluates to true. Accepts any number of argument expressions.
-   *
-   * @param obj
-   * @param expr
-   * @returns {boolean}
-   */
-  $or: function $or(obj, expr) {
-    var value = computeValue(obj, expr);
-    return truthy(value) && value.some(truthy);
-  },
+/**
+ * Returns true when any of its expressions evaluates to true. Accepts any number of argument expressions.
+ *
+ * @param obj
+ * @param expr
+ * @returns {boolean}
+ */
+function $or(obj, expr) {
+  var value = computeValue(obj, expr);
+  return truthy(value) && value.some(truthy);
+}
 
-  /**
-   * Returns the boolean value that is the opposite of its argument expression. Accepts a single argument expression.
-   *
-   * @param obj
-   * @param expr
-   * @returns {boolean}
-   */
-  $not: function $not(obj, expr) {
-    return !computeValue(obj, expr[0]);
-  }
-};
+/**
+ * Returns the boolean value that is the opposite of its argument expression. Accepts a single argument expression.
+ *
+ * @param obj
+ * @param expr
+ * @returns {boolean}
+ */
+function $not(obj, expr) {
+  return !computeValue(obj, expr[0]);
+}
 
 /**
  * Adds new fields to documents.
@@ -2227,10 +2231,10 @@ function $bucket(collection, expr, opt) {
   // add default key if provided
   if (!isNil(defaultKey)) grouped[defaultKey] = [];
 
-  var iter = false;
+  var iterator = false;
 
   return Lazy(function () {
-    if (!iter) {
+    if (!iterator) {
       collection.each(function (obj) {
         var key = computeValue(obj, expr.groupBy);
 
@@ -2249,12 +2253,12 @@ function $bucket(collection, expr, opt) {
       boundaries.pop();
       if (!isNil(defaultKey)) boundaries.push(defaultKey);
 
-      iter = Lazy(boundaries).map(function (key) {
+      iterator = Lazy(boundaries).map(function (key) {
         var acc = accumulate(grouped[key], null, outputExpr);
         return Object.assign(acc, { '_id': key });
       });
     }
-    return iter.next();
+    return iterator.next();
   });
 }
 
@@ -2495,6 +2499,7 @@ function $out(collection, expr, opt) {
  * Projection Operators. https://docs.mongodb.com/manual/reference/operator/projection/
  */
 var projectionOperators = {
+  $: $, $elemMatch: $elemMatch$1, $slice: $slice$1
 
   /**
    * Projects the first element in an array that matches the query condition.
@@ -2503,50 +2508,49 @@ var projectionOperators = {
    * @param field
    * @param expr
    */
-  $: function $(obj, expr, field) {
-    err('$ not implemented');
-  },
+};function $(obj, expr, field) {
+  err('$ not implemented');
+}
 
+/**
+ * Projects only the first element from an array that matches the specified $elemMatch condition.
+ *
+ * @param obj
+ * @param field
+ * @param expr
+ * @returns {*}
+ */
+function $elemMatch$1(obj, expr, field) {
+  var arr = resolve(obj, field);
+  var query = new Query(expr);
 
-  /**
-   * Projects only the first element from an array that matches the specified $elemMatch condition.
-   *
-   * @param obj
-   * @param field
-   * @param expr
-   * @returns {*}
-   */
-  $elemMatch: function $elemMatch(obj, expr, field) {
-    var arr = resolve(obj, field);
-    var query = new Query(expr);
-    assert(isArray(arr), '$elemMatch: invalid argument');
-    for (var i = 0; i < arr.length; i++) {
-      if (query.test(arr[i])) return [arr[i]];
-    }
-    return undefined;
-  },
+  assert(isArray(arr), '$elemMatch: invalid argument');
 
-
-  /**
-   * Limits the number of elements projected from an array. Supports skip and limit slices.
-   *
-   * @param obj
-   * @param field
-   * @param expr
-   */
-  $slice: function $slice(obj, expr, field) {
-    var xs = resolve(obj, field);
-
-    if (!isArray(xs)) return xs;
-
-    if (isArray(expr)) {
-      return slice(xs, expr[0], expr[1]);
-    } else {
-      assert(isNumber(expr), '$slice: invalid arguments for projection');
-      return slice(xs, expr);
-    }
+  for (var i = 0; i < arr.length; i++) {
+    if (query.test(arr[i])) return [arr[i]];
   }
-};
+  return undefined;
+}
+
+/**
+ * Limits the number of elements projected from an array. Supports skip and limit slices.
+ *
+ * @param obj
+ * @param field
+ * @param expr
+ */
+function $slice$1(obj, expr, field) {
+  var xs = resolve(obj, field);
+
+  if (!isArray(xs)) return xs;
+
+  if (isArray(expr)) {
+    return slice(xs, expr[0], expr[1]);
+  } else {
+    assert(isNumber(expr), '$slice: invalid arguments for projection');
+    return slice(xs, expr);
+  }
+}
 
 /**
  * Reshapes a document stream.
@@ -3408,23 +3412,41 @@ function remove(collection, criteria) {
  * Query and Projection Operators. https://docs.mongodb.com/manual/reference/operator/query/
  */
 var simpleOperators = {
-  $eq: $eq, $ne: $ne, $in: $in, $nin: $nin, $lt: $lt, $lte: $lte, $gt: $gt, $gte: $gte, $mod: $mod, $regex: $regex, $exists: $exists, $all: $all, $size: $size, $elemMatch: $elemMatch, $type: $type
-};
+  $all: $all,
+  $eq: $eq$1,
+  $ne: $ne$1,
+  $in: $in$1,
+  $nin: $nin$1,
+  $lt: $lt$1,
+  $lte: $lte$1,
+  $gt: $gt$1,
+  $gte: $gte$1,
+  $mod: $mod$1,
+  $regex: $regex,
+  $exists: $exists,
+  $size: $size$1,
+  $elemMatch: $elemMatch,
+  $type: $type
 
-function $cmp(a, b, fn) {
-  return ensureArray(a).some(function (x) {
-    return getType(x) === getType(b) && fn(x, b);
-  });
-}
+  /**
+   * Query operators evaluated directly against collections
+   */
+};var queryOperators = {
+  $and: $and$1,
+  $or: $or$1,
+  $nor: $nor,
+  $not: $not$1,
+  $where: $where,
+  $expr: $expr
 
-/**
- * Checks that two values are equal.
- *
- * @param a         The lhs operand as resolved from the object by the given selector
- * @param b         The rhs operand provided by the user
- * @returns {*}
- */
-function $eq(a, b) {
+  /**
+   * Checks that two values are equal.
+   *
+   * @param a         The lhs operand as resolved from the object by the given selector
+   * @param b         The rhs operand provided by the user
+   * @returns {*}
+   */
+};function $eq$1(a, b) {
   // start with simple equality check
   if (isEqual(a, b)) return true;
 
@@ -3447,8 +3469,8 @@ function $eq(a, b) {
  * @param b
  * @returns {boolean}
  */
-function $ne(a, b) {
-  return !$eq(a, b);
+function $ne$1(a, b) {
+  return !$eq$1(a, b);
 }
 
 /**
@@ -3458,7 +3480,7 @@ function $ne(a, b) {
  * @param b
  * @returns {*}
  */
-function $in(a, b) {
+function $in$1(a, b) {
   // queries for null should be able to find undefined fields
   if (isNil(a)) return b.some(isNull);
 
@@ -3472,8 +3494,8 @@ function $in(a, b) {
  * @param b
  * @returns {*|boolean}
  */
-function $nin(a, b) {
-  return !$in(a, b);
+function $nin$1(a, b) {
+  return !$in$1(a, b);
 }
 
 /**
@@ -3483,8 +3505,8 @@ function $nin(a, b) {
  * @param b
  * @returns {boolean}
  */
-function $lt(a, b) {
-  return $cmp(a, b, function (x, y) {
+function $lt$1(a, b) {
+  return compare$1(a, b, function (x, y) {
     return x < y;
   });
 }
@@ -3496,8 +3518,8 @@ function $lt(a, b) {
  * @param b
  * @returns {boolean}
  */
-function $lte(a, b) {
-  return $cmp(a, b, function (x, y) {
+function $lte$1(a, b) {
+  return compare$1(a, b, function (x, y) {
     return x <= y;
   });
 }
@@ -3509,8 +3531,8 @@ function $lte(a, b) {
  * @param b
  * @returns {boolean}
  */
-function $gt(a, b) {
-  return $cmp(a, b, function (x, y) {
+function $gt$1(a, b) {
+  return compare$1(a, b, function (x, y) {
     return x > y;
   });
 }
@@ -3522,8 +3544,8 @@ function $gt(a, b) {
  * @param b
  * @returns {boolean}
  */
-function $gte(a, b) {
-  return $cmp(a, b, function (x, y) {
+function $gte$1(a, b) {
+  return compare$1(a, b, function (x, y) {
     return x >= y;
   });
 }
@@ -3535,7 +3557,7 @@ function $gte(a, b) {
  * @param b
  * @returns {boolean}
  */
-function $mod(a, b) {
+function $mod$1(a, b) {
   return ensureArray(a).some(function (x) {
     return isNumber(x) && isArray(b) && b.length === 2 && x % b[0] === b[1];
   });
@@ -3596,7 +3618,7 @@ function $all(a, b) {
  * @param b
  * @returns {*|boolean}
  */
-function $size(a, b) {
+function $size$1(a, b) {
   return isArray(a) && isNumber(b) && a.length === b;
 }
 
@@ -3681,17 +3703,14 @@ function $type(a, b) {
   }
 }
 
-var queryOperators = {
-  $and: $and, $or: $or, $nor: $nor, $not: $not, $where: $where, $expr: $expr
-
-  /**
-   * Joins query clauses with a logical AND returns all documents that match the conditions of both clauses.
-   *
-   * @param selector
-   * @param value
-   * @returns {{test: Function}}
-   */
-};function $and(selector, value) {
+/**
+ * Joins query clauses with a logical AND returns all documents that match the conditions of both clauses.
+ *
+ * @param selector
+ * @param value
+ * @returns {{test: Function}}
+ */
+function $and$1(selector, value) {
   assert(isArray(value), 'Invalid expression: $and expects value to be an Array');
 
   var queries = [];
@@ -3718,7 +3737,7 @@ var queryOperators = {
  * @param value
  * @returns {{test: Function}}
  */
-function $or(selector, value) {
+function $or$1(selector, value) {
   assert(isArray(value), 'Invalid expression. $or expects value to be an Array');
 
   var queries = [];
@@ -3747,7 +3766,7 @@ function $or(selector, value) {
  */
 function $nor(selector, value) {
   assert(isArray(value), 'Invalid expression. $nor expects value to be an Array');
-  var query = $or('$or', value);
+  var query = $or$1('$or', value);
   return {
     test: function test(obj) {
       return !query.test(obj);
@@ -3762,7 +3781,7 @@ function $nor(selector, value) {
  * @param value
  * @returns {{test: Function}}
  */
-function $not(selector, value) {
+function $not$1(selector, value) {
   var criteria = {};
   criteria[selector] = normalize(value);
   var query = new Query(criteria);
@@ -3806,23 +3825,54 @@ function $expr(selector, value) {
   };
 }
 
-// add simple query operators
-each(simpleOperators, function (fn, op) {
-  fn = fn.bind(simpleOperators);
+function compare$1(a, b, f) {
+  return ensureArray(a).some(function (x) {
+    return getType(x) === getType(b) && f(x, b);
+  });
+}
 
+// add simple query operators
+each(simpleOperators, function (f, op) {
   queryOperators[op] = function (selector, value) {
     return {
       test: function test(obj) {
         // value of field must be fully resolved.
         var lhs = resolve(obj, selector, { meta: true });
         lhs = unwrap(lhs.result, lhs.depth);
-        return fn(lhs, value);
+        return f(lhs, value);
       }
     };
   };
 });
 
+function createComparison(op) {
+  return function (obj, expr) {
+    var args = computeValue(obj, expr);
+    return simpleOperators[op](args[0], args[1]);
+  };
+}
+
+var $eq = createComparison('$eq');
+var $ne = createComparison('$ne');
+var $gt = createComparison('$gt');
+var $lt = createComparison('$lt');
+var $gte = createComparison('$gte');
+var $lte = createComparison('$lte');
+var $nin = createComparison('$nin');
+
+/**
+ * Comparison operators. Must be exported after const delcarations above
+ */
 var comparisonOperators = {
+  $cmp: $cmp,
+  $eq: $eq,
+  $gt: $gt,
+  $gte: $gte,
+  $lt: $lt,
+  $lte: $lte,
+  $ne: $ne,
+  $nin: $nin
+
   /**
    * Compares two values and returns the result of the comparison as an integer.
    *
@@ -3830,26 +3880,21 @@ var comparisonOperators = {
    * @param expr
    * @returns {number}
    */
-  $cmp: function $cmp$$1(obj, expr) {
-    var args = computeValue(obj, expr);
-    if (args[0] > args[1]) return 1;
-    if (args[0] < args[1]) return -1;
-    return 0;
-  }
-};
-// mixin comparison operators
-each(['$eq', '$ne', '$gt', '$gte', '$lt', '$lte', '$nin'], function (op) {
-  comparisonOperators[op] = function (obj, expr) {
-    var args = computeValue(obj, expr);
-    return simpleOperators[op](args[0], args[1]);
-  };
-});
+};function $cmp(obj, expr) {
+  var args = computeValue(obj, expr);
+  if (args[0] > args[1]) return 1;
+  if (args[0] < args[1]) return -1;
+  return 0;
+}
 
 /**
  * Conditional operators
  */
 
 var conditionalOperators = {
+  $cond: $cond,
+  $switch: $switch,
+  $ifNull: $ifNull
 
   /**
    * A ternary operator that evaluates one expression,
@@ -3858,67 +3903,64 @@ var conditionalOperators = {
    * @param obj
    * @param expr
    */
-  $cond: function $cond(obj, expr) {
-    var ifExpr = void 0,
-        thenExpr = void 0,
-        elseExpr = void 0;
-    var errorMsg = '$cond: invalid arguments';
-    if (isArray(expr)) {
-      assert(expr.length === 3, errorMsg);
-      ifExpr = expr[0];
-      thenExpr = expr[1];
-      elseExpr = expr[2];
-    } else {
-      assert(isObject(expr), errorMsg);
-      ifExpr = expr['if'];
-      thenExpr = expr['then'];
-      elseExpr = expr['else'];
-    }
-    var condition = computeValue(obj, ifExpr);
-    return condition ? computeValue(obj, thenExpr) : computeValue(obj, elseExpr);
-  },
-
-
-  /**
-   * An operator that evaluates a series of case expressions. When it finds an expression which
-   * evaluates to true, it returns the resulting expression for that case. If none of the cases
-   * evaluate to true, it returns the default expression.
-   *
-   * @param obj
-   * @param expr
-   */
-  $switch: function $switch(obj, expr) {
-    var errorMsg = 'Invalid arguments for $switch operator';
-    assert(expr.branches, errorMsg);
-
-    var validBranch = expr.branches.find(function (branch) {
-      assert(branch['case'] && branch['then'], errorMsg);
-      return computeValue(obj, branch['case']);
-    });
-
-    if (validBranch) {
-      return computeValue(obj, validBranch.then);
-    } else {
-      assert(expr['default'], errorMsg);
-      return computeValue(obj, expr.default);
-    }
-  },
-
-
-  /**
-   * Evaluates an expression and returns the first expression if it evaluates to a non-null value.
-   * Otherwise, $ifNull returns the second expression's value.
-   *
-   * @param obj
-   * @param expr
-   * @returns {*}
-   */
-  $ifNull: function $ifNull(obj, expr) {
-    assert(isArray(expr) && expr.length === 2, '$ifNull expression must resolve to array(2)');
-    var args = computeValue(obj, expr);
-    return isNil(args[0]) ? args[1] : args[0];
+};function $cond(obj, expr) {
+  var ifExpr = void 0,
+      thenExpr = void 0,
+      elseExpr = void 0;
+  var errorMsg = '$cond: invalid arguments';
+  if (isArray(expr)) {
+    assert(expr.length === 3, errorMsg);
+    ifExpr = expr[0];
+    thenExpr = expr[1];
+    elseExpr = expr[2];
+  } else {
+    assert(isObject(expr), errorMsg);
+    ifExpr = expr['if'];
+    thenExpr = expr['then'];
+    elseExpr = expr['else'];
   }
-};
+  var condition = computeValue(obj, ifExpr);
+  return condition ? computeValue(obj, thenExpr) : computeValue(obj, elseExpr);
+}
+
+/**
+ * An operator that evaluates a series of case expressions. When it finds an expression which
+ * evaluates to true, it returns the resulting expression for that case. If none of the cases
+ * evaluate to true, it returns the default expression.
+ *
+ * @param obj
+ * @param expr
+ */
+function $switch(obj, expr) {
+  var errorMsg = 'Invalid arguments for $switch operator';
+  assert(expr.branches, errorMsg);
+
+  var validBranch = expr.branches.find(function (branch) {
+    assert(branch['case'] && branch['then'], errorMsg);
+    return computeValue(obj, branch['case']);
+  });
+
+  if (validBranch) {
+    return computeValue(obj, validBranch.then);
+  } else {
+    assert(expr['default'], errorMsg);
+    return computeValue(obj, expr.default);
+  }
+}
+
+/**
+ * Evaluates an expression and returns the first expression if it evaluates to a non-null value.
+ * Otherwise, $ifNull returns the second expression's value.
+ *
+ * @param obj
+ * @param expr
+ * @returns {*}
+ */
+function $ifNull(obj, expr) {
+  assert(isArray(expr) && expr.length === 2, '$ifNull expression must resolve to array(2)');
+  var args = computeValue(obj, expr);
+  return isNil(args[0]) ? args[1] : args[0];
+}
 
 // used for formatting dates in $dateToString operator
 var DATE_SYM_TABLE = {
@@ -3936,270 +3978,283 @@ var DATE_SYM_TABLE = {
 };
 
 var dateOperators = {
+  $dateToString: $dateToString,
+  $dayOfMonth: $dayOfMonth,
+  $dayOfWeek: $dayOfWeek,
+  $dayOfYear: $dayOfYear,
+  $hour: $hour,
+  $millisecond: $millisecond,
+  $minute: $minute,
+  $month: $month,
+  $second: $second,
+  $week: $week,
+  $year: $year
+
   /**
    * Returns the day of the year for a date as a number between 1 and 366 (leap year).
    * @param obj
    * @param expr
    */
-  $dayOfYear: function $dayOfYear(obj, expr) {
-    var d = computeValue(obj, expr);
-    var start = new Date(d.getFullYear(), 0, 0);
-    var diff = d - start;
-    var oneDay = 1000 * 60 * 60 * 24;
-    return Math.round(diff / oneDay);
-  },
+};function $dayOfYear(obj, expr) {
+  var d = computeValue(obj, expr);
+  var start = new Date(d.getFullYear(), 0, 0);
+  var diff = d - start;
+  var oneDay = 1000 * 60 * 60 * 24;
+  return Math.round(diff / oneDay);
+}
 
+/**
+ * Returns the day of the month for a date as a number between 1 and 31.
+ * @param obj
+ * @param expr
+ */
+function $dayOfMonth(obj, expr) {
+  var d = computeValue(obj, expr);
+  return d.getDate();
+}
 
-  /**
-   * Returns the day of the month for a date as a number between 1 and 31.
-   * @param obj
-   * @param expr
-   */
-  $dayOfMonth: function $dayOfMonth(obj, expr) {
-    var d = computeValue(obj, expr);
-    return d.getDate();
-  },
+/**
+ * Returns the day of the week for a date as a number between 1 (Sunday) and 7 (Saturday).
+ * @param obj
+ * @param expr
+ */
+function $dayOfWeek(obj, expr) {
+  var d = computeValue(obj, expr);
+  return d.getDay() + 1;
+}
 
+/**
+ * Returns the year for a date as a number (e.g. 2014).
+ * @param obj
+ * @param expr
+ */
+function $year(obj, expr) {
+  var d = computeValue(obj, expr);
+  return d.getFullYear();
+}
 
-  /**
-   * Returns the day of the week for a date as a number between 1 (Sunday) and 7 (Saturday).
-   * @param obj
-   * @param expr
-   */
-  $dayOfWeek: function $dayOfWeek(obj, expr) {
-    var d = computeValue(obj, expr);
-    return d.getDay() + 1;
-  },
+/**
+ * Returns the month for a date as a number between 1 (January) and 12 (December).
+ * @param obj
+ * @param expr
+ */
+function $month(obj, expr) {
+  var d = computeValue(obj, expr);
+  return d.getMonth() + 1;
+}
 
+/**
+ * Returns the week number for a date as a number between 0
+ * (the partial week that precedes the first Sunday of the year) and 53 (leap year).
+ * @param obj
+ * @param expr
+ */
+function $week(obj, expr) {
+  // source: http://stackoverflow.com/a/6117889/1370481
+  var d = computeValue(obj, expr);
 
-  /**
-   * Returns the year for a date as a number (e.g. 2014).
-   * @param obj
-   * @param expr
-   */
-  $year: function $year(obj, expr) {
-    var d = computeValue(obj, expr);
-    return d.getFullYear();
-  },
+  // Copy date so don't modify original
+  d = new Date(+d);
+  d.setHours(0, 0, 0);
+  // Set to nearest Thursday: current date + 4 - current day number
+  // Make Sunday's day number 7
+  d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+  // Get first day of year
+  var yearStart = new Date(d.getFullYear(), 0, 1);
+  // Calculate full weeks to nearest Thursday
+  return Math.floor(((d - yearStart) / 8.64e7 + 1) / 7);
+}
 
+/**
+ * Returns the hour for a date as a number between 0 and 23.
+ * @param obj
+ * @param expr
+ */
+function $hour(obj, expr) {
+  var d = computeValue(obj, expr);
+  return d.getUTCHours();
+}
 
-  /**
-   * Returns the month for a date as a number between 1 (January) and 12 (December).
-   * @param obj
-   * @param expr
-   */
-  $month: function $month(obj, expr) {
-    var d = computeValue(obj, expr);
-    return d.getMonth() + 1;
-  },
+/**
+ * Returns the minute for a date as a number between 0 and 59.
+ * @param obj
+ * @param expr
+ */
+function $minute(obj, expr) {
+  var d = computeValue(obj, expr);
+  return d.getMinutes();
+}
 
+/**
+ * Returns the seconds for a date as a number between 0 and 60 (leap seconds).
+ * @param obj
+ * @param expr
+ */
+function $second(obj, expr) {
+  var d = computeValue(obj, expr);
+  return d.getSeconds();
+}
 
-  /**
-   * Returns the week number for a date as a number between 0
-   * (the partial week that precedes the first Sunday of the year) and 53 (leap year).
-   * @param obj
-   * @param expr
-   */
-  $week: function $week(obj, expr) {
-    // source: http://stackoverflow.com/a/6117889/1370481
-    var d = computeValue(obj, expr);
+/**
+ * Returns the milliseconds of a date as a number between 0 and 999.
+ * @param obj
+ * @param expr
+ */
+function $millisecond(obj, expr) {
+  var d = computeValue(obj, expr);
+  return d.getMilliseconds();
+}
 
-    // Copy date so don't modify original
-    d = new Date(+d);
-    d.setHours(0, 0, 0);
-    // Set to nearest Thursday: current date + 4 - current day number
-    // Make Sunday's day number 7
-    d.setDate(d.getDate() + 4 - (d.getDay() || 7));
-    // Get first day of year
-    var yearStart = new Date(d.getFullYear(), 0, 1);
-    // Calculate full weeks to nearest Thursday
-    return Math.floor(((d - yearStart) / 8.64e7 + 1) / 7);
-  },
+/**
+ * Returns the date as a formatted string.
+ *
+ * %Y  Year (4 digits, zero padded)  0000-9999
+ * %m  Month (2 digits, zero padded)  01-12
+ * %d  Day of Month (2 digits, zero padded)  01-31
+ * %H  Hour (2 digits, zero padded, 24-hour clock)  00-23
+ * %M  Minute (2 digits, zero padded)  00-59
+ * %S  Second (2 digits, zero padded)  00-60
+ * %L  Millisecond (3 digits, zero padded)  000-999
+ * %j  Day of year (3 digits, zero padded)  001-366
+ * %w  Day of week (1-Sunday, 7-Saturday)  1-7
+ * %U  Week of year (2 digits, zero padded)  00-53
+ * %%  Percent Character as a Literal  %
+ *
+ * @param obj current object
+ * @param expr operator expression
+ */
+function $dateToString(obj, expr) {
+  var fmt = expr['format'];
+  var date = computeValue(obj, expr['date']);
+  var matches = fmt.match(/(%%|%Y|%m|%d|%H|%M|%S|%L|%j|%w|%U)/g);
 
+  for (var i = 0, len = matches.length; i < len; i++) {
+    var hdlr = DATE_SYM_TABLE[matches[i]];
+    var value = hdlr;
 
-  /**
-   * Returns the hour for a date as a number between 0 and 23.
-   * @param obj
-   * @param expr
-   */
-  $hour: function $hour(obj, expr) {
-    var d = computeValue(obj, expr);
-    return d.getUTCHours();
-  },
-
-
-  /**
-   * Returns the minute for a date as a number between 0 and 59.
-   * @param obj
-   * @param expr
-   */
-  $minute: function $minute(obj, expr) {
-    var d = computeValue(obj, expr);
-    return d.getMinutes();
-  },
-
-
-  /**
-   * Returns the seconds for a date as a number between 0 and 60 (leap seconds).
-   * @param obj
-   * @param expr
-   */
-  $second: function $second(obj, expr) {
-    var d = computeValue(obj, expr);
-    return d.getSeconds();
-  },
-
-
-  /**
-   * Returns the milliseconds of a date as a number between 0 and 999.
-   * @param obj
-   * @param expr
-   */
-  $millisecond: function $millisecond(obj, expr) {
-    var d = computeValue(obj, expr);
-    return d.getMilliseconds();
-  },
-
-
-  /**
-   * Returns the date as a formatted string.
-   *
-   * %Y  Year (4 digits, zero padded)  0000-9999
-   * %m  Month (2 digits, zero padded)  01-12
-   * %d  Day of Month (2 digits, zero padded)  01-31
-   * %H  Hour (2 digits, zero padded, 24-hour clock)  00-23
-   * %M  Minute (2 digits, zero padded)  00-59
-   * %S  Second (2 digits, zero padded)  00-60
-   * %L  Millisecond (3 digits, zero padded)  000-999
-   * %j  Day of year (3 digits, zero padded)  001-366
-   * %w  Day of week (1-Sunday, 7-Saturday)  1-7
-   * %U  Week of year (2 digits, zero padded)  00-53
-   * %%  Percent Character as a Literal  %
-   *
-   * @param obj current object
-   * @param expr operator expression
-   */
-  $dateToString: function $dateToString(obj, expr) {
-    var fmt = expr['format'];
-    var date = computeValue(obj, expr['date']);
-    var matches = fmt.match(/(%%|%Y|%m|%d|%H|%M|%S|%L|%j|%w|%U)/g);
-
-    for (var i = 0, len = matches.length; i < len; i++) {
-      var hdlr = DATE_SYM_TABLE[matches[i]];
-      var value = hdlr;
-
-      if (isArray(hdlr)) {
-        // reuse date operators
-        var fn = this[hdlr[0]].bind(this);
-        var pad = hdlr[1];
-        value = padDigits(fn(obj, date), pad);
-      }
-      // replace the match with resolved value
-      fmt = fmt.replace(matches[i], value);
+    if (isArray(hdlr)) {
+      // reuse date operators
+      var fn = this[hdlr[0]].bind(this);
+      var pad = hdlr[1];
+      value = padDigits(fn(obj, date), pad);
     }
-
-    return fmt;
+    // replace the match with resolved value
+    fmt = fmt.replace(matches[i], value);
   }
-};
+
+  return fmt;
+}
 
 function padDigits(number, digits) {
   return new Array(Math.max(digits - String(number).length + 1, 0)).join('0') + number;
 }
 
-var literalOperators = {
+var literalOperators = { $literal: $literal
+
   /**
    * Return a value without parsing.
    * @param obj
    * @param expr
    */
-  $literal: function $literal(obj, expr) {
-    return expr;
-  }
-};
+};function $literal(obj, expr) {
+  return expr;
+}
 
 var setOperators = {
+  $allElementsTrue: $allElementsTrue,
+  $anyElementTrue: $anyElementTrue,
+  $setDifference: $setDifference,
+  $setEquals: $setEquals,
+  $setIntersection: $setIntersection,
+  $setIsSubset: $setIsSubset,
+  $setUnion: $setUnion
+
   /**
    * Returns true if two sets have the same elements.
    * @param obj
    * @param expr
    */
-  $setEquals: function $setEquals(obj, expr) {
-    var args = computeValue(obj, expr);
-    var xs = unique(args[0]);
-    var ys = unique(args[1]);
-    return xs.length === ys.length && xs.length === intersection(xs, ys).length;
-  },
+};function $setEquals(obj, expr) {
+  var args = computeValue(obj, expr);
+  var xs = unique(args[0]);
+  var ys = unique(args[1]);
+  return xs.length === ys.length && xs.length === intersection(xs, ys).length;
+}
 
+/**
+ * Returns the common elements of the input sets.
+ * @param obj
+ * @param expr
+ */
+function $setIntersection(obj, expr) {
+  var args = computeValue(obj, expr);
+  return intersection(args[0], args[1]);
+}
 
-  /**
-   * Returns the common elements of the input sets.
-   * @param obj
-   * @param expr
-   */
-  $setIntersection: function $setIntersection(obj, expr) {
-    var args = computeValue(obj, expr);
-    return intersection(args[0], args[1]);
-  },
+/**
+ * Returns elements of a set that do not appear in a second set.
+ * @param obj
+ * @param expr
+ */
+function $setDifference(obj, expr) {
+  var args = computeValue(obj, expr);
+  return args[0].filter(notInArray.bind(null, args[1]));
+}
 
+/**
+ * Returns a set that holds all elements of the input sets.
+ * @param obj
+ * @param expr
+ */
+function $setUnion(obj, expr) {
+  var args = computeValue(obj, expr);
+  return union(args[0], args[1]);
+}
 
-  /**
-   * Returns elements of a set that do not appear in a second set.
-   * @param obj
-   * @param expr
-   */
-  $setDifference: function $setDifference(obj, expr) {
-    var args = computeValue(obj, expr);
-    return args[0].filter(notInArray.bind(null, args[1]));
-  },
+/**
+ * Returns true if all elements of a set appear in a second set.
+ * @param obj
+ * @param expr
+ */
+function $setIsSubset(obj, expr) {
+  var args = computeValue(obj, expr);
+  return intersection(args[0], args[1]).length === args[0].length;
+}
 
+/**
+ * Returns true if any elements of a set evaluate to true, and false otherwise.
+ * @param obj
+ * @param expr
+ */
+function $anyElementTrue(obj, expr) {
+  // mongodb nests the array expression in another
+  var args = computeValue(obj, expr)[0];
+  return args.some(truthy);
+}
 
-  /**
-   * Returns a set that holds all elements of the input sets.
-   * @param obj
-   * @param expr
-   */
-  $setUnion: function $setUnion(obj, expr) {
-    var args = computeValue(obj, expr);
-    return union(args[0], args[1]);
-  },
-
-
-  /**
-   * Returns true if all elements of a set appear in a second set.
-   * @param obj
-   * @param expr
-   */
-  $setIsSubset: function $setIsSubset(obj, expr) {
-    var args = computeValue(obj, expr);
-    return intersection(args[0], args[1]).length === args[0].length;
-  },
-
-
-  /**
-   * Returns true if any elements of a set evaluate to true, and false otherwise.
-   * @param obj
-   * @param expr
-   */
-  $anyElementTrue: function $anyElementTrue(obj, expr) {
-    // mongodb nests the array expression in another
-    var args = computeValue(obj, expr)[0];
-    return args.some(truthy);
-  },
-
-
-  /**
-   * Returns true if all elements of a set evaluate to true, and false otherwise.
-   * @param obj
-   * @param expr
-   */
-  $allElementsTrue: function $allElementsTrue(obj, expr) {
-    // mongodb nests the array expression in another
-    var args = computeValue(obj, expr)[0];
-    return args.every(truthy);
-  }
-};
+/**
+ * Returns true if all elements of a set evaluate to true, and false otherwise.
+ * @param obj
+ * @param expr
+ */
+function $allElementsTrue(obj, expr) {
+  // mongodb nests the array expression in another
+  var args = computeValue(obj, expr)[0];
+  return args.every(truthy);
+}
 
 var stringOperators = {
+  $concat: $concat,
+  $indexOfBytes: $indexOfBytes,
+  $split: $split,
+  $strcasecmp: $strcasecmp,
+  $strLenBytes: $strLenBytes,
+  $strLenCP: $strLenCP,
+  $substr: $substr,
+  $substrBytes: $substrBytes,
+  $substrCP: $substrCP,
+  $toLower: $toLower,
+  $toUpper: $toUpper
 
   /**
    * Concatenates two strings.
@@ -4208,190 +4263,181 @@ var stringOperators = {
    * @param expr
    * @returns {string|*}
    */
-  $concat: function $concat(obj, expr) {
-    var args = computeValue(obj, expr);
-    // does not allow concatenation with nulls
-    if ([null, undefined].some(inArray.bind(null, args))) return null;
-    return args.join('');
-  },
+};function $concat(obj, expr) {
+  var args = computeValue(obj, expr);
+  // does not allow concatenation with nulls
+  if ([null, undefined].some(inArray.bind(null, args))) return null;
+  return args.join('');
+}
 
+/**
+ * Searches a string for an occurrence of a substring and returns the UTF-8 code point index of the first occurence.
+ * If the substring is not found, returns -1.
+ *
+ * @param  {Object} obj
+ * @param  {*} expr
+ * @return {*}
+ */
+function $indexOfBytes(obj, expr) {
+  var arr = computeValue(obj, expr);
+  var errorMsg = '$indexOfBytes expression resolves to invalid an argument';
 
-  /**
-   * Searches a string for an occurrence of a substring and returns the UTF-8 code point index of the first occurence.
-   * If the substring is not found, returns -1.
-   *
-   * @param  {Object} obj
-   * @param  {*} expr
-   * @return {*}
-   */
-  $indexOfBytes: function $indexOfBytes(obj, expr) {
-    var arr = computeValue(obj, expr);
-    var errorMsg = '$indexOfBytes expression resolves to invalid an argument';
+  if (isNil(arr[0])) return null;
 
-    if (isNil(arr[0])) return null;
+  assert(isString(arr[0]) && isString(arr[1]), errorMsg);
 
-    assert(isString(arr[0]) && isString(arr[1]), errorMsg);
+  var str = arr[0];
+  var searchStr = arr[1];
+  var start = arr[2];
+  var end = arr[3];
 
-    var str = arr[0];
-    var searchStr = arr[1];
-    var start = arr[2];
-    var end = arr[3];
+  var valid = isNil(start) || isNumber(start) && start >= 0 && Math.round(start) === start;
+  valid = valid && (isNil(end) || isNumber(end) && end >= 0 && Math.round(end) === end);
+  assert(valid, errorMsg);
 
-    var valid = isNil(start) || isNumber(start) && start >= 0 && Math.round(start) === start;
-    valid = valid && (isNil(end) || isNumber(end) && end >= 0 && Math.round(end) === end);
-    assert(valid, errorMsg);
+  start = start || 0;
+  end = end || str.length;
 
-    start = start || 0;
-    end = end || str.length;
+  if (start > end) return -1;
 
-    if (start > end) return -1;
+  var index = str.substring(start, end).indexOf(searchStr);
+  return index > -1 ? index + start : index;
+}
 
-    var index = str.substring(start, end).indexOf(searchStr);
-    return index > -1 ? index + start : index;
-  },
+/**
+ * Splits a string into substrings based on a delimiter.
+ * If the delimiter is not found within the string, returns an array containing the original string.
+ *
+ * @param  {Object} obj
+ * @param  {Array} expr
+ * @return {Array} Returns an array of substrings.
+ */
+function $split(obj, expr) {
+  var args = computeValue(obj, expr);
+  if (isNil(args[0])) return null;
+  assert(args.every(isString), '$split expression must result to array(2) of strings');
+  return args[0].split(args[1]);
+}
 
+/**
+ * Returns the number of UTF-8 encoded bytes in the specified string.
+ *
+ * @param  {Object} obj
+ * @param  {String} expr
+ * @return {Number}
+ */
+function $strLenBytes(obj, expr) {
+  return ~-encodeURI(computeValue(obj, expr)).split(/%..|./).length;
+}
 
-  /**
-   * Splits a string into substrings based on a delimiter.
-   * If the delimiter is not found within the string, returns an array containing the original string.
-   *
-   * @param  {Object} obj
-   * @param  {Array} expr
-   * @return {Array} Returns an array of substrings.
-   */
-  $split: function $split(obj, expr) {
-    var args = computeValue(obj, expr);
-    if (isNil(args[0])) return null;
-    assert(args.every(isString), '$split expression must result to array(2) of strings');
-    return args[0].split(args[1]);
-  },
+/**
+ * Returns the number of UTF-8 code points in the specified string.
+ *
+ * @param  {Object} obj
+ * @param  {String} expr
+ * @return {Number}
+ */
+function $strLenCP(obj, expr) {
+  return computeValue(obj, expr).length;
+}
 
+/**
+ * Compares two strings and returns an integer that reflects the comparison.
+ *
+ * @param obj
+ * @param expr
+ * @returns {number}
+ */
+function $strcasecmp(obj, expr) {
+  var args = computeValue(obj, expr);
+  var a = args[0];
+  var b = args[1];
+  if (isEqual(a, b) || args.every(isNil)) return 0;
+  assert(args.every(isString), '$strcasecmp must resolve to array(2) of strings');
+  a = a.toUpperCase();
+  b = b.toUpperCase();
+  return a > b && 1 || a < b && -1 || 0;
+}
 
-  /**
-   * Returns the number of UTF-8 encoded bytes in the specified string.
-   *
-   * @param  {Object} obj
-   * @param  {String} expr
-   * @return {Number}
-   */
-  $strLenBytes: function $strLenBytes(obj, expr) {
-    return ~-encodeURI(computeValue(obj, expr)).split(/%..|./).length;
-  },
-
-
-  /**
-   * Returns the number of UTF-8 code points in the specified string.
-   *
-   * @param  {Object} obj
-   * @param  {String} expr
-   * @return {Number}
-   */
-  $strLenCP: function $strLenCP(obj, expr) {
-    return computeValue(obj, expr).length;
-  },
-
-
-  /**
-   * Compares two strings and returns an integer that reflects the comparison.
-   *
-   * @param obj
-   * @param expr
-   * @returns {number}
-   */
-  $strcasecmp: function $strcasecmp(obj, expr) {
-    var args = computeValue(obj, expr);
-    var a = args[0];
-    var b = args[1];
-    if (isEqual(a, b) || args.every(isNil)) return 0;
-    assert(args.every(isString), '$strcasecmp must resolve to array(2) of strings');
-    a = a.toUpperCase();
-    b = b.toUpperCase();
-    return a > b && 1 || a < b && -1 || 0;
-  },
-
-
-  /**
-   * Returns a substring of a string, starting at a specified index position and including the specified number of characters.
-   * The index is zero-based.
-   *
-   * @param obj
-   * @param expr
-   * @returns {string}
-   */
-  $substrBytes: function $substrBytes(obj, expr) {
-    var args = computeValue(obj, expr);
-    var s = args[0];
-    var index = args[1];
-    var count = args[2];
-    assert(isString(s) && isNumber(index) && index >= 0 && isNumber(count) && count >= 0, '$substrBytes: invalid arguments');
-    var buf = utf8Encode(s);
-    var validIndex = [];
-    var acc = 0;
-    for (var i = 0; i < buf.length; i++) {
-      validIndex.push(acc);
-      acc += buf[i].length;
-    }
-    var begin = validIndex.indexOf(index);
-    var end = validIndex.indexOf(index + count);
-    assert(begin > -1 && end > -1, '$substrBytes: invalid range, start or end index is a UTF-8 continuation byte.');
-    return s.substring(begin, end);
-  },
-
-
-  /**
-   * Returns a substring of a string, starting at a specified index position and including the specified number of characters.
-   * The index is zero-based.
-   *
-   * @param obj
-   * @param expr
-   * @returns {string}
-   */
-  $substr: function $substr(obj, expr) {
-    var args = computeValue(obj, expr);
-    var s = args[0];
-    var index = args[1];
-    var count = args[2];
-    if (isString(s)) {
-      if (index < 0) {
-        return '';
-      } else if (count < 0) {
-        return s.substr(index);
-      } else {
-        return s.substr(index, count);
-      }
-    }
-    return '';
-  },
-  $substrCP: function $substrCP(obj, expr) {
-    return this.$substr(obj, expr);
-  },
-
-
-  /**
-   * Converts a string to lowercase.
-   *
-   * @param obj
-   * @param expr
-   * @returns {string}
-   */
-  $toLower: function $toLower(obj, expr) {
-    var value = computeValue(obj, expr);
-    return isEmpty(value) ? '' : value.toLowerCase();
-  },
-
-
-  /**
-   * Converts a string to uppercase.
-   *
-   * @param obj
-   * @param expr
-   * @returns {string}
-   */
-  $toUpper: function $toUpper(obj, expr) {
-    var value = computeValue(obj, expr);
-    return isEmpty(value) ? '' : value.toUpperCase();
+/**
+ * Returns a substring of a string, starting at a specified index position and including the specified number of characters.
+ * The index is zero-based.
+ *
+ * @param obj
+ * @param expr
+ * @returns {string}
+ */
+function $substrBytes(obj, expr) {
+  var args = computeValue(obj, expr);
+  var s = args[0];
+  var index = args[1];
+  var count = args[2];
+  assert(isString(s) && isNumber(index) && index >= 0 && isNumber(count) && count >= 0, '$substrBytes: invalid arguments');
+  var buf = utf8Encode(s);
+  var validIndex = [];
+  var acc = 0;
+  for (var i = 0; i < buf.length; i++) {
+    validIndex.push(acc);
+    acc += buf[i].length;
   }
-};
+  var begin = validIndex.indexOf(index);
+  var end = validIndex.indexOf(index + count);
+  assert(begin > -1 && end > -1, '$substrBytes: invalid range, start or end index is a UTF-8 continuation byte.');
+  return s.substring(begin, end);
+}
+
+/**
+ * Returns a substring of a string, starting at a specified index position and including the specified number of characters.
+ * The index is zero-based.
+ *
+ * @param obj
+ * @param expr
+ * @returns {string}
+ */
+function $substr(obj, expr) {
+  var args = computeValue(obj, expr);
+  var s = args[0];
+  var index = args[1];
+  var count = args[2];
+  if (isString(s)) {
+    if (index < 0) {
+      return '';
+    } else if (count < 0) {
+      return s.substr(index);
+    } else {
+      return s.substr(index, count);
+    }
+  }
+  return '';
+}
+
+function $substrCP(obj, expr) {
+  return this.$substr(obj, expr);
+}
+
+/**
+ * Converts a string to lowercase.
+ *
+ * @param obj
+ * @param expr
+ * @returns {string}
+ */
+function $toLower(obj, expr) {
+  var value = computeValue(obj, expr);
+  return isEmpty(value) ? '' : value.toLowerCase();
+}
+
+/**
+ * Converts a string to uppercase.
+ *
+ * @param obj
+ * @param expr
+ * @returns {string}
+ */
+function $toUpper(obj, expr) {
+  var value = computeValue(obj, expr);
+  return isEmpty(value) ? '' : value.toUpperCase();
+}
 
 var UTF8_MASK = [0xC0, 0xE0, 0xF0];
 // encodes a unicode code point to a utf8 byte sequence
@@ -4418,7 +4464,8 @@ function utf8Encode(s) {
  * Aggregation framework variable operators
  */
 
-var variableOperators = {
+var variableOperators = { $let: $let
+
   /**
    * Defines variables for use within the scope of a sub-expression and returns the result of the sub-expression.
    *
@@ -4426,21 +4473,20 @@ var variableOperators = {
    * @param expr
    * @returns {*}
    */
-  $let: function $let(obj, expr) {
-    var varsExpr = expr['vars'];
-    var inExpr = expr['in'];
+};function $let(obj, expr) {
+  var varsExpr = expr['vars'];
+  var inExpr = expr['in'];
 
-    // resolve vars
-    var varsKeys = keys(varsExpr);
-    each(varsKeys, function (key) {
-      var val = computeValue(obj, varsExpr[key]);
-      var tempKey = '$' + key;
-      obj[tempKey] = val;
-    });
+  // resolve vars
+  var varsKeys = keys(varsExpr);
+  each(varsKeys, function (key) {
+    var val = computeValue(obj, varsExpr[key]);
+    var tempKey = '$' + key;
+    obj[tempKey] = val;
+  });
 
-    return computeValue(obj, inExpr);
-  }
-};
+  return computeValue(obj, inExpr);
+}
 
 // combine aggregate operators
 var expressionOperators = Object.assign({}, arithmeticOperators, arrayOperators, booleanOperators, comparisonOperators, conditionalOperators, dateOperators, literalOperators, setOperators, stringOperators, variableOperators);
