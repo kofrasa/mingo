@@ -963,33 +963,15 @@ function moduleApi() {
   };
 }
 
-var arithmeticOperators = {
-  $abs: $abs,
-  $add: $add,
-  $ceil: $ceil,
-  $divide: $divide,
-  $exp: $exp,
-  $floor: $floor,
-  $ln: $ln,
-  $log: $log,
-  $log10: $log10,
-  $mod: $mod,
-  $multiply: $multiply,
-  $pow: $pow,
-  $round: $round,
-  $sqrt: $sqrt,
-  $subtract: $subtract,
-  $trunc: $trunc
-
-  /**
-   * Returns the absolute value of a number.
-   * https://docs.mongodb.com/manual/reference/operator/aggregation/abs/#exp._S_abs
-   *
-   * @param obj
-   * @param expr
-   * @return {Number|null|NaN}
-   */
-};function $abs(obj, expr) {
+/**
+ * Returns the absolute value of a number.
+ * https://docs.mongodb.com/manual/reference/operator/aggregation/abs/#exp._S_abs
+ *
+ * @param obj
+ * @param expr
+ * @return {Number|null|NaN}
+ */
+function $abs(obj, expr) {
   var val = computeValue(obj, expr);
   return val === null || val === undefined ? null : Math.abs(val);
 }
@@ -1267,32 +1249,14 @@ function truncate(num, places, roundOff) {
   return result * sign;
 }
 
-var arrayOperators = {
-  $arrayElemAt: $arrayElemAt,
-  $arrayToObject: $arrayToObject,
-  $concatArrays: $concatArrays,
-  $filter: $filter,
-  $in: $in,
-  $indexOfArray: $indexOfArray,
-  $isArray: $isArray,
-  $map: $map,
-  $mergeObjects: $mergeObjects,
-  $objectToArray: $objectToArray,
-  $range: $range,
-  $reduce: $reduce,
-  $reverseArray: $reverseArray,
-  $size: $size,
-  $slice: $slice,
-  $zip: $zip
-
-  /**
-   * Returns the element at the specified array index.
-   *
-   * @param  {Object} obj
-   * @param  {*} expr
-   * @return {*}
-   */
-};function $arrayElemAt(obj, expr) {
+/**
+ * Returns the element at the specified array index.
+ *
+ * @param  {Object} obj
+ * @param  {*} expr
+ * @return {*}
+ */
+function $arrayElemAt(obj, expr) {
   var arr = computeValue(obj, expr);
   assert(isArray(arr) && arr.length === 2, '$arrayElemAt expression must resolve to array(2)');
   assert(isArray(arr[0]), 'First operand to $arrayElemAt must resolve to an array');
@@ -1602,19 +1566,14 @@ function $mergeObjects(obj, expr) {
   return {};
 }
 
-var booleanOperators = {
-  $and: $and,
-  $or: $or,
-  $not: $not
-
-  /**
-   * Returns true only when all its expressions evaluate to true. Accepts any number of argument expressions.
-   *
-   * @param obj
-   * @param expr
-   * @returns {boolean}
-   */
-};function $and(obj, expr) {
+/**
+ * Returns true only when all its expressions evaluate to true. Accepts any number of argument expressions.
+ *
+ * @param obj
+ * @param expr
+ * @returns {boolean}
+ */
+function $and(obj, expr) {
   var value = computeValue(obj, expr);
   return truthy(value) && value.every(truthy);
 }
@@ -2406,42 +2365,14 @@ function remove(collection, criteria) {
 /**
  * Query and Projection Operators. https://docs.mongodb.com/manual/reference/operator/query/
  */
-var simpleOperators = {
-  $all: $all,
-  $eq: $eq$1,
-  $ne: $ne$1,
-  $in: $in$1,
-  $nin: $nin$1,
-  $lt: $lt$1,
-  $lte: $lte$1,
-  $gt: $gt$1,
-  $gte: $gte$1,
-  $mod: $mod$1,
-  $regex: $regex,
-  $exists: $exists,
-  $size: $size$1,
-  $elemMatch: $elemMatch,
-  $type: $type
-
-  /**
-   * Query operators evaluated directly against collections
-   */
-};var queryOperators = {
-  $and: $and$1,
-  $or: $or$1,
-  $nor: $nor,
-  $not: $not$1,
-  $where: $where,
-  $expr: $expr
-
-  /**
-   * Checks that two values are equal.
-   *
-   * @param a         The lhs operand as resolved from the object by the given selector
-   * @param b         The rhs operand provided by the user
-   * @returns {*}
-   */
-};function $eq$1(a, b) {
+/**
+ * Checks that two values are equal.
+ *
+ * @param a         The lhs operand as resolved from the object by the given selector
+ * @param b         The rhs operand provided by the user
+ * @returns {*}
+ */
+function $eq$1(a, b) {
   // start with simple equality check
   if (isEqual(a, b)) return true;
 
@@ -2698,184 +2629,35 @@ function $type(a, b) {
   }
 }
 
-/**
- * Joins query clauses with a logical AND returns all documents that match the conditions of both clauses.
- *
- * @param selector
- * @param value
- * @returns {{test: Function}}
- */
-function $and$1(selector, value) {
-  assert(isArray(value), 'Invalid expression: $and expects value to be an Array');
-
-  var queries = [];
-  each(value, function (expr) {
-    return queries.push(new Query(expr));
-  });
-
-  return {
-    test: function test(obj) {
-      for (var i = 0; i < queries.length; i++) {
-        if (!queries[i].test(obj)) {
-          return false;
-        }
-      }
-      return true;
-    }
-  };
-}
-
-/**
- * Joins query clauses with a logical OR returns all documents that match the conditions of either clause.
- *
- * @param selector
- * @param value
- * @returns {{test: Function}}
- */
-function $or$1(selector, value) {
-  assert(isArray(value), 'Invalid expression. $or expects value to be an Array');
-
-  var queries = [];
-  each(value, function (expr) {
-    return queries.push(new Query(expr));
-  });
-
-  return {
-    test: function test(obj) {
-      for (var i = 0; i < queries.length; i++) {
-        if (queries[i].test(obj)) {
-          return true;
-        }
-      }
-      return false;
-    }
-  };
-}
-
-/**
- * Joins query clauses with a logical NOR returns all documents that fail to match both clauses.
- *
- * @param selector
- * @param value
- * @returns {{test: Function}}
- */
-function $nor(selector, value) {
-  assert(isArray(value), 'Invalid expression. $nor expects value to be an Array');
-  var query = $or$1('$or', value);
-  return {
-    test: function test(obj) {
-      return !query.test(obj);
-    }
-  };
-}
-
-/**
- * Inverts the effect of a query expression and returns documents that do not match the query expression.
- *
- * @param selector
- * @param value
- * @returns {{test: Function}}
- */
-function $not$1(selector, value) {
-  var criteria = {};
-  criteria[selector] = normalize(value);
-  var query = new Query(criteria);
-  return {
-    test: function test(obj) {
-      return !query.test(obj);
-    }
-  };
-}
-
-/**
- * Matches documents that satisfy a JavaScript expression.
- *
- * @param selector
- * @param value
- * @returns {{test: test}}
- */
-function $where(selector, value) {
-  if (!isFunction(value)) {
-    value = new Function('return ' + value + ';');
-  }
-  return {
-    test: function test(obj) {
-      return value.call(obj) === true;
-    }
-  };
-}
-
-/**
- * Allows the use of aggregation expressions within the query language.
- *
- * @param selector
- * @param value
- * @returns {{test: test}}
- */
-function $expr(selector, value) {
-  return {
-    test: function test(obj) {
-      return computeValue(obj, value);
-    }
-  };
-}
-
 function compare$1(a, b, f) {
   return ensureArray(a).some(function (x) {
     return getType(x) === getType(b) && f(x, b);
   });
 }
 
-// add simple query operators
-each(simpleOperators, function (f, op) {
-  queryOperators[op] = function (selector, value) {
-    return {
-      test: function test(obj) {
-        // value of field must be fully resolved.
-        var lhs = resolve(obj, selector, { meta: true });
-        lhs = unwrap(lhs.result, lhs.depth);
-        return f(lhs, value);
-      }
-    };
-  };
-});
-
-function createComparison(op) {
+function createComparison(f) {
   return function (obj, expr) {
     var args = computeValue(obj, expr);
-    return simpleOperators[op](args[0], args[1]);
+    return f(args[0], args[1]);
   };
 }
 
-var $eq = createComparison('$eq');
-var $ne = createComparison('$ne');
-var $gt = createComparison('$gt');
-var $lt = createComparison('$lt');
-var $gte = createComparison('$gte');
-var $lte = createComparison('$lte');
-var $nin = createComparison('$nin');
+var $eq = createComparison($eq$1);
+var $ne = createComparison($ne$1);
+var $gt = createComparison($gt$1);
+var $lt = createComparison($lt$1);
+var $gte = createComparison($gte$1);
+var $lte = createComparison($lte$1);
+var $nin = createComparison($nin$1);
 
 /**
- * Comparison operators. Must be exported after const delcarations above
+ * Compares two values and returns the result of the comparison as an integer.
+ *
+ * @param obj
+ * @param expr
+ * @returns {number}
  */
-var comparisonOperators = {
-  $cmp: $cmp,
-  $eq: $eq,
-  $gt: $gt,
-  $gte: $gte,
-  $lt: $lt,
-  $lte: $lte,
-  $ne: $ne,
-  $nin: $nin
-
-  /**
-   * Compares two values and returns the result of the comparison as an integer.
-   *
-   * @param obj
-   * @param expr
-   * @returns {number}
-   */
-};function $cmp(obj, expr) {
+function $cmp(obj, expr) {
   var args = computeValue(obj, expr);
   if (args[0] > args[1]) return 1;
   if (args[0] < args[1]) return -1;
@@ -2886,19 +2668,14 @@ var comparisonOperators = {
  * Conditional operators
  */
 
-var conditionalOperators = {
-  $cond: $cond,
-  $switch: $switch,
-  $ifNull: $ifNull
-
-  /**
-   * A ternary operator that evaluates one expression,
-   * and depending on the result returns the value of one following expressions.
-   *
-   * @param obj
-   * @param expr
-   */
-};function $cond(obj, expr) {
+/**
+ * A ternary operator that evaluates one expression,
+ * and depending on the result returns the value of one following expressions.
+ *
+ * @param obj
+ * @param expr
+ */
+function $cond(obj, expr) {
   var ifExpr = void 0,
       thenExpr = void 0,
       elseExpr = void 0;
@@ -2957,40 +2734,12 @@ function $ifNull(obj, expr) {
   return isNil(args[0]) ? args[1] : args[0];
 }
 
-// used for formatting dates in $dateToString operator
-var DATE_SYM_TABLE = {
-  '%Y': ['$year', 4],
-  '%m': ['$month', 2],
-  '%d': ['$dayOfMonth', 2],
-  '%H': ['$hour', 2],
-  '%M': ['$minute', 2],
-  '%S': ['$second', 2],
-  '%L': ['$millisecond', 3],
-  '%j': ['$dayOfYear', 3],
-  '%w': ['$dayOfWeek', 1],
-  '%U': ['$week', 2],
-  '%%': '%'
-};
-
-var dateOperators = {
-  $dateToString: $dateToString,
-  $dayOfMonth: $dayOfMonth,
-  $dayOfWeek: $dayOfWeek,
-  $dayOfYear: $dayOfYear,
-  $hour: $hour,
-  $millisecond: $millisecond,
-  $minute: $minute,
-  $month: $month,
-  $second: $second,
-  $week: $week,
-  $year: $year
-
-  /**
-   * Returns the day of the year for a date as a number between 1 and 366 (leap year).
-   * @param obj
-   * @param expr
-   */
-};function $dayOfYear(obj, expr) {
+/**
+ * Returns the day of the year for a date as a number between 1 and 366 (leap year).
+ * @param obj
+ * @param expr
+ */
+function $dayOfYear(obj, expr) {
   var d = computeValue(obj, expr);
   var start = new Date(d.getFullYear(), 0, 0);
   var diff = d - start;
@@ -3100,25 +2849,39 @@ function $millisecond(obj, expr) {
   return d.getMilliseconds();
 }
 
-/**
- * Returns the date as a formatted string.
- *
- * %Y  Year (4 digits, zero padded)  0000-9999
- * %m  Month (2 digits, zero padded)  01-12
- * %d  Day of Month (2 digits, zero padded)  01-31
- * %H  Hour (2 digits, zero padded, 24-hour clock)  00-23
- * %M  Minute (2 digits, zero padded)  00-59
- * %S  Second (2 digits, zero padded)  00-60
- * %L  Millisecond (3 digits, zero padded)  000-999
- * %j  Day of year (3 digits, zero padded)  001-366
- * %w  Day of week (1-Sunday, 7-Saturday)  1-7
- * %U  Week of year (2 digits, zero padded)  00-53
- * %%  Percent Character as a Literal  %
- *
- * @param obj current object
- * @param expr operator expression
- */
-function $dateToString(obj, expr) {
+// used for formatting dates in $dateToString operator
+var DATE_SYM_TABLE = {
+  '%Y': [$year, 4],
+  '%m': [$month, 2],
+  '%d': [$dayOfMonth, 2],
+  '%H': [$hour, 2],
+  '%M': [$minute, 2],
+  '%S': [$second, 2],
+  '%L': [$millisecond, 3],
+  '%j': [$dayOfYear, 3],
+  '%w': [$dayOfWeek, 1],
+  '%U': [$week, 2],
+  '%%': '%'
+
+  /**
+   * Returns the date as a formatted string.
+   *
+   * %Y  Year (4 digits, zero padded)  0000-9999
+   * %m  Month (2 digits, zero padded)  01-12
+   * %d  Day of Month (2 digits, zero padded)  01-31
+   * %H  Hour (2 digits, zero padded, 24-hour clock)  00-23
+   * %M  Minute (2 digits, zero padded)  00-59
+   * %S  Second (2 digits, zero padded)  00-60
+   * %L  Millisecond (3 digits, zero padded)  000-999
+   * %j  Day of year (3 digits, zero padded)  001-366
+   * %w  Day of week (1-Sunday, 7-Saturday)  1-7
+   * %U  Week of year (2 digits, zero padded)  00-53
+   * %%  Percent Character as a Literal  %
+   *
+   * @param obj current object
+   * @param expr operator expression
+   */
+};function $dateToString(obj, expr) {
   var fmt = expr['format'];
   var date = computeValue(obj, expr['date']);
   var matches = fmt.match(/(%%|%Y|%m|%d|%H|%M|%S|%L|%j|%w|%U)/g);
@@ -3129,7 +2892,7 @@ function $dateToString(obj, expr) {
 
     if (isArray(hdlr)) {
       // reuse date operators
-      var fn = this[hdlr[0]].bind(this);
+      var fn = hdlr[0];
       var pad = hdlr[1];
       value = padDigits(fn(obj, date), pad);
     }
@@ -3144,32 +2907,21 @@ function padDigits(number, digits) {
   return new Array(Math.max(digits - String(number).length + 1, 0)).join('0') + number;
 }
 
-var literalOperators = { $literal: $literal
-
-  /**
-   * Return a value without parsing.
-   * @param obj
-   * @param expr
-   */
-};function $literal(obj, expr) {
+/**
+ * Return a value without parsing.
+ * @param obj
+ * @param expr
+ */
+function $literal(obj, expr) {
   return expr;
 }
 
-var setOperators = {
-  $allElementsTrue: $allElementsTrue,
-  $anyElementTrue: $anyElementTrue,
-  $setDifference: $setDifference,
-  $setEquals: $setEquals,
-  $setIntersection: $setIntersection,
-  $setIsSubset: $setIsSubset,
-  $setUnion: $setUnion
-
-  /**
-   * Returns true if two sets have the same elements.
-   * @param obj
-   * @param expr
-   */
-};function $setEquals(obj, expr) {
+/**
+ * Returns true if two sets have the same elements.
+ * @param obj
+ * @param expr
+ */
+function $setEquals(obj, expr) {
   var args = computeValue(obj, expr);
   var xs = unique(args[0]);
   var ys = unique(args[1]);
@@ -3238,27 +2990,14 @@ function $allElementsTrue(obj, expr) {
   return args.every(truthy);
 }
 
-var stringOperators = {
-  $concat: $concat,
-  $indexOfBytes: $indexOfBytes,
-  $split: $split,
-  $strcasecmp: $strcasecmp,
-  $strLenBytes: $strLenBytes,
-  $strLenCP: $strLenCP,
-  $substr: $substr,
-  $substrBytes: $substrBytes,
-  $substrCP: $substrCP,
-  $toLower: $toLower,
-  $toUpper: $toUpper
-
-  /**
-   * Concatenates two strings.
-   *
-   * @param obj
-   * @param expr
-   * @returns {string|*}
-   */
-};function $concat(obj, expr) {
+/**
+ * Concatenates two strings.
+ *
+ * @param obj
+ * @param expr
+ * @returns {string|*}
+ */
+function $concat(obj, expr) {
   var args = computeValue(obj, expr);
   // does not allow concatenation with nulls
   if ([null, undefined].some(inArray.bind(null, args))) return null;
@@ -3459,16 +3198,14 @@ function utf8Encode(s) {
  * Aggregation framework variable operators
  */
 
-var variableOperators = { $let: $let
-
-  /**
-   * Defines variables for use within the scope of a sub-expression and returns the result of the sub-expression.
-   *
-   * @param obj
-   * @param expr
-   * @returns {*}
-   */
-};function $let(obj, expr) {
+/**
+ * Defines variables for use within the scope of a sub-expression and returns the result of the sub-expression.
+ *
+ * @param obj
+ * @param expr
+ * @returns {*}
+ */
+function $let(obj, expr) {
   var varsExpr = expr['vars'];
   var inExpr = expr['in'];
 
@@ -3483,8 +3220,101 @@ var variableOperators = { $let: $let
   return computeValue(obj, inExpr);
 }
 
-// combine aggregate operators
-var expressionOperators = Object.assign({}, arithmeticOperators, arrayOperators, booleanOperators, comparisonOperators, conditionalOperators, dateOperators, literalOperators, setOperators, stringOperators, variableOperators);
+
+
+var expressionOperators = Object.freeze({
+	$abs: $abs,
+	$add: $add,
+	$ceil: $ceil,
+	$divide: $divide,
+	$exp: $exp,
+	$floor: $floor,
+	$ln: $ln,
+	$log: $log,
+	$log10: $log10,
+	$mod: $mod,
+	$multiply: $multiply,
+	$pow: $pow,
+	$round: $round,
+	$sqrt: $sqrt,
+	$subtract: $subtract,
+	$trunc: $trunc,
+	$arrayElemAt: $arrayElemAt,
+	$arrayToObject: $arrayToObject,
+	$concatArrays: $concatArrays,
+	$filter: $filter,
+	$in: $in,
+	$indexOfArray: $indexOfArray,
+	$isArray: $isArray,
+	$map: $map,
+	$objectToArray: $objectToArray,
+	$range: $range,
+	$reduce: $reduce,
+	$reverseArray: $reverseArray,
+	$size: $size,
+	$slice: $slice,
+	$zip: $zip,
+	$mergeObjects: $mergeObjects,
+	$and: $and,
+	$or: $or,
+	$not: $not,
+	$eq: $eq,
+	$ne: $ne,
+	$gt: $gt,
+	$lt: $lt,
+	$gte: $gte,
+	$lte: $lte,
+	$nin: $nin,
+	$cmp: $cmp,
+	$cond: $cond,
+	$switch: $switch,
+	$ifNull: $ifNull,
+	$dayOfYear: $dayOfYear,
+	$dayOfMonth: $dayOfMonth,
+	$dayOfWeek: $dayOfWeek,
+	$year: $year,
+	$month: $month,
+	$week: $week,
+	$hour: $hour,
+	$minute: $minute,
+	$second: $second,
+	$millisecond: $millisecond,
+	$dateToString: $dateToString,
+	$literal: $literal,
+	$setEquals: $setEquals,
+	$setIntersection: $setIntersection,
+	$setDifference: $setDifference,
+	$setUnion: $setUnion,
+	$setIsSubset: $setIsSubset,
+	$anyElementTrue: $anyElementTrue,
+	$allElementsTrue: $allElementsTrue,
+	$concat: $concat,
+	$indexOfBytes: $indexOfBytes,
+	$split: $split,
+	$strLenBytes: $strLenBytes,
+	$strLenCP: $strLenCP,
+	$strcasecmp: $strcasecmp,
+	$substrBytes: $substrBytes,
+	$substr: $substr,
+	$substrCP: $substrCP,
+	$toLower: $toLower,
+	$toUpper: $toUpper,
+	$let: $let
+});
+
+/**
+ * Returns an array of all values for the selected field among for each document in that group.
+ *
+ * @param collection
+ * @param expr
+ * @returns {Array|*}
+ */
+function $push(collection, expr) {
+  if (isNil(expr)) return collection;
+  return collection.map(function (obj) {
+    return computeValue(obj, expr);
+  });
+}
 
 /**
  * Returns an array of all the unique values for the selected field among for each document in that group.
@@ -3494,7 +3324,7 @@ var expressionOperators = Object.assign({}, arithmeticOperators, arrayOperators,
  * @returns {*}
  */
 function $addToSet(collection, expr) {
-  return unique(this.$push(collection, expr));
+  return unique($push(collection, expr));
 }
 
 /**
@@ -3574,20 +3404,6 @@ function $min(collection, expr) {
 }
 
 /**
- * Returns an array of all values for the selected field among for each document in that group.
- *
- * @param collection
- * @param expr
- * @returns {Array|*}
- */
-function $push(collection, expr) {
-  if (isNil(expr)) return collection;
-  return collection.map(function (obj) {
-    return computeValue(obj, expr);
-  });
-}
-
-/**
  * Returns the population standard deviation of the input values.
  *
  * @param  {Array} collection
@@ -3630,19 +3446,21 @@ function $sum(collection, expr) {
  * Group stage Accumulator Operators. https://docs.mongodb.com/manual/reference/operator/aggregation-
  */
 
-var groupOperators = {
-  $addToSet: $addToSet,
-  $avg: $avg,
-  $first: $first,
-  $last: $last,
-  $mergeObjects: $mergeObjects$1,
-  $max: $max,
-  $min: $min,
-  $push: $push,
-  $stdDevPop: $stdDevPop,
-  $stdDevSamp: $stdDevSamp,
-  $sum: $sum
-};
+
+
+var groupOperators = Object.freeze({
+	$addToSet: $addToSet,
+	$avg: $avg,
+	$first: $first,
+	$last: $last,
+	$max: $max,
+	$mergeObjects: $mergeObjects$1,
+	$min: $min,
+	$push: $push,
+	$stdDevPop: $stdDevPop,
+	$stdDevSamp: $stdDevSamp,
+	$sum: $sum
+});
 
 /**
  * Adds new fields to documents.
@@ -3970,63 +3788,6 @@ function $out(collection, expr, opt) {
 }
 
 /**
- * Projection Operators. https://docs.mongodb.com/manual/reference/operator/projection/
- */
-var projectionOperators = {
-  $: $, $elemMatch: $elemMatch$1, $slice: $slice$1
-
-  /**
-   * Projects the first element in an array that matches the query condition.
-   *
-   * @param obj
-   * @param field
-   * @param expr
-   */
-};function $(obj, expr, field) {
-  err('$ not implemented');
-}
-
-/**
- * Projects only the first element from an array that matches the specified $elemMatch condition.
- *
- * @param obj
- * @param field
- * @param expr
- * @returns {*}
- */
-function $elemMatch$1(obj, expr, field) {
-  var arr = resolve(obj, field);
-  var query = new Query(expr);
-
-  assert(isArray(arr), '$elemMatch: invalid argument');
-
-  for (var i = 0; i < arr.length; i++) {
-    if (query.test(arr[i])) return [arr[i]];
-  }
-  return undefined;
-}
-
-/**
- * Limits the number of elements projected from an array. Supports skip and limit slices.
- *
- * @param obj
- * @param field
- * @param expr
- */
-function $slice$1(obj, expr, field) {
-  var xs = resolve(obj, field);
-
-  if (!isArray(xs)) return xs;
-
-  if (isArray(expr)) {
-    return slice(xs, expr[0], expr[1]);
-  } else {
-    assert(isNumber(expr), '$slice: invalid arguments for projection');
-    return slice(xs, expr);
-  }
-}
-
-/**
  * Reshapes a document stream.
  * $project can rename, add, or remove fields as well as create computed values and sub-documents.
  *
@@ -4112,6 +3873,8 @@ function processObject(obj, expr, expressionKeys, idOnlyExcludedExpression) {
       var operator = subExprKeys.length > 1 ? false : subExprKeys[0];
 
       if (inArray(ops(OP_PROJECTION), operator)) {
+        var projectionOperators = OPERATORS[OP_PROJECTION];
+
         // apply the projection operator on the operator expression for the key
         if (operator === '$slice') {
           // $slice is handled differently for aggregation and projection operations
@@ -4471,35 +4234,276 @@ function $unwind(collection, expr, opt) {
 /**
  * Pipeline Aggregation Stages. https://docs.mongodb.com/manual/reference/operator/aggregation-
  */
-var pipelineOperators = {
-  $addFields: $addFields,
-  $bucket: $bucket,
-  $bucketAuto: $bucketAuto,
-  $count: $count,
-  $facet: $facet,
-  $group: $group,
-  $limit: $limit,
-  $lookup: $lookup,
-  $match: $match,
-  $out: $out,
-  $project: $project,
-  $redact: $redact,
-  $replaceRoot: $replaceRoot,
-  $sample: $sample,
-  $set: $set,
-  $skip: $skip,
-  $sort: $sort,
-  $sortByCount: $sortByCount,
-  $unwind: $unwind
-};
+
+
+
+var pipelineOperators = Object.freeze({
+	$addFields: $addFields,
+	$set: $set,
+	$bucket: $bucket,
+	$bucketAuto: $bucketAuto,
+	$count: $count,
+	$facet: $facet,
+	$group: $group,
+	$limit: $limit,
+	$lookup: $lookup,
+	$match: $match,
+	$out: $out,
+	$project: $project,
+	$redact: $redact,
+	$replaceRoot: $replaceRoot,
+	$sample: $sample,
+	$skip: $skip,
+	$sort: $sort,
+	$sortByCount: $sortByCount,
+	$unwind: $unwind
+});
+
+/**
+ * Projection Operators. https://docs.mongodb.com/manual/reference/operator/projection/
+ */
+
+/**
+ * Projects the first element in an array that matches the query condition.
+ *
+ * @param obj
+ * @param field
+ * @param expr
+ */
+function $(obj, expr, field) {
+  err('$ not implemented');
+}
+
+/**
+ * Projects only the first element from an array that matches the specified $elemMatch condition.
+ *
+ * @param obj
+ * @param field
+ * @param expr
+ * @returns {*}
+ */
+function $elemMatch$1(obj, expr, field) {
+  var arr = resolve(obj, field);
+  var query = new Query(expr);
+
+  assert(isArray(arr), '$elemMatch: invalid argument');
+
+  for (var i = 0; i < arr.length; i++) {
+    if (query.test(arr[i])) return [arr[i]];
+  }
+  return undefined;
+}
+
+/**
+ * Limits the number of elements projected from an array. Supports skip and limit slices.
+ *
+ * @param obj
+ * @param field
+ * @param expr
+ */
+function $slice$1(obj, expr, field) {
+  var xs = resolve(obj, field);
+
+  if (!isArray(xs)) return xs;
+
+  if (isArray(expr)) {
+    return slice(xs, expr[0], expr[1]);
+  } else {
+    assert(isNumber(expr), '$slice: invalid arguments for projection');
+    return slice(xs, expr);
+  }
+}
+
+var projectionOperators = Object.freeze({
+	$: $,
+	$elemMatch: $elemMatch$1,
+	$slice: $slice$1
+});
+
+// Query and Projection Operators. https://docs.mongodb.com/manual/reference/operator/query/
+
+function createQueryOperator(f) {
+  return function (selector, value) {
+    return {
+      test: function test(obj) {
+        // value of field must be fully resolved.
+        var lhs = resolve(obj, selector, { meta: true });
+        lhs = unwrap(lhs.result, lhs.depth);
+        return f(lhs, value);
+      }
+    };
+  };
+}
+
+var $all$1 = createQueryOperator($all);
+var $elemMatch$2 = createQueryOperator($elemMatch);
+var $eq$2 = createQueryOperator($eq$1);
+var $exists$1 = createQueryOperator($exists);
+var $gt$2 = createQueryOperator($gt$1);
+var $gte$2 = createQueryOperator($gte$1);
+var $in$2 = createQueryOperator($in$1);
+var $lt$2 = createQueryOperator($lt$1);
+var $lte$2 = createQueryOperator($lte$1);
+var $mod$2 = createQueryOperator($mod$1);
+var $ne$2 = createQueryOperator($ne$1);
+var $nin$2 = createQueryOperator($nin$1);
+var $regex$1 = createQueryOperator($regex);
+var $size$2 = createQueryOperator($size$1);
+var $type$1 = createQueryOperator($type);
+
+/**
+ * Joins query clauses with a logical AND returns all documents that match the conditions of both clauses.
+ *
+ * @param selector
+ * @param value
+ * @returns {{test: Function}}
+ */
+function $and$1(selector, value) {
+  assert(isArray(value), 'Invalid expression: $and expects value to be an Array');
+
+  var queries = [];
+  each(value, function (expr) {
+    return queries.push(new Query(expr));
+  });
+
+  return {
+    test: function test(obj) {
+      for (var i = 0; i < queries.length; i++) {
+        if (!queries[i].test(obj)) {
+          return false;
+        }
+      }
+      return true;
+    }
+  };
+}
+
+/**
+ * Joins query clauses with a logical OR returns all documents that match the conditions of either clause.
+ *
+ * @param selector
+ * @param value
+ * @returns {{test: Function}}
+ */
+function $or$1(selector, value) {
+  assert(isArray(value), 'Invalid expression. $or expects value to be an Array');
+
+  var queries = [];
+  each(value, function (expr) {
+    return queries.push(new Query(expr));
+  });
+
+  return {
+    test: function test(obj) {
+      for (var i = 0; i < queries.length; i++) {
+        if (queries[i].test(obj)) {
+          return true;
+        }
+      }
+      return false;
+    }
+  };
+}
+
+/**
+ * Joins query clauses with a logical NOR returns all documents that fail to match both clauses.
+ *
+ * @param selector
+ * @param value
+ * @returns {{test: Function}}
+ */
+function $nor(selector, value) {
+  assert(isArray(value), 'Invalid expression. $nor expects value to be an Array');
+  var query = $or$1('$or', value);
+  return {
+    test: function test(obj) {
+      return !query.test(obj);
+    }
+  };
+}
+
+/**
+ * Inverts the effect of a query expression and returns documents that do not match the query expression.
+ *
+ * @param selector
+ * @param value
+ * @returns {{test: Function}}
+ */
+function $not$1(selector, value) {
+  var criteria = {};
+  criteria[selector] = normalize(value);
+  var query = new Query(criteria);
+  return {
+    test: function test(obj) {
+      return !query.test(obj);
+    }
+  };
+}
+
+/**
+ * Matches documents that satisfy a JavaScript expression.
+ *
+ * @param selector
+ * @param value
+ * @returns {{test: test}}
+ */
+function $where(selector, value) {
+  if (!isFunction(value)) {
+    value = new Function('return ' + value + ';');
+  }
+  return {
+    test: function test(obj) {
+      return value.call(obj) === true;
+    }
+  };
+}
+
+/**
+ * Allows the use of aggregation expressions within the query language.
+ *
+ * @param selector
+ * @param value
+ * @returns {{test: test}}
+ */
+function $expr(selector, value) {
+  return {
+    test: function test(obj) {
+      return computeValue(obj, value);
+    }
+  };
+}
+
+var queryOperators = Object.freeze({
+	$all: $all$1,
+	$elemMatch: $elemMatch$2,
+	$eq: $eq$2,
+	$exists: $exists$1,
+	$gt: $gt$2,
+	$gte: $gte$2,
+	$in: $in$2,
+	$lt: $lt$2,
+	$lte: $lte$2,
+	$mod: $mod$2,
+	$ne: $ne$2,
+	$nin: $nin$2,
+	$regex: $regex$1,
+	$size: $size$2,
+	$type: $type$1,
+	$and: $and$1,
+	$or: $or$1,
+	$nor: $nor,
+	$not: $not$1,
+	$where: $where,
+	$expr: $expr
+});
 
 // operator definitions
 var OPERATORS = {};
-OPERATORS[OP_EXPRESSION] = expressionOperators;
-OPERATORS[OP_GROUP] = groupOperators;
-OPERATORS[OP_PIPELINE] = pipelineOperators;
-OPERATORS[OP_PROJECTION] = projectionOperators;
-OPERATORS[OP_QUERY] = queryOperators;
+OPERATORS[OP_EXPRESSION] = Object.assign({}, expressionOperators);
+OPERATORS[OP_GROUP] = Object.assign({}, groupOperators);
+OPERATORS[OP_PIPELINE] = Object.assign({}, pipelineOperators);
+OPERATORS[OP_PROJECTION] = Object.assign({}, projectionOperators);
+OPERATORS[OP_QUERY] = Object.assign({}, queryOperators);
 
 /**
  * Add new operators
