@@ -3146,7 +3146,7 @@ function $substr(obj, expr) {
 }
 
 function $substrCP(obj, expr) {
-  return this.$substr(obj, expr);
+  return $substr(obj, expr);
 }
 
 /**
@@ -3335,7 +3335,7 @@ function $addToSet(collection, expr) {
  * @returns {number}
  */
 function $avg(collection, expr) {
-  var data = this.$push(collection, expr).filter(isNumber);
+  var data = $push(collection, expr).filter(isNumber);
   var sum = reduce(data, function (acc, n) {
     return acc + n;
   }, 0);
@@ -3372,7 +3372,7 @@ function $last(collection, expr) {
  * @returns {*}
  */
 function $max(collection, expr) {
-  return reduce(this.$push(collection, expr), function (acc, n) {
+  return reduce($push(collection, expr), function (acc, n) {
     return isNil(acc) || n > acc ? n : acc;
   }, undefined);
 }
@@ -3398,7 +3398,7 @@ function $mergeObjects$1(collection, expr) {
  * @returns {*}
  */
 function $min(collection, expr) {
-  return reduce(this.$push(collection, expr), function (acc, n) {
+  return reduce($push(collection, expr), function (acc, n) {
     return isNil(acc) || n < acc ? n : acc;
   }, undefined);
 }
@@ -3411,7 +3411,7 @@ function $min(collection, expr) {
  * @return {Number}
  */
 function $stdDevPop(collection, expr) {
-  return stddev(this.$push(collection, expr).filter(isNumber), false);
+  return stddev($push(collection, expr).filter(isNumber), false);
 }
 
 /**
@@ -3421,7 +3421,7 @@ function $stdDevPop(collection, expr) {
  * @return {Number|null}
  */
 function $stdDevSamp(collection, expr) {
-  return stddev(this.$push(collection, expr).filter(isNumber), true);
+  return stddev($push(collection, expr).filter(isNumber), true);
 }
 
 /**
@@ -3437,7 +3437,7 @@ function $sum(collection, expr) {
   // take a short cut if expr is number literal
   if (isNumber(expr)) return collection.length * expr;
 
-  return reduce(this.$push(collection, expr).filter(isNumber), function (acc, n) {
+  return reduce($push(collection, expr).filter(isNumber), function (acc, n) {
     return acc + n;
   }, 0);
 }
@@ -4149,7 +4149,7 @@ function $sortByCount(collection, expr, opt) {
   var newExpr = { count: { $sum: 1 } };
   newExpr[idKey()] = expr;
 
-  return this.$sort(this.$group(collection, newExpr), { count: -1 }, opt);
+  return $sort($group(collection, newExpr), { count: -1 }, opt);
 }
 
 /**
