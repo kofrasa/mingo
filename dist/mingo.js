@@ -1112,12 +1112,12 @@ function computeValue(obj, expr) {
   opt.root = opt.root || obj;
 
   // if the field of the object is a valid operator
-  if (inArray(ops(OP_EXPRESSION), operator)) {
+  if (has(OPERATORS[OP_EXPRESSION], operator)) {
     return OPERATORS[OP_EXPRESSION][operator](obj, expr, opt);
   }
 
   // we also handle $group accumulator operators
-  if (inArray(ops(OP_GROUP), operator)) {
+  if (has(OPERATORS[OP_GROUP], operator)) {
     // we first fully resolve the expression
     obj = computeValue(obj, expr, null, opt);
     assert(isArray(obj), operator + ' expression must resolve to an array');
@@ -2578,7 +2578,7 @@ var Query = function () {
   }, {
     key: '_processOperator',
     value: function _processOperator(field, operator, value) {
-      assert(inArray(ops(OP_QUERY), operator), "Invalid query operator '" + operator + "' detected");
+      assert(has(OPERATORS[OP_QUERY], operator), 'invalid query operator ' + operator + ' detected');
       this.__compiled.push(OPERATORS[OP_QUERY][operator](field, value));
     }
 
@@ -2592,7 +2592,7 @@ var Query = function () {
     key: 'test',
     value: function test(obj) {
       for (var i = 0, len = this.__compiled.length; i < len; i++) {
-        if (!this.__compiled[i].test(obj)) {
+        if (!this.__compiled[i](obj)) {
           return false;
         }
       }
@@ -4615,15 +4615,13 @@ var projectionOperators = Object.freeze({
 
 // Query and Projection Operators. https://docs.mongodb.com/manual/reference/operator/query/
 
-function createQueryOperator(f) {
+function createQueryOperator(pred) {
   return function (selector, value) {
-    return {
-      test: function test(obj) {
-        // value of field must be fully resolved.
-        var lhs = resolve(obj, selector, { meta: true });
-        lhs = unwrap(lhs.result, lhs.depth);
-        return f(lhs, value);
-      }
+    return function (obj) {
+      // value of field must be fully resolved.
+      var lhs = resolve(obj, selector, { meta: true });
+      lhs = unwrap(lhs.result, lhs.depth);
+      return pred(lhs, value);
     };
   };
 }
@@ -4649,7 +4647,7 @@ var $type$1 = createQueryOperator($type);
  *
  * @param selector
  * @param value
- * @returns {{test: Function}}
+ * @returns {Function}
  */
 function $and$1(selector, value) {
   assert(isArray(value), 'Invalid expression: $and expects value to be an Array');
@@ -4659,15 +4657,13 @@ function $and$1(selector, value) {
     return queries.push(new Query(expr));
   });
 
-  return {
-    test: function test(obj) {
-      for (var i = 0; i < queries.length; i++) {
-        if (!queries[i].test(obj)) {
-          return false;
-        }
+  return function (obj) {
+    for (var i = 0; i < queries.length; i++) {
+      if (!queries[i].test(obj)) {
+        return false;
       }
-      return true;
     }
+    return true;
   };
 }
 
@@ -4676,7 +4672,7 @@ function $and$1(selector, value) {
  *
  * @param selector
  * @param value
- * @returns {{test: Function}}
+ * @returns {Function}
  */
 function $or$1(selector, value) {
   assert(isArray(value), 'Invalid expression. $or expects value to be an Array');
@@ -4686,15 +4682,13 @@ function $or$1(selector, value) {
     return queries.push(new Query(expr));
   });
 
-  return {
-    test: function test(obj) {
-      for (var i = 0; i < queries.length; i++) {
-        if (queries[i].test(obj)) {
-          return true;
-        }
+  return function (obj) {
+    for (var i = 0; i < queries.length; i++) {
+      if (queries[i].test(obj)) {
+        return true;
       }
-      return false;
     }
+    return false;
   };
 }
 
@@ -4703,15 +4697,13 @@ function $or$1(selector, value) {
  *
  * @param selector
  * @param value
- * @returns {{test: Function}}
+ * @returns {Function}
  */
 function $nor(selector, value) {
   assert(isArray(value), 'Invalid expression. $nor expects value to be an Array');
-  var query = $or$1('$or', value);
-  return {
-    test: function test(obj) {
-      return !query.test(obj);
-    }
+  var f = $or$1('$or', value);
+  return function (obj) {
+    return !f(obj);
   };
 }
 
@@ -4720,16 +4712,14 @@ function $nor(selector, value) {
  *
  * @param selector
  * @param value
- * @returns {{test: Function}}
+ * @returns {Function}
  */
 function $not$1(selector, value) {
   var criteria = {};
   criteria[selector] = normalize(value);
   var query = new Query(criteria);
-  return {
-    test: function test(obj) {
-      return !query.test(obj);
-    }
+  return function (obj) {
+    return !query.test(obj);
   };
 }
 
@@ -4738,16 +4728,14 @@ function $not$1(selector, value) {
  *
  * @param selector
  * @param value
- * @returns {{test: test}}
+ * @returns {Function}
  */
 function $where(selector, value) {
   if (!isFunction(value)) {
     value = new Function('return ' + value + ';');
   }
-  return {
-    test: function test(obj) {
-      return value.call(obj) === true;
-    }
+  return function (obj) {
+    return value.call(obj) === true;
   };
 }
 
@@ -4756,13 +4744,11 @@ function $where(selector, value) {
  *
  * @param selector
  * @param value
- * @returns {{test: test}}
+ * @returns {Function}
  */
 function $expr(selector, value) {
-  return {
-    test: function test(obj) {
-      return computeValue(obj, value);
-    }
+  return function (obj) {
+    return computeValue(obj, value);
   };
 }
 
@@ -4844,14 +4830,12 @@ function addOperators(opClass, fn) {
       each(newOperators, function (fn, op) {
         fn = fn.bind(newOperators);
         wrapped[op] = function (selector, value) {
-          return {
-            test: function test(obj) {
-              // value of field must be fully resolved.
-              var lhs = resolve(obj, selector);
-              var result = fn(selector, lhs, value);
-              assert(isBoolean(result), op + ' must return a boolean');
-              return result;
-            }
+          return function (obj) {
+            // value of field must be fully resolved.
+            var lhs = resolve(obj, selector);
+            var result = fn(selector, lhs, value);
+            assert(isBoolean(result), op + ' must return a boolean');
+            return result;
           };
         };
       });
