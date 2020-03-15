@@ -625,17 +625,17 @@ function findInsertIndex(array, item) {
 function memoize(fn) {
   var _this = this;
 
-  return function (cache) {
+  return function (memo) {
     return function () {
       for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
         args[_key] = arguments[_key];
       }
 
       var key = hashCode(args);
-      if (!has(cache, key)) {
-        cache[key] = fn.apply(_this, args);
+      if (!has(memo, key)) {
+        memo[key] = fn.apply(_this, args);
       }
-      return cache[key];
+      return memo[key];
     };
   }({/* storage */});
 }
@@ -961,6 +961,235 @@ function moduleApi() {
     resolve: resolve,
     resolveObj: resolveObj
   };
+}
+
+// internal functions available to external operators
+var _internal = function _internal() {
+  return Object.assign({ computeValue: computeValue, ops: ops }, moduleApi());
+};
+
+// Settings used by Mingo internally
+var settings = {
+  key: '_id'
+
+  /**
+   * Setup default settings for Mingo
+   * @param options
+   */
+};function setup(options) {
+  Object.assign(settings, options || {});
+}
+
+/**
+ * Implementation of system variables
+ * @type {Object}
+ */
+var systemVariables = {
+  '$$ROOT': function $$ROOT(obj, expr, opt) {
+    return opt.root;
+  },
+  '$$CURRENT': function $$CURRENT(obj, expr, opt) {
+    return obj;
+  },
+  '$$REMOVE': function $$REMOVE(obj, expr, opt) {
+    return undefined;
+  }
+};
+
+/**
+ * Implementation of $redact variables
+ *
+ * Each function accepts 3 arguments (obj, expr, opt)
+ *
+ * @type {Object}
+ */
+var redactVariables = {
+  '$$KEEP': function $$KEEP(obj) {
+    return obj;
+  },
+  '$$PRUNE': function $$PRUNE() {
+    return undefined;
+  },
+  '$$DESCEND': function $$DESCEND(obj, expr, opt) {
+    // traverse nested documents iff there is a $cond
+    if (!has(expr, '$cond')) return obj;
+
+    var result = void 0;
+
+    each(obj, function (current, key) {
+      if (isObjectLike(current)) {
+        if (isArray(current)) {
+          result = [];
+          each(current, function (elem) {
+            if (isObject(elem)) {
+              elem = redactObj(elem, expr, opt);
+            }
+            if (!isNil(elem)) result.push(elem);
+          });
+        } else {
+          result = redactObj(current, expr, opt);
+        }
+
+        if (isNil(result)) {
+          delete obj[key]; // pruned result
+        } else {
+          obj[key] = result;
+        }
+      }
+    });
+    return obj;
+  }
+};
+
+// system variables
+var SYS_VARS = keys(systemVariables);
+var REDACT_VARS = keys(redactVariables);
+
+/**
+ * Returns the key used as the collection's objects ids
+ */
+function idKey() {
+  return settings.key;
+}
+
+/**
+ * Returns the operators defined for the given operator classes
+ */
+function ops() {
+  // Workaround for browser-compatibility bug: on iPhone 6S Safari (and
+  // probably some other platforms), `arguments` isn't detected as an array,
+  // but has a length field, so functions like `reduce` and up including the
+  // length field in their iteration. Copy to a real array.
+  var args = Array.prototype.slice.call(arguments);
+  return reduce(args, function (acc, cls) {
+    return into(acc, keys(OPERATORS[cls]));
+  }, []);
+}
+
+/**
+ * Returns the result of evaluating a $group operation over a collection
+ *
+ * @param collection
+ * @param field the name of the aggregate operator or field
+ * @param expr the expression of the aggregate operator for the field
+ * @returns {*}
+ */
+function accumulate(collection, field, expr) {
+  if (inArray(ops(OP_GROUP), field)) {
+    return OPERATORS[OP_GROUP][field](collection, expr);
+  }
+
+  if (isObject(expr)) {
+    var result = {};
+    each(expr, function (val, key) {
+      result[key] = accumulate(collection, key, expr[key]);
+      // must run ONLY one group operator per expression
+      // if so, return result of the computed value
+      if (inArray(ops(OP_GROUP), key)) {
+        result = result[key];
+        // if there are more keys in expression this is bad
+        assert(keys(expr).length === 1, "Invalid $group expression '" + JSON.stringify(expr) + "'");
+        return false; // break
+      }
+    });
+    return result;
+  }
+}
+
+/**
+ * Computes the actual value of the expression using the given object as context
+ *
+ * @param obj the current object from the collection
+ * @param expr the expression for the given field
+ * @param operator the operator to resolve the field with
+ * @param opt {Object} extra options
+ * @returns {*}
+ */
+function computeValue(obj, expr) {
+  var operator = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+  var opt = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+
+  opt.root = opt.root || obj;
+
+  // if the field of the object is a valid operator
+  if (inArray(ops(OP_EXPRESSION), operator)) {
+    return OPERATORS[OP_EXPRESSION][operator](obj, expr, opt);
+  }
+
+  // we also handle $group accumulator operators
+  if (inArray(ops(OP_GROUP), operator)) {
+    // we first fully resolve the expression
+    obj = computeValue(obj, expr, null, opt);
+    assert(isArray(obj), operator + ' expression must resolve to an array');
+    // we pass a null expression because all values have been resolved
+    return OPERATORS[OP_GROUP][operator](obj, null, opt);
+  }
+
+  // if expr is a variable for an object field
+  // field not used in this case
+  if (isString(expr) && expr.length > 0 && expr[0] === '$') {
+    // we return system variables as literals
+    if (inArray(SYS_VARS, expr)) {
+      return systemVariables[expr](obj, null, opt);
+    } else if (inArray(REDACT_VARS, expr)) {
+      return expr;
+    }
+
+    // handle selectors with explicit prefix
+    var sysVar = SYS_VARS.filter(function (v) {
+      return expr.indexOf(v + '.') === 0;
+    });
+
+    if (sysVar.length === 1) {
+      sysVar = sysVar[0];
+      if (sysVar === '$$ROOT') {
+        obj = opt.root;
+      }
+      expr = expr.substr(sysVar.length); // '.' prefix will be sliced off below
+    }
+
+    return resolve(obj, expr.slice(1));
+  }
+
+  // check and return value if already in a resolved state
+  switch (jsType(expr)) {
+    case T_ARRAY:
+      return expr.map(function (item) {
+        return computeValue(obj, item);
+      });
+    case T_OBJECT:
+      var result = {};
+      each(expr, function (val, key) {
+        result[key] = computeValue(obj, val, key, opt);
+        // must run ONLY one aggregate operator per expression
+        // if so, return result of the computed value
+        if (inArray(ops(OP_EXPRESSION, OP_GROUP), key)) {
+          // there should be only one operator
+          assert(keys(expr).length === 1, "Invalid aggregation expression '" + JSON.stringify(expr) + "'");
+          result = result[key];
+          return false; // break
+        }
+      });
+      return result;
+    default:
+      return expr;
+  }
+}
+
+/**
+ * Redact an object
+ * @param  {Object} obj The object to redact
+ * @param  {*} expr The redact expression
+ * @param  {*} opt  Options for value
+ * @return {*} Returns the redacted value
+ */
+function redactObj(obj, expr) {
+  var opt = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+  opt.root = opt.root || obj;
+
+  var result = computeValue(obj, expr, null, opt);
+  return inArray(REDACT_VARS, result) ? redactVariables[result](obj, expr, opt) : result;
 }
 
 /**
@@ -1638,6 +1867,70 @@ var createClass = function () {
     if (protoProps) defineProperties(Constructor.prototype, protoProps);
     if (staticProps) defineProperties(Constructor, staticProps);
     return Constructor;
+  };
+}();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var slicedToArray = function () {
+  function sliceIterator(arr, i) {
+    var _arr = [];
+    var _n = true;
+    var _d = false;
+    var _e = undefined;
+
+    try {
+      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+        _arr.push(_s.value);
+
+        if (i && _arr.length === i) break;
+      }
+    } catch (err) {
+      _d = true;
+      _e = err;
+    } finally {
+      try {
+        if (!_n && _i["return"]) _i["return"]();
+      } finally {
+        if (_d) throw _e;
+      }
+    }
+
+    return _arr;
+  }
+
+  return function (arr, i) {
+    if (Array.isArray(arr)) {
+      return arr;
+    } else if (Symbol.iterator in Object(arr)) {
+      return sliceIterator(arr, i);
+    } else {
+      throw new TypeError("Invalid attempt to destructure non-iterable instance");
+    }
   };
 }();
 
@@ -4499,11 +4792,29 @@ var queryOperators = Object.freeze({
 
 // operator definitions
 var OPERATORS = {};
-OPERATORS[OP_EXPRESSION] = Object.assign({}, expressionOperators);
-OPERATORS[OP_GROUP] = Object.assign({}, groupOperators);
-OPERATORS[OP_PIPELINE] = Object.assign({}, pipelineOperators);
-OPERATORS[OP_PROJECTION] = Object.assign({}, projectionOperators);
-OPERATORS[OP_QUERY] = Object.assign({}, queryOperators);
+
+OPERATORS[OP_EXPRESSION] = {};
+OPERATORS[OP_GROUP] = {};
+OPERATORS[OP_PIPELINE] = {};
+OPERATORS[OP_PROJECTION] = {};
+OPERATORS[OP_QUERY] = {};
+
+var SYSTEM_OPERATORS = [[OP_EXPRESSION, expressionOperators], [OP_GROUP, groupOperators], [OP_PIPELINE, pipelineOperators], [OP_PROJECTION, projectionOperators], [OP_QUERY, queryOperators]];
+
+/**
+ * Enables the default operators of the system
+ */
+function enableSystemOperators() {
+  each(SYSTEM_OPERATORS, function (arr) {
+    var _arr = slicedToArray(arr, 2),
+        cls = _arr[0],
+        values = _arr[1];
+
+    Object.assign(OPERATORS[cls], values);
+  });
+}
+
+
 
 /**
  * Add new operators
@@ -4522,7 +4833,7 @@ function addOperators(opClass, fn) {
 
   // check for existing operators
   each(newOperators, function (_, op) {
-    assert(/^\$\w+$/.test(op), 'Invalid operator name ' + op);
+    assert(/^\$[a-zA-Z0-9_]*$/.test(op), 'Invalid operator name ' + op);
     assert(!has(operators, op), op + ' already exists for \'' + opClass + '\' operators');
   });
 
@@ -4570,235 +4881,6 @@ function addOperators(opClass, fn) {
   Object.assign(OPERATORS[opClass], wrapped);
 }
 
-// internal functions available to external operators
-var _internal = function _internal() {
-  return Object.assign({ computeValue: computeValue, ops: ops }, moduleApi());
-};
-
-// Settings used by Mingo internally
-var settings = {
-  key: '_id'
-
-  /**
-   * Setup default settings for Mingo
-   * @param options
-   */
-};function setup(options) {
-  Object.assign(settings, options || {});
-}
-
-/**
- * Implementation of system variables
- * @type {Object}
- */
-var systemVariables = {
-  '$$ROOT': function $$ROOT(obj, expr, opt) {
-    return opt.root;
-  },
-  '$$CURRENT': function $$CURRENT(obj, expr, opt) {
-    return obj;
-  },
-  '$$REMOVE': function $$REMOVE(obj, expr, opt) {
-    return undefined;
-  }
-};
-
-/**
- * Implementation of $redact variables
- *
- * Each function accepts 3 arguments (obj, expr, opt)
- *
- * @type {Object}
- */
-var redactVariables = {
-  '$$KEEP': function $$KEEP(obj) {
-    return obj;
-  },
-  '$$PRUNE': function $$PRUNE() {
-    return undefined;
-  },
-  '$$DESCEND': function $$DESCEND(obj, expr, opt) {
-    // traverse nested documents iff there is a $cond
-    if (!has(expr, '$cond')) return obj;
-
-    var result = void 0;
-
-    each(obj, function (current, key) {
-      if (isObjectLike(current)) {
-        if (isArray(current)) {
-          result = [];
-          each(current, function (elem) {
-            if (isObject(elem)) {
-              elem = redactObj(elem, expr, opt);
-            }
-            if (!isNil(elem)) result.push(elem);
-          });
-        } else {
-          result = redactObj(current, expr, opt);
-        }
-
-        if (isNil(result)) {
-          delete obj[key]; // pruned result
-        } else {
-          obj[key] = result;
-        }
-      }
-    });
-    return obj;
-  }
-};
-
-// system variables
-var SYS_VARS = keys(systemVariables);
-var REDACT_VARS = keys(redactVariables);
-
-/**
- * Returns the key used as the collection's objects ids
- */
-function idKey() {
-  return settings.key;
-}
-
-/**
- * Returns the operators defined for the given operator classes
- */
-function ops() {
-  // Workaround for browser-compatibility bug: on iPhone 6S Safari (and
-  // probably some other platforms), `arguments` isn't detected as an array,
-  // but has a length field, so functions like `reduce` and up including the
-  // length field in their iteration. Copy to a real array.
-  var args = Array.prototype.slice.call(arguments);
-  return reduce(args, function (acc, cls) {
-    return into(acc, keys(OPERATORS[cls]));
-  }, []);
-}
-
-/**
- * Returns the result of evaluating a $group operation over a collection
- *
- * @param collection
- * @param field the name of the aggregate operator or field
- * @param expr the expression of the aggregate operator for the field
- * @returns {*}
- */
-function accumulate(collection, field, expr) {
-  if (inArray(ops(OP_GROUP), field)) {
-    return OPERATORS[OP_GROUP][field](collection, expr);
-  }
-
-  if (isObject(expr)) {
-    var result = {};
-    each(expr, function (val, key) {
-      result[key] = accumulate(collection, key, expr[key]);
-      // must run ONLY one group operator per expression
-      // if so, return result of the computed value
-      if (inArray(ops(OP_GROUP), key)) {
-        result = result[key];
-        // if there are more keys in expression this is bad
-        assert(keys(expr).length === 1, "Invalid $group expression '" + JSON.stringify(expr) + "'");
-        return false; // break
-      }
-    });
-    return result;
-  }
-}
-
-/**
- * Computes the actual value of the expression using the given object as context
- *
- * @param obj the current object from the collection
- * @param expr the expression for the given field
- * @param operator the operator to resolve the field with
- * @param opt {Object} extra options
- * @returns {*}
- */
-function computeValue(obj, expr) {
-  var operator = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-  var opt = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
-
-  opt.root = opt.root || obj;
-
-  // if the field of the object is a valid operator
-  if (inArray(ops(OP_EXPRESSION), operator)) {
-    return OPERATORS[OP_EXPRESSION][operator](obj, expr, opt);
-  }
-
-  // we also handle $group accumulator operators
-  if (inArray(ops(OP_GROUP), operator)) {
-    // we first fully resolve the expression
-    obj = computeValue(obj, expr, null, opt);
-    assert(isArray(obj), operator + ' expression must resolve to an array');
-    // we pass a null expression because all values have been resolved
-    return OPERATORS[OP_GROUP][operator](obj, null, opt);
-  }
-
-  // if expr is a variable for an object field
-  // field not used in this case
-  if (isString(expr) && expr.length > 0 && expr[0] === '$') {
-    // we return system variables as literals
-    if (inArray(SYS_VARS, expr)) {
-      return systemVariables[expr](obj, null, opt);
-    } else if (inArray(REDACT_VARS, expr)) {
-      return expr;
-    }
-
-    // handle selectors with explicit prefix
-    var sysVar = SYS_VARS.filter(function (v) {
-      return expr.indexOf(v + '.') === 0;
-    });
-
-    if (sysVar.length === 1) {
-      sysVar = sysVar[0];
-      if (sysVar === '$$ROOT') {
-        obj = opt.root;
-      }
-      expr = expr.substr(sysVar.length); // '.' prefix will be sliced off below
-    }
-
-    return resolve(obj, expr.slice(1));
-  }
-
-  // check and return value if already in a resolved state
-  switch (jsType(expr)) {
-    case T_ARRAY:
-      return expr.map(function (item) {
-        return computeValue(obj, item);
-      });
-    case T_OBJECT:
-      var result = {};
-      each(expr, function (val, key) {
-        result[key] = computeValue(obj, val, key, opt);
-        // must run ONLY one aggregate operator per expression
-        // if so, return result of the computed value
-        if (inArray(ops(OP_EXPRESSION, OP_GROUP), key)) {
-          // there should be only one operator
-          assert(keys(expr).length === 1, "Invalid aggregation expression '" + JSON.stringify(expr) + "'");
-          result = result[key];
-          return false; // break
-        }
-      });
-      return result;
-    default:
-      return expr;
-  }
-}
-
-/**
- * Redact an object
- * @param  {Object} obj The object to redact
- * @param  {*} expr The redact expression
- * @param  {*} opt  Options for value
- * @return {*} Returns the redacted value
- */
-function redactObj(obj, expr) {
-  var opt = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-
-  opt.root = opt.root || obj;
-
-  var result = computeValue(obj, expr, null, opt);
-  return inArray(REDACT_VARS, result) ? redactVariables[result](obj, expr, opt) : result;
-}
-
 /**
  * Mixin for Collection types that provide a method `toJSON() -> Array[Object]`
  */
@@ -4826,6 +4908,8 @@ var CollectionMixin = {
 };
 
 // mingo!
+enableSystemOperators();
+
 var VERSION = '2.5.0';
 
 exports.VERSION = VERSION;
