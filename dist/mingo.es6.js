@@ -1,4 +1,4 @@
-//! mingo.js 2.5.1
+//! mingo.js 2.5.2
 //! Copyright (c) 2020 Francis Asante
 //! MIT
 
@@ -1776,7 +1776,6 @@ function baseIterator (nextFn, iteratees, buffer) {
 
   let done = false;
   let index = -1;
-  let hashes = {}; // used for LAZY_UNIQ
   let bIndex = 0; // index for the buffer
 
   return function (b) {
@@ -1830,8 +1829,6 @@ function baseIterator (nextFn, iteratees, buffer) {
     } catch (e) {
       if (e !== DONE) throw e
     }
-
-    hashes = null; // clear the hash cache
     done = true;
     return { done: true }
   }
@@ -2352,6 +2349,7 @@ function remove (collection, criteria) {
 /**
  * Query and Projection Operators. https://docs.mongodb.com/manual/reference/operator/query/
  */
+
 /**
  * Checks that two values are equal.
  *
@@ -2359,7 +2357,7 @@ function remove (collection, criteria) {
  * @param b         The rhs operand provided by the user
  * @returns {*}
  */
-function $eq$1 (a, b) {
+function $eq (a, b) {
   // start with simple equality check
   if (isEqual(a, b)) return true
 
@@ -2382,8 +2380,8 @@ function $eq$1 (a, b) {
  * @param b
  * @returns {boolean}
  */
-function $ne$1 (a, b) {
-  return !$eq$1(a, b)
+function $ne (a, b) {
+  return !$eq(a, b)
 }
 
 /**
@@ -2407,7 +2405,7 @@ function $in$1 (a, b) {
  * @param b
  * @returns {*|boolean}
  */
-function $nin$1 (a, b) {
+function $nin (a, b) {
   return !$in$1(a, b)
 }
 
@@ -2418,7 +2416,7 @@ function $nin$1 (a, b) {
  * @param b
  * @returns {boolean}
  */
-function $lt$1 (a, b) {
+function $lt (a, b) {
   return compare$1(a, b, (x,y) => x < y)
 }
 
@@ -2429,7 +2427,7 @@ function $lt$1 (a, b) {
  * @param b
  * @returns {boolean}
  */
-function $lte$1 (a, b) {
+function $lte (a, b) {
   return compare$1(a, b, (x,y) => x <= y)
 }
 
@@ -2440,7 +2438,7 @@ function $lte$1 (a, b) {
  * @param b
  * @returns {boolean}
  */
-function $gt$1 (a, b) {
+function $gt (a, b) {
   return compare$1(a, b, (x,y) => x > y)
 }
 
@@ -2451,7 +2449,7 @@ function $gt$1 (a, b) {
  * @param b
  * @returns {boolean}
  */
-function $gte$1 (a, b) {
+function $gte (a, b) {
   return compare$1(a, b, (x,y) => x >= y)
 }
 
@@ -2611,13 +2609,13 @@ function createComparison (f) {
   }
 }
 
-const $eq = createComparison($eq$1);
-const $ne = createComparison($ne$1);
-const $gt = createComparison($gt$1);
-const $lt = createComparison($lt$1);
-const $gte = createComparison($gte$1);
-const $lte = createComparison($lte$1);
-const $nin = createComparison($nin$1);
+const $eq$1 = createComparison($eq);
+const $ne$1 = createComparison($ne);
+const $gt$1 = createComparison($gt);
+const $lt$1 = createComparison($lt);
+const $gte$1 = createComparison($gte);
+const $lte$1 = createComparison($lte);
+const $nin$1 = createComparison($nin);
 
 /**
  * Compares two values and returns the result of the comparison as an integer.
@@ -3191,84 +3189,85 @@ function $let (obj, expr) {
 
 
 
-var expressionOperators = Object.freeze({
-	$abs: $abs,
-	$add: $add,
-	$ceil: $ceil,
-	$divide: $divide,
-	$exp: $exp,
-	$floor: $floor,
-	$ln: $ln,
-	$log: $log,
-	$log10: $log10,
-	$mod: $mod,
-	$multiply: $multiply,
-	$pow: $pow,
-	$round: $round,
-	$sqrt: $sqrt,
-	$subtract: $subtract,
-	$trunc: $trunc,
-	$arrayElemAt: $arrayElemAt,
-	$arrayToObject: $arrayToObject,
-	$concatArrays: $concatArrays,
-	$filter: $filter,
-	$in: $in,
-	$indexOfArray: $indexOfArray,
-	$isArray: $isArray,
-	$map: $map,
-	$objectToArray: $objectToArray,
-	$range: $range,
-	$reduce: $reduce,
-	$reverseArray: $reverseArray,
-	$size: $size,
-	$slice: $slice,
-	$zip: $zip,
-	$mergeObjects: $mergeObjects,
-	$and: $and,
-	$or: $or,
-	$not: $not,
-	$eq: $eq,
-	$ne: $ne,
-	$gt: $gt,
-	$lt: $lt,
-	$gte: $gte,
-	$lte: $lte,
-	$nin: $nin,
-	$cmp: $cmp,
-	$cond: $cond,
-	$switch: $switch,
-	$ifNull: $ifNull,
-	$dayOfYear: $dayOfYear,
-	$dayOfMonth: $dayOfMonth,
-	$dayOfWeek: $dayOfWeek,
-	$year: $year,
-	$month: $month,
-	$week: $week,
-	$hour: $hour,
-	$minute: $minute,
-	$second: $second,
-	$millisecond: $millisecond,
-	$dateToString: $dateToString,
-	$literal: $literal,
-	$setEquals: $setEquals,
-	$setIntersection: $setIntersection,
-	$setDifference: $setDifference,
-	$setUnion: $setUnion,
-	$setIsSubset: $setIsSubset,
-	$anyElementTrue: $anyElementTrue,
-	$allElementsTrue: $allElementsTrue,
-	$concat: $concat,
-	$indexOfBytes: $indexOfBytes,
-	$split: $split,
-	$strLenBytes: $strLenBytes,
-	$strLenCP: $strLenCP,
-	$strcasecmp: $strcasecmp,
-	$substrBytes: $substrBytes,
-	$substr: $substr,
-	$substrCP: $substrCP,
-	$toLower: $toLower,
-	$toUpper: $toUpper,
-	$let: $let
+var expressionOperators = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  $abs: $abs,
+  $add: $add,
+  $ceil: $ceil,
+  $divide: $divide,
+  $exp: $exp,
+  $floor: $floor,
+  $ln: $ln,
+  $log: $log,
+  $log10: $log10,
+  $mod: $mod,
+  $multiply: $multiply,
+  $pow: $pow,
+  $round: $round,
+  $sqrt: $sqrt,
+  $subtract: $subtract,
+  $trunc: $trunc,
+  $arrayElemAt: $arrayElemAt,
+  $arrayToObject: $arrayToObject,
+  $concatArrays: $concatArrays,
+  $filter: $filter,
+  $in: $in,
+  $indexOfArray: $indexOfArray,
+  $isArray: $isArray,
+  $map: $map,
+  $objectToArray: $objectToArray,
+  $range: $range,
+  $reduce: $reduce,
+  $reverseArray: $reverseArray,
+  $size: $size,
+  $slice: $slice,
+  $zip: $zip,
+  $mergeObjects: $mergeObjects,
+  $and: $and,
+  $or: $or,
+  $not: $not,
+  $eq: $eq$1,
+  $ne: $ne$1,
+  $gt: $gt$1,
+  $lt: $lt$1,
+  $gte: $gte$1,
+  $lte: $lte$1,
+  $nin: $nin$1,
+  $cmp: $cmp,
+  $cond: $cond,
+  $switch: $switch,
+  $ifNull: $ifNull,
+  $dayOfYear: $dayOfYear,
+  $dayOfMonth: $dayOfMonth,
+  $dayOfWeek: $dayOfWeek,
+  $year: $year,
+  $month: $month,
+  $week: $week,
+  $hour: $hour,
+  $minute: $minute,
+  $second: $second,
+  $millisecond: $millisecond,
+  $dateToString: $dateToString,
+  $literal: $literal,
+  $setEquals: $setEquals,
+  $setIntersection: $setIntersection,
+  $setDifference: $setDifference,
+  $setUnion: $setUnion,
+  $setIsSubset: $setIsSubset,
+  $anyElementTrue: $anyElementTrue,
+  $allElementsTrue: $allElementsTrue,
+  $concat: $concat,
+  $indexOfBytes: $indexOfBytes,
+  $split: $split,
+  $strLenBytes: $strLenBytes,
+  $strLenCP: $strLenCP,
+  $strcasecmp: $strcasecmp,
+  $substrBytes: $substrBytes,
+  $substr: $substr,
+  $substrCP: $substrCP,
+  $toLower: $toLower,
+  $toUpper: $toUpper,
+  $let: $let
 });
 
 /**
@@ -3403,20 +3402,19 @@ function $sum (collection, expr) {
  * Group stage Accumulator Operators. https://docs.mongodb.com/manual/reference/operator/aggregation-
  */
 
-
-
-var groupOperators = Object.freeze({
-	$addToSet: $addToSet,
-	$avg: $avg,
-	$first: $first,
-	$last: $last,
-	$max: $max,
-	$mergeObjects: $mergeObjects$1,
-	$min: $min,
-	$push: $push,
-	$stdDevPop: $stdDevPop,
-	$stdDevSamp: $stdDevSamp,
-	$sum: $sum
+var groupOperators = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  $addToSet: $addToSet,
+  $avg: $avg,
+  $first: $first,
+  $last: $last,
+  $max: $max,
+  $mergeObjects: $mergeObjects$1,
+  $min: $min,
+  $push: $push,
+  $stdDevPop: $stdDevPop,
+  $stdDevSamp: $stdDevSamp,
+  $sum: $sum
 });
 
 /**
@@ -3812,9 +3810,7 @@ function processObject(obj, expr, expressionKeys, idOnlyExcludedExpression) {
       value = obj[key];
     } else if (isString(subExpr)) {
       value = computeValue(obj, subExpr, key);
-    } else if (inArray([1, true], subExpr)) {
-      // For direct projections, we use the resolved object value
-    } else if (isArray(subExpr)) {
+    } else if (inArray([1, true], subExpr)) ; else if (isArray(subExpr)) {
       value = subExpr.map(v => {
         let r = computeValue(obj, v);
         if (isNil(r)) return null
@@ -4170,28 +4166,27 @@ function $unwind(collection, expr, opt) {
  * Pipeline Aggregation Stages. https://docs.mongodb.com/manual/reference/operator/aggregation-
  */
 
-
-
-var pipelineOperators = Object.freeze({
-	$addFields: $addFields,
-	$set: $set,
-	$bucket: $bucket,
-	$bucketAuto: $bucketAuto,
-	$count: $count,
-	$facet: $facet,
-	$group: $group,
-	$limit: $limit,
-	$lookup: $lookup,
-	$match: $match,
-	$out: $out,
-	$project: $project,
-	$redact: $redact,
-	$replaceRoot: $replaceRoot,
-	$sample: $sample,
-	$skip: $skip,
-	$sort: $sort,
-	$sortByCount: $sortByCount,
-	$unwind: $unwind
+var pipelineOperators = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  $addFields: $addFields,
+  $set: $set,
+  $bucket: $bucket,
+  $bucketAuto: $bucketAuto,
+  $count: $count,
+  $facet: $facet,
+  $group: $group,
+  $limit: $limit,
+  $lookup: $lookup,
+  $match: $match,
+  $out: $out,
+  $project: $project,
+  $redact: $redact,
+  $replaceRoot: $replaceRoot,
+  $sample: $sample,
+  $skip: $skip,
+  $sort: $sort,
+  $sortByCount: $sortByCount,
+  $unwind: $unwind
 });
 
 /**
@@ -4249,14 +4244,15 @@ function $slice$1 (obj, expr, field) {
   }
 }
 
-
-var projectionOperators = Object.freeze({
-	$: $,
-	$elemMatch: $elemMatch$1,
-	$slice: $slice$1
+var projectionOperators = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  $: $,
+  $elemMatch: $elemMatch$1,
+  $slice: $slice$1
 });
 
 // Query and Projection Operators. https://docs.mongodb.com/manual/reference/operator/query/
+
 
 function createQueryOperator(pred) {
   return (selector, value) => obj => {
@@ -4269,16 +4265,16 @@ function createQueryOperator(pred) {
 
 const $all$1 = createQueryOperator($all);
 const $elemMatch$2 = createQueryOperator($elemMatch);
-const $eq$2 = createQueryOperator($eq$1);
+const $eq$2 = createQueryOperator($eq);
 const $exists$1 = createQueryOperator($exists);
-const $gt$2 = createQueryOperator($gt$1);
-const $gte$2 = createQueryOperator($gte$1);
+const $gt$2 = createQueryOperator($gt);
+const $gte$2 = createQueryOperator($gte);
 const $in$2 = createQueryOperator($in$1);
-const $lt$2 = createQueryOperator($lt$1);
-const $lte$2 = createQueryOperator($lte$1);
+const $lt$2 = createQueryOperator($lt);
+const $lte$2 = createQueryOperator($lte);
 const $mod$2 = createQueryOperator($mod$1);
-const $ne$2 = createQueryOperator($ne$1);
-const $nin$2 = createQueryOperator($nin$1);
+const $ne$2 = createQueryOperator($ne);
+const $nin$2 = createQueryOperator($nin);
 const $regex$1 = createQueryOperator($regex);
 const $size$2 = createQueryOperator($size$1);
 const $type$1 = createQueryOperator($type);
@@ -4381,28 +4377,29 @@ function $expr (selector, value) {
   return obj => computeValue(obj, value)
 }
 
-var queryOperators = Object.freeze({
-	$all: $all$1,
-	$elemMatch: $elemMatch$2,
-	$eq: $eq$2,
-	$exists: $exists$1,
-	$gt: $gt$2,
-	$gte: $gte$2,
-	$in: $in$2,
-	$lt: $lt$2,
-	$lte: $lte$2,
-	$mod: $mod$2,
-	$ne: $ne$2,
-	$nin: $nin$2,
-	$regex: $regex$1,
-	$size: $size$2,
-	$type: $type$1,
-	$and: $and$1,
-	$or: $or$1,
-	$nor: $nor,
-	$not: $not$1,
-	$where: $where,
-	$expr: $expr
+var queryOperators = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  $all: $all$1,
+  $elemMatch: $elemMatch$2,
+  $eq: $eq$2,
+  $exists: $exists$1,
+  $gt: $gt$2,
+  $gte: $gte$2,
+  $in: $in$2,
+  $lt: $lt$2,
+  $lte: $lte$2,
+  $mod: $mod$2,
+  $ne: $ne$2,
+  $nin: $nin$2,
+  $regex: $regex$1,
+  $size: $size$2,
+  $type: $type$1,
+  $and: $and$1,
+  $or: $or$1,
+  $nor: $nor,
+  $not: $not$1,
+  $where: $where,
+  $expr: $expr
 });
 
 // operator definitions
@@ -4431,8 +4428,6 @@ function enableSystemOperators() {
     Object.assign(OPERATORS[cls], values);
   });
 }
-
-
 
 /**
  * Add new operators
@@ -4514,9 +4509,8 @@ const CollectionMixin = {
   }
 };
 
-// mingo!
 enableSystemOperators();
 
-const VERSION = '2.5.1';
+const VERSION = '2.5.2';
 
-export { VERSION, OP_EXPRESSION, OP_GROUP, OP_PIPELINE, OP_PROJECTION, OP_QUERY, _internal, setup, Query, find, remove, Aggregator, aggregate, CollectionMixin, Cursor, addOperators, Lazy };
+export { Aggregator, CollectionMixin, Cursor, Lazy, OP_EXPRESSION, OP_GROUP, OP_PIPELINE, OP_PROJECTION, OP_QUERY, Query, VERSION, _internal, addOperators, aggregate, find, remove, setup };

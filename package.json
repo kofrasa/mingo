@@ -1,17 +1,16 @@
 {
   "name": "mingo",
-  "version": "2.5.1",
+  "version": "2.5.2",
   "description": "JavaScript implementation of MongoDB query language",
-  "main": "./index.js",
+  "main": "./dist/mingo.js",
   "module": "dist/mingo.es6.js",
-  "es2015": "./dist/mingo.js",
   "scripts": {
     "clean": "rm -fr dist/*",
     "build.umd": "rollup -c config/rollup.umd.js",
     "build.es": "rollup -c config/rollup.es.js",
     "build": "npm run build.umd && npm run build.es",
     "release": "npm run clean && npm run build && npm test",
-    "postrelease": "uglifyjs dist/mingo.js --comments '/^!/' --compress --mangle --source-map dist/mingo.min.map > dist/mingo.min.js",
+    "postrelease": "uglifyjs dist/mingo.js --comments '/^!/' --compress --mangle --sourcemap dist/mingo.min.map --output dist/mingo.min.js",
     "test": "NODE_ENV=test nyc --reporter=lcov --reporter=text tape test/*.js test/**/*.js",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov"
   },
@@ -27,9 +26,9 @@
     "CHANGELOG.md"
   ],
   "devDependencies": {
-    "babel-plugin-external-helpers": "6.22.0",
+    "@babel/preset-env": "7.8.7",
+    "@babel/plugin-external-helpers": "7.8.3",
     "babel-plugin-istanbul": "6.0.0",
-    "babel-preset-env": "1.7.0",
     "backbone": "1.4.0",
     "benchmark": "2.1.4",
     "bson": "4.0.3",
@@ -40,8 +39,8 @@
     "perf_hooks": "0.0.1",
     "rollup": "2.0.6",
     "rollup-plugin-babel": "4.4.0",
-    "rollup-plugin-commonjs": "10.1.0",
-    "rollup-plugin-node-resolve": "5.2.0",
+    "@rollup/plugin-commonjs": "11.0.2",
+    "@rollup/plugin-node-resolve": "7.1.1",
     "tape": "4.13.2",
     "uglify-js": "3.8.0"
   },
@@ -61,5 +60,6 @@
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/kofrasa/mingo/issues"
-  }
+  },
+  "dependencies": {}
 }

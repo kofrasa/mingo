@@ -1,11 +1,11 @@
 {
   "presets": [
-    ["env", {
+    ["@babel/preset-env", {
       "modules": false
     }]
   ],
   "plugins": [
-    "external-helpers"
+    "@babel/plugin-external-helpers"
   ],
   "env": {
     "test": {

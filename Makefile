@@ -1,7 +1,6 @@
 
 release:
 	@npm run release
-	@npm run postrelease
 	@echo "\033[0;32mBUILD SUCCEEDED"
 
 build:

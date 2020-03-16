@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.5.2 / 2020-03-17
+
+- Revert to using `dist/mingo.js` as main entry point for package. Fixes [#125](https://github.com/kofrasa/mingo/issues/125)
+- Fix build failures from updated dependencies
+
 ## 2.5.1 / 2020-03-16
 
 - Create minified files for previous version
