@@ -1,4 +1,4 @@
-//! mingo.js 2.5.0
+//! mingo.js 2.5.1
 //! Copyright (c) 2020 Francis Asante
 //! MIT
 
@@ -4517,6 +4517,6 @@ const CollectionMixin = {
 // mingo!
 enableSystemOperators();
 
-const VERSION = '2.5.0';
+const VERSION = '2.5.1';
 
 export { VERSION, OP_EXPRESSION, OP_GROUP, OP_PIPELINE, OP_PROJECTION, OP_QUERY, _internal, setup, Query, find, remove, Aggregator, aggregate, CollectionMixin, Cursor, addOperators, Lazy };

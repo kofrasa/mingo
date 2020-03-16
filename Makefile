@@ -19,4 +19,4 @@ coverage:
 test: build
 	@npm run test
 
-.PHONY: clean test build coverage
+.PHONY: clean test coverage

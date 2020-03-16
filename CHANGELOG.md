@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.5.1 / 2020-03-16
+
+- Create minified files for previous version
+- Refactored to support tree shaking
+
 ## 2.5.0 / 2020-03-08
 
 - Optionally add `Symbol.iterator` support if available in runtime environment. Closes [#124](https://github.com/kofrasa/mingo/issues/124)

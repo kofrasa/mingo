@@ -1,4 +1,4 @@
-//! mingo.js 2.5.0
+//! mingo.js 2.5.1
 //! Copyright (c) 2020 Francis Asante
 //! MIT
 
@@ -4896,7 +4896,7 @@ var CollectionMixin = {
 // mingo!
 enableSystemOperators();
 
-var VERSION = '2.5.0';
+var VERSION = '2.5.1';
 
 exports.VERSION = VERSION;
 exports.OP_EXPRESSION = OP_EXPRESSION;
