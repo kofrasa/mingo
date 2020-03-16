@@ -1,7 +1,4 @@
 
-# tasks
-all: test
-
 release:
 	@npm run release
 	@npm run postrelease
@@ -19,10 +16,7 @@ clean:
 coverage:
 	@npm run coverage
 
-mingo.js:
-	@npm run build.umd
-
-test: mingo.js
+test: build
 	@npm run test
 
 .PHONY: clean test build coverage

@@ -1058,7 +1058,7 @@ function idKey() {
 function ops() {
   // Workaround for browser-compatibility bug: on iPhone 6S Safari (and
   // probably some other platforms), `arguments` isn't detected as an array,
-  // but has a length field, so functions like `reduce` and up including the
+  // but has a length field, so functions like `reduce` end up including the
   // length field in their iteration. Copy to a real array.
   var args = Array.prototype.slice.call(arguments);
   return reduce(args, function (acc, cls) {
@@ -1075,7 +1075,7 @@ function ops() {
  * @returns {*}
  */
 function accumulate(collection, field, expr) {
-  if (inArray(ops(OP_GROUP), field)) {
+  if (has(OPERATORS[OP_GROUP], field)) {
     return OPERATORS[OP_GROUP][field](collection, expr);
   }
 
@@ -1085,7 +1085,7 @@ function accumulate(collection, field, expr) {
       result[key] = accumulate(collection, key, expr[key]);
       // must run ONLY one group operator per expression
       // if so, return result of the computed value
-      if (inArray(ops(OP_GROUP), key)) {
+      if (has(OPERATORS[OP_GROUP], key)) {
         result = result[key];
         // if there are more keys in expression this is bad
         assert(keys(expr).length === 1, "Invalid $group expression '" + JSON.stringify(expr) + "'");
@@ -1163,7 +1163,9 @@ function computeValue(obj, expr) {
         result[key] = computeValue(obj, val, key, opt);
         // must run ONLY one aggregate operator per expression
         // if so, return result of the computed value
-        if (inArray(ops(OP_EXPRESSION, OP_GROUP), key)) {
+        if ([OP_EXPRESSION, OP_GROUP].some(function (c) {
+          return has(OPERATORS[c], key);
+        })) {
           // there should be only one operator
           assert(keys(expr).length === 1, "Invalid aggregation expression '" + JSON.stringify(expr) + "'");
           result = result[key];

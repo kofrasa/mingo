@@ -53,7 +53,7 @@ declare namespace mingo {
      * @param fn The callback to run per item.
      * @param ctx  The object to use a context.
      */
-    each(obj: any, fn: Function, ctx?: any): void;
+    each(obj: object, fn: Function, ctx?: any): void;
 
     /**
      * Generate hash code
