@@ -1379,7 +1379,7 @@ function $round(obj, expr) {
   var args = computeValue(obj, expr);
   var num = args[0];
   var place = args[1];
-  if (isNil(num) || num === NaN || Math.abs(num) === Infinity) return num;
+  if (isNil(num) || isNaN(num) || Math.abs(num) === Infinity) return num;
   assert(isNumber(num), '$round expression must resolve to a number.');
   return truncate(num, place, true);
 }
@@ -1421,7 +1421,7 @@ function $trunc(obj, expr) {
   var arr = computeValue(obj, expr);
   var num = arr[0];
   var places = arr[1];
-  if (isNil(num) || num === NaN || Math.abs(num) === Infinity) return num;
+  if (isNil(num) || isNaN(num) || Math.abs(num) === Infinity) return num;
   assert(isNumber(num), '$trunc expression must resolve to a number.');
   assert(isNil(places) || isNumber(places) && places > -20 && places < 100, "$trunc expression has invalid place");
   return truncate(num, places, false);
@@ -1443,7 +1443,7 @@ function truncate(num, places, roundOff) {
 
   if (places === 0) {
     var firstDigit = Math.trunc(10 * decimals);
-    if (roundOff && result & 1 === 1 && firstDigit >= 5) {
+    if (roundOff && (result & 1) === 1 && firstDigit >= 5) {
       result++;
     }
   } else if (places > 0) {
