@@ -157,7 +157,7 @@ test("$group pipeline operator: more examples", function (t) {
     ]
   );
 
-  t.deepEqual(result, expected, "Group title by author - $$ROOT.field");
+  t.deepEqual(result, expected, "Group title by author - $$ROOT.title");
 
   result = mingo.aggregate(books, [
       { $group: { _id: "$author", books: { $push: "$$CURRENT.title" } } },

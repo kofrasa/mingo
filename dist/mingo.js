@@ -1,4 +1,4 @@
-//! mingo.js 2.5.2
+//! mingo.js 3.0.0
 //! Copyright (c) 2020 Francis Asante
 //! MIT
 
@@ -111,10 +111,6 @@
   var OP_QUERY = 'query';
   var MISSING = function MISSING() {};
 
-  /**
-   * Utility functions
-   */
-
   if (!Array.prototype.includes) {
     Object.defineProperty(Array.prototype, 'includes', {
       value: function value(valueToFind, fromIndex) {
@@ -172,6 +168,8 @@
    */
 
   function cloneDeep(obj) {
+    // if (obj instanceof Array) return obj.map(cloneDeep)
+    // if (obj instanceof Object) return objectMap(obj, cloneDeep)
     switch (jsType(obj)) {
       case T_ARRAY:
         return obj.map(cloneDeep);
@@ -188,16 +186,9 @@
    */
 
   function clone(obj) {
-    switch (jsType(obj)) {
-      case T_ARRAY:
-        return into([], obj);
-
-      case T_OBJECT:
-        return Object.assign({}, obj);
-
-      default:
-        return obj;
-    }
+    if (obj instanceof Array) return into([], obj);
+    if (obj instanceof Object) return Object.assign({}, obj);
+    return obj;
   }
   function getType(v) {
     if (v === null) return 'Null';
@@ -208,16 +199,16 @@
     return getType(v).toLowerCase();
   }
   function isBoolean(v) {
-    return jsType(v) === T_BOOLEAN;
+    return _typeof(v) === T_BOOLEAN;
   }
   function isString(v) {
-    return jsType(v) === T_STRING;
+    return _typeof(v) === T_STRING;
   }
   function isNumber(v) {
-    return jsType(v) === T_NUMBER;
+    return _typeof(v) === T_NUMBER;
   }
   var isArray = Array.isArray || function (v) {
-    return !!v && v.constructor === Array;
+    return v instanceof Array;
   };
   function isObject(v) {
     return !!v && v.constructor === Object;
@@ -233,7 +224,7 @@
     return jsType(v) === T_REGEXP;
   }
   function isFunction(v) {
-    return jsType(v) === T_FUNCTION;
+    return _typeof(v) === T_FUNCTION;
   }
   function isNil(v) {
     return v === null || v === undefined;
@@ -258,7 +249,7 @@
   } // ensure a value is an array
 
   function ensureArray(x) {
-    return isArray(x) ? x : [x];
+    return x instanceof Array ? x : [x];
   }
   function has(obj, prop) {
     return obj.hasOwnProperty(prop);
@@ -276,17 +267,17 @@
    * @return {void}
    */
 
-  function each(obj, fn, ctx) {
-    fn = fn.bind(ctx);
+  function each(obj, fn) {
+    if (obj instanceof Array) {
+      var arr = obj;
 
-    if (isArray(obj)) {
-      for (var i = 0, len = obj.length; i < len; i++) {
-        if (fn(obj[i], i, obj) === false) break;
+      for (var i = 0, len = arr.length; i < len; i++) {
+        if (fn(arr[i], i) === false) break;
       }
     } else {
       for (var k in obj) {
         if (obj.hasOwnProperty(k)) {
-          if (fn(obj[k], k, obj) === false) break;
+          if (fn(obj[k], k) === false) break;
         }
       }
     }
@@ -296,12 +287,10 @@
    *
    * @param  {Object}   obj   An object whose values to transform
    * @param  {Function} fn The transform function
-   * @param  {*}   ctx The value to use as the "this" context for the transform
    * @return {Array|Object} Result object after applying the transform
    */
 
-  function objectMap(obj, fn, ctx) {
-    fn = fn.bind(ctx);
+  function objectMap(obj, fn) {
     var o = {};
     var objKeys = keys(obj);
 
@@ -321,8 +310,7 @@
    * @param obj {Object|Array} the source object
    */
 
-  function merge(target, obj) {
-    var opt = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+  function merge(target, obj, options) {
     // take care of missing inputs
     if (target === MISSING) return obj;
     if (obj === MISSING) return target;
@@ -333,27 +321,30 @@
     } // default options
 
 
-    opt.flatten = opt.flatten || false;
+    options.flatten = options.flatten || false;
 
     if (isArray(target)) {
-      if (opt.flatten) {
+      var result = target;
+      var input = obj;
+
+      if (options.flatten) {
         var i = 0;
         var j = 0;
 
-        while (i < target.length && j < obj.length) {
-          target[i] = merge(target[i++], obj[j++], opt);
+        while (i < result.length && j < input.length) {
+          result[i] = merge(result[i++], input[j++], options);
         }
 
-        while (j < obj.length) {
-          target.push(obj[j++]);
+        while (j < input.length) {
+          result.push(obj[j++]);
         }
       } else {
-        arrayPush.apply(target, obj);
+        arrayPush.apply(result, input);
       }
     } else {
       Object.keys(obj).forEach(function (k) {
         if (target.hasOwnProperty(k)) {
-          target[k] = merge(target[k], obj[k], opt);
+          target[k] = merge(target[k], obj[k], options);
         } else {
           target[k] = obj[k];
         }
@@ -371,7 +362,10 @@
    */
 
   function reduce(collection, fn, accumulator) {
-    if (isArray(collection)) return collection.reduce(fn, accumulator); // array-like objects
+    if (Array.isArray(collection)) {
+      return collection.reduce(fn, accumulator);
+    } // array-like objects
+
 
     each(collection, function (v, k) {
       return accumulator = fn(accumulator, v, k, collection);
@@ -461,44 +455,70 @@
       if (a === b) continue; // unequal types and functions cannot be equal.
 
       var type = jsType(a);
-      if (type !== jsType(b) || type === T_FUNCTION) return false; // leverage toString for Date and RegExp types
+      if (type !== jsType(b) || type === T_FUNCTION) return false;
 
-      switch (type) {
-        case T_ARRAY:
-          if (a.length !== b.length) return false; //if (a.length === b.length && a.length === 0) continue
+      if (a instanceof Array && b instanceof Array) {
+        if (a.length !== b.length) return false;
+        into(lhs, a);
+        into(rhs, b);
+      } else if (a instanceof Object && b instanceof Object) {
+        // deep compare objects
+        var ka = keys(a);
+        var kb = keys(b); // check length of keys early
 
-          into(lhs, a);
-          into(rhs, b);
-          break;
+        if (ka.length !== kb.length) return false; // we know keys are strings so we sort before comparing
 
-        case T_OBJECT:
-          // deep compare objects
-          var ka = keys(a);
-          var kb = keys(b); // check length of keys early
+        ka.sort();
+        kb.sort(); // compare keys
 
-          if (ka.length !== kb.length) return false; // we know keys are strings so we sort before comparing
+        for (var i = 0, len = ka.length; i < len; i++) {
+          var currentKey = ka[i];
 
-          ka.sort();
-          kb.sort(); // compare keys
-
-          for (var i = 0, len = ka.length; i < len; i++) {
-            var temp = ka[i];
-
-            if (temp !== kb[i]) {
-              return false;
-            } else {
-              // save later work
-              lhs.push(a[temp]);
-              rhs.push(b[temp]);
-            }
+          if (currentKey !== kb[i]) {
+            return false;
+          } else {
+            // save later work
+            lhs.push(a[currentKey]);
+            rhs.push(b[currentKey]);
           }
+        }
+      } else {
+        // compare encoded values
+        if (encode(a) !== encode(b)) return false;
+      } // leverage toString for Date and RegExp types
+      // switch (type) {
+      //   case T_ARRAY:
+      //     if (a.length !== b.length) return false
+      //     //if (a.length === b.length && a.length === 0) continue
+      //     into(lhs, a)
+      //     into(rhs, b)
+      //     break
+      //   case T_OBJECT:
+      //     // deep compare objects
+      //     let ka = keys(a)
+      //     let kb = keys(b)
+      //     // check length of keys early
+      //     if (ka.length !== kb.length) return false
+      //     // we know keys are strings so we sort before comparing
+      //     ka.sort()
+      //     kb.sort()
+      //     // compare keys
+      //     for (let i = 0, len = ka.length; i < len; i++) {
+      //       let temp = ka[i]
+      //       if (temp !== kb[i]) {
+      //         return false
+      //       } else {
+      //         // save later work
+      //         lhs.push(a[temp])
+      //         rhs.push(b[temp])
+      //       }
+      //     }
+      //     break
+      //   default:
+      //     // compare encoded values
+      //     if (encode(a) !== encode(b)) return false
+      // }
 
-          break;
-
-        default:
-          // compare encoded values
-          if (encode(a) !== encode(b)) return false;
-      }
     }
 
     return lhs.length === 0;
@@ -606,7 +626,7 @@
   function sortBy(collection, fn, cmp) {
     var sorted = [];
     var result = [];
-    var hash = {};
+    var hash = new Object();
     cmp = cmp || compare;
     if (isEmpty(collection)) return collection;
 
@@ -753,11 +773,14 @@
    * @returns {*}
    */
 
-  function resolve(obj, selector) {
-    var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+  function resolve(obj, selector, options) {
     var depth = 0; // options
 
-    options.meta = options.meta || false;
+    if (options === undefined) {
+      options = {
+        preserveMetadata: false
+      };
+    }
 
     function resolve2(o, path) {
       var value = o;
@@ -766,7 +789,7 @@
         var field = path[i];
         var isText = field.match(/^\d+$/) === null;
 
-        if (isText && isArray(value)) {
+        if (isText && Array.isArray(value)) {
           // On the first iteration, we check if we received a stop flag.
           // If so, we stop to prevent iterating over a nested array value
           // on consecutive object keys in the selector.
@@ -790,7 +813,7 @@
     }
 
     obj = inArray(JS_SIMPLE_TYPES, jsType(obj)) ? obj : resolve2(obj, selector.split('.'));
-    return options.meta ? {
+    return options.preserveMetadata === true ? {
       result: obj,
       depth: depth
     } : obj;
@@ -803,58 +826,58 @@
    * @param selector {String} dot separated path to field
    */
 
-  function resolveObj(obj, selector) {
-    var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+  function resolveObj(obj, selector, options) {
     // options
-    options.preserveMissingValues = options.preserveMissingValues || false;
+    if (options === undefined) {
+      options = {
+        preserveMissingValues: false
+      };
+    }
+
     var names = selector.split('.');
     var key = names[0]; // get the next part of the selector
 
-    var next = names.length === 1 || names.slice(1).join('.');
+    var next = names.slice(1).join('.');
     var isIndex = key.match(/^\d+$/) !== null;
     var hasNext = names.length > 1;
     var result;
     var value;
 
-    try {
-      if (isArray(obj)) {
-        if (isIndex) {
-          result = getValue(obj, Number(key));
-
-          if (hasNext) {
-            result = resolveObj(result, next, options);
-          }
-
-          result = [result];
-        } else {
-          result = [];
-          each(obj, function (item) {
-            value = resolveObj(item, selector, options);
-
-            if (options.preserveMissingValues) {
-              if (value === undefined) {
-                value = MISSING;
-              }
-
-              result.push(value);
-            } else if (value !== undefined) {
-              result.push(value);
-            }
-          });
-        }
-      } else {
-        value = getValue(obj, key);
+    if (obj instanceof Array) {
+      if (isIndex) {
+        result = getValue(obj, Number(key));
 
         if (hasNext) {
-          value = resolveObj(value, next, options);
+          result = resolveObj(result, next, options);
         }
 
-        assert(value !== undefined);
-        result = {};
-        result[key] = value;
+        result = [result];
+      } else {
+        result = [];
+        each(obj, function (item) {
+          value = resolveObj(item, selector, options);
+
+          if (options.preserveMissingValues) {
+            if (value === undefined) {
+              value = MISSING;
+            }
+
+            result.push(value);
+          } else if (value !== undefined) {
+            result.push(value);
+          }
+        });
       }
-    } catch (e) {
-      result = undefined;
+    } else {
+      value = getValue(obj, key);
+
+      if (hasNext) {
+        value = resolveObj(value, next, options);
+      }
+
+      if (value === undefined) return undefined;
+      result = {};
+      result[key] = value;
     }
 
     return result;
@@ -865,7 +888,7 @@
    */
 
   function filterMissing(obj) {
-    if (isArray(obj)) {
+    if (Array.isArray(obj)) {
       for (var i = obj.length - 1; i >= 0; i--) {
         if (obj[i] === MISSING) {
           obj.splice(i, 1);
@@ -892,11 +915,10 @@
    * @return {*}
    */
 
-  function traverse(obj, selector, fn) {
-    var force = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
+  function traverse(obj, selector, fn, force) {
     var names = selector.split('.');
     var key = names[0];
-    var next = names.length === 1 || names.slice(1).join('.');
+    var next = names.slice(1).join('.');
 
     if (names.length === 1) {
       fn(obj, key);
@@ -924,7 +946,7 @@
   }
   function removeValue(obj, selector) {
     traverse(obj, selector, function (item, key) {
-      if (isArray(item) && /^\d+$/.test(key)) {
+      if (item instanceof Array && /^\d+$/.test(key)) {
         item.splice(parseInt(key), 1);
       } else if (isObject(item)) {
         delete item[key];
@@ -940,11 +962,20 @@
   function isOperator(name) {
     return !!name && name[0] === '$';
   }
+
+  function regexOptions(options) {
+    var modifiers;
+    modifiers += options.ignoreCase ? 'i' : '';
+    modifiers += options.multiline ? 'm' : '';
+    modifiers += options.global ? 'g' : '';
+    return modifiers;
+  }
   /**
    * Simplify expression for easy evaluation with query operators map
    * @param expr
    * @returns {*}
    */
+
 
   function normalize(expr) {
     // normalized primitives
@@ -957,7 +988,7 @@
     } // normalize object expression
 
 
-    if (isObjectLike(expr)) {
+    if (expr instanceof Object) {
       var exprKeys = keys(expr); // no valid query operator found, so we do simple comparison
 
       if (!exprKeys.some(isOperator)) {
@@ -968,18 +999,23 @@
 
 
       if (inArray(exprKeys, '$regex')) {
-        var regex = expr['$regex'];
+        var regex = new RegExp(expr['$regex']);
         var options = expr['$options'] || '';
-        var modifiers = '';
+        var modifiers;
+        var source;
 
-        if (isString(regex)) {
-          modifiers += regex.ignoreCase || options.indexOf('i') >= 0 ? 'i' : '';
-          modifiers += regex.multiline || options.indexOf('m') >= 0 ? 'm' : '';
-          modifiers += regex.global || options.indexOf('g') >= 0 ? 'g' : '';
-          regex = new RegExp(regex, modifiers);
+        if (regex instanceof RegExp) {
+          source = regex.source;
+        } else {
+          source = regex;
         }
 
-        expr['$regex'] = regex;
+        modifiers = regexOptions({
+          ignoreCase: regex.ignoreCase || options.indexOf('i') >= 0,
+          multiline: regex.multiline || options.indexOf('m') >= 0,
+          global: regex.global || options.indexOf('g') >= 0
+        });
+        expr['$regex'] = new RegExp(source, options);
         delete expr['$options'];
       }
     }
@@ -995,9 +1031,7 @@
    * @return {Array}
    */
 
-  function slice(xs, skip) {
-    var limit = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-
+  function slice(xs, skip, limit) {
     // MongoDB $slice works a bit differently from Array.slice
     // Uses single argument for 'limit' and array argument [skip, limit]
     if (isNil(limit)) {
@@ -1088,7 +1122,7 @@
    */
 
   function setup(options) {
-    Object.assign(settings, options || {});
+    Object.assign(settings, options);
   }
   /**
    * Implementation of system variables
@@ -1115,13 +1149,13 @@
    */
 
   var redactVariables = {
-    '$$KEEP': function $$KEEP(obj) {
+    '$$KEEP': function $$KEEP(obj, expr, options) {
       return obj;
     },
-    '$$PRUNE': function $$PRUNE() {
+    '$$PRUNE': function $$PRUNE(obj, expr, options) {
       return undefined;
     },
-    '$$DESCEND': function $$DESCEND(obj, expr, opt) {
+    '$$DESCEND': function $$DESCEND(obj, expr, options) {
       // traverse nested documents iff there is a $cond
       if (!has(expr, '$cond')) return obj;
       var result;
@@ -1131,13 +1165,13 @@
             result = [];
             each(current, function (elem) {
               if (isObject(elem)) {
-                elem = redactObj(elem, expr, opt);
+                elem = redactObj(elem, expr, options);
               }
 
               if (!isNil(elem)) result.push(elem);
             });
           } else {
-            result = redactObj(current, expr, opt);
+            result = redactObj(current, expr, options);
           }
 
           if (isNil(result)) {
@@ -1149,10 +1183,7 @@
       });
       return obj;
     }
-  }; // system variables
-
-  var SYS_VARS = keys(systemVariables);
-  var REDACT_VARS = keys(redactVariables);
+  };
   /**
    * Returns the key used as the collection's objects ids
    */
@@ -1210,82 +1241,74 @@
    * @param obj the current object from the collection
    * @param expr the expression for the given field
    * @param operator the operator to resolve the field with
-   * @param opt {Object} extra options
+   * @param options {Object} extra options
    * @returns {*}
    */
 
-  function computeValue(obj, expr) {
-    var operator = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-    var opt = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
-    opt.root = opt.root || obj; // if the field of the object is a valid operator
+  function computeValue(obj, expr, operator, options) {
+    if (options === undefined) {
+      options = {
+        root: obj
+      };
+    } // if the field of the object is a valid operator
+
 
     if (has(OPERATORS[OP_EXPRESSION], operator)) {
-      return OPERATORS[OP_EXPRESSION][operator](obj, expr, opt);
+      return OPERATORS[OP_EXPRESSION][operator](obj, expr, options);
     } // we also handle $group accumulator operators
 
 
     if (has(OPERATORS[OP_GROUP], operator)) {
       // we first fully resolve the expression
-      obj = computeValue(obj, expr, null, opt);
+      obj = computeValue(obj, expr, null, options);
       assert(isArray(obj), operator + ' expression must resolve to an array'); // we pass a null expression because all values have been resolved
 
-      return OPERATORS[OP_GROUP][operator](obj, null, opt);
+      return OPERATORS[OP_GROUP][operator](obj, null, options);
     } // if expr is a variable for an object field
     // field not used in this case
 
 
     if (isString(expr) && expr.length > 0 && expr[0] === '$') {
-      // we return system variables as literals
-      if (inArray(SYS_VARS, expr)) {
-        return systemVariables[expr](obj, null, opt);
-      } else if (inArray(REDACT_VARS, expr)) {
+      // we return redact variables as literals
+      if (has(redactVariables, expr)) {
         return expr;
       } // handle selectors with explicit prefix
 
 
-      var sysVar = SYS_VARS.filter(function (v) {
-        return expr.indexOf(v + '.') === 0;
-      });
+      var arr = expr.split('.');
 
-      if (sysVar.length === 1) {
-        sysVar = sysVar[0];
-
-        if (sysVar === '$$ROOT') {
-          obj = opt.root;
-        }
-
-        expr = expr.substr(sysVar.length); // '.' prefix will be sliced off below
+      if (has(systemVariables, arr[0])) {
+        obj = systemVariables[arr[0]](obj, null, options);
+        if (arr.length == 1) return obj;
+        expr = expr.substr(arr[0].length); // '.' prefix will be sliced off below
       }
 
       return resolve(obj, expr.slice(1));
     } // check and return value if already in a resolved state
 
 
-    switch (jsType(expr)) {
-      case T_ARRAY:
-        return expr.map(function (item) {
-          return computeValue(obj, item);
-        });
+    if (Array.isArray(expr)) {
+      return expr.map(function (item) {
+        return computeValue(obj, item);
+      });
+    } else if (jsType(expr) === T_OBJECT) {
+      var result = new Object();
+      each(expr, function (val, key) {
+        result[key] = computeValue(obj, val, key, options); // must run ONLY one aggregate operator per expression
+        // if so, return result of the computed value
 
-      case T_OBJECT:
-        var result = {};
-        each(expr, function (val, key) {
-          result[key] = computeValue(obj, val, key, opt); // must run ONLY one aggregate operator per expression
-          // if so, return result of the computed value
-
-          if ([OP_EXPRESSION, OP_GROUP].some(function (c) {
-            return has(OPERATORS[c], key);
-          })) {
-            // there should be only one operator
-            assert(keys(expr).length === 1, "Invalid aggregation expression '" + JSON.stringify(expr) + "'");
-            result = result[key];
-            return false; // break
-          }
-        });
-        return result;
-
-      default:
-        return expr;
+        if ([OP_EXPRESSION, OP_GROUP].some(function (c) {
+          return has(OPERATORS[c], key);
+        })) {
+          // there should be only one operator
+          assert(keys(expr).length === 1, "Invalid aggregation expression '" + JSON.stringify(expr) + "'");
+          result = result[key];
+          return false; // break
+        }
+      });
+      return result;
+    } else {
+      return expr;
     }
   }
   /**
@@ -1296,11 +1319,9 @@
    * @return {*} Returns the redacted value
    */
 
-  function redactObj(obj, expr) {
-    var opt = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-    opt.root = opt.root || obj;
-    var result = computeValue(obj, expr, null, opt);
-    return inArray(REDACT_VARS, result) ? redactVariables[result](obj, expr, opt) : result;
+  function redactObj(obj, expr, options) {
+    var result = computeValue(obj, expr, null, options);
+    return has(redactVariables, result) ? redactVariables[result](obj, expr, options) : result;
   }
 
   /**
@@ -1328,7 +1349,7 @@
     var args = computeValue(obj, expr);
     var foundDate = false;
     var result = reduce(args, function (acc, val) {
-      if (isDate(val)) {
+      if (val instanceof Date) {
         assert(!foundDate, "'$add' can only have one date value");
         foundDate = true;
         val = val.getTime();
@@ -1543,7 +1564,6 @@
    */
 
   function truncate(num, places, roundOff) {
-    places = places || 0;
     var sign = Math.abs(num) === num ? 1 : -1;
     num = Math.abs(num);
     var result = Math.trunc(num);
@@ -1735,8 +1755,8 @@
     // But since a "$" is stripped of before passing the name to "resolve()" we just need to prepend "$" to the key.
 
     var tempKey = '$' + asExpr;
-    return inputExpr.map(function (item) {
-      obj[tempKey] = item;
+    return inputExpr.map(function (v) {
+      obj[tempKey] = v;
       return computeValue(obj, inExpr);
     });
   }
@@ -1940,23 +1960,18 @@
 
   /**
    * Returns an iterator
-   * @param {*} source An iterable source (Array, Function, Object{next:Function})
+   * @param {*} source An iterable source (Array, Function, Generator, or Iterator)
    */
   function Lazy(source) {
     return source instanceof Iterator ? source : new Iterator(source);
   }
-  Lazy.isIterator = isIterator;
   /**
-   * Checks whether the given object is compatible with iterator i.e Object{next:Function}
+   * Checks whether the given object is compatible with a generator i.e Object{next:Function}
    * @param {*} o An object
    */
 
-  function isIterator(o) {
-    return !!o && _typeof(o) === 'object' && isFn(o.next);
-  }
-
-  function isFn(f) {
-    return !!f && typeof f === 'function';
+  function isGenerator(o) {
+    return !!o && _typeof(o) === 'object' && o.next instanceof Function;
   }
 
   function dropItem(array, i) {
@@ -1966,12 +1981,16 @@
   } // stop iteration error
 
 
-  var DONE = new Error(); // Lazy function type flags
+  var DONE = new Error(); // Lazy function actions
 
-  var LAZY_MAP = 1;
-  var LAZY_FILTER = 2;
-  var LAZY_TAKE = 3;
-  var LAZY_DROP = 4;
+  var Action;
+
+  (function (Action) {
+    Action[Action["MAP"] = 0] = "MAP";
+    Action[Action["FILTER"] = 1] = "FILTER";
+    Action[Action["TAKE"] = 2] = "TAKE";
+    Action[Action["DROP"] = 3] = "DROP";
+  })(Action || (Action = {}));
 
   function baseIterator(nextFn, iteratees, buffer) {
     var done = false;
@@ -1979,10 +1998,8 @@
 
     var bIndex = 0; // index for the buffer
 
-    return function (b) {
+    return function (storeResult) {
       // special hack to collect all values into buffer
-      b = b === buffer;
-
       try {
         outer: while (!done) {
           var o = nextFn();
@@ -1993,26 +2010,26 @@
 
           while (++mIndex < mSize) {
             var member = iteratees[mIndex],
-                func = member.func,
-                type = member.type;
+                value = member.value,
+                action = member.action;
 
-            switch (type) {
-              case LAZY_MAP:
-                o = func(o, index);
+            switch (action) {
+              case Action.MAP:
+                o = value(o, index);
                 break;
 
-              case LAZY_FILTER:
-                if (!func(o, index)) continue outer;
+              case Action.FILTER:
+                if (!value(o, index)) continue outer;
                 break;
 
-              case LAZY_TAKE:
-                --member.func;
-                if (!member.func) innerDone = true;
+              case Action.TAKE:
+                --member.value;
+                if (!member.value) innerDone = true;
                 break;
 
-              case LAZY_DROP:
-                --member.func;
-                if (!member.func) dropItem(iteratees, mIndex);
+              case Action.DROP:
+                --member.value;
+                if (!member.value) dropItem(iteratees, mIndex);
                 continue outer;
 
               default:
@@ -2022,7 +2039,7 @@
 
           done = innerDone;
 
-          if (b) {
+          if (storeResult) {
             buffer[bIndex++] = o;
           } else {
             return {
@@ -2059,18 +2076,19 @@
 
       this.__done = false;
       this.__buf = [];
+      var gen;
 
-      if (isFn(source)) {
+      if (source instanceof Function) {
         // make iterable
         source = {
           next: source
         };
       }
 
-      if (isIterator(source)) {
+      if (isGenerator(source)) {
         var src = source;
 
-        source = function source() {
+        gen = function gen() {
           var o = src.next();
           if (o.done) throw DONE;
           return o.value;
@@ -2080,16 +2098,16 @@
         var size = data.length;
         var index = 0;
 
-        source = function source() {
+        gen = function gen() {
           if (index < size) return data[index++];
           throw DONE;
         };
-      } else if (!isFn(source)) {
-        throw new Error("Source is not iterable. Must be Array, Function or Object{next:Function}");
+      } else if (!(source instanceof Function)) {
+        throw new Error("Source is not iterable. Must be Array, Function, or Generator");
       } // create next function
 
 
-      this.next = baseIterator(source, this.__iteratees, this.__buf);
+      this.__next = baseIterator(gen, this.__iteratees, this.__buf);
     }
 
     _createClass(Iterator, [{
@@ -2104,12 +2122,20 @@
 
     }, {
       key: "_push",
-      value: function _push(iteratee) {
+      value: function _push(action, value) {
         this._validate();
 
-        this.__iteratees.push(iteratee);
+        this.__iteratees.push({
+          action: action,
+          value: value
+        });
 
         return this;
+      }
+    }, {
+      key: "next",
+      value: function next() {
+        return this.__next();
       } // Iteratees methods
 
       /**
@@ -2120,10 +2146,7 @@
     }, {
       key: "map",
       value: function map(f) {
-        return this._push({
-          type: LAZY_MAP,
-          func: f
-        });
+        return this._push(Action.MAP, f);
       }
       /**
        * Select only items matching the given predicate
@@ -2132,11 +2155,8 @@
 
     }, {
       key: "filter",
-      value: function filter(pred) {
-        return this._push({
-          type: LAZY_FILTER,
-          func: pred
-        });
+      value: function filter(predicate) {
+        return this._push(Action.FILTER, predicate);
       }
       /**
        * Take given numbe for values from sequence
@@ -2146,10 +2166,7 @@
     }, {
       key: "take",
       value: function take(n) {
-        return n > 0 ? this._push({
-          type: LAZY_TAKE,
-          func: n
-        }) : this;
+        return n > 0 ? this._push(Action.TAKE, n) : this;
       }
       /**
        * Drop a number of values from the sequence
@@ -2159,10 +2176,7 @@
     }, {
       key: "drop",
       value: function drop(n) {
-        return n > 0 ? this._push({
-          type: LAZY_DROP,
-          func: n
-        }) : this;
+        return n > 0 ? this._push(Action.DROP, n) : this;
       } // Transformations
 
       /**
@@ -2210,7 +2224,7 @@
       key: "value",
       value: function value() {
         if (!this.__done) {
-          this.__done = this.next(this.__buf).done;
+          this.__done = this.__next(true).done;
         }
 
         return this.__first ? this.__buf[0] : this.__buf;
@@ -2241,22 +2255,22 @@
 
     }, {
       key: "reduce",
-      value: function reduce(f, init) {
+      value: function reduce(f, initialValue) {
         var o = this.next();
         var i = 0;
 
-        if (init === undefined && !o.done) {
-          init = o.value;
+        if (initialValue === undefined && !o.done) {
+          initialValue = o.value;
           o = this.next();
           i++;
         }
 
         while (!o.done) {
-          init = f(init, o.value, i++);
+          initialValue = f(initialValue, o.value, i++);
           o = this.next();
         }
 
-        return init;
+        return initialValue;
       }
       /**
        * Returns the number of matched items in the sequence
@@ -2308,25 +2322,25 @@
       value: function stream(collection, query) {
         var _this = this;
 
-        collection = Lazy(collection);
+        var iterator = Lazy(collection);
         var pipelineOperators = OPERATORS[OP_PIPELINE];
 
         if (!isEmpty(this.__operators)) {
           // run aggregation pipeline
           each(this.__operators, function (operator) {
-            var key = keys(operator);
-            assert(key.length === 1 && inArray(ops(OP_PIPELINE), key[0]), "invalid aggregation operator ".concat(key));
-            key = key[0];
+            var operatorKeys = keys(operator);
+            var key = operatorKeys[0];
+            assert(operatorKeys.length === 1 && has(OPERATORS[OP_PIPELINE], key), "invalid aggregation operator ".concat(key));
 
-            if (query && query instanceof Query) {
-              collection = pipelineOperators[key].call(query, collection, operator[key], _this.__options);
+            if (query instanceof Query) {
+              iterator = pipelineOperators[key].call(query, iterator, operator[key], _this.__options);
             } else {
-              collection = pipelineOperators[key](collection, operator[key], _this.__options);
+              iterator = pipelineOperators[key](iterator, operator[key], _this.__options);
             }
           });
         }
 
-        return collection;
+        return iterator;
       }
       /**
        * Return the results of the aggregation as an array.
@@ -2696,7 +2710,7 @@
 
     if (isNil(a) && isNil(b)) return true; // check
 
-    if (isArray(a)) {
+    if (a instanceof Array) {
       var eq = isEqual.bind(null, b);
       return a.some(eq) || flatten(a, 1).some(eq);
     }
@@ -2800,7 +2814,7 @@
 
   function $mod$1(a, b) {
     return ensureArray(a).some(function (x) {
-      return isNumber(x) && isArray(b) && b.length === 2 && x % b[0] === b[1];
+      return b.length === 2 && x % b[0] === b[1];
     });
   }
   /**
@@ -2842,7 +2856,7 @@
   function $all(a, b) {
     var matched = false;
 
-    if (isArray(a) && isArray(b)) {
+    if (a instanceof Array && b instanceof Array) {
       for (var i = 0, len = b.length; i < len; i++) {
         if (isObject(b[i]) && inArray(keys(b[i]), '$elemMatch')) {
           matched = matched || $elemMatch(a, b[i].$elemMatch);
@@ -2864,7 +2878,7 @@
    */
 
   function $size$1(a, b) {
-    return isArray(a) && isNumber(b) && a.length === b;
+    return a.length === b;
   }
   /**
    * Selects documents if element in the array field matches all the specified $elemMatch condition.
@@ -2874,7 +2888,7 @@
    */
 
   function $elemMatch(a, b) {
-    if (isArray(a) && !isEmpty(a)) {
+    if (a.length > 0) {
       var format = function format(x) {
         return x;
       };
@@ -3015,10 +3029,12 @@
    */
 
   function $cond(obj, expr) {
-    var ifExpr, thenExpr, elseExpr;
+    var ifExpr;
+    var thenExpr;
+    var elseExpr;
     var errorMsg = '$cond: invalid arguments';
 
-    if (isArray(expr)) {
+    if (expr instanceof Array) {
       assert(expr.length === 3, errorMsg);
       ifExpr = expr[0];
       thenExpr = expr[1];
@@ -3072,6 +3088,7 @@
     return isNil(args[0]) ? args[1] : args[0];
   }
 
+  var ONE_DAY_MILLIS = 1000 * 60 * 60 * 24;
   /**
    * Returns the day of the year for a date as a number between 1 and 366 (leap year).
    * @param obj
@@ -3081,9 +3098,8 @@
   function $dayOfYear(obj, expr) {
     var d = computeValue(obj, expr);
     var start = new Date(d.getFullYear(), 0, 0);
-    var diff = d - start;
-    var oneDay = 1000 * 60 * 60 * 24;
-    return Math.round(diff / oneDay);
+    var diff = d.getTime() - start.getTime();
+    return Math.round(diff / ONE_DAY_MILLIS);
   }
   /**
    * Returns the day of the month for a date as a number between 1 and 31.
@@ -3144,7 +3160,7 @@
 
     var yearStart = new Date(d.getFullYear(), 0, 1); // Calculate full weeks to nearest Thursday
 
-    return Math.floor(((d - yearStart) / 8.64e7 + 1) / 7);
+    return Math.floor(((d.getTime() - yearStart.getTime()) / 8.64e7 + 1) / 7);
   }
   /**
    * Returns the hour for a date as a number between 0 and 23.
@@ -3875,7 +3891,7 @@
     if (!isNil(defaultKey)) grouped[defaultKey] = [];
     var iterator = false;
     return Lazy(function () {
-      if (!iterator) {
+      if (!(iterator instanceof Iterator)) {
         collection.each(function (obj) {
           var key = computeValue(obj, expr.groupBy);
 
@@ -3946,8 +3962,11 @@
       var index = 0; // counter for sorted collection
 
       for (var i = 0, len = sorted.length; i < bucketCount && index < len; i++) {
-        var boundaries = {};
-        var bucketItems = [];
+        var boundaries = Object.create({
+          min: 0,
+          max: 0
+        });
+        var bucketItems = new Array();
 
         for (var j = 0; j < approxBucketSize && index < len; j++) {
           var key = computeValueOptimized(sorted[index], groupByExpr);
@@ -4070,8 +4089,8 @@
    * @param opt
    * @returns {Object|*}
    */
-  function $limit(collection, value, opt) {
-    return collection.take(value);
+  function $limit(collection, expr, opt) {
+    return collection.take(expr);
   }
 
   /**
@@ -4186,7 +4205,7 @@
 
   function processObject(obj, expr, expressionKeys, idOnlyExcludedExpression) {
     var ID_KEY = idKey();
-    var newObj = {};
+    var newObj = new Object();
     var foundSlice = false;
     var foundExclusion = false;
     var dropKeys = [];
@@ -4197,7 +4216,7 @@
 
     expressionKeys.forEach(function (key) {
       // final computed value of the key
-      var value; // expression to associate with key
+      var value = undefined; // expression to associate with key
 
       var subExpr = expr[key];
 
@@ -4210,7 +4229,7 @@
         value = obj[key];
       } else if (isString(subExpr)) {
         value = computeValue(obj, subExpr, key);
-      } else if (inArray([1, true], subExpr)) ; else if (isArray(subExpr)) {
+      } else if (inArray([1, true], subExpr)) ; else if (Array.isArray(subExpr)) {
         value = subExpr.map(function (v) {
           var r = computeValue(obj, v);
           if (isNil(r)) return null;
@@ -4218,9 +4237,9 @@
         });
       } else if (isObject(subExpr)) {
         var subExprKeys = keys(subExpr);
-        var operator = subExprKeys.length > 1 ? false : subExprKeys[0];
+        var operator = subExprKeys.length > 1 ? '' : subExprKeys[0];
 
-        if (inArray(ops(OP_PROJECTION), operator)) {
+        if (has(OPERATORS[OP_PROJECTION], operator)) {
           var projectionOperators = OPERATORS[OP_PROJECTION]; // apply the projection operator on the operator expression for the key
 
           if (operator === '$slice') {
@@ -4241,7 +4260,7 @@
           if (has(obj, key)) {
             validateExpression(subExpr);
             var nestedObj = obj[key];
-            value = isArray(nestedObj) ? nestedObj.map(function (o) {
+            value = Array.isArray(nestedObj) ? nestedObj.map(function (o) {
               return processObject(o, subExpr, subExprKeys, false);
             }) : processObject(nestedObj, subExpr, subExprKeys, false);
           } else {
@@ -4383,8 +4402,8 @@
    * @param  {Object} opt
    * @returns {*}
    */
-  function $skip(collection, value, opt) {
-    return collection.drop(value);
+  function $skip(collection, expr, opt) {
+    return collection.drop(expr);
   }
 
   /**
@@ -4398,7 +4417,7 @@
 
   function $sort(collection, sortKeys, opt) {
     if (isEmpty(sortKeys) || !isObject(sortKeys)) return collection;
-    opt = opt || {};
+    opt = opt || Object.create({});
     var cmp = compare;
     var collationSpec = opt['collation']; // use collation comparator if provided
 
@@ -4436,22 +4455,21 @@
     2: 'accent',
     // Strings that differ in base letters, accents and other diacritic marks, or case compare as unequal.
     // Other differences may also be taken into consideration. Examples: a ≠ b, a ≠ á, a ≠ A
-    3: 'variant' // case - Only strings that differ in base letters or case compare as unequal. Examples: a ≠ b, a = á, a ≠ A.
-
+    3: 'variant'
   };
   /**
    * Creates a comparator function for the given collation spec. See https://docs.mongodb.com/manual/reference/collation/
    *
    * @param spec {Object} The MongoDB collation spec.
    * {
-   *   locale: <string>,
-   *   caseLevel: <boolean>,
-   *   caseFirst: <string>,
-   *   strength: <int>,
-   *   numericOrdering: <boolean>,
-   *   alternate: <string>,
-   *   maxVariable: <string>, // unsupported
-   *   backwards: <boolean> // unsupported
+   *   locale: string,
+   *   caseLevel: boolean,
+   *   caseFirst: string,
+   *   strength: int,
+   *   numericOrdering: boolean,
+   *   alternate: string,
+   *   maxVariable: string, // unsupported
+   *   backwards: boolean // unsupported
    * }
    */
 
@@ -4533,7 +4551,7 @@
     return Lazy(function () {
       var _loop = function _loop() {
         // take from lazy sequence if available
-        if (Lazy.isIterator(value)) {
+        if (value instanceof Iterator) {
           var tmp = value.next();
           if (!tmp.done) return {
             v: tmp
@@ -4644,7 +4662,7 @@
   function $elemMatch$1(obj, expr, field) {
     var arr = resolve(obj, field);
     var query = new Query(expr);
-    assert(isArray(arr), '$elemMatch: invalid argument');
+    assert(Array.isArray(arr), '$elemMatch: invalid argument');
 
     for (var i = 0; i < arr.length; i++) {
       if (query.test(arr[i])) return [arr[i]];
@@ -4662,9 +4680,9 @@
 
   function $slice$1(obj, expr, field) {
     var xs = resolve(obj, field);
-    if (!isArray(xs)) return xs;
+    if (!Array.isArray(xs)) return xs;
 
-    if (isArray(expr)) {
+    if (Array.isArray(expr)) {
       return slice(xs, expr[0], expr[1]);
     } else {
       assert(isNumber(expr), '$slice: invalid arguments for projection');
@@ -4686,7 +4704,7 @@
       return function (obj) {
         // value of field must be fully resolved.
         var lhs = resolve(obj, selector, {
-          meta: true
+          preserveMetadata: true
         });
         lhs = unwrap(lhs.result, lhs.depth);
         return pred(lhs, value);
@@ -4797,12 +4815,16 @@
    */
 
   function $where(selector, value) {
+    var f;
+
     if (!isFunction(value)) {
-      value = new Function('return ' + value + ';');
+      f = new Function('return ' + value + ';');
+    } else {
+      f = value;
     }
 
     return function (obj) {
-      return value.call(obj) === true;
+      return f.call(obj) === true;
     };
   }
   /**
@@ -4953,7 +4975,6 @@
   };
 
   enableSystemOperators(); // public interface
-  var VERSION = '2.5.2';
 
   exports.Aggregator = Aggregator;
   exports.CollectionMixin = CollectionMixin;
@@ -4965,7 +4986,6 @@
   exports.OP_PROJECTION = OP_PROJECTION;
   exports.OP_QUERY = OP_QUERY;
   exports.Query = Query;
-  exports.VERSION = VERSION;
   exports._internal = _internal;
   exports.addOperators = addOperators;
   exports.aggregate = aggregate;

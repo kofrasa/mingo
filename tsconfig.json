@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "outDir": "lib",
+    "target": "es6",
+    "moduleResolution": "node",
+    "module": "es2015",
+    "allowSyntheticDefaultImports": true
+  },
+  "exclude": ["node_modules", "lib", "index.d.ts", "test"],
+  "filesGlob": ["./src/**/*.ts"]
+}

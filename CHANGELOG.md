@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.0.0 / 2020-03-22
+
+- Convert project to Typescript
+- Remove `VERSION` fields as information can be sourced from `package.json` directly
+
 ## 2.5.2 / 2020-03-17
 
 - Revert to using `dist/mingo.js` as main entry point for package. Fixes [#125](https://github.com/kofrasa/mingo/issues/125)
