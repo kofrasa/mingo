@@ -18,7 +18,7 @@ export const JS_SIMPLE_TYPES = [T_NULL, T_UNDEFINED, T_BOOLEAN, T_NUMBER, T_STRI
 
 // operator classes
 export const OP_EXPRESSION = 'expression'
-export const OP_GROUP = 'group'
+export const OP_GROUP = 'accumulator'
 export const OP_PIPELINE = 'pipeline'
 export const OP_PROJECTION = 'projection'
 export const OP_QUERY = 'query'

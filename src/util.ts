@@ -92,8 +92,6 @@ if (!Array.prototype.includes) {
   });
 }
 
-const arrayPush = Array.prototype.push
-
 export function assert (condition: boolean, message: string): void {
   if (!condition) err(message)
 }
@@ -230,7 +228,7 @@ export function merge(target: object, obj: object, options: MergeOptions): objec
         result.push(obj[j++])
       }
     } else {
-      arrayPush.apply(result, input)
+      Array.prototype.push.apply(result, input)
     }
   } else {
     Object.keys(obj).forEach((k) => {
@@ -571,7 +569,7 @@ export function groupBy (collection: any[], fn: Callback<any>): { keys: any[], g
  * @param {*} xs The array of elements to push
  */
 export function into (target: any[], xs: any): any[] {
-  arrayPush.apply(target, xs)
+  Array.prototype.push.apply(target, xs)
   return target
 }
 

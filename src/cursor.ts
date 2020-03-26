@@ -2,6 +2,7 @@ import { isObject, Callback } from './util'
 import { Aggregator } from './aggregator'
 import { Lazy, Iterator } from './lazy'
 import { Query } from './query'
+import { CollationSpec } from './operators/pipeline/sort'
 
 /**
  * Cursor to iterate and perform filtering on matched objects
@@ -53,7 +54,7 @@ export class Cursor {
    * Return remaining objects in the cursor as an array. This method exhausts the cursor
    * @returns {Array}
    */
-  all() {
+  all(): any[] {
     return this._fetch().value()
   }
 
@@ -61,7 +62,7 @@ export class Cursor {
    * Returns the number of objects return in the cursor. This method exhausts the cursor
    * @returns {Number}
    */
-  count() {
+  count(): number {
     return this.all().length
   }
 
@@ -70,7 +71,7 @@ export class Cursor {
    * @param {Number} n the number of results to skip.
    * @return {Cursor} Returns the cursor, so you can chain this call.
    */
-  skip(n) {
+  skip(n: number): Cursor {
     this.__operators.push({ '$skip': n })
     return this
   }
@@ -80,7 +81,7 @@ export class Cursor {
    * @param {Number} n the number of results to limit to.
    * @return {Cursor} Returns the cursor, so you can chain this call.
    */
-  limit(n) {
+  limit(n: number): Cursor {
     this.__operators.push({ '$limit': n })
     return this
   }
@@ -90,7 +91,7 @@ export class Cursor {
    * @param {Object} modifier an object of key and values specifying the sort order. 1 for ascending and -1 for descending
    * @return {Cursor} Returns the cursor, so you can chain this call.
    */
-  sort(modifier) {
+  sort(modifier: any): Cursor {
     this.__operators.push({ '$sort': modifier })
     return this
   }
@@ -99,7 +100,7 @@ export class Cursor {
    * Specifies the collation for the cursor returned by the `mingo.Query.find`
    * @param {*} options
    */
-  collation(options) {
+  collation(options: CollationSpec): Cursor {
     this.__options['collation'] = options
     return this
   }
@@ -108,7 +109,7 @@ export class Cursor {
    * Returns the next document in a cursor.
    * @returns {Object | Boolean}
    */
-  next() {
+  next(): any {
     if (!this.__stack) return // done
     if (this.__stack.length > 0) return this.__stack.pop() // yield value obtains in hasNext()
     let o = this._fetch().next()
@@ -122,7 +123,7 @@ export class Cursor {
    * Returns true if the cursor has documents and can be iterated.
    * @returns {boolean}
    */
-  hasNext() {
+  hasNext(): boolean {
     if (!this.__stack) return false // done
     if (this.__stack.length > 0) return true // there is a value on stack
 
@@ -141,7 +142,7 @@ export class Cursor {
    * @param callback
    * @returns {Array}
    */
-  map(callback) {
+  map(callback: Callback<any>): any[] {
     return this._fetch().map(callback).value()
   }
 
@@ -149,7 +150,7 @@ export class Cursor {
    * Applies a JavaScript function for every document in a cursor.
    * @param callback
    */
-  forEach(callback) {
+  forEach(callback: Callback<any>) {
     this._fetch().each(callback)
   }
 }

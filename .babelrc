@@ -4,10 +4,7 @@
       "modules": false
     }]
   ],
-  "plugins": [
-    "@babel/plugin-external-helpers",
-    "babel-plugin-istanbul"
-  ],
+  "plugins": [],
   "env": {
     "test": {
       "plugins": []

@@ -5,7 +5,7 @@ export interface SortOptions {
   collation: CollationSpec
 }
 
-interface CollationSpec {
+export interface CollationSpec {
   locale: string,
   caseLevel?: boolean,
   caseFirst?: string,

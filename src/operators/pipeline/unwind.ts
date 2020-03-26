@@ -18,7 +18,7 @@ export function $unwind(collection: Iterator, expr: any, opt?: object): Iterator
   let includeArrayIndex = expr.includeArrayIndex || false
   let preserveNullAndEmptyArrays = expr.preserveNullAndEmptyArrays || false
 
-  let format = (o, i) => {
+  let format = (o: object, i: number) => {
     if (includeArrayIndex !== false) o[includeArrayIndex] = i
     return o
   }

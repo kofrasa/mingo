@@ -1,6 +1,3 @@
-import { enableSystemOperators } from './operators'
-enableSystemOperators()
-
 // public interface
 export { OP_EXPRESSION, OP_GROUP, OP_PIPELINE, OP_PROJECTION, OP_QUERY } from './constants'
 export { _internal, setup } from './internal'

@@ -1,39 +1,21 @@
 import { OP_PROJECTION, OP_QUERY, OP_EXPRESSION, OP_GROUP, OP_PIPELINE } from '../constants'
 import * as expressionOperators from './expression'
-import * as groupOperators from './group'
+import * as accumulatorOperators from './group'
 import * as pipelineOperators from './pipeline'
 import * as projectionOperators from './projection'
 import * as queryOperators from './query'
-import { assert, each, has, isBoolean, resolve } from '../util'
+import { assert, each, has, isBoolean, resolve, Callback } from '../util'
 import { _internal } from '../internal'
 
 
 // operator definitions
 export const OPERATORS = {}
 
-OPERATORS[OP_EXPRESSION] = {}
-OPERATORS[OP_GROUP] = {}
-OPERATORS[OP_PIPELINE] = {}
-OPERATORS[OP_PROJECTION] = {}
-OPERATORS[OP_QUERY] = {}
-
-const SYSTEM_OPERATORS = [
-  [OP_EXPRESSION, expressionOperators],
-  [OP_GROUP, groupOperators],
-  [OP_PIPELINE, pipelineOperators],
-  [OP_PROJECTION, projectionOperators],
-  [OP_QUERY, queryOperators]
-]
-
-/**
- * Enables the default operators of the system
- */
-export function enableSystemOperators() {
-  each(SYSTEM_OPERATORS, arr => {
-    let [cls, values] = arr
-    Object.assign(OPERATORS[cls], values)
-  })
-}
+OPERATORS[OP_EXPRESSION] = Object.assign({}, expressionOperators)
+OPERATORS[OP_GROUP] = Object.assign({}, accumulatorOperators)
+OPERATORS[OP_PIPELINE] = Object.assign({}, pipelineOperators)
+OPERATORS[OP_PROJECTION] = Object.assign({}, projectionOperators)
+OPERATORS[OP_QUERY] = Object.assign({}, queryOperators)
 
 /**
  * Add new operators
@@ -41,7 +23,7 @@ export function enableSystemOperators() {
  * @param opClass the operator class to extend
  * @param fn a function returning an object of new operators
  */
-export function addOperators(opClass, fn) {
+export function addOperators(opClass: string, fn: Callback<any>) {
 
   const newOperators = fn(_internal())
 
