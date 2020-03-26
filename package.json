@@ -31,7 +31,7 @@
     "babel-plugin-istanbul": "6.0.0",
     "backbone": "1.4.0",
     "benchmark": "2.1.4",
-    "bson": "4.0.3",
+    "bson": "4.0.4",
     "codecov": "3.6.5",
     "istanbul": "0.4.5",
     "lodash": "4.17.15",
