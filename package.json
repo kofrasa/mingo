@@ -5,7 +5,7 @@
   "main": "./dist/mingo.js",
   "module": "./index.js",
   "scripts": {
-    "clean": "rm -fr dist lib",
+    "clean": "rm -fr dist lib package-lock.json",
     "bundle": "rollup -c rollup.umd.js",
     "compile": "tsc",
     "compress": "uglifyjs dist/mingo.js --comments '/^!/' --compress --mangle --sourcemap dist/mingo.min.map --output dist/mingo.min.js",
@@ -34,7 +34,6 @@
     "benchmark": "2.1.4",
     "bson": "4.0.4",
     "codecov": "3.6.5",
-    "istanbul": "0.4.5",
     "lodash": "4.17.15",
     "nyc": "15.0.0",
     "perf_hooks": "0.0.1",

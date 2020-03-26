@@ -5,11 +5,12 @@
     }]
   ],
   "plugins": [
-    "@babel/plugin-external-helpers"
+    "@babel/plugin-external-helpers",
+    "babel-plugin-istanbul"
   ],
   "env": {
     "test": {
-      "plugins": ["istanbul"]
+      "plugins": []
     }
   }
 }
