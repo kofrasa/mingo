@@ -16,7 +16,8 @@ import {
   merge,
   removeValue,
   resolveObj,
-  setValue
+  setValue,
+  isOperator
 } from '../../util'
 import { computeValue, idKey } from '../../internal'
 import { OPERATORS } from '../index'
@@ -105,8 +106,9 @@ function processObject(obj: object, expr: any, expressionKeys: string[], idOnlyE
       })
     } else if (isObject(subExpr)) {
       let subExprKeys = keys(subExpr)
-      let operator = subExprKeys.length > 1 ? '' : subExprKeys[0]
+      let operator = subExprKeys.length == 1 ? subExprKeys[0] : null
 
+      // first try a projection operator
       if (has(OPERATORS[OP_PROJECTION], operator)) {
         const projectionOperators = OPERATORS[OP_PROJECTION]
 
@@ -124,17 +126,20 @@ function processObject(obj: object, expr: any, expressionKeys: string[], idOnlyE
         } else {
           value = projectionOperators[operator](obj, subExpr[operator], key)
         }
+      } else if (isOperator(operator)) {
+        // compute if operator key
+        value = computeValue(obj, subExpr[operator], operator)
+      } else if (has(obj, key)) {
+        // compute the value for the sub expression for the key
+        validateExpression(subExpr)
+
+        let nestedObj = obj[key]
+        value = Array.isArray(nestedObj) ?
+          nestedObj.map(o => processObject(o, subExpr, subExprKeys, false)) :
+          processObject(nestedObj, subExpr, subExprKeys, false)
       } else {
         // compute the value for the sub expression for the key
-        if (has(obj, key)) {
-          validateExpression(subExpr)
-          let nestedObj = obj[key]
-          value = Array.isArray(nestedObj) ?
-            nestedObj.map(o => processObject(o, subExpr, subExprKeys, false)) :
-            processObject(nestedObj, subExpr, subExprKeys, false)
-        } else {
-          value = computeValue(obj, subExpr, key)
-        }
+        value = computeValue(obj, subExpr)
       }
     } else {
       dropKeys.push(key)

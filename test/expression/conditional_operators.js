@@ -1,5 +1,3 @@
-var test = require('tape')
-var mingo = require('../../dist/mingo')
 var runTest = require('./../support').runTest
 
 runTest('Conditional Operators', {

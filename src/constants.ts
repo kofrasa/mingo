@@ -24,3 +24,8 @@ export const OP_PROJECTION = 'projection'
 export const OP_QUERY = 'query'
 
 export const MISSING = () => {}
+
+export const MAX_INT = 2147483647
+export const MIN_INT = -2147483648
+export const MAX_LONG = Number.MAX_SAFE_INTEGER
+export const MIN_LONG = Number.MIN_SAFE_INTEGER

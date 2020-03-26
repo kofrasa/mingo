@@ -24,9 +24,9 @@ export function $cond(obj: object, expr: any): any {
     elseExpr = expr[2]
   } else {
     assert(isObject(expr), errorMsg)
-    ifExpr = expr['if']
-    thenExpr = expr['then']
-    elseExpr = expr['else']
+    ifExpr = expr.if
+    thenExpr = expr.then
+    elseExpr = expr.else
   }
   let condition = computeValue(obj, ifExpr)
   return condition ? computeValue(obj, thenExpr) : computeValue(obj, elseExpr)
@@ -41,20 +41,11 @@ export function $cond(obj: object, expr: any): any {
  * @param expr
  */
 export function $switch(obj: object, expr: any): any {
-  const errorMsg = 'Invalid arguments for $switch operator'
-  assert(expr.branches, errorMsg)
-
-  let validBranch = expr.branches.find((branch: any[]) => {
-    assert(branch['case'] && branch['then'], errorMsg)
-    return computeValue(obj, branch['case'])
+  let validBranch = expr.branches.find((branch: { case: any, then: any }) => {
+    return computeValue(obj, branch.case)
   })
 
-  if (validBranch) {
-    return computeValue(obj, validBranch.then)
-  } else {
-    assert(expr['default'], errorMsg)
-    return computeValue(obj, expr.default)
-  }
+  return computeValue(obj, !!validBranch ? validBranch.then : expr.default)
 }
 
 /**

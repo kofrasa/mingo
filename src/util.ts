@@ -129,7 +129,7 @@ export function getType (v: any): string {
 export function jsType (v: any): string { return getType(v).toLowerCase() }
 export function isBoolean (v: any): v is boolean { return typeof v === T_BOOLEAN }
 export function isString (v: any): v is string { return typeof v === T_STRING }
-export function isNumber (v: any): v is number { return typeof v === T_NUMBER }
+export function isNumber (v: any): v is number { return !isNaN(v) && typeof v === T_NUMBER  }
 export const isArray = Array.isArray || (v => v instanceof Array)
 export function isObject(v: any): boolean  { return !!v && v.constructor === Object }
 export function isObjectLike (v: any): boolean  { return v === Object(v) } // objects, arrays, functions, date, custom object

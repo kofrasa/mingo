@@ -4,6 +4,10 @@
 
 - Convert project to Typescript
 - Remove `VERSION` fields as information can be sourced from `package.json` directly
+- Implemente type check and conversion operators `$type`, `$convert`, `$toBool`, `$toDate`, `$toString`, `$toInt`, `$toLong`, `$toDouble`, `$toDecimal`
+- Implement `$dateFromString` operator
+- Add timezone support for all date operators
+- Return all date operator results in UTC
 
 ## 2.5.2 / 2020-03-17
 

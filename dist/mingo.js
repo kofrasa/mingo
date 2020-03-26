@@ -46,6 +46,121 @@
     return Constructor;
   }
 
+  function _inherits(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+      throw new TypeError("Super expression must either be null or a function");
+    }
+
+    subClass.prototype = Object.create(superClass && superClass.prototype, {
+      constructor: {
+        value: subClass,
+        writable: true,
+        configurable: true
+      }
+    });
+    if (superClass) _setPrototypeOf(subClass, superClass);
+  }
+
+  function _getPrototypeOf(o) {
+    _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+      return o.__proto__ || Object.getPrototypeOf(o);
+    };
+    return _getPrototypeOf(o);
+  }
+
+  function _setPrototypeOf(o, p) {
+    _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+      o.__proto__ = p;
+      return o;
+    };
+
+    return _setPrototypeOf(o, p);
+  }
+
+  function isNativeReflectConstruct() {
+    if (typeof Reflect === "undefined" || !Reflect.construct) return false;
+    if (Reflect.construct.sham) return false;
+    if (typeof Proxy === "function") return true;
+
+    try {
+      Date.prototype.toString.call(Reflect.construct(Date, [], function () {}));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function _construct(Parent, args, Class) {
+    if (isNativeReflectConstruct()) {
+      _construct = Reflect.construct;
+    } else {
+      _construct = function _construct(Parent, args, Class) {
+        var a = [null];
+        a.push.apply(a, args);
+        var Constructor = Function.bind.apply(Parent, a);
+        var instance = new Constructor();
+        if (Class) _setPrototypeOf(instance, Class.prototype);
+        return instance;
+      };
+    }
+
+    return _construct.apply(null, arguments);
+  }
+
+  function _isNativeFunction(fn) {
+    return Function.toString.call(fn).indexOf("[native code]") !== -1;
+  }
+
+  function _wrapNativeSuper(Class) {
+    var _cache = typeof Map === "function" ? new Map() : undefined;
+
+    _wrapNativeSuper = function _wrapNativeSuper(Class) {
+      if (Class === null || !_isNativeFunction(Class)) return Class;
+
+      if (typeof Class !== "function") {
+        throw new TypeError("Super expression must either be null or a function");
+      }
+
+      if (typeof _cache !== "undefined") {
+        if (_cache.has(Class)) return _cache.get(Class);
+
+        _cache.set(Class, Wrapper);
+      }
+
+      function Wrapper() {
+        return _construct(Class, arguments, _getPrototypeOf(this).constructor);
+      }
+
+      Wrapper.prototype = Object.create(Class.prototype, {
+        constructor: {
+          value: Wrapper,
+          enumerable: false,
+          writable: true,
+          configurable: true
+        }
+      });
+      return _setPrototypeOf(Wrapper, Class);
+    };
+
+    return _wrapNativeSuper(Class);
+  }
+
+  function _assertThisInitialized(self) {
+    if (self === void 0) {
+      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }
+
+    return self;
+  }
+
+  function _possibleConstructorReturn(self, call) {
+    if (call && (typeof call === "object" || typeof call === "function")) {
+      return call;
+    }
+
+    return _assertThisInitialized(self);
+  }
+
   function _slicedToArray(arr, i) {
     return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest();
   }
@@ -110,6 +225,10 @@
   var OP_PROJECTION = 'projection';
   var OP_QUERY = 'query';
   var MISSING = function MISSING() {};
+  var MAX_INT = 2147483647;
+  var MIN_INT = -2147483648;
+  var MAX_LONG = Number.MAX_SAFE_INTEGER;
+  var MIN_LONG = Number.MIN_SAFE_INTEGER;
 
   if (!Array.prototype.includes) {
     Object.defineProperty(Array.prototype, 'includes', {
@@ -205,7 +324,7 @@
     return _typeof(v) === T_STRING;
   }
   function isNumber(v) {
-    return _typeof(v) === T_NUMBER;
+    return !isNaN(v) && _typeof(v) === T_NUMBER;
   }
   var isArray = Array.isArray || function (v) {
     return v instanceof Array;
@@ -2931,7 +3050,7 @@
     switch (b) {
       case 1:
       case 'double':
-        return isNumber(a) && (a + '').indexOf('.') !== -1;
+        return isNumber(a) && a.toString().indexOf('.') !== -1;
 
       case 2:
       case T_STRING:
@@ -2967,11 +3086,11 @@
 
       case 16:
       case 'int':
-        return isNumber(a) && a <= 2147483647 && (a + '').indexOf('.') === -1;
+        return isNumber(a) && a >= MIN_INT && a <= MAX_INT && a.toString().indexOf('.') === -1;
 
       case 18:
       case 'long':
-        return isNumber(a) && a > 2147483647 && a <= 9223372036854775807 && (a + '').indexOf('.') === -1;
+        return isNumber(a) && a >= MIN_LONG && a <= MAX_LONG && a.toString().indexOf('.') === -1;
 
       case 19:
       case 'decimal':
@@ -2996,11 +3115,11 @@
   }
 
   var $eq$1 = createComparison($eq);
-  var $ne$1 = createComparison($ne);
   var $gt$1 = createComparison($gt);
-  var $lt$1 = createComparison($lt);
   var $gte$1 = createComparison($gte);
+  var $lt$1 = createComparison($lt);
   var $lte$1 = createComparison($lte);
+  var $ne$1 = createComparison($ne);
   var $nin$1 = createComparison($nin);
   /**
    * Compares two values and returns the result of the comparison as an integer.
@@ -3041,9 +3160,9 @@
       elseExpr = expr[2];
     } else {
       assert(isObject(expr), errorMsg);
-      ifExpr = expr['if'];
-      thenExpr = expr['then'];
-      elseExpr = expr['else'];
+      ifExpr = expr["if"];
+      thenExpr = expr.then;
+      elseExpr = expr["else"];
     }
 
     var condition = computeValue(obj, ifExpr);
@@ -3059,19 +3178,10 @@
    */
 
   function $switch(obj, expr) {
-    var errorMsg = 'Invalid arguments for $switch operator';
-    assert(expr.branches, errorMsg);
     var validBranch = expr.branches.find(function (branch) {
-      assert(branch['case'] && branch['then'], errorMsg);
-      return computeValue(obj, branch['case']);
+      return computeValue(obj, branch["case"]);
     });
-
-    if (validBranch) {
-      return computeValue(obj, validBranch.then);
-    } else {
-      assert(expr['default'], errorMsg);
-      return computeValue(obj, expr["default"]);
-    }
+    return computeValue(obj, !!validBranch ? validBranch.then : expr["default"]);
   }
   /**
    * Evaluates an expression and returns the first expression if it evaluates to a non-null value.
@@ -3090,14 +3200,35 @@
 
   var ONE_DAY_MILLIS = 1000 * 60 * 60 * 24;
   /**
+   * Computes a date expression
+   */
+
+  function computeDate(obj, expr) {
+    var d = computeValue(obj, expr);
+    if (d instanceof Date) return d;
+    if (isString(decodeURI)) throw Error('cannot take a string as an argument');
+    var tz = 0;
+
+    if (isObject(d)) {
+      tz = parseTimezone(computeValue(obj, d.timezone));
+      d = computeValue(obj, d.date);
+    }
+
+    d = new Date(d);
+    if (isNaN(d.getTime())) throw Error("cannot convert ".concat(obj, " to date"));
+    d.setUTCHours(d.getUTCHours() + tz);
+    return d;
+  }
+  /**
    * Returns the day of the year for a date as a number between 1 and 366 (leap year).
    * @param obj
    * @param expr
    */
 
+
   function $dayOfYear(obj, expr) {
-    var d = computeValue(obj, expr);
-    var start = new Date(d.getFullYear(), 0, 0);
+    var d = computeDate(obj, expr);
+    var start = new Date(d.getUTCFullYear(), 0, 0);
     var diff = d.getTime() - start.getTime();
     return Math.round(diff / ONE_DAY_MILLIS);
   }
@@ -3108,8 +3239,8 @@
    */
 
   function $dayOfMonth(obj, expr) {
-    var d = computeValue(obj, expr);
-    return d.getDate();
+    var d = computeDate(obj, expr);
+    return d.getUTCDate();
   }
   /**
    * Returns the day of the week for a date as a number between 1 (Sunday) and 7 (Saturday).
@@ -3118,8 +3249,8 @@
    */
 
   function $dayOfWeek(obj, expr) {
-    var d = computeValue(obj, expr);
-    return d.getDay() + 1;
+    var d = computeDate(obj, expr);
+    return d.getUTCDay() + 1;
   }
   /**
    * Returns the year for a date as a number (e.g. 2014).
@@ -3128,8 +3259,8 @@
    */
 
   function $year(obj, expr) {
-    var d = computeValue(obj, expr);
-    return d.getFullYear();
+    var d = computeDate(obj, expr);
+    return d.getUTCFullYear();
   }
   /**
    * Returns the month for a date as a number between 1 (January) and 12 (December).
@@ -3138,8 +3269,8 @@
    */
 
   function $month(obj, expr) {
-    var d = computeValue(obj, expr);
-    return d.getMonth() + 1;
+    var d = computeDate(obj, expr);
+    return d.getUTCMonth() + 1;
   }
   /**
    * Returns the week number for a date as a number between 0
@@ -3150,7 +3281,7 @@
 
   function $week(obj, expr) {
     // source: http://stackoverflow.com/a/6117889/1370481
-    var d = computeValue(obj, expr); // Copy date so don't modify original
+    var d = computeDate(obj, expr); // Copy date so don't modify original
 
     d = new Date(+d);
     d.setHours(0, 0, 0); // Set to nearest Thursday: current date + 4 - current day number
@@ -3169,7 +3300,7 @@
    */
 
   function $hour(obj, expr) {
-    var d = computeValue(obj, expr);
+    var d = computeDate(obj, expr);
     return d.getUTCHours();
   }
   /**
@@ -3179,8 +3310,8 @@
    */
 
   function $minute(obj, expr) {
-    var d = computeValue(obj, expr);
-    return d.getMinutes();
+    var d = computeDate(obj, expr);
+    return d.getUTCMinutes();
   }
   /**
    * Returns the seconds for a date as a number between 0 and 60 (leap seconds).
@@ -3189,8 +3320,8 @@
    */
 
   function $second(obj, expr) {
-    var d = computeValue(obj, expr);
-    return d.getSeconds();
+    var d = computeDate(obj, expr);
+    return d.getUTCSeconds();
   }
   /**
    * Returns the milliseconds of a date as a number between 0 and 999.
@@ -3199,67 +3330,326 @@
    */
 
   function $millisecond(obj, expr) {
-    var d = computeValue(obj, expr);
-    return d.getMilliseconds();
+    var d = computeDate(obj, expr);
+    return d.getUTCMilliseconds();
   } // used for formatting dates in $dateToString operator
 
   var DATE_SYM_TABLE = {
-    '%Y': [$year, 4],
-    '%m': [$month, 2],
-    '%d': [$dayOfMonth, 2],
-    '%H': [$hour, 2],
-    '%M': [$minute, 2],
-    '%S': [$second, 2],
-    '%L': [$millisecond, 3],
-    '%j': [$dayOfYear, 3],
-    '%w': [$dayOfWeek, 1],
-    '%U': [$week, 2],
+    '%Y': ['year', $year, 4, /([0-9]{4})/],
+    '%G': ['year', $year, 4, /([0-9]{4})/],
+    '%m': ['month', $month, 2, /(0[1-9]|1[012])/],
+    '%d': ['day', $dayOfMonth, 2, /(0[1-9]|[12][0-9]|3[01])/],
+    '%H': ['hour', $hour, 2, /([01][0-9]|2[0-3])/],
+    '%M': ['minute', $minute, 2, /([0-5][0-9])/],
+    '%S': ['second', $second, 2, /([0-5][0-9]|60)/],
+    '%L': ['millisecond', $millisecond, 3, /([0-9]{3})/],
+    '%u': ['weekDay', $dayOfWeek, 1, /([1-7])/],
+    '%V': ['week', $week, 1, /([1-4][0-9]?|5[0-3]?)/],
+    '%z': ['timezone', null, 0, /([+-]([01][0-9]|2[0-3]):?([0-5][0-9])?)/],
+    '%Z': ['minuteOffset', null, 0, /([+-][0-9]{3})/],
     '%%': '%'
   };
   /**
+   * Parse and return the timezone string as a number
+   * @param tzStr Timezone string matching '+/-hh[:][mm]'
+   */
+
+  function parseTimezone(tzStr) {
+    var re = DATE_SYM_TABLE['%z'][3];
+    if (tzStr === null || tzStr === undefined) return 0;
+    if (re instanceof RegExp && !tzStr.match(re)) throw Error("invalid or location-based timezone ".concat(tzStr, " not supported"));
+    return parseInt(tzStr.substr(0, 3));
+  }
+  /**
    * Returns the date as a formatted string.
    *
-   * %Y  Year (4 digits, zero padded)  0000-9999
-   * %m  Month (2 digits, zero padded)  01-12
-   * %d  Day of Month (2 digits, zero padded)  01-31
-   * %H  Hour (2 digits, zero padded, 24-hour clock)  00-23
-   * %M  Minute (2 digits, zero padded)  00-59
-   * %S  Second (2 digits, zero padded)  00-60
-   * %L  Millisecond (3 digits, zero padded)  000-999
-   * %j  Day of year (3 digits, zero padded)  001-366
-   * %w  Day of week (1-Sunday, 7-Saturday)  1-7
-   * %U  Week of year (2 digits, zero padded)  00-53
-   * %%  Percent Character as a Literal  %
+   * %d	Day of Month (2 digits, zero padded)	01-31
+   * %G	Year in ISO 8601 format	0000-9999
+   * %H	Hour (2 digits, zero padded, 24-hour clock)	00-23
+   * %L	Millisecond (3 digits, zero padded)	000-999
+   * %m	Month (2 digits, zero padded)	01-12
+   * %M	Minute (2 digits, zero padded)	00-59
+   * %S	Second (2 digits, zero padded)	00-60
+   * %u	Day of week number in ISO 8601 format (1-Monday, 7-Sunday)	1-7
+   * %V	Week of Year in ISO 8601 format	1-53
+   * %Y	Year (4 digits, zero padded)	0000-9999
+   * %z	The timezone offset from UTC.	+/-[hh][mm]
+   * %Z	The minutes offset from UTC as a number. For example, if the timezone offset (+/-[hhmm]) was +0445, the minutes offset is +285.	+/-mmm
+   * %%	Percent Character as a Literal	%
    *
    * @param obj current object
    * @param expr operator expression
    */
 
+
   function $dateToString(obj, expr) {
-    var fmt = expr['format'];
-    var date = computeValue(obj, expr['date']);
-    var matches = fmt.match(/(%%|%Y|%m|%d|%H|%M|%S|%L|%j|%w|%U)/g);
+    var format = computeValue(obj, expr.format);
+    var date = computeValue(obj, expr.date);
+    var matches = format.match(/(%%|%Y|%G|%m|%d|%H|%M|%S|%L|%u|%V|%z|%Z)/g);
 
     for (var i = 0, len = matches.length; i < len; i++) {
       var hdlr = DATE_SYM_TABLE[matches[i]];
-      var value = hdlr;
+      var value = void 0;
 
-      if (isArray(hdlr)) {
+      if (Array.isArray(hdlr)) {
         // reuse date operators
-        var fn = hdlr[0];
-        var pad = hdlr[1];
+        var fn = hdlr[1];
+        var pad = hdlr[2];
         value = padDigits(fn(obj, date), pad);
+      } else {
+        value = hdlr;
       } // replace the match with resolved value
 
 
-      fmt = fmt.replace(matches[i], value);
+      format = format.replace(matches[i], value);
     }
 
-    return fmt;
+    return format;
   }
 
-  function padDigits(number, digits) {
-    return new Array(Math.max(digits - String(number).length + 1, 0)).join('0') + number;
+  function padDigits(n, digits) {
+    return new Array(Math.max(digits - String(n).length + 1, 0)).join('0') + n;
+  }
+
+  function regexQuote(s) {
+    "^.\-*?$".split('').forEach(function (c) {
+      s = s.replace(c, "\\".concat(c));
+    });
+    return s;
+  }
+
+  function regexStrip(s) {
+    return s.replace(/^\//, '').replace(/\/$/, '');
+  }
+
+  var PARAMS__DATE_FROM_STRING = ['dateString', 'format', 'timezone', 'onError', 'onNull'];
+  /**
+   * Converts a date/time string to a date object.
+   * @param obj
+   * @param expr
+   */
+
+  function $dateFromString(obj, expr) {
+    var ctx = Object.create({});
+    PARAMS__DATE_FROM_STRING.forEach(function (k) {
+      ctx[k] = computeValue(obj, expr[k]);
+    });
+    ctx.format = ctx.format || "%Y-%m-%dT%H:%M:%S.%LZ";
+    ctx.onNull = ctx.onNull || null;
+    var dateString = ctx.dateString;
+    if (dateString === null || dateString === undefined) return ctx.onNull; // collect all separators of the format string
+
+    var separators = ctx.format.split(/%[YGmdHMSLuVzZ]/);
+    separators.reverse();
+    var matches = ctx.format.match(/(%%|%Y|%G|%m|%d|%H|%M|%S|%L|%u|%V|%z|%Z)/g);
+    var dateParts = Object.create({}); // holds the valid regex of parts that matches input date string
+
+    var expectedPattern = '';
+
+    for (var i = 0, len = matches.length; i < len; i++) {
+      var formatSpecifier = matches[i];
+      var hdlr = DATE_SYM_TABLE[formatSpecifier];
+
+      if (Array.isArray(hdlr)) {
+        // get pattern and alias from table
+        var name = hdlr[0];
+        var pattern = hdlr[3];
+        var m = dateString.match(pattern); // get the next separtor
+
+        var delimiter = separators.pop() || '';
+
+        if (m !== null) {
+          // store and cut out matched part
+          dateParts[name] = m[0].match(/^\d+$/) ? parseInt(m[0]) : m[0];
+          dateString = dateString.substr(0, m.index) + dateString.substr(m.index + m[0].length); // construct expected pattern
+
+          expectedPattern += regexQuote(delimiter) + regexStrip(pattern.toString());
+        } else {
+          dateParts[name] = null;
+        }
+      }
+    } // 1. validate all required date parts exists
+    // 2. validate original dateString against expected pattern.
+
+
+    if (dateParts.year === null || dateParts.month === null || dateParts.day === null || !ctx.dateString.match(new RegExp('^' + expectedPattern + '$'))) return ctx.onError;
+    var tz = parseTimezone(ctx.timezone); // create the date. month is 0-based in Date
+
+    var d = new Date(Date.UTC(dateParts.year, dateParts.month - 1, dateParts.day, tz, 0, 0));
+    if (dateParts.hour !== null) d.setUTCHours(dateParts.hour + tz);
+    if (dateParts.minute !== null) d.setUTCMinutes(dateParts.minute);
+    if (dateParts.second !== null) d.setUTCSeconds(dateParts.second);
+    if (dateParts.millisecond !== null) d.setUTCMilliseconds(dateParts.millisecond);
+    return d;
+  }
+
+  var TypeConvertError = /*#__PURE__*/function (_Error) {
+    _inherits(TypeConvertError, _Error);
+
+    function TypeConvertError(message) {
+      _classCallCheck(this, TypeConvertError);
+
+      return _possibleConstructorReturn(this, _getPrototypeOf(TypeConvertError).call(this, message));
+    }
+
+    return TypeConvertError;
+  }( /*#__PURE__*/_wrapNativeSuper(Error));
+
+  function $type$1(obj, expr) {
+    var val = computeValue(obj, expr);
+    var typename = jsType(val);
+
+    switch (typename) {
+      case T_BOOLEAN:
+        return T_BOOL;
+
+      case T_NUMBER:
+        if (val.toString().indexOf('.') >= 0) return 'double';
+        return val >= MIN_INT && val <= MAX_INT ? 'int' : 'long';
+
+      case T_REGEXP:
+        return T_REGEX;
+
+      default:
+        return typename;
+    }
+  }
+  /**
+   * Converts a value to a boolean.
+   *
+   * @param obj
+   * @param expr
+   */
+
+  function $toBool(obj, expr) {
+    var val = computeValue(obj, expr);
+    if (val === null || val === undefined) return null;
+    return Boolean(val);
+  }
+  function $toString(obj, expr) {
+    var val = computeValue(obj, expr);
+    if (val === null || val === undefined) return null;
+
+    if (val instanceof Date) {
+      var dateExpr = {
+        date: expr,
+        format: "%Y-%m-%dT%H:%M:%S.%LZ"
+      };
+      return $dateToString(obj, dateExpr);
+    } else {
+      return val.toString();
+    }
+  }
+  function toInteger(obj, expr, max, min, typename) {
+    var val = computeValue(obj, expr);
+    if (val === null || val === undefined) return null;
+    if (val instanceof Date) return val.getTime();
+    var n = Math.trunc(Number(val));
+    if (!isNaN(n) && n >= min && n <= max && (!isString(val) || /^\d+$/.test(val))) return n;
+    throw new TypeConvertError("cannot convert '".concat(val, "' to ").concat(typename));
+  }
+  /**
+   * Converts a value to an integer. If the value cannot be converted to an integer, $toInt errors. If the value is null or missing, $toInt returns null.
+   * @param obj
+   * @param expr
+   */
+
+  function $toInt(obj, expr) {
+    return toInteger(obj, expr, MAX_INT, MIN_INT, 'int');
+  }
+  /**
+   * Converts a value to a long. If the value cannot be converted to a long, $toLong errors. If the value is null or missing, $toLong returns null.
+   */
+
+  function $toLong(obj, expr) {
+    return toInteger(obj, expr, MAX_LONG, MIN_LONG, 'long');
+  }
+  /**
+   * Converts a value to a double. If the value cannot be converted to an double, $toDouble errors. If the value is null or missing, $toDouble returns null.
+   *
+   * @param obj
+   * @param expr
+   */
+
+  function $toDouble(obj, expr) {
+    var val = computeValue(obj, expr);
+    if (val === null || val === undefined) return null;
+    if (val instanceof Date) return val.getTime();
+    var n = Number(val);
+    if (!isNaN(n) && n.toString() === val.toString()) return n;
+    throw new TypeConvertError("cannot convert '".concat(val, "' to double/decimal"));
+  }
+  /**
+   * Converts a value to a decimal. If the value cannot be converted to a decimal, $toDecimal errors. If the value is null or missing, $toDecimal returns null.
+   * Alias for $toDouble in Mingo.
+   */
+
+  var $toDecimal = $toDouble;
+  /**
+   * Converts a value to a date. If the value cannot be converted to a date, $toDate errors. If the value is null or missing, $toDate returns null.
+   *
+   * @param obj
+   * @param expr
+   */
+
+  function $toDate(obj, expr) {
+    var val = computeValue(obj, expr);
+    if (val instanceof Date) return val;
+    if (val === null || val === undefined) return null;
+    var d = new Date(val);
+    var n = d.getTime();
+    if (!isNaN(n)) return d;
+    throw new TypeConvertError("cannot convert '".concat(val, "' to date"));
+  }
+  var PARAMS__CONVERT = ['input', 'to', 'onError', 'onNull'];
+  /**
+   * Converts a value to a specified type.
+   *
+   * @param obj
+   * @param expr
+   */
+
+  function $convert(obj, expr) {
+    var ctx = Object.create({});
+    PARAMS__CONVERT.forEach(function (k) {
+      ctx[k] = computeValue(obj, expr[k]);
+    });
+    ctx.onNull = ctx.onNull === undefined ? null : ctx.onNull;
+    if (ctx.input === null || ctx.input === undefined) return ctx.onNull;
+
+    try {
+      switch (ctx.to) {
+        case 2:
+        case 'string':
+          return $toString(obj, ctx.input);
+
+        case 8:
+        case 'bool':
+          return $toBool(obj, ctx.input);
+
+        case 9:
+        case 'date':
+          return $toDate(obj, ctx.input);
+
+        case 1:
+        case 19:
+        case 'double':
+        case 'decimal':
+          return $toDouble(obj, ctx.input);
+
+        case 16:
+        case 'int':
+          return $toInt(obj, ctx.input);
+
+        case 18:
+        case 'long':
+          return $toLong(obj, ctx.input);
+      }
+    } catch (e) {
+      if (e instanceof TypeConvertError && ctx.onError !== undefined) return ctx.onError;
+    }
+
+    throw new TypeConvertError("failed to convert ".concat(ctx.input, " to ").concat(ctx.to));
   }
 
   /**
@@ -3563,11 +3953,10 @@
    */
 
   function $let(obj, expr) {
-    var varsExpr = expr['vars'];
-    var inExpr = expr['in']; // resolve vars
+    var varsExpr = expr.vars;
+    var inExpr = expr["in"]; // resolve vars
 
-    var varsKeys = keys(varsExpr);
-    each(varsKeys, function (key) {
+    Object.keys(varsExpr).forEach(function (key) {
       var val = computeValue(obj, varsExpr[key]);
       var tempKey = '$' + key;
       obj[tempKey] = val;
@@ -3615,16 +4004,26 @@
     $or: $or,
     $not: $not,
     $eq: $eq$1,
-    $ne: $ne$1,
     $gt: $gt$1,
-    $lt: $lt$1,
     $gte: $gte$1,
+    $lt: $lt$1,
     $lte: $lte$1,
+    $ne: $ne$1,
     $nin: $nin$1,
     $cmp: $cmp,
     $cond: $cond,
     $switch: $switch,
     $ifNull: $ifNull,
+    $type: $type$1,
+    $toBool: $toBool,
+    $toString: $toString,
+    toInteger: toInteger,
+    $toInt: $toInt,
+    $toLong: $toLong,
+    $toDouble: $toDouble,
+    $toDecimal: $toDecimal,
+    $toDate: $toDate,
+    $convert: $convert,
     $dayOfYear: $dayOfYear,
     $dayOfMonth: $dayOfMonth,
     $dayOfWeek: $dayOfWeek,
@@ -3636,6 +4035,7 @@
     $second: $second,
     $millisecond: $millisecond,
     $dateToString: $dateToString,
+    $dateFromString: $dateFromString,
     $literal: $literal,
     $setEquals: $setEquals,
     $setIntersection: $setIntersection,
@@ -4237,7 +4637,7 @@
         });
       } else if (isObject(subExpr)) {
         var subExprKeys = keys(subExpr);
-        var operator = subExprKeys.length > 1 ? '' : subExprKeys[0];
+        var operator = subExprKeys.length == 1 ? subExprKeys[0] : null; // first try a projection operator
 
         if (has(OPERATORS[OP_PROJECTION], operator)) {
           var projectionOperators = OPERATORS[OP_PROJECTION]; // apply the projection operator on the operator expression for the key
@@ -4255,17 +4655,19 @@
           } else {
             value = projectionOperators[operator](obj, subExpr[operator], key);
           }
+        } else if (isOperator(operator)) {
+          // compute if operator key
+          value = computeValue(obj, subExpr[operator], operator);
+        } else if (has(obj, key)) {
+          // compute the value for the sub expression for the key
+          validateExpression(subExpr);
+          var nestedObj = obj[key];
+          value = Array.isArray(nestedObj) ? nestedObj.map(function (o) {
+            return processObject(o, subExpr, subExprKeys, false);
+          }) : processObject(nestedObj, subExpr, subExprKeys, false);
         } else {
           // compute the value for the sub expression for the key
-          if (has(obj, key)) {
-            validateExpression(subExpr);
-            var nestedObj = obj[key];
-            value = Array.isArray(nestedObj) ? nestedObj.map(function (o) {
-              return processObject(o, subExpr, subExprKeys, false);
-            }) : processObject(nestedObj, subExpr, subExprKeys, false);
-          } else {
-            value = computeValue(obj, subExpr, key);
-          }
+          value = computeValue(obj, subExpr);
         }
       } else {
         dropKeys.push(key);
@@ -4726,7 +5128,7 @@
   var $nin$2 = createQueryOperator($nin);
   var $regex$1 = createQueryOperator($regex);
   var $size$2 = createQueryOperator($size$1);
-  var $type$1 = createQueryOperator($type);
+  var $type$2 = createQueryOperator($type);
   /**
    * Joins query clauses with a logical AND returns all documents that match the conditions of both clauses.
    *
@@ -4857,7 +5259,7 @@
     $nin: $nin$2,
     $regex: $regex$1,
     $size: $size$2,
-    $type: $type$1,
+    $type: $type$2,
     $and: $and$1,
     $or: $or$1,
     $nor: $nor,

@@ -10,11 +10,11 @@ function createComparison(f: Predicate<any>) {
 }
 
 export const $eq = createComparison(predicates.$eq)
-export const $ne = createComparison(predicates.$ne)
 export const $gt = createComparison(predicates.$gt)
-export const $lt = createComparison(predicates.$lt)
 export const $gte = createComparison(predicates.$gte)
+export const $lt = createComparison(predicates.$lt)
 export const $lte = createComparison(predicates.$lte)
+export const $ne = createComparison(predicates.$ne)
 export const $nin = createComparison(predicates.$nin)
 
 /**

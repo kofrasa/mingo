@@ -13,7 +13,7 @@ import { Iterator } from '../../lazy'
  * @param opt
  * @returns {*}
  */
-export function $out (collection: Iterator, expr: any, opt?: object): Iterator {
+export function $out(collection: Iterator, expr: any, opt?: object): Iterator {
   assert(isArray(expr), '$out expression must be an array')
   return collection.map(o => {
     expr.push(o)

@@ -9,7 +9,11 @@ import {
   T_OBJECT,
   T_REGEX,
   T_STRING,
-  T_UNDEFINED
+  T_UNDEFINED,
+  MAX_INT,
+  MIN_INT,
+  MAX_LONG,
+  MIN_LONG
 } from '../constants'
 import {
   ensureArray,
@@ -242,7 +246,7 @@ export function $type(a: any, b: number | string): boolean {
   switch (b) {
     case 1:
     case 'double':
-      return isNumber(a) && (a + '').indexOf('.') !== -1
+      return isNumber(a) && a.toString().indexOf('.') !== -1
     case 2:
     case T_STRING:
       return isString(a)
@@ -269,10 +273,10 @@ export function $type(a: any, b: number | string): boolean {
       return isRegExp(a)
     case 16:
     case 'int':
-      return isNumber(a) && a <= 2147483647 && (a + '').indexOf('.') === -1
+      return isNumber(a) && a >= MIN_INT && a <= MAX_INT && a.toString().indexOf('.') === -1
     case 18:
     case 'long':
-      return isNumber(a) && a > 2147483647 && a <= 9223372036854775807 && (a + '').indexOf('.') === -1
+      return isNumber(a) && a >= MIN_LONG && a <= MAX_LONG && a.toString().indexOf('.') === -1
     case 19:
     case 'decimal':
       return isNumber(a)

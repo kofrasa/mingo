@@ -2,7 +2,6 @@
  * Aggregation framework variable operators
  */
 
-import { each, keys } from '../../util'
 import { computeValue } from '../../internal'
 
 /**
@@ -13,12 +12,11 @@ import { computeValue } from '../../internal'
  * @returns {*}
  */
 export function $let(obj: object, expr: any): any {
-  let varsExpr = expr['vars']
-  let inExpr = expr['in']
+  let varsExpr = expr.vars
+  let inExpr = expr.in
 
   // resolve vars
-  let varsKeys = keys(varsExpr)
-  each(varsKeys, key => {
+  Object.keys(varsExpr).forEach(key => {
     let val = computeValue(obj, varsExpr[key])
     let tempKey = '$' + key
     obj[tempKey] = val

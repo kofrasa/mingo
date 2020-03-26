@@ -16,7 +16,7 @@ import { Iterator } from '../../lazy'
  * @param expr
  * @param opt
  */
-export function $lookup (collection: Iterator, expr: any, opt?: object): Iterator {
+export function $lookup(collection: Iterator, expr: any, opt?: object): Iterator {
   let joinColl = expr.from
   let localField = expr.localField
   let foreignField = expr.foreignField

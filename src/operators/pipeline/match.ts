@@ -11,7 +11,7 @@ import { Iterator } from '../../lazy'
  * @param opt
  * @returns {Array|*}
  */
-export function $match (collection: Iterator, expr: any, opt?: object): Iterator {
+export function $match(collection: Iterator, expr: any, opt?: object): Iterator {
   let q = new Query(expr)
   return collection.filter(o => q.test(o))
 }

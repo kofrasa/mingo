@@ -1,17 +1,37 @@
-
-import { isArray } from '../../util'
 import { computeValue } from '../../internal'
+import { isObject, isString } from '../../util'
 
 const ONE_DAY_MILLIS = 1000 * 60 * 60 * 24
+
+/**
+ * Computes a date expression
+ */
+function computeDate(obj: any, expr: any): Date {
+  let d = computeValue(obj, expr)
+  if (d instanceof Date) return d
+  if (isString(decodeURI)) throw Error('cannot take a string as an argument')
+
+  let tz = 0
+  if (isObject(d)) {
+    tz = parseTimezone(computeValue(obj, d.timezone))
+    d = computeValue(obj, d.date)
+  }
+
+  d = new Date(d)
+  if (isNaN(d.getTime())) throw Error(`cannot convert ${obj} to date`)
+  d.setUTCHours(d.getUTCHours() + tz)
+
+  return d
+}
 
 /**
  * Returns the day of the year for a date as a number between 1 and 366 (leap year).
  * @param obj
  * @param expr
  */
-export function $dayOfYear(obj: object, expr: any): any {
-  let d = computeValue(obj, expr) as Date
-  let start = new Date(d.getFullYear(), 0, 0)
+export function $dayOfYear(obj: object, expr: any): number {
+  let d = computeDate(obj, expr)
+  let start = new Date(d.getUTCFullYear(), 0, 0)
   let diff = d.getTime() - start.getTime()
   return Math.round(diff / ONE_DAY_MILLIS)
 }
@@ -21,9 +41,9 @@ export function $dayOfYear(obj: object, expr: any): any {
  * @param obj
  * @param expr
  */
-export function $dayOfMonth(obj: object, expr: any): any {
-  let d = computeValue(obj, expr)
-  return d.getDate()
+export function $dayOfMonth(obj: object, expr: any): number {
+  let d = computeDate(obj, expr)
+  return d.getUTCDate()
 }
 
 /**
@@ -31,9 +51,9 @@ export function $dayOfMonth(obj: object, expr: any): any {
  * @param obj
  * @param expr
  */
-export function $dayOfWeek(obj: object, expr: any): any {
-  let d = computeValue(obj, expr)
-  return d.getDay() + 1
+export function $dayOfWeek(obj: object, expr: any): number {
+  let d = computeDate(obj, expr)
+  return d.getUTCDay() + 1
 }
 
 /**
@@ -41,9 +61,9 @@ export function $dayOfWeek(obj: object, expr: any): any {
  * @param obj
  * @param expr
  */
-export function $year(obj: object, expr: any): any {
-  let d = computeValue(obj, expr)
-  return d.getFullYear()
+export function $year(obj: object, expr: any): number {
+  let d = computeDate(obj, expr)
+  return d.getUTCFullYear()
 }
 
 /**
@@ -51,9 +71,9 @@ export function $year(obj: object, expr: any): any {
  * @param obj
  * @param expr
  */
-export function $month(obj: object, expr: any): any {
-  let d = computeValue(obj, expr)
-  return d.getMonth() + 1
+export function $month(obj: object, expr: any): number {
+  let d = computeDate(obj, expr)
+  return d.getUTCMonth() + 1
 }
 
 /**
@@ -62,9 +82,9 @@ export function $month(obj: object, expr: any): any {
  * @param obj
  * @param expr
  */
-export function $week(obj: object, expr: any): any {
+export function $week(obj: object, expr: any): number {
   // source: http://stackoverflow.com/a/6117889/1370481
-  let d = computeValue(obj, expr)
+  let d = computeDate(obj, expr)
 
   // Copy date so don't modify original
   d = new Date(+d)
@@ -83,8 +103,8 @@ export function $week(obj: object, expr: any): any {
  * @param obj
  * @param expr
  */
-export function $hour(obj: object, expr: any): any {
-  let d = computeValue(obj, expr)
+export function $hour(obj: object, expr: any): number {
+  let d = computeDate(obj, expr)
   return d.getUTCHours()
 }
 
@@ -93,9 +113,9 @@ export function $hour(obj: object, expr: any): any {
  * @param obj
  * @param expr
  */
-export function $minute(obj: object, expr: any): any {
-  let d = computeValue(obj, expr)
-  return d.getMinutes()
+export function $minute(obj: object, expr: any): number {
+  let d = computeDate(obj, expr)
+  return d.getUTCMinutes()
 }
 
 /**
@@ -103,9 +123,9 @@ export function $minute(obj: object, expr: any): any {
  * @param obj
  * @param expr
  */
-export function $second(obj: object, expr: any): any {
-  let d = computeValue(obj, expr)
-  return d.getSeconds()
+export function $second(obj: object, expr: any): number {
+  let d = computeDate(obj, expr)
+  return d.getUTCSeconds()
 }
 
 /**
@@ -113,66 +133,187 @@ export function $second(obj: object, expr: any): any {
  * @param obj
  * @param expr
  */
-export function $millisecond(obj: object, expr: any): any {
-  let d = computeValue(obj, expr)
-  return d.getMilliseconds()
+export function $millisecond(obj: object, expr: any): number {
+  let d = computeDate(obj, expr)
+  return d.getUTCMilliseconds()
 }
 
 // used for formatting dates in $dateToString operator
 const DATE_SYM_TABLE = {
-  '%Y': [$year, 4],
-  '%m': [$month, 2],
-  '%d': [$dayOfMonth, 2],
-  '%H': [$hour, 2],
-  '%M': [$minute, 2],
-  '%S': [$second, 2],
-  '%L': [$millisecond, 3],
-  '%j': [$dayOfYear, 3],
-  '%w': [$dayOfWeek, 1],
-  '%U': [$week, 2],
+  '%Y': ['year', $year, 4, /([0-9]{4})/],
+  '%G': ['year', $year, 4, /([0-9]{4})/],
+  '%m': ['month', $month, 2, /(0[1-9]|1[012])/],
+  '%d': ['day', $dayOfMonth, 2, /(0[1-9]|[12][0-9]|3[01])/],
+  '%H': ['hour', $hour, 2, /([01][0-9]|2[0-3])/],
+  '%M': ['minute', $minute, 2, /([0-5][0-9])/],
+  '%S': ['second', $second, 2, /([0-5][0-9]|60)/],
+  '%L': ['millisecond', $millisecond, 3, /([0-9]{3})/],
+  '%u': ['weekDay', $dayOfWeek, 1, /([1-7])/],
+  '%V': ['week', $week, 1, /([1-4][0-9]?|5[0-3]?)/],
+  '%z': ['timezone', null, 0, /([+-]([01][0-9]|2[0-3]):?([0-5][0-9])?)/],
+  '%Z': ['minuteOffset', null, 0, /([+-][0-9]{3})/],
   '%%': '%'
+}
+
+/**
+ * Parse and return the timezone string as a number
+ * @param tzStr Timezone string matching '+/-hh[:][mm]'
+ */
+function parseTimezone(tzStr?: string): number {
+  let re = DATE_SYM_TABLE['%z'][3]
+  if (tzStr === null || tzStr === undefined) return 0
+  if (re instanceof RegExp && !tzStr.match(re)) throw Error(`invalid or location-based timezone ${tzStr} not supported`)
+  return parseInt(tzStr.substr(0, 3))
 }
 
 /**
  * Returns the date as a formatted string.
  *
- * %Y  Year (4 digits, zero padded)  0000-9999
- * %m  Month (2 digits, zero padded)  01-12
- * %d  Day of Month (2 digits, zero padded)  01-31
- * %H  Hour (2 digits, zero padded, 24-hour clock)  00-23
- * %M  Minute (2 digits, zero padded)  00-59
- * %S  Second (2 digits, zero padded)  00-60
- * %L  Millisecond (3 digits, zero padded)  000-999
- * %j  Day of year (3 digits, zero padded)  001-366
- * %w  Day of week (1-Sunday, 7-Saturday)  1-7
- * %U  Week of year (2 digits, zero padded)  00-53
- * %%  Percent Character as a Literal  %
+ * %d	Day of Month (2 digits, zero padded)	01-31
+ * %G	Year in ISO 8601 format	0000-9999
+ * %H	Hour (2 digits, zero padded, 24-hour clock)	00-23
+ * %L	Millisecond (3 digits, zero padded)	000-999
+ * %m	Month (2 digits, zero padded)	01-12
+ * %M	Minute (2 digits, zero padded)	00-59
+ * %S	Second (2 digits, zero padded)	00-60
+ * %u	Day of week number in ISO 8601 format (1-Monday, 7-Sunday)	1-7
+ * %V	Week of Year in ISO 8601 format	1-53
+ * %Y	Year (4 digits, zero padded)	0000-9999
+ * %z	The timezone offset from UTC.	+/-[hh][mm]
+ * %Z	The minutes offset from UTC as a number. For example, if the timezone offset (+/-[hhmm]) was +0445, the minutes offset is +285.	+/-mmm
+ * %%	Percent Character as a Literal	%
  *
  * @param obj current object
  * @param expr operator expression
  */
-export function $dateToString(obj: object, expr: any): any {
-  let fmt = expr['format']
-  let date = computeValue(obj, expr['date'])
-  let matches = fmt.match(/(%%|%Y|%m|%d|%H|%M|%S|%L|%j|%w|%U)/g)
+export function $dateToString(obj: object, expr: any): string {
+  let format = computeValue(obj, expr.format)
+  let date = computeValue(obj, expr.date)
+  let matches = format.match(/(%%|%Y|%G|%m|%d|%H|%M|%S|%L|%u|%V|%z|%Z)/g)
 
   for (let i = 0, len = matches.length; i < len; i++) {
     let hdlr = DATE_SYM_TABLE[matches[i]]
-    let value = hdlr
+    let value: string
 
-    if (isArray(hdlr)) {
+    if (Array.isArray(hdlr)) {
       // reuse date operators
-      let fn = hdlr[0]
-      let pad = hdlr[1]
+      let fn = hdlr[1]
+      let pad = hdlr[2]
       value = padDigits(fn(obj, date), pad)
+    } else {
+      value = hdlr
     }
     // replace the match with resolved value
-    fmt = fmt.replace(matches[i], value)
+    format = format.replace(matches[i], value)
   }
 
-  return fmt
+  return format
 }
 
-function padDigits(number, digits) {
-  return new Array(Math.max(digits - String(number).length + 1, 0)).join('0') + number
+function padDigits(n: number, digits: number): string {
+  return new Array(Math.max(digits - String(n).length + 1, 0)).join('0') + n
+}
+
+function regexQuote(s: string): string {
+  "^.\-*?$".split('').forEach((c: string) => {
+    s = s.replace(c, `\\${c}`)
+  })
+  return s
+}
+
+function regexStrip(s: string): string {
+  return s.replace(/^\//, '').replace(/\/$/, '')
+}
+
+const PARAMS__DATE_FROM_STRING = ['dateString', 'format', 'timezone', 'onError', 'onNull']
+
+/**
+ * Converts a date/time string to a date object.
+ * @param obj
+ * @param expr
+ */
+export function $dateFromString(obj: object, expr: any): any {
+  let ctx: {
+    dateString?: string
+    timezone?: string
+    format?: string
+    onError?: any
+    onNull?: any
+  } = Object.create({})
+
+  PARAMS__DATE_FROM_STRING.forEach((k: string) => {
+    ctx[k] = computeValue(obj, expr[k])
+  })
+
+  ctx.format = ctx.format || "%Y-%m-%dT%H:%M:%S.%LZ"
+  ctx.onNull = ctx.onNull || null
+
+  let dateString = ctx.dateString
+  if (dateString === null || dateString === undefined) return ctx.onNull
+
+  // collect all separators of the format string
+  let separators = ctx.format.split(/%[YGmdHMSLuVzZ]/)
+  separators.reverse()
+
+  let matches = ctx.format.match(/(%%|%Y|%G|%m|%d|%H|%M|%S|%L|%u|%V|%z|%Z)/g)
+
+  let dateParts: {
+    year?: number
+    month?: number
+    day?: number
+    hour?: number
+    minute?: number
+    second?: number
+    millisecond?: number
+    timezone?: string
+    minuteOffset?: string
+  } = Object.create({})
+
+  // holds the valid regex of parts that matches input date string
+  let expectedPattern = ''
+
+  for (let i = 0, len = matches.length; i < len; i++) {
+    let formatSpecifier = matches[i]
+    let hdlr = DATE_SYM_TABLE[formatSpecifier]
+
+    if (Array.isArray(hdlr)) {
+      // get pattern and alias from table
+      let name = hdlr[0]
+      let pattern = hdlr[3]
+      let m = dateString.match(pattern)
+
+      // get the next separtor
+      let delimiter = separators.pop() || ''
+
+      if (m !== null) {
+        // store and cut out matched part
+        dateParts[name] = m[0].match(/^\d+$/) ? parseInt(m[0]) : m[0]
+        dateString = dateString.substr(0, m.index) + dateString.substr(m.index + m[0].length)
+
+        // construct expected pattern
+        expectedPattern += (regexQuote(delimiter) + regexStrip(pattern.toString()))
+      } else {
+        dateParts[name] = null
+      }
+    }
+  }
+
+  // 1. validate all required date parts exists
+  // 2. validate original dateString against expected pattern.
+  if (dateParts.year === null
+    || dateParts.month === null
+    || dateParts.day === null
+    || !ctx.dateString.match(new RegExp('^' + expectedPattern + '$'))) return ctx.onError
+
+  let tz = parseTimezone(ctx.timezone)
+
+  // create the date. month is 0-based in Date
+  let d = new Date(Date.UTC(dateParts.year, dateParts.month - 1, dateParts.day, tz, 0, 0))
+
+  if (dateParts.hour !== null) d.setUTCHours(dateParts.hour + tz)
+  if (dateParts.minute !== null) d.setUTCMinutes(dateParts.minute)
+  if (dateParts.second !== null) d.setUTCSeconds(dateParts.second)
+  if (dateParts.millisecond !== null) d.setUTCMilliseconds(dateParts.millisecond)
+
+  return d
 }
