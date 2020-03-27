@@ -2,7 +2,6 @@ var test = require('tape')
 var mingo = require('../es5/')
 var samples = require('./support')
 var ObjectId = require('bson').ObjectId
-var _ = mingo._internal()
 
 var idStr = "123456789abe"
 var obj = samples.personData
@@ -434,7 +433,7 @@ test('Query array operators', function (t) {
 
     // using iterator
     t.deepEqual(Array.from(result), data, message)
-    _.assert(Array.from(result).length === 0, "iterator should be empty")
+    t.ok(Array.from(result).length === 0, "iterator should be empty")
   })
 
   // https://github.com/kofrasa/mingo/issues/51

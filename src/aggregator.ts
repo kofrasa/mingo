@@ -1,7 +1,5 @@
-import { OP_PIPELINE } from './constants'
-import { assert, each, has, isArray, isEmpty, keys } from './util'
-import { Query } from './query'
-import { OPERATORS } from './operators'
+import { assert, each, isArray, isEmpty, keys } from './util'
+import { getOperator, OP_PIPELINE } from './internal'
 import { Lazy, Iterator, Source } from './lazy'
 
 /**
@@ -27,22 +25,17 @@ export class Aggregator {
    * @param {Query} query the `Query` object to use as context
    * @returns {Iterator} an iterator object
    */
-  stream(collection: Source, query?: Query): Iterator {
+  stream(collection: Source): Iterator {
     let iterator: Iterator = Lazy(collection)
-
-    const pipelineOperators = OPERATORS[OP_PIPELINE]
 
     if (!isEmpty(this.__operators)) {
       // run aggregation pipeline
       each(this.__operators, (operator) => {
         let operatorKeys = keys(operator)
-        let key = operatorKeys[0]
-        assert(operatorKeys.length === 1 && has(OPERATORS[OP_PIPELINE], key), `invalid aggregation operator ${key}`)
-        if (query instanceof Query) {
-          iterator = pipelineOperators[key].call(query, iterator, operator[key], this.__options)
-        } else {
-          iterator = pipelineOperators[key](iterator, operator[key], this.__options)
-        }
+        let op = operatorKeys[0]
+        let call = getOperator(OP_PIPELINE, op)
+        assert(operatorKeys.length === 1 && !!call, `invalid aggregation operator ${op}`)
+        iterator = call(iterator, operator[op], this.__options)
       })
     }
     return iterator
@@ -53,8 +46,8 @@ export class Aggregator {
    * @param {*} collection
    * @param {*} query
    */
-  run(collection: object[], query?: Query): any[] {
-    return this.stream(collection, query).value()
+  run(collection: object[]): any[] {
+    return this.stream(collection).value()
   }
 }
 

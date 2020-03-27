@@ -1,7 +1,6 @@
-import { isObject, Callback } from './util'
+import { isObject, Callback, Predicate } from './util'
 import { Aggregator } from './aggregator'
 import { Lazy, Iterator } from './lazy'
-import { Query } from './query'
 import { CollationSpec } from './operators/pipeline/sort'
 
 /**
@@ -17,16 +16,14 @@ export class Cursor {
   private __source: object[]
   private __projection: object
   private __operators: object[]
-  private __query: Query
   private __result: Iterator
   private __stack: any[]
   private __options: object
 
-  constructor(source: object[], query: Query, projection?: object) {
-    this.__filterFn = query.test.bind(query)
-    this.__query = query
+  constructor(source: object[], filterFn: Predicate<any>, projection?: object) {
+    this.__filterFn = filterFn
     this.__source = source
-    this.__projection = projection || query.__projection
+    this.__projection = projection
     this.__operators = []
     this.__result = null
     this.__stack = []
@@ -44,7 +41,7 @@ export class Cursor {
     this.__result = Lazy(this.__source).filter(this.__filterFn)
 
     if (this.__operators.length > 0) {
-      this.__result = (new Aggregator(this.__operators, this.__options)).stream(this.__result, this.__query)
+      this.__result = (new Aggregator(this.__operators, this.__options)).stream(this.__result)
     }
 
     return this.__result

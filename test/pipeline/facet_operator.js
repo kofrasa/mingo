@@ -1,6 +1,5 @@
 var test = require('tape')
 var mingo = require('../../es5')
-var _ = mingo._internal()
 
 
 test("$facet pipeline operator", function (t) {

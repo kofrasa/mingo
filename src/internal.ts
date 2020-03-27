@@ -7,22 +7,106 @@ import {
   isObject,
   isObjectLike,
   isString,
-  jsType,
-  into,
   keys,
-  reduce,
   resolve,
-  moduleApi
+  moduleApi,
+  Callback,
+  isBoolean
 } from './util'
-import { OPERATORS } from './operators'
-import { T_OBJECT, OP_EXPRESSION, OP_GROUP } from './constants'
+
+// operator classes
+export const OP_EXPRESSION = 'expression'
+export const OP_GROUP = 'group'
+export const OP_PIPELINE = 'pipeline'
+export const OP_PROJECTION = 'projection'
+export const OP_QUERY = 'query'
+
+type OperatorClass = 'expression' | 'group' | 'pipeline' | 'projection' | 'query'
+
+// operator definitions
+const OPERATORS = Object.create({})
+
+each([OP_GROUP, OP_EXPRESSION, OP_PIPELINE, OP_PROJECTION, OP_QUERY], (cls: OperatorClass) => {
+  OPERATORS[cls] = Object.create({})
+})
+
+/**
+ * Enables the given operators for the specified category.
+ *
+ * @param cls Category of the operator
+ * @param operators Name of operator
+ */
+export function enableOperators(cls: OperatorClass, operators: object): void {
+  Object.assign(OPERATORS[cls], operators)
+}
+
+/**
+ * Returns the operator function as a callable or null if it is not found
+ * @param cls Category of the operator
+ * @param operator Name of the operator
+ */
+export function getOperator(cls: OperatorClass, operator: string): Callback<any> {
+  return has(OPERATORS[cls], operator) ? OPERATORS[cls][operator] : null
+}
+
+/**
+ * Add new operators
+ *
+ * @param cls the operator class to extend
+ * @param fn a function returning an object of new operators
+ */
+export function addOperators(cls: OperatorClass, fn: Callback<any>) {
+
+  const newOperators = fn(_internal())
+
+  // check for existing operators
+  each(newOperators, (_, op) => {
+    assert(/^\$[a-zA-Z0-9_]*$/.test(op), `Invalid operator name ${op}`)
+    let call = getOperator(cls, op)
+    assert(!call, `${op} already exists for '${cls}' operators`)
+  })
+
+  let wrapped = {}
+
+  switch (cls) {
+    case OP_QUERY:
+      each(newOperators, (fn, op) => {
+        fn = fn.bind(newOperators)
+        wrapped[op] = (selector: string, value: any) => (obj: object) => {
+          // value of field must be fully resolved.
+          let lhs = resolve(obj, selector)
+          let result = fn(selector, lhs, value)
+          assert(isBoolean(result), `${op} must return a boolean`)
+          return result
+        }
+      })
+      break
+    case OP_PROJECTION:
+      each(newOperators, (fn, op) => {
+        fn = fn.bind(newOperators)
+        wrapped[op] = (obj: object, expr: any, selector: string) => {
+          let lhs = resolve(obj, selector)
+          return fn(selector, lhs, expr)
+        }
+      })
+      break
+    default:
+      each(newOperators, (fn, op) => {
+        wrapped[op] = (...args: any[]) => fn.apply(newOperators, args)
+      })
+  }
+
+  // toss the operator salad :)
+  enableOperators(cls, wrapped)
+}
+
 
 interface Settings {
   key: string
 }
 
 // internal functions available to external operators
-export const _internal = () => Object.assign({ computeValue, ops }, moduleApi())
+export const _internal = () => Object.assign({ computeValue }, moduleApi())
 
 // Settings used by Mingo internally
 const settings = {
@@ -106,18 +190,6 @@ export function idKey(): string {
 }
 
 /**
- * Returns the operators defined for the given operator classes
- */
-export function ops() {
-  // Workaround for browser-compatibility bug: on iPhone 6S Safari (and
-  // probably some other platforms), `arguments` isn't detected as an array,
-  // but has a length field, so functions like `reduce` end up including the
-  // length field in their iteration. Copy to a real array.
-  let args = Array.prototype.slice.call(arguments)
-  return reduce(args, (acc, cls) => into(acc, keys(OPERATORS[cls])), [])
-}
-
-/**
  * Returns the result of evaluating a $group operation over a collection
  *
  * @param collection
@@ -126,9 +198,8 @@ export function ops() {
  * @returns {*}
  */
 export function accumulate(collection: any[], field: string, expr: any): any {
-  if (has(OPERATORS[OP_GROUP], field)) {
-    return OPERATORS[OP_GROUP][field](collection, expr)
-  }
+  let call = getOperator(OP_GROUP, field)
+  if (call) return call(collection, expr)
 
   if (isObject(expr)) {
     let result = {}
@@ -136,7 +207,7 @@ export function accumulate(collection: any[], field: string, expr: any): any {
       result[key] = accumulate(collection, key, expr[key])
       // must run ONLY one group operator per expression
       // if so, return result of the computed value
-      if (has(OPERATORS[OP_GROUP], key)) {
+      if (getOperator(OP_GROUP, key)) {
         result = result[key]
         // if there are more keys in expression this is bad
         assert(keys(expr).length === 1, "Invalid $group expression '" + JSON.stringify(expr) + "'")
@@ -166,17 +237,17 @@ export function computeValue(obj: object, expr: any, operator?: string, options?
   }
 
   // if the field of the object is a valid operator
-  if (has(OPERATORS[OP_EXPRESSION], operator)) {
-    return OPERATORS[OP_EXPRESSION][operator](obj, expr, options)
-  }
+  let call = getOperator(OP_EXPRESSION, operator)
+  if (call) return call(obj, expr, options)
 
   // we also handle $group accumulator operators
-  if (has(OPERATORS[OP_GROUP], operator)) {
+  call = getOperator(OP_GROUP, operator)
+  if (call) {
     // we first fully resolve the expression
     obj = computeValue(obj, expr, null, options)
     assert(isArray(obj), operator + ' expression must resolve to an array')
     // we pass a null expression because all values have been resolved
-    return OPERATORS[OP_GROUP][operator](obj, null, options)
+    return call(obj, null, options)
   }
 
   // if expr is a variable for an object field
@@ -201,8 +272,8 @@ export function computeValue(obj: object, expr: any, operator?: string, options?
   // check and return value if already in a resolved state
   if (Array.isArray(expr)) {
     return expr.map(item => computeValue(obj, item))
-  } else if (jsType(expr) === T_OBJECT) {
-    let result = new Object
+  } else if (isObject(expr)) {
+    let result = Object.create({})
     each(expr, (val, key) => {
       result[key] = computeValue(obj, val, key, options)
       // must run ONLY one aggregate operator per expression

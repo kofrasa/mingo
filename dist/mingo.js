@@ -8,33 +8,6 @@
   (global = global || self, factory(global.mingo = {}));
 }(this, (function (exports) { 'use strict';
 
-  // Javascript native types
-  var T_NULL = 'null';
-  var T_UNDEFINED = 'undefined';
-  var T_BOOL = 'bool';
-  var T_BOOLEAN = 'boolean';
-  var T_NUMBER = 'number';
-  var T_STRING = 'string';
-  var T_DATE = 'date';
-  var T_REGEX = 'regex';
-  var T_REGEXP = 'regexp';
-  var T_ARRAY = 'array';
-  var T_OBJECT = 'object';
-  var T_FUNCTION = 'function'; // no array, object, or function types
-
-  var JS_SIMPLE_TYPES = [T_NULL, T_UNDEFINED, T_BOOLEAN, T_NUMBER, T_STRING, T_DATE, T_REGEXP]; // operator classes
-
-  var OP_EXPRESSION = 'expression';
-  var OP_GROUP = 'accumulator';
-  var OP_PIPELINE = 'pipeline';
-  var OP_PROJECTION = 'projection';
-  var OP_QUERY = 'query';
-  var MISSING = function MISSING() {};
-  var MAX_INT = 2147483647;
-  var MIN_INT = -2147483648;
-  var MAX_LONG = Number.MAX_SAFE_INTEGER;
-  var MIN_LONG = Number.MIN_SAFE_INTEGER;
-
   function _typeof(obj) {
     "@babel/helpers - typeof";
 
@@ -187,6 +160,27 @@
 
     return _assertThisInitialized(self);
   }
+
+  // Javascript native types
+  var T_NULL = 'null';
+  var T_UNDEFINED = 'undefined';
+  var T_BOOL = 'bool';
+  var T_BOOLEAN = 'boolean';
+  var T_NUMBER = 'number';
+  var T_STRING = 'string';
+  var T_DATE = 'date';
+  var T_REGEX = 'regex';
+  var T_REGEXP = 'regexp';
+  var T_ARRAY = 'array';
+  var T_OBJECT = 'object';
+  var T_FUNCTION = 'function'; // no array, object, or function types
+
+  var JS_SIMPLE_TYPES = [T_NULL, T_UNDEFINED, T_BOOLEAN, T_NUMBER, T_STRING, T_DATE, T_REGEXP];
+  var MISSING = function MISSING() {};
+  var MAX_INT = 2147483647;
+  var MIN_INT = -2147483648;
+  var MAX_LONG = Number.MAX_SAFE_INTEGER;
+  var MIN_LONG = Number.MIN_SAFE_INTEGER;
 
   if (!Array.prototype.includes) {
     Object.defineProperty(Array.prototype, 'includes', {
@@ -523,71 +517,45 @@
 
       if (a === b) continue; // unequal types and functions cannot be equal.
 
-      var type = jsType(a);
-      if (type !== jsType(b) || type === T_FUNCTION) return false;
+      var typename = jsType(a);
+      if (typename !== jsType(b) || typename === T_FUNCTION) return false; // leverage toString for Date and RegExp types
 
-      if (a instanceof Array && b instanceof Array) {
-        if (a.length !== b.length) return false;
-        into(lhs, a);
-        into(rhs, b);
-      } else if (a instanceof Object && b instanceof Object) {
-        // deep compare objects
-        var ka = keys(a);
-        var kb = keys(b); // check length of keys early
+      switch (typename) {
+        case T_ARRAY:
+          if (a.length !== b.length) return false;
+          if (a.length === b.length && a.length === 0) continue;
+          into(lhs, a);
+          into(rhs, b);
+          break;
 
-        if (ka.length !== kb.length) return false; // we know keys are strings so we sort before comparing
+        case T_OBJECT:
+          // deep compare objects
+          var ka = keys(a);
+          var kb = keys(b); // check length of keys early
 
-        ka.sort();
-        kb.sort(); // compare keys
+          if (ka.length !== kb.length) return false; // we know keys are strings so we sort before comparing
 
-        for (var i = 0, len = ka.length; i < len; i++) {
-          var currentKey = ka[i];
+          ka.sort();
+          kb.sort(); // compare keys
 
-          if (currentKey !== kb[i]) {
-            return false;
-          } else {
-            // save later work
-            lhs.push(a[currentKey]);
-            rhs.push(b[currentKey]);
+          for (var i = 0, len = ka.length; i < len; i++) {
+            var tempKey = ka[i];
+
+            if (tempKey !== kb[i]) {
+              return false;
+            } else {
+              // save later work
+              lhs.push(a[tempKey]);
+              rhs.push(b[tempKey]);
+            }
           }
-        }
-      } else {
-        // compare encoded values
-        if (encode(a) !== encode(b)) return false;
-      } // leverage toString for Date and RegExp types
-      // switch (type) {
-      //   case T_ARRAY:
-      //     if (a.length !== b.length) return false
-      //     //if (a.length === b.length && a.length === 0) continue
-      //     into(lhs, a)
-      //     into(rhs, b)
-      //     break
-      //   case T_OBJECT:
-      //     // deep compare objects
-      //     let ka = keys(a)
-      //     let kb = keys(b)
-      //     // check length of keys early
-      //     if (ka.length !== kb.length) return false
-      //     // we know keys are strings so we sort before comparing
-      //     ka.sort()
-      //     kb.sort()
-      //     // compare keys
-      //     for (let i = 0, len = ka.length; i < len; i++) {
-      //       let temp = ka[i]
-      //       if (temp !== kb[i]) {
-      //         return false
-      //       } else {
-      //         // save later work
-      //         lhs.push(a[temp])
-      //         rhs.push(b[temp])
-      //       }
-      //     }
-      //     break
-      //   default:
-      //     // compare encoded values
-      //     if (encode(a) !== encode(b)) return false
-      // }
 
+          break;
+
+        default:
+          // compare encoded values
+          if (encode(a) !== encode(b)) return false;
+      }
     }
 
     return lhs.length === 0;
@@ -1173,6 +1141,298 @@
       resolve: resolve,
       resolveObj: resolveObj
     };
+  }
+
+  var OP_EXPRESSION = 'expression';
+  var OP_GROUP = 'group';
+  var OP_PIPELINE = 'pipeline';
+  var OP_PROJECTION = 'projection';
+  var OP_QUERY = 'query'; // operator definitions
+
+  var OPERATORS = Object.create({});
+  each([OP_GROUP, OP_EXPRESSION, OP_PIPELINE, OP_PROJECTION, OP_QUERY], function (cls) {
+    OPERATORS[cls] = Object.create({});
+  });
+  /**
+   * Enables the given operators for the specified category.
+   *
+   * @param cls Category of the operator
+   * @param operators Name of operator
+   */
+
+  function enableOperators(cls, operators) {
+    Object.assign(OPERATORS[cls], operators);
+  }
+  /**
+   * Returns the operator function as a callable or null if it is not found
+   * @param cls Category of the operator
+   * @param operator Name of the operator
+   */
+
+  function getOperator(cls, operator) {
+    return has(OPERATORS[cls], operator) ? OPERATORS[cls][operator] : null;
+  }
+  /**
+   * Add new operators
+   *
+   * @param cls the operator class to extend
+   * @param fn a function returning an object of new operators
+   */
+
+  function addOperators(cls, fn) {
+    var newOperators = fn(_internal()); // check for existing operators
+
+    each(newOperators, function (_, op) {
+      assert(/^\$[a-zA-Z0-9_]*$/.test(op), "Invalid operator name ".concat(op));
+      var call = getOperator(cls, op);
+      assert(!call, "".concat(op, " already exists for '").concat(cls, "' operators"));
+    });
+    var wrapped = {};
+
+    switch (cls) {
+      case OP_QUERY:
+        each(newOperators, function (fn, op) {
+          fn = fn.bind(newOperators);
+
+          wrapped[op] = function (selector, value) {
+            return function (obj) {
+              // value of field must be fully resolved.
+              var lhs = resolve(obj, selector);
+              var result = fn(selector, lhs, value);
+              assert(isBoolean(result), "".concat(op, " must return a boolean"));
+              return result;
+            };
+          };
+        });
+        break;
+
+      case OP_PROJECTION:
+        each(newOperators, function (fn, op) {
+          fn = fn.bind(newOperators);
+
+          wrapped[op] = function (obj, expr, selector) {
+            var lhs = resolve(obj, selector);
+            return fn(selector, lhs, expr);
+          };
+        });
+        break;
+
+      default:
+        each(newOperators, function (fn, op) {
+          wrapped[op] = function () {
+            for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+              args[_key] = arguments[_key];
+            }
+
+            return fn.apply(newOperators, args);
+          };
+        });
+    } // toss the operator salad :)
+
+
+    enableOperators(cls, wrapped);
+  } // internal functions available to external operators
+
+  var _internal = function _internal() {
+    return Object.assign({
+      computeValue: computeValue
+    }, moduleApi());
+  }; // Settings used by Mingo internally
+
+  var settings = {
+    key: '_id'
+  };
+  /**
+   * Setup default settings for Mingo
+   * @param options
+   */
+
+  function setup(options) {
+    Object.assign(settings, options);
+  }
+  /**
+   * Implementation of system variables
+   * @type {Object}
+   */
+
+  var systemVariables = {
+    '$$ROOT': function $$ROOT(obj, expr, opt) {
+      return opt.root;
+    },
+    '$$CURRENT': function $$CURRENT(obj, expr, opt) {
+      return obj;
+    },
+    '$$REMOVE': function $$REMOVE(obj, expr, opt) {
+      return undefined;
+    }
+  };
+  /**
+   * Implementation of $redact variables
+   *
+   * Each function accepts 3 arguments (obj, expr, opt)
+   *
+   * @type {Object}
+   */
+
+  var redactVariables = {
+    '$$KEEP': function $$KEEP(obj, expr, options) {
+      return obj;
+    },
+    '$$PRUNE': function $$PRUNE(obj, expr, options) {
+      return undefined;
+    },
+    '$$DESCEND': function $$DESCEND(obj, expr, options) {
+      // traverse nested documents iff there is a $cond
+      if (!has(expr, '$cond')) return obj;
+      var result;
+      each(obj, function (current, key) {
+        if (isObjectLike(current)) {
+          if (isArray(current)) {
+            result = [];
+            each(current, function (elem) {
+              if (isObject(elem)) {
+                elem = redactObj(elem, expr, options);
+              }
+
+              if (!isNil(elem)) result.push(elem);
+            });
+          } else {
+            result = redactObj(current, expr, options);
+          }
+
+          if (isNil(result)) {
+            delete obj[key]; // pruned result
+          } else {
+            obj[key] = result;
+          }
+        }
+      });
+      return obj;
+    }
+  };
+  /**
+   * Returns the key used as the collection's objects ids
+   */
+
+  function idKey() {
+    return settings.key;
+  }
+  /**
+   * Returns the result of evaluating a $group operation over a collection
+   *
+   * @param collection
+   * @param field the name of the aggregate operator or field
+   * @param expr the expression of the aggregate operator for the field
+   * @returns {*}
+   */
+
+  function accumulate(collection, field, expr) {
+    var call = getOperator(OP_GROUP, field);
+    if (call) return call(collection, expr);
+
+    if (isObject(expr)) {
+      var result = {};
+      each(expr, function (val, key) {
+        result[key] = accumulate(collection, key, expr[key]); // must run ONLY one group operator per expression
+        // if so, return result of the computed value
+
+        if (getOperator(OP_GROUP, key)) {
+          result = result[key]; // if there are more keys in expression this is bad
+
+          assert(keys(expr).length === 1, "Invalid $group expression '" + JSON.stringify(expr) + "'");
+          return false; // break
+        }
+      });
+      return result;
+    }
+  }
+  /**
+   * Computes the actual value of the expression using the given object as context
+   *
+   * @param obj the current object from the collection
+   * @param expr the expression for the given field
+   * @param operator the operator to resolve the field with
+   * @param options {Object} extra options
+   * @returns {*}
+   */
+
+  function computeValue(obj, expr, operator, options) {
+    if (options === undefined) {
+      options = {
+        root: obj
+      };
+    } // if the field of the object is a valid operator
+
+
+    var call = getOperator(OP_EXPRESSION, operator);
+    if (call) return call(obj, expr, options); // we also handle $group accumulator operators
+
+    call = getOperator(OP_GROUP, operator);
+
+    if (call) {
+      // we first fully resolve the expression
+      obj = computeValue(obj, expr, null, options);
+      assert(isArray(obj), operator + ' expression must resolve to an array'); // we pass a null expression because all values have been resolved
+
+      return call(obj, null, options);
+    } // if expr is a variable for an object field
+    // field not used in this case
+
+
+    if (isString(expr) && expr.length > 0 && expr[0] === '$') {
+      // we return redact variables as literals
+      if (has(redactVariables, expr)) {
+        return expr;
+      } // handle selectors with explicit prefix
+
+
+      var arr = expr.split('.');
+
+      if (has(systemVariables, arr[0])) {
+        obj = systemVariables[arr[0]](obj, null, options);
+        if (arr.length == 1) return obj;
+        expr = expr.substr(arr[0].length); // '.' prefix will be sliced off below
+      }
+
+      return resolve(obj, expr.slice(1));
+    } // check and return value if already in a resolved state
+
+
+    if (Array.isArray(expr)) {
+      return expr.map(function (item) {
+        return computeValue(obj, item);
+      });
+    } else if (isObject(expr)) {
+      var result = Object.create({});
+      each(expr, function (val, key) {
+        result[key] = computeValue(obj, val, key, options); // must run ONLY one aggregate operator per expression
+        // if so, return result of the computed value
+
+        if ([OP_EXPRESSION, OP_GROUP].some(function (c) {
+          return has(OPERATORS[c], key);
+        })) {
+          // there should be only one operator
+          assert(keys(expr).length === 1, "Invalid aggregation expression '" + JSON.stringify(expr) + "'");
+          result = result[key];
+          return false; // break
+        }
+      });
+      return result;
+    } else {
+      return expr;
+    }
+  }
+  /**
+   * Redact an object
+   * @param  {Object} obj The object to redact
+   * @param  {*} expr The redact expression
+   * @param  {*} opt  Options for value
+   * @return {*} Returns the redacted value
+   */
+
+  function redactObj(obj, expr, options) {
+    var result = computeValue(obj, expr, null, options);
+    return has(redactVariables, result) ? redactVariables[result](obj, expr, options) : result;
   }
 
   /**
@@ -2167,24 +2427,19 @@
 
     _createClass(Aggregator, [{
       key: "stream",
-      value: function stream(collection, query) {
+      value: function stream(collection) {
         var _this = this;
 
         var iterator = Lazy(collection);
-        var pipelineOperators = OPERATORS[OP_PIPELINE];
 
         if (!isEmpty(this.__operators)) {
           // run aggregation pipeline
           each(this.__operators, function (operator) {
             var operatorKeys = keys(operator);
-            var key = operatorKeys[0];
-            assert(operatorKeys.length === 1 && has(OPERATORS[OP_PIPELINE], key), "invalid aggregation operator ".concat(key));
-
-            if (query instanceof Query) {
-              iterator = pipelineOperators[key].call(query, iterator, operator[key], _this.__options);
-            } else {
-              iterator = pipelineOperators[key](iterator, operator[key], _this.__options);
-            }
+            var op = operatorKeys[0];
+            var call = getOperator(OP_PIPELINE, op);
+            assert(operatorKeys.length === 1 && !!call, "invalid aggregation operator ".concat(op));
+            iterator = call(iterator, operator[op], _this.__options);
           });
         }
 
@@ -2198,8 +2453,8 @@
 
     }, {
       key: "run",
-      value: function run(collection, query) {
-        return this.stream(collection, query).value();
+      value: function run(collection) {
+        return this.stream(collection).value();
       }
     }]);
 
@@ -2228,13 +2483,12 @@
    */
 
   var Cursor = /*#__PURE__*/function () {
-    function Cursor(source, query, projection) {
+    function Cursor(source, filterFn, projection) {
       _classCallCheck(this, Cursor);
 
-      this.__filterFn = query.test.bind(query);
-      this.__query = query;
+      this.__filterFn = filterFn;
       this.__source = source;
-      this.__projection = projection || query.__projection;
+      this.__projection = projection;
       this.__operators = [];
       this.__result = null;
       this.__stack = [];
@@ -2253,7 +2507,7 @@
         this.__result = Lazy(this.__source).filter(this.__filterFn);
 
         if (this.__operators.length > 0) {
-          this.__result = new Aggregator(this.__operators, this.__options).stream(this.__result, this.__query);
+          this.__result = new Aggregator(this.__operators, this.__options).stream(this.__result);
         }
 
         return this.__result;
@@ -2419,11 +2673,10 @@
    */
 
   var Query = /*#__PURE__*/function () {
-    function Query(criteria, projection) {
+    function Query(criteria) {
       _classCallCheck(this, Query);
 
       this.__criteria = criteria;
-      this.__projection = projection || {};
       this.__compiled = [];
 
       this._compile();
@@ -2464,9 +2717,10 @@
     }, {
       key: "_processOperator",
       value: function _processOperator(field, operator, value) {
-        assert(has(OPERATORS[OP_QUERY], operator), "invalid query operator ".concat(operator, " detected"));
+        var call = getOperator(OP_QUERY, operator);
+        assert(!!call, "unknown operator ".concat(operator));
 
-        this.__compiled.push(OPERATORS[OP_QUERY][operator](field, value));
+        this.__compiled.push(call(field, value));
       }
       /**
        * Checks if the object passes the query criteria. Returns true if so, false otherwise.
@@ -2495,7 +2749,11 @@
     }, {
       key: "find",
       value: function find(collection, projection) {
-        return new Cursor(collection, this, projection);
+        var _this2 = this;
+
+        return new Cursor(collection, function (x) {
+          return _this2.test(x);
+        }, projection);
       }
       /**
        * Remove matched documents from the collection returning the remainder
@@ -2506,10 +2764,10 @@
     }, {
       key: "remove",
       value: function remove(collection) {
-        var _this2 = this;
+        var _this3 = this;
 
         return reduce(collection, function (acc, obj) {
-          if (!_this2.test(obj)) acc.push(obj);
+          if (!_this3.test(obj)) acc.push(obj);
           return acc;
         }, []);
       }
@@ -4397,21 +4655,22 @@
         var subExprKeys = keys(subExpr);
         var operator = subExprKeys.length == 1 ? subExprKeys[0] : null; // first try a projection operator
 
-        if (has(OPERATORS[OP_PROJECTION], operator)) {
-          var projectionOperators = OPERATORS[OP_PROJECTION]; // apply the projection operator on the operator expression for the key
+        var call = getOperator(OP_PROJECTION, operator);
 
+        if (!!call) {
+          // apply the projection operator on the operator expression for the key
           if (operator === '$slice') {
             // $slice is handled differently for aggregation and projection operations
             if (ensureArray(subExpr[operator]).every(isNumber)) {
               // $slice for projection operation
-              value = projectionOperators[operator](obj, subExpr[operator], key);
+              value = call(obj, subExpr[operator], key);
               foundSlice = true;
             } else {
               // $slice for aggregation operation
               value = computeValue(obj, subExpr, key);
             }
           } else {
-            value = projectionOperators[operator](obj, subExpr[operator], key);
+            value = call(obj, subExpr[operator], key);
           }
         } else if (isOperator(operator)) {
           // compute if operator key
@@ -5026,293 +5285,6 @@
     $expr: $expr
   });
 
-  var OPERATORS = {};
-  OPERATORS[OP_EXPRESSION] = Object.assign({}, expressionOperators);
-  OPERATORS[OP_GROUP] = Object.assign({}, accumulatorOperators);
-  OPERATORS[OP_PIPELINE] = Object.assign({}, pipelineOperators);
-  OPERATORS[OP_PROJECTION] = Object.assign({}, projectionOperators);
-  OPERATORS[OP_QUERY] = Object.assign({}, queryOperators);
-  /**
-   * Add new operators
-   *
-   * @param opClass the operator class to extend
-   * @param fn a function returning an object of new operators
-   */
-
-  function addOperators(opClass, fn) {
-    var newOperators = fn(_internal()); // ensure correct type specified
-
-    assert(has(OPERATORS, opClass), "Invalid operator class ".concat(opClass));
-    var operators = OPERATORS[opClass]; // check for existing operators
-
-    each(newOperators, function (_, op) {
-      assert(/^\$[a-zA-Z0-9_]*$/.test(op), "Invalid operator name ".concat(op));
-      assert(!has(operators, op), "".concat(op, " already exists for '").concat(opClass, "' operators"));
-    });
-    var wrapped = {};
-
-    switch (opClass) {
-      case OP_QUERY:
-        each(newOperators, function (fn, op) {
-          fn = fn.bind(newOperators);
-
-          wrapped[op] = function (selector, value) {
-            return function (obj) {
-              // value of field must be fully resolved.
-              var lhs = resolve(obj, selector);
-              var result = fn(selector, lhs, value);
-              assert(isBoolean(result), "".concat(op, " must return a boolean"));
-              return result;
-            };
-          };
-        });
-        break;
-
-      case OP_PROJECTION:
-        each(newOperators, function (fn, op) {
-          fn = fn.bind(newOperators);
-
-          wrapped[op] = function (obj, expr, selector) {
-            var lhs = resolve(obj, selector);
-            return fn(selector, lhs, expr);
-          };
-        });
-        break;
-
-      default:
-        each(newOperators, function (fn, op) {
-          wrapped[op] = function () {
-            for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-              args[_key] = arguments[_key];
-            }
-
-            return fn.apply(newOperators, args);
-          };
-        });
-    } // toss the operator salad :)
-
-
-    Object.assign(OPERATORS[opClass], wrapped);
-  }
-
-  var _internal = function _internal() {
-    return Object.assign({
-      computeValue: computeValue,
-      ops: ops
-    }, moduleApi());
-  }; // Settings used by Mingo internally
-
-  var settings = {
-    key: '_id'
-  };
-  /**
-   * Setup default settings for Mingo
-   * @param options
-   */
-
-  function setup(options) {
-    Object.assign(settings, options);
-  }
-  /**
-   * Implementation of system variables
-   * @type {Object}
-   */
-
-  var systemVariables = {
-    '$$ROOT': function $$ROOT(obj, expr, opt) {
-      return opt.root;
-    },
-    '$$CURRENT': function $$CURRENT(obj, expr, opt) {
-      return obj;
-    },
-    '$$REMOVE': function $$REMOVE(obj, expr, opt) {
-      return undefined;
-    }
-  };
-  /**
-   * Implementation of $redact variables
-   *
-   * Each function accepts 3 arguments (obj, expr, opt)
-   *
-   * @type {Object}
-   */
-
-  var redactVariables = {
-    '$$KEEP': function $$KEEP(obj, expr, options) {
-      return obj;
-    },
-    '$$PRUNE': function $$PRUNE(obj, expr, options) {
-      return undefined;
-    },
-    '$$DESCEND': function $$DESCEND(obj, expr, options) {
-      // traverse nested documents iff there is a $cond
-      if (!has(expr, '$cond')) return obj;
-      var result;
-      each(obj, function (current, key) {
-        if (isObjectLike(current)) {
-          if (isArray(current)) {
-            result = [];
-            each(current, function (elem) {
-              if (isObject(elem)) {
-                elem = redactObj(elem, expr, options);
-              }
-
-              if (!isNil(elem)) result.push(elem);
-            });
-          } else {
-            result = redactObj(current, expr, options);
-          }
-
-          if (isNil(result)) {
-            delete obj[key]; // pruned result
-          } else {
-            obj[key] = result;
-          }
-        }
-      });
-      return obj;
-    }
-  };
-  /**
-   * Returns the key used as the collection's objects ids
-   */
-
-  function idKey() {
-    return settings.key;
-  }
-  /**
-   * Returns the operators defined for the given operator classes
-   */
-
-  function ops() {
-    // Workaround for browser-compatibility bug: on iPhone 6S Safari (and
-    // probably some other platforms), `arguments` isn't detected as an array,
-    // but has a length field, so functions like `reduce` end up including the
-    // length field in their iteration. Copy to a real array.
-    var args = Array.prototype.slice.call(arguments);
-    return reduce(args, function (acc, cls) {
-      return into(acc, keys(OPERATORS[cls]));
-    }, []);
-  }
-  /**
-   * Returns the result of evaluating a $group operation over a collection
-   *
-   * @param collection
-   * @param field the name of the aggregate operator or field
-   * @param expr the expression of the aggregate operator for the field
-   * @returns {*}
-   */
-
-  function accumulate(collection, field, expr) {
-    if (has(OPERATORS[OP_GROUP], field)) {
-      return OPERATORS[OP_GROUP][field](collection, expr);
-    }
-
-    if (isObject(expr)) {
-      var result = {};
-      each(expr, function (val, key) {
-        result[key] = accumulate(collection, key, expr[key]); // must run ONLY one group operator per expression
-        // if so, return result of the computed value
-
-        if (has(OPERATORS[OP_GROUP], key)) {
-          result = result[key]; // if there are more keys in expression this is bad
-
-          assert(keys(expr).length === 1, "Invalid $group expression '" + JSON.stringify(expr) + "'");
-          return false; // break
-        }
-      });
-      return result;
-    }
-  }
-  /**
-   * Computes the actual value of the expression using the given object as context
-   *
-   * @param obj the current object from the collection
-   * @param expr the expression for the given field
-   * @param operator the operator to resolve the field with
-   * @param options {Object} extra options
-   * @returns {*}
-   */
-
-  function computeValue(obj, expr, operator, options) {
-    if (options === undefined) {
-      options = {
-        root: obj
-      };
-    } // if the field of the object is a valid operator
-
-
-    if (has(OPERATORS[OP_EXPRESSION], operator)) {
-      return OPERATORS[OP_EXPRESSION][operator](obj, expr, options);
-    } // we also handle $group accumulator operators
-
-
-    if (has(OPERATORS[OP_GROUP], operator)) {
-      // we first fully resolve the expression
-      obj = computeValue(obj, expr, null, options);
-      assert(isArray(obj), operator + ' expression must resolve to an array'); // we pass a null expression because all values have been resolved
-
-      return OPERATORS[OP_GROUP][operator](obj, null, options);
-    } // if expr is a variable for an object field
-    // field not used in this case
-
-
-    if (isString(expr) && expr.length > 0 && expr[0] === '$') {
-      // we return redact variables as literals
-      if (has(redactVariables, expr)) {
-        return expr;
-      } // handle selectors with explicit prefix
-
-
-      var arr = expr.split('.');
-
-      if (has(systemVariables, arr[0])) {
-        obj = systemVariables[arr[0]](obj, null, options);
-        if (arr.length == 1) return obj;
-        expr = expr.substr(arr[0].length); // '.' prefix will be sliced off below
-      }
-
-      return resolve(obj, expr.slice(1));
-    } // check and return value if already in a resolved state
-
-
-    if (Array.isArray(expr)) {
-      return expr.map(function (item) {
-        return computeValue(obj, item);
-      });
-    } else if (jsType(expr) === T_OBJECT) {
-      var result = new Object();
-      each(expr, function (val, key) {
-        result[key] = computeValue(obj, val, key, options); // must run ONLY one aggregate operator per expression
-        // if so, return result of the computed value
-
-        if ([OP_EXPRESSION, OP_GROUP].some(function (c) {
-          return has(OPERATORS[c], key);
-        })) {
-          // there should be only one operator
-          assert(keys(expr).length === 1, "Invalid aggregation expression '" + JSON.stringify(expr) + "'");
-          result = result[key];
-          return false; // break
-        }
-      });
-      return result;
-    } else {
-      return expr;
-    }
-  }
-  /**
-   * Redact an object
-   * @param  {Object} obj The object to redact
-   * @param  {*} expr The redact expression
-   * @param  {*} opt  Options for value
-   * @return {*} Returns the redacted value
-   */
-
-  function redactObj(obj, expr, options) {
-    var result = computeValue(obj, expr, null, options);
-    return has(redactVariables, result) ? redactVariables[result](obj, expr, options) : result;
-  }
-
   /**
    * Mixin for Collection types that provide a method `toJSON() -> Array[Object]`
    */
@@ -5338,6 +5310,12 @@
     }
   };
 
+  enableOperators(OP_GROUP, accumulatorOperators);
+  enableOperators(OP_EXPRESSION, expressionOperators);
+  enableOperators(OP_PIPELINE, pipelineOperators);
+  enableOperators(OP_PROJECTION, projectionOperators);
+  enableOperators(OP_QUERY, queryOperators); // public interface
+
   exports.Aggregator = Aggregator;
   exports.CollectionMixin = CollectionMixin;
   exports.Cursor = Cursor;
@@ -5348,7 +5326,6 @@
   exports.OP_PROJECTION = OP_PROJECTION;
   exports.OP_QUERY = OP_QUERY;
   exports.Query = Query;
-  exports._internal = _internal;
   exports.addOperators = addOperators;
   exports.aggregate = aggregate;
   exports.find = find;

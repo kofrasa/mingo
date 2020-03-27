@@ -1,6 +1,5 @@
 var mingo = require('../../es5')
 var samples = require('../support')
-var _ = mingo._internal()
 
 var productsData = [
   { "_id": 1, "item": "abc1", description: "product 1", qty: 300 },
@@ -29,9 +28,10 @@ samples.runTestPipeline("$project pipeline operator", [
     check: function (result, t) {
       var fields = Object.keys(result[0]);
       t.equal(fields.length, 4, "can project fields with $project");
-      t.ok(_.includes(fields, 'type'), "can rename fields with $project");
+      fields.includes
+      t.ok(fields.includes('type'), "can rename fields with $project");
       var temp = result[0]['details'];
-      t.ok(_.isObject(temp) && Object.keys(temp).length === 1, "can create and populate sub-documents");
+      t.ok(Object.keys(temp).length === 1, "can create and populate sub-documents");
     }
   },
 

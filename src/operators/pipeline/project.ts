@@ -19,9 +19,7 @@ import {
   setValue,
   isOperator
 } from '../../util'
-import { computeValue, idKey } from '../../internal'
-import { OPERATORS } from '../index'
-import { OP_PROJECTION } from '../../constants'
+import { computeValue, idKey, OP_PROJECTION, getOperator } from '../../internal'
 import { Iterator } from '../../lazy'
 
 
@@ -109,22 +107,21 @@ function processObject(obj: object, expr: any, expressionKeys: string[], idOnlyE
       let operator = subExprKeys.length == 1 ? subExprKeys[0] : null
 
       // first try a projection operator
-      if (has(OPERATORS[OP_PROJECTION], operator)) {
-        const projectionOperators = OPERATORS[OP_PROJECTION]
-
+      let call = getOperator(OP_PROJECTION, operator)
+      if (!!call) {
         // apply the projection operator on the operator expression for the key
         if (operator === '$slice') {
           // $slice is handled differently for aggregation and projection operations
           if (ensureArray(subExpr[operator]).every(isNumber)) {
             // $slice for projection operation
-            value = projectionOperators[operator](obj, subExpr[operator], key)
+            value = call(obj, subExpr[operator], key)
             foundSlice = true
           } else {
             // $slice for aggregation operation
             value = computeValue(obj, subExpr, key)
           }
         } else {
-          value = projectionOperators[operator](obj, subExpr[operator], key)
+          value = call(obj, subExpr[operator], key)
         }
       } else if (isOperator(operator)) {
         // compute if operator key

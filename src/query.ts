@@ -1,8 +1,6 @@
-import { OP_QUERY } from './constants'
 import {
   assert,
   each,
-  has,
   inArray,
   isObject,
   isOperator,
@@ -11,7 +9,7 @@ import {
   Callback
 } from './util'
 import { Cursor } from './cursor'
-import { OPERATORS } from './operators'
+import { OP_QUERY, getOperator } from './internal'
 
 /**
  * Query object to test collection elements with
@@ -22,12 +20,10 @@ import { OPERATORS } from './operators'
 export class Query {
 
   private __criteria: object
-  __projection: object
   private __compiled: Callback<any>[]
 
-  constructor(criteria: object, projection?: object) {
+  constructor(criteria: object) {
     this.__criteria = criteria
-    this.__projection = projection || {}
     this.__compiled = []
     this._compile()
   }
@@ -61,8 +57,9 @@ export class Query {
   }
 
   _processOperator(field: string, operator: string, value: any) {
-    assert(has(OPERATORS[OP_QUERY], operator), `invalid query operator ${operator} detected`)
-    this.__compiled.push(OPERATORS[OP_QUERY][operator](field, value))
+    let call = getOperator(OP_QUERY, operator)
+    assert(!!call, `unknown operator ${operator}`)
+    this.__compiled.push(call(field, value))
   }
 
   /**
@@ -86,7 +83,7 @@ export class Query {
    * @returns {Cursor}
    */
   find(collection: object[], projection?: object): Cursor {
-    return new Cursor(collection, this, projection)
+    return new Cursor(collection, x => this.test(x), projection)
   }
 
   /**

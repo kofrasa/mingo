@@ -1,7 +1,6 @@
 var test = require('tape')
 var mingo = require('../es5')
 var samples = require('./support')
-var _ = mingo._internal()
 
 test('Mingo.Cursor tests', function (t) {
   // create a query with no criteria
@@ -18,9 +17,9 @@ test('Mingo.Cursor tests', function (t) {
   t.equal(cursor.hasNext(), false, 'can peek for an item with hasNext()')
 
   cursor = newCursor()
-  cursor.forEach(_.isObject)
+  cursor.forEach(x => x)
 
   cursor = newCursor()
-  cursor.map(_.isObject).every(_.isBoolean)
+  cursor.map(x => typeof x).every(x => typeof x === 'boolean')
   t.end()
 })

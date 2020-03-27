@@ -2,7 +2,6 @@ var test = require('tape')
 var Backbone = require('backbone')
 var mingo = require('../es5')
 var samples = require('./support')
-var _ = mingo._internal()
 
 test('CollectionMixin integration', function (t) {
   t.plan(1)

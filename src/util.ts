@@ -332,77 +332,45 @@ export function isEqual(a: any, b: any): boolean {
     if (a === b) continue
 
     // unequal types and functions cannot be equal.
-    let type = jsType(a)
-    if (type !== jsType(b) || type === T_FUNCTION) return false
-
-    if (a instanceof Array && b instanceof Array) {
-      if (a.length !== b.length) return false
-      into(lhs, a)
-      into(rhs, b)
-    } else if (a instanceof Object && b instanceof Object) {
-      // deep compare objects
-      let ka = keys(a)
-      let kb = keys(b)
-
-      // check length of keys early
-      if (ka.length !== kb.length) return false
-
-      // we know keys are strings so we sort before comparing
-      ka.sort()
-      kb.sort()
-
-      // compare keys
-      for (let i = 0, len = ka.length; i < len; i++) {
-        let currentKey = ka[i]
-        if (currentKey !== kb[i]) {
-          return false
-        } else {
-          // save later work
-          lhs.push(a[currentKey])
-          rhs.push(b[currentKey])
-        }
-      }
-    } else {
-      // compare encoded values
-      if (encode(a) !== encode(b)) return false
-    }
+    let typename = jsType(a)
+    if (typename !== jsType(b) || typename === T_FUNCTION) return false
 
     // leverage toString for Date and RegExp types
-    // switch (type) {
-    //   case T_ARRAY:
-    //     if (a.length !== b.length) return false
-    //     //if (a.length === b.length && a.length === 0) continue
-    //     into(lhs, a)
-    //     into(rhs, b)
-    //     break
-    //   case T_OBJECT:
-    //     // deep compare objects
-    //     let ka = keys(a)
-    //     let kb = keys(b)
+    switch (typename) {
+      case T_ARRAY:
+        if (a.length !== b.length) return false
+        if (a.length === b.length && a.length === 0) continue
+        into(lhs, a)
+        into(rhs, b)
+        break
+      case T_OBJECT:
+        // deep compare objects
+        let ka = keys(a)
+        let kb = keys(b)
 
-    //     // check length of keys early
-    //     if (ka.length !== kb.length) return false
+        // check length of keys early
+        if (ka.length !== kb.length) return false
 
-    //     // we know keys are strings so we sort before comparing
-    //     ka.sort()
-    //     kb.sort()
+        // we know keys are strings so we sort before comparing
+        ka.sort()
+        kb.sort()
 
-    //     // compare keys
-    //     for (let i = 0, len = ka.length; i < len; i++) {
-    //       let temp = ka[i]
-    //       if (temp !== kb[i]) {
-    //         return false
-    //       } else {
-    //         // save later work
-    //         lhs.push(a[temp])
-    //         rhs.push(b[temp])
-    //       }
-    //     }
-    //     break
-    //   default:
-    //     // compare encoded values
-    //     if (encode(a) !== encode(b)) return false
-    // }
+        // compare keys
+        for (let i = 0, len = ka.length; i < len; i++) {
+          let tempKey = ka[i]
+          if (tempKey !== kb[i]) {
+            return false
+          } else {
+            // save later work
+            lhs.push(a[tempKey])
+            rhs.push(b[tempKey])
+          }
+        }
+        break
+      default:
+        // compare encoded values
+        if (encode(a) !== encode(b)) return false
+    }
   }
   return lhs.length === 0
 }

@@ -1,6 +1,6 @@
 # Changelog
 
-## 3.0.0 / 2020-03-22
+## 3.0.0 / 2020-03-xx
 
 - Convert project to Typescript
 - Remove `VERSION` fields as information can be sourced from `package.json` directly
@@ -9,6 +9,8 @@
 - Add timezone support for all date operators
 - Return all date operator results in UTC
 - Build ES5 and ES6 libraries with support for selective import
+- Remove cyclic references
+- Unexport `_internal` object
 
 ## 2.5.2 / 2020-03-17
 

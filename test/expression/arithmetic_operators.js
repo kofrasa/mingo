@@ -2,21 +2,6 @@ var test = require('tape')
 var mingo = require('../../es5')
 var runTest = require('./../support').runTest
 
-
-// hook in custom operator to round value
-// mingo.addOperators(mingo.OP_EXPRESSION, (_) => {
-//   return {
-//     $round: (obj, expr) => {
-//       var args = _.computeValue(obj, expr)
-//       var n = args[0].toString()
-//       var parts = n.toString().split('.')
-//       return (parts.length > 1)
-//         ? Number(parts[0] + '.' + parts[1].substr(0, args[1]))
-//         : n
-//     }
-//   }
-// })
-
 runTest("Arithmetic Operators", {
   $abs: [
     [{ $abs: null },	null],

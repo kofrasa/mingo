@@ -1,6 +1,5 @@
 var test = require('tape')
 var mingo = require('../../es5')
-var { cloneDeep } = mingo._internal()
 var samples = require('../support')
 
 test('$group pipeline operator', function (t) {
@@ -178,7 +177,7 @@ test("$group pipeline operator is idempotent", function (t) {
       score: { $min: '$score' }
     }
   }];
-  var aggregatorClone = cloneDeep(aggregator)
+
   var input = [
     { type: "exam", student_id: 2, score: 5 },
     { type: "exam", student_id: 1, score: 5 },
@@ -187,8 +186,6 @@ test("$group pipeline operator is idempotent", function (t) {
   ];
 
   var passOne = mingo.aggregate(input, aggregator);
-
-  t.deepEqual(aggregator, aggregatorClone, 'aggregate does not mutate the original aggregator object.')
 
   var passTwo = mingo.aggregate(input, aggregator);
 

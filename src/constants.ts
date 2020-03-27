@@ -16,13 +16,6 @@ export const T_FUNCTION = 'function'
 // no array, object, or function types
 export const JS_SIMPLE_TYPES = [T_NULL, T_UNDEFINED, T_BOOLEAN, T_NUMBER, T_STRING, T_DATE, T_REGEXP]
 
-// operator classes
-export const OP_EXPRESSION = 'expression'
-export const OP_GROUP = 'accumulator'
-export const OP_PIPELINE = 'pipeline'
-export const OP_PROJECTION = 'projection'
-export const OP_QUERY = 'query'
-
 export const MISSING = () => {}
 
 export const MAX_INT = 2147483647
