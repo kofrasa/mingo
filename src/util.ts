@@ -35,7 +35,7 @@ interface MergeOptions {
 
 interface ResolveOptions {
   preserveMetadata?: boolean
-  preserveMissingValues?: boolean
+  preserveMissing?: boolean
 }
 
 type CompareResult = -1 | 0 | 1
@@ -93,7 +93,7 @@ if (!Array.prototype.includes) {
 }
 
 export function assert (condition: boolean, message: string): void {
-  if (!condition) err(message)
+  if (!condition) throw new Error(message)
 }
 
 /**
@@ -145,7 +145,6 @@ export function isEmpty (x: any): boolean {
 // ensure a value is an array
 export function ensureArray (x: any): any[] { return x instanceof Array ? x : [x] }
 export function has (obj: object, prop: any): boolean { return obj.hasOwnProperty(prop) }
-export function err (s: string): void { throw new Error(s) }
 export const keys = Object.keys
 
 // ////////////////// UTILS ////////////////////
@@ -650,10 +649,10 @@ export function resolve (obj: object, selector: string, options?: ResolveOptions
  * @param obj {Object} the object context
  * @param selector {String} dot separated path to field
  */
-export function resolveObj (obj: object, selector: string, options?: ResolveOptions): any {
+export function resolveGraph (obj: object, selector: string, options?: ResolveOptions): any {
   // options
   if (options === undefined) {
-    options = { preserveMissingValues: false}
+    options = { preserveMissing: false}
   }
 
   let names: string[] = selector.split('.')
@@ -669,14 +668,14 @@ export function resolveObj (obj: object, selector: string, options?: ResolveOpti
     if (isIndex) {
       result = getValue(obj, Number(key))
       if (hasNext) {
-        result = resolveObj(result, next, options)
+        result = resolveGraph(result, next, options)
       }
       result = [result]
     } else {
       result = []
       each(obj, item => {
-        value = resolveObj(item, selector, options)
-        if (options.preserveMissingValues) {
+        value = resolveGraph(item, selector, options)
+        if (options.preserveMissing) {
           if (value === undefined) {
             value = MISSING
           }
@@ -689,7 +688,7 @@ export function resolveObj (obj: object, selector: string, options?: ResolveOpti
   } else {
     value = getValue(obj, key)
     if (hasNext) {
-      value = resolveObj(value, next, options)
+      value = resolveGraph(value, next, options)
     }
     if (value === undefined) return undefined
     result = {}
@@ -881,15 +880,10 @@ export function stddev (data: number[], sampled: boolean): number {
  */
 export function moduleApi () {
   return {
-    assert,
     clone,
     cloneDeep,
-    each,
-    err,
+    filterMissing,
     hashCode,
-    getType,
-    has,
-    includes: inArray.bind(null),
     isArray,
     isBoolean,
     isDate,
@@ -903,9 +897,7 @@ export function moduleApi () {
     isRegExp,
     isString,
     isUndefined,
-    keys,
-    reduce,
     resolve,
-    resolveObj
+    resolveGraph
   }
 }

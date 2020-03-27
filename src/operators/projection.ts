@@ -4,7 +4,6 @@
 
 import {
   assert,
-  err,
   isNumber,
   resolve,
   slice
@@ -19,7 +18,7 @@ import { Query } from '../query'
  * @param expr
  */
 export function $(obj: object, expr: any, field: string): any {
-  err('$ not implemented')
+  throw new Error ('$ not implemented')
 }
 
 /**

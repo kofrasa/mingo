@@ -1,6 +1,6 @@
 import { Callback, Predicate } from './util'
 
-interface Reducer {
+interface Iteratee {
   action: Action
   value: any
 }
@@ -55,7 +55,7 @@ enum Action {
   DROP
 }
 
-function createCallback(nextFn: Callback<any>, reducers: Reducer[], buffer: any[]): Callback<Value> {
+function createCallback(nextFn: Callback<any>, iteratees: Iteratee[], buffer: any[]): Callback<Value> {
 
   let done = false
   let index = -1
@@ -71,11 +71,11 @@ function createCallback(nextFn: Callback<any>, reducers: Reducer[], buffer: any[
         index++
 
         let i = -1
-        let size = reducers.length
+        let size = iteratees.length
         let innerDone = false
 
         while (++i < size) {
-          let r = reducers[i]
+          let r = iteratees[i]
 
           switch (r.action) {
             case Action.MAP:
@@ -90,7 +90,7 @@ function createCallback(nextFn: Callback<any>, reducers: Reducer[], buffer: any[
               break
             case Action.DROP:
               --r.value
-              if (!r.value) dropItem(reducers, i)
+              if (!r.value) dropItem(iteratees, i)
               continue outer
             default:
               break outer
@@ -116,7 +116,7 @@ function createCallback(nextFn: Callback<any>, reducers: Reducer[], buffer: any[
 
 export class Iterator {
 
-  private __iteratees: Reducer[] // lazy function chain
+  private __iteratees: Iteratee[] // lazy function chain
   private __first: boolean // flag whether to return a single value
   private __done: boolean
   private __buf: any[]
@@ -135,7 +135,7 @@ export class Iterator {
     this.__done = false
     this.__buf = []
 
-    let gen: Callback<any>
+    let nextVal: Callback<any>
 
     if (source instanceof Function) {
       // make iterable
@@ -144,7 +144,7 @@ export class Iterator {
 
     if (isGenerator(source)) {
       const src = source as Generator<any>
-      gen = () => {
+      nextVal = () => {
         let o = src.next()
         if (o.done) throw DONE
         return o.value
@@ -153,7 +153,7 @@ export class Iterator {
       const data = source
       const size = data.length
       let index = 0
-      gen = () => {
+      nextVal = () => {
         if (index < size) return data[index++]
         throw DONE
       }
@@ -162,7 +162,7 @@ export class Iterator {
     }
 
     // create next function
-    this.__next = createCallback(gen, this.__iteratees, this.__buf)
+    this.__next = createCallback(nextVal, this.__iteratees, this.__buf)
   }
 
   private _validate() {

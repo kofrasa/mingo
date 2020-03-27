@@ -15,7 +15,7 @@ import {
   notInArray,
   merge,
   removeValue,
-  resolveObj,
+  resolveGraph,
   setValue,
   isOperator
 } from '../../util'
@@ -144,13 +144,13 @@ function processObject(obj: object, expr: any, expressionKeys: string[], idOnlyE
     }
 
     // get value with object graph
-    let objPathValue = resolveObj(obj, key, {
-      preserveMissingValues: true
+    let objPathGraph = resolveGraph(obj, key, {
+      preserveMissing: true
     })
 
     // add the value at the path
-    if (objPathValue !== undefined) {
-      merge(newObj, objPathValue, {
+    if (objPathGraph !== undefined) {
+      merge(newObj, objPathGraph, {
         flatten: true
       })
     }

@@ -11,6 +11,10 @@
 - Build ES5 and ES6 libraries with support for selective import
 - Remove cyclic references
 - Unexport `_internal` object
+- Remove `assert`, `err`, `includes`, `keys`, `reduce`, `each`, `getType`, and `has` from module API for custom operators
+- Rename `resolveObj` to `resolveGraph` and change `option.preserveMissingValues` to `option.preserveMissing`
+- Add `filterMissing` and `MISSING` to module API and export `MISSING` value.
+- Unexport and rename `Lazy.isIterator` to `Lazy.isGenerator`
 
 ## 2.5.2 / 2020-03-17
 

@@ -231,7 +231,7 @@
   }
 
   function assert(condition, message) {
-    if (!condition) err(message);
+    if (!condition) throw new Error(message);
   }
   /**
    * Deep clone an object
@@ -316,9 +316,6 @@
   }
   function has(obj, prop) {
     return obj.hasOwnProperty(prop);
-  }
-  function err(s) {
-    throw new Error(s);
   }
   var keys = Object.keys; // ////////////////// UTILS ////////////////////
 
@@ -863,11 +860,11 @@
    * @param selector {String} dot separated path to field
    */
 
-  function resolveObj(obj, selector, options) {
+  function resolveGraph(obj, selector, options) {
     // options
     if (options === undefined) {
       options = {
-        preserveMissingValues: false
+        preserveMissing: false
       };
     }
 
@@ -885,16 +882,16 @@
         result = getValue(obj, Number(key));
 
         if (hasNext) {
-          result = resolveObj(result, next, options);
+          result = resolveGraph(result, next, options);
         }
 
         result = [result];
       } else {
         result = [];
         each(obj, function (item) {
-          value = resolveObj(item, selector, options);
+          value = resolveGraph(item, selector, options);
 
-          if (options.preserveMissingValues) {
+          if (options.preserveMissing) {
             if (value === undefined) {
               value = MISSING;
             }
@@ -909,7 +906,7 @@
       value = getValue(obj, key);
 
       if (hasNext) {
-        value = resolveObj(value, next, options);
+        value = resolveGraph(value, next, options);
       }
 
       if (value === undefined) return undefined;
@@ -1114,15 +1111,10 @@
 
   function moduleApi() {
     return {
-      assert: assert,
       clone: clone,
       cloneDeep: cloneDeep,
-      each: each,
-      err: err,
+      filterMissing: filterMissing,
       hashCode: hashCode,
-      getType: getType,
-      has: has,
-      includes: inArray.bind(null),
       isArray: isArray,
       isBoolean: isBoolean,
       isDate: isDate,
@@ -1136,10 +1128,8 @@
       isRegExp: isRegExp,
       isString: isString,
       isUndefined: isUndefined,
-      keys: keys,
-      reduce: reduce,
       resolve: resolve,
-      resolveObj: resolveObj
+      resolveGraph: resolveGraph
     };
   }
 
@@ -2103,7 +2093,7 @@
     Action[Action["DROP"] = 3] = "DROP";
   })(Action || (Action = {}));
 
-  function createCallback(nextFn, reducers, buffer) {
+  function createCallback(nextFn, iteratees, buffer) {
     var done = false;
     var index = -1;
     var bufferIndex = 0; // index for the buffer
@@ -2115,11 +2105,11 @@
           var o = nextFn();
           index++;
           var i = -1;
-          var size = reducers.length;
+          var size = iteratees.length;
           var innerDone = false;
 
           while (++i < size) {
-            var r = reducers[i];
+            var r = iteratees[i];
 
             switch (r.action) {
               case Action.MAP:
@@ -2137,7 +2127,7 @@
 
               case Action.DROP:
                 --r.value;
-                if (!r.value) dropItem(reducers, i);
+                if (!r.value) dropItem(iteratees, i);
                 continue outer;
 
               default:
@@ -2184,7 +2174,7 @@
 
       this.__done = false;
       this.__buf = [];
-      var gen;
+      var nextVal;
 
       if (source instanceof Function) {
         // make iterable
@@ -2196,7 +2186,7 @@
       if (isGenerator(source)) {
         var src = source;
 
-        gen = function gen() {
+        nextVal = function nextVal() {
           var o = src.next();
           if (o.done) throw DONE;
           return o.value;
@@ -2206,7 +2196,7 @@
         var size = data.length;
         var index = 0;
 
-        gen = function gen() {
+        nextVal = function nextVal() {
           if (index < size) return data[index++];
           throw DONE;
         };
@@ -2215,7 +2205,7 @@
       } // create next function
 
 
-      this.__next = createCallback(gen, this.__iteratees, this.__buf);
+      this.__next = createCallback(nextVal, this.__iteratees, this.__buf);
     }
 
     _createClass(Iterator, [{
@@ -4692,12 +4682,12 @@
       } // get value with object graph
 
 
-      var objPathValue = resolveObj(obj, key, {
-        preserveMissingValues: true
+      var objPathGraph = resolveGraph(obj, key, {
+        preserveMissing: true
       }); // add the value at the path
 
-      if (objPathValue !== undefined) {
-        merge(newObj, objPathValue, {
+      if (objPathGraph !== undefined) {
+        merge(newObj, objPathGraph, {
           flatten: true
         });
       } // if computed add/or remove accordingly
@@ -5067,7 +5057,7 @@
    */
 
   function $(obj, expr, field) {
-    err('$ not implemented');
+    throw new Error('$ not implemented');
   }
   /**
    * Projects only the first element from an array that matches the specified $elemMatch condition.
