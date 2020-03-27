@@ -52,7 +52,7 @@ export function $eq(a: any, b: any): boolean {
   if (isNil(a) && isNil(b)) return true
 
   // check
-  if (a instanceof Array) {
+  if (isArray(a)) {
     let eq = isEqual.bind(null, b)
     return a.some(eq) || flatten(a, 1).some(eq)
   }
@@ -184,7 +184,7 @@ export function $exists(a: any, b: any): boolean {
  */
 export function $all(a: any, b: any): boolean {
   let matched = false
-  if (a instanceof Array && b instanceof Array) {
+  if (isArray(a) && isArray(b)) {
     for (let i = 0, len = b.length; i < len; i++) {
       if (isObject(b[i]) && inArray(keys(b[i]), '$elemMatch')) {
         matched = matched || $elemMatch(a, b[i].$elemMatch)

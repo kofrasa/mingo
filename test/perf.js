@@ -1,6 +1,6 @@
 var test = require('tape')
 var performance = require('perf_hooks').performance
-var mingo = require('../dist/mingo')
+var mingo = require('../es5')
 var _ = require('lodash');
 
 const items = _.range(10 * 1000).map(id => {

@@ -27,7 +27,7 @@ export function $add(obj: object, expr: any): number | Date {
   let args = computeValue(obj, expr)
   let foundDate = false
   let result = reduce(args, (acc: number, val: any) => {
-    if (val instanceof Date) {
+    if (isDate(val)) {
       assert(!foundDate, "'$add' can only have one date value")
       foundDate = true
       val = val.getTime()

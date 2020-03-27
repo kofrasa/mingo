@@ -17,7 +17,7 @@ export function $cond(obj: object, expr: any): any {
   let thenExpr: any
   let elseExpr: any
   const errorMsg = '$cond: invalid arguments'
-  if (expr instanceof Array) {
+  if (isArray(expr)) {
     assert(expr.length === 3, errorMsg)
     ifExpr = expr[0]
     thenExpr = expr[1]

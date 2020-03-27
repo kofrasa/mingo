@@ -244,26 +244,19 @@
    */
 
   function cloneDeep(obj) {
-    // if (obj instanceof Array) return obj.map(cloneDeep)
-    // if (obj instanceof Object) return objectMap(obj, cloneDeep)
-    switch (jsType(obj)) {
-      case T_ARRAY:
-        return obj.map(cloneDeep);
-
-      case T_OBJECT:
-        return objectMap(obj, cloneDeep);
-
-      default:
-        return obj;
-    }
+    if (isArray(obj)) return obj.map(cloneDeep);
+    if (isDate(obj)) return new Date(obj);
+    if (isObject(obj)) return objectMap(obj, cloneDeep);
+    return obj;
   }
   /**
    * Shallow clone an object
    */
 
   function clone(obj) {
-    if (obj instanceof Array) return into([], obj);
-    if (obj instanceof Object) return Object.assign({}, obj);
+    if (isArray(obj)) return into([], obj);
+    if (isDate(obj)) return new Date(obj);
+    if (isObject(obj)) return Object.assign({}, obj);
     return obj;
   }
   function getType(v) {
@@ -294,10 +287,10 @@
   } // objects, arrays, functions, date, custom object
 
   function isDate(v) {
-    return jsType(v) === T_DATE;
+    return v instanceof Date;
   }
   function isRegExp(v) {
-    return jsType(v) === T_REGEXP;
+    return v instanceof RegExp;
   }
   function isFunction(v) {
     return _typeof(v) === T_FUNCTION;
@@ -1207,7 +1200,7 @@
     var args = computeValue(obj, expr);
     var foundDate = false;
     var result = reduce(args, function (acc, val) {
-      if (val instanceof Date) {
+      if (isDate(val)) {
         assert(!foundDate, "'$add' can only have one date value");
         foundDate = true;
         val = val.getTime();
@@ -1850,11 +1843,10 @@
     Action[Action["DROP"] = 3] = "DROP";
   })(Action || (Action = {}));
 
-  function baseIterator(nextFn, iteratees, buffer) {
+  function createCallback(nextFn, reducers, buffer) {
     var done = false;
     var index = -1;
-
-    var bIndex = 0; // index for the buffer
+    var bufferIndex = 0; // index for the buffer
 
     return function (storeResult) {
       // special hack to collect all values into buffer
@@ -1862,32 +1854,30 @@
         outer: while (!done) {
           var o = nextFn();
           index++;
-          var mIndex = -1;
-          var mSize = iteratees.length;
+          var i = -1;
+          var size = reducers.length;
           var innerDone = false;
 
-          while (++mIndex < mSize) {
-            var member = iteratees[mIndex],
-                value = member.value,
-                action = member.action;
+          while (++i < size) {
+            var r = reducers[i];
 
-            switch (action) {
+            switch (r.action) {
               case Action.MAP:
-                o = value(o, index);
+                o = r.value(o, index);
                 break;
 
               case Action.FILTER:
-                if (!value(o, index)) continue outer;
+                if (!r.value(o, index)) continue outer;
                 break;
 
               case Action.TAKE:
-                --member.value;
-                if (!member.value) innerDone = true;
+                --r.value;
+                if (!r.value) innerDone = true;
                 break;
 
               case Action.DROP:
-                --member.value;
-                if (!member.value) dropItem(iteratees, mIndex);
+                --r.value;
+                if (!r.value) dropItem(reducers, i);
                 continue outer;
 
               default:
@@ -1898,7 +1888,7 @@
           done = innerDone;
 
           if (storeResult) {
-            buffer[bIndex++] = o;
+            buffer[bufferIndex++] = o;
           } else {
             return {
               value: o,
@@ -1912,7 +1902,7 @@
 
       done = true;
       return {
-        done: true
+        done: done
       };
     };
   }
@@ -1965,7 +1955,7 @@
       } // create next function
 
 
-      this.__next = baseIterator(gen, this.__iteratees, this.__buf);
+      this.__next = createCallback(gen, this.__iteratees, this.__buf);
     }
 
     _createClass(Iterator, [{
@@ -2568,7 +2558,7 @@
 
     if (isNil(a) && isNil(b)) return true; // check
 
-    if (a instanceof Array) {
+    if (isArray(a)) {
       var eq = isEqual.bind(null, b);
       return a.some(eq) || flatten(a, 1).some(eq);
     }
@@ -2714,7 +2704,7 @@
   function $all(a, b) {
     var matched = false;
 
-    if (a instanceof Array && b instanceof Array) {
+    if (isArray(a) && isArray(b)) {
       for (var i = 0, len = b.length; i < len; i++) {
         if (isObject(b[i]) && inArray(keys(b[i]), '$elemMatch')) {
           matched = matched || $elemMatch(a, b[i].$elemMatch);
@@ -2892,7 +2882,7 @@
     var elseExpr;
     var errorMsg = '$cond: invalid arguments';
 
-    if (expr instanceof Array) {
+    if (isArray(expr)) {
       assert(expr.length === 3, errorMsg);
       ifExpr = expr[0];
       thenExpr = expr[1];
@@ -2944,7 +2934,7 @@
 
   function computeDate(obj, expr) {
     var d = computeValue(obj, expr);
-    if (d instanceof Date) return d;
+    if (isDate(d)) return d;
     if (isString(decodeURI)) throw Error('cannot take a string as an argument');
     var tz = 0;
 
@@ -3096,7 +3086,7 @@
   function parseTimezone(tzStr) {
     var re = DATE_SYM_TABLE['%z'][3];
     if (tzStr === null || tzStr === undefined) return 0;
-    if (re instanceof RegExp && !tzStr.match(re)) throw Error("invalid or location-based timezone ".concat(tzStr, " not supported"));
+    if (!tzStr.match(re)) throw Error("invalid or location-based timezone ".concat(tzStr, " not supported"));
     return parseInt(tzStr.substr(0, 3));
   }
   /**
@@ -3416,10 +3406,9 @@
         case 'long':
           return $toLong(obj, ctx.input);
       }
-    } catch (e) {
-      if (e instanceof TypeConvertError && ctx.onError !== undefined) return ctx.onError;
-    }
+    } catch (e) {}
 
+    if (ctx.onError !== undefined) return ctx.onError;
     throw new TypeConvertError("failed to convert ".concat(ctx.input, " to ").concat(ctx.to));
   }
 

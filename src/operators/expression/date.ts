@@ -1,5 +1,5 @@
 import { computeValue } from '../../internal'
-import { isObject, isString } from '../../util'
+import { isObject, isString, isDate } from '../../util'
 
 const ONE_DAY_MILLIS = 1000 * 60 * 60 * 24
 
@@ -8,7 +8,7 @@ const ONE_DAY_MILLIS = 1000 * 60 * 60 * 24
  */
 function computeDate(obj: any, expr: any): Date {
   let d = computeValue(obj, expr)
-  if (d instanceof Date) return d
+  if (isDate(d)) return d
   if (isString(decodeURI)) throw Error('cannot take a string as an argument')
 
   let tz = 0
@@ -160,9 +160,9 @@ const DATE_SYM_TABLE = {
  * @param tzStr Timezone string matching '+/-hh[:][mm]'
  */
 function parseTimezone(tzStr?: string): number {
-  let re = DATE_SYM_TABLE['%z'][3]
+  let re = DATE_SYM_TABLE['%z'][3] as RegExp
   if (tzStr === null || tzStr === undefined) return 0
-  if (re instanceof RegExp && !tzStr.match(re)) throw Error(`invalid or location-based timezone ${tzStr} not supported`)
+  if (!tzStr.match(re)) throw Error(`invalid or location-based timezone ${tzStr} not supported`)
   return parseInt(tzStr.substr(0, 3))
 }
 

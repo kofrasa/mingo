@@ -1,6 +1,6 @@
 import { Callback, Predicate } from './util'
 
-interface Iteratee {
+interface Reducer {
   action: Action
   value: any
 }
@@ -55,12 +55,11 @@ enum Action {
   DROP
 }
 
-function baseIterator(nextFn: Callback<any>, iteratees: Iteratee[], buffer: any[]): Callback<Value> {
+function createCallback(nextFn: Callback<any>, reducers: Reducer[], buffer: any[]): Callback<Value> {
 
   let done = false
   let index = -1
-  let hashes: any = new Object  // used for LAZY_UNIQ
-  let bIndex = 0 // index for the buffer
+  let bufferIndex = 0 // index for the buffer
 
   return function (storeResult?: boolean): Value {
 
@@ -71,29 +70,27 @@ function baseIterator(nextFn: Callback<any>, iteratees: Iteratee[], buffer: any[
         let o = nextFn()
         index++
 
-        let mIndex = -1
-        let mSize = iteratees.length
+        let i = -1
+        let size = reducers.length
         let innerDone = false
 
-        while (++mIndex < mSize) {
-          let member = iteratees[mIndex],
-            value = member.value,
-            action = member.action;
+        while (++i < size) {
+          let r = reducers[i]
 
-          switch (action) {
+          switch (r.action) {
             case Action.MAP:
-              o = value(o, index)
+              o = r.value(o, index)
               break
             case Action.FILTER:
-              if (!value(o, index)) continue outer
+              if (!r.value(o, index)) continue outer
               break
             case Action.TAKE:
-              --member.value
-              if (!member.value) innerDone = true
+              --r.value
+              if (!r.value) innerDone = true
               break
             case Action.DROP:
-              --member.value
-              if (!member.value) dropItem(iteratees, mIndex)
+              --r.value
+              if (!r.value) dropItem(reducers, i)
               continue outer
             default:
               break outer
@@ -103,7 +100,7 @@ function baseIterator(nextFn: Callback<any>, iteratees: Iteratee[], buffer: any[
         done = innerDone
 
         if (storeResult) {
-          buffer[bIndex++] = o
+          buffer[bufferIndex++] = o
         } else {
           return { value: o, done: false }
         }
@@ -112,15 +109,14 @@ function baseIterator(nextFn: Callback<any>, iteratees: Iteratee[], buffer: any[
       if (e !== DONE) throw e
     }
 
-    hashes = null // clear the hash cache
     done = true
-    return { done: true }
+    return { done }
   }
 }
 
 export class Iterator {
 
-  private __iteratees: Iteratee[] // lazy function chain
+  private __iteratees: Reducer[] // lazy function chain
   private __first: boolean // flag whether to return a single value
   private __done: boolean
   private __buf: any[]
@@ -166,7 +162,7 @@ export class Iterator {
     }
 
     // create next function
-    this.__next = baseIterator(gen, this.__iteratees, this.__buf)
+    this.__next = createCallback(gen, this.__iteratees, this.__buf)
   }
 
   private _validate() {

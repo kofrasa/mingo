@@ -1,5 +1,5 @@
 var test = require('tape')
-var mingo = require('../dist/mingo')
+var mingo = require('../es5')
 var _ = mingo._internal()
 
 function pp(v) { console.log(JSON.stringify(v)) }

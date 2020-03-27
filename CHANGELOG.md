@@ -8,6 +8,7 @@
 - Implement `$dateFromString` operator
 - Add timezone support for all date operators
 - Return all date operator results in UTC
+- Build ES5 and ES6 libraries with support for selective import
 
 ## 2.5.2 / 2020-03-17
 

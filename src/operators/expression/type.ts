@@ -172,9 +172,9 @@ export function $convert(obj: object, expr: any): any {
       case 'long':
         return $toLong(obj, ctx.input)
     }
-  } catch (e) {
-    if (e instanceof TypeConvertError && ctx.onError !== undefined) return ctx.onError
-  }
+  } catch (e) {}
+
+  if (ctx.onError !== undefined) return ctx.onError
 
   throw new TypeConvertError(`failed to convert ${ctx.input} to ${ctx.to}`)
 }

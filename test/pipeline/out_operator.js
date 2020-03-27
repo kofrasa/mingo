@@ -1,5 +1,5 @@
 var test = require('tape')
-var mingo = require('../../dist/mingo')
+var mingo = require('../../es5')
 
 test('$out pipeline operator', function (t) {
   var data = [

@@ -2,14 +2,14 @@
   "name": "mingo",
   "version": "3.0.0",
   "description": "JavaScript implementation of MongoDB query language",
-  "main": "./dist/mingo.js",
+  "main": "./es5/index.js",
   "module": "./index.js",
   "scripts": {
-    "clean": "rm -fr dist lib",
-    "bundle": "rollup -c rollup.umd.js",
-    "compile": "tsc",
-    "compress": "uglifyjs dist/mingo.js --comments '/^!/' --compress --mangle --sourcemap dist/mingo.min.map --output dist/mingo.min.js",
     "build": "npm run compile && npm run bundle",
+    "bundle": "rollup -c rollup.umd.js",
+    "clean": "rm -fr lib es5 dist",
+    "compile": "tsc && tsc --build tsconfig.es5.json",
+    "compress": "uglifyjs dist/mingo.js --comments '/^!/' --compress --mangle --sourcemap dist/mingo.min.map --output dist/mingo.min.js",
     "release": "npm run clean && npm run build && npm test",
     "postrelease": "npm run compress",
     "test": "NODE_ENV=test nyc --reporter=lcov --reporter=text tape test/*.js test/**/*.js",
@@ -20,6 +20,8 @@
     "url": "https://github.com/kofrasa/mingo.git"
   },
   "files": [
+    "lib/",
+    "es5/",
     "index.js",
     "index.d.ts",
     "LICENSE",

@@ -1,4 +1,4 @@
-var mingo = require('../../dist/mingo')
+var mingo = require('../../es5')
 var samples = require('../support')
 var _ = mingo._internal()
 

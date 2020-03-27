@@ -100,22 +100,19 @@ export function assert (condition: boolean, message: string): void {
  * Deep clone an object
  */
 export function cloneDeep (obj: any): any {
-  // if (obj instanceof Array) return obj.map(cloneDeep)
-  // if (obj instanceof Object) return objectMap(obj, cloneDeep)
-
-  switch (jsType(obj)) {
-    case T_ARRAY: return obj.map(cloneDeep)
-    case T_OBJECT: return objectMap(obj, cloneDeep)
-    default: return obj
-  }
+  if (isArray(obj)) return obj.map(cloneDeep)
+  if (isDate(obj)) return new Date(obj)
+  if (isObject(obj)) return objectMap(obj, cloneDeep)
+  return obj
 }
 
 /**
  * Shallow clone an object
  */
 export function clone (obj: any): any {
-  if (obj instanceof Array) return into([], obj)
-  if (obj instanceof Object) return Object.assign({}, obj)
+  if (isArray(obj)) return into([], obj)
+  if (isDate(obj)) return new Date(obj)
+  if (isObject(obj)) return Object.assign({}, obj)
   return obj
 }
 
@@ -131,8 +128,8 @@ export function isNumber (v: any): v is number { return !isNaN(v) && typeof v ==
 export const isArray = Array.isArray || (v => v instanceof Array)
 export function isObject(v: any): boolean  { return !!v && v.constructor === Object }
 export function isObjectLike (v: any): boolean  { return v === Object(v) } // objects, arrays, functions, date, custom object
-export function isDate (v: any): boolean  { return jsType(v) === T_DATE }
-export function isRegExp (v: any): boolean { return jsType(v) === T_REGEXP }
+export function isDate (v: any): boolean  { return v instanceof Date }
+export function isRegExp (v: any): boolean { return v instanceof RegExp }
 export function isFunction (v: any) { return typeof v === T_FUNCTION }
 export function isNil (v: any): boolean  { return v === null || v === undefined }
 export function isNull (v: any): boolean  { return v === null }
