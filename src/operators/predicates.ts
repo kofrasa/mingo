@@ -33,9 +33,36 @@ import {
   isRegExp,
   isString,
   keys,
-  Predicate
+  Predicate,
+  resolve,
+  unwrap
 } from '../util'
 import { Query } from '../query'
+import { computeValue } from '../internal'
+
+/**
+ * Returns a query operator created from the predicate
+ * @param pred Predicate function
+ */
+export function createQueryOperator(pred: Predicate<any>) {
+  return (selector: string, value: any) => (obj: object) => {
+    // value of field must be fully resolved.
+    let lhs = resolve(obj, selector, { preserveMetadata: true })
+    lhs = unwrap(lhs.result, lhs.depth)
+    return pred(lhs, value)
+  }
+}
+
+/**
+ * Returns an expression operator created from the predicate
+ * @param f Predicate function
+ */
+export function createExpressionOperator(f: Predicate<any>) {
+  return (obj: object, expr: any) => {
+    let args = computeValue(obj, expr)
+    return f(...args)
+  }
+}
 
 /**
  * Checks that two values are equal.

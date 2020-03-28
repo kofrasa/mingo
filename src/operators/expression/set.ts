@@ -1,3 +1,7 @@
+/**
+ * Set Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#set-expression-operators
+ */
+
 import { union, unique, intersection, notInArray, truthy } from '../../util'
 import { computeValue } from '../../internal'
 

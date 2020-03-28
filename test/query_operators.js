@@ -1,5 +1,6 @@
 var test = require('tape')
 var mingo = require('../es5/')
+
 var samples = require('./support')
 var ObjectId = require('bson').ObjectId
 

@@ -1,21 +1,22 @@
+// Comparison Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#comparison-expression-operators
+
 import { computeValue } from '../../internal'
-import * as predicates from '../predicates'
-import { Predicate } from '../../util'
+import {
+  createExpressionOperator,
+  $eq as __eq,
+  $gt as __gt,
+  $gte as __gte,
+  $lt as __lt,
+  $lte as __lte,
+  $ne as __ne
+} from '../predicates'
 
-function createComparison(f: Predicate<any>) {
-  return (obj: object, expr: any) => {
-    let args = computeValue(obj, expr)
-    return f(args[0], args[1])
-  }
-}
-
-export const $eq = createComparison(predicates.$eq)
-export const $gt = createComparison(predicates.$gt)
-export const $gte = createComparison(predicates.$gte)
-export const $lt = createComparison(predicates.$lt)
-export const $lte = createComparison(predicates.$lte)
-export const $ne = createComparison(predicates.$ne)
-export const $nin = createComparison(predicates.$nin)
+export const $eq = createExpressionOperator(__eq)
+export const $gt = createExpressionOperator(__gt)
+export const $gte = createExpressionOperator(__gte)
+export const $lt = createExpressionOperator(__lt)
+export const $lte = createExpressionOperator(__lte)
+export const $ne = createExpressionOperator(__ne)
 
 /**
  * Compares two values and returns the result of the comparison as an integer.

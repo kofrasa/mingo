@@ -1,5 +1,5 @@
 /**
- * Aggregation framework variable operators
+ * Variable Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#variable-expression-operators
  */
 
 import { computeValue } from '../../internal'

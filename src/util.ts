@@ -144,7 +144,7 @@ export function isEmpty (x: any): boolean {
 }
 // ensure a value is an array
 export function ensureArray (x: any): any[] { return x instanceof Array ? x : [x] }
-export function has (obj: object, prop: any): boolean { return obj.hasOwnProperty(prop) }
+export function has (obj: object, prop: any): boolean { return !!obj && obj.hasOwnProperty(prop) }
 export const keys = Object.keys
 
 // ////////////////// UTILS ////////////////////
@@ -164,7 +164,7 @@ export function each (obj: object, fn: Callback<any>): void {
     }
   } else {
     for (let k in obj) {
-      if (obj.hasOwnProperty(k)) {
+      if (has(obj, k)) {
         if (fn(obj[k], k) === false) break
       }
     }
@@ -228,7 +228,7 @@ export function merge(target: object, obj: object, options: MergeOptions): objec
     }
   } else {
     Object.keys(obj).forEach((k) => {
-      if (target.hasOwnProperty(k)) {
+      if (has(target, k)) {
         target[k] = merge(target[k], obj[k], options)
       } else {
         target[k] = obj[k]
@@ -262,9 +262,39 @@ export function reduce<T> (collection: object, fn: Callback<any>, accumulator: T
  * @param  {Array} ys The second array
  * @return {Array}    Result array
  */
-export function intersection (xs: any[], ys: any[]): any[] {
-  let hashes = ys.map(hashCode)
-  return xs.filter(v => inArray(hashes, hashCode(v)))
+export function intersection (a: any[], b: any[]): any[] {
+  let flipped = false
+
+  // we ensure the left array is always smallest
+  if (a.length > b.length) {
+    let t = a
+    a = b
+    b = t
+    flipped = true
+  }
+
+  let maxSize = Math.max(a.length, b.length)
+  let maxResult = Math.min(a.length, b.length)
+
+  let lookup = a.reduce((memo, v, i) => {
+    memo[hashCode(v)] = i
+    return memo
+  }, {})
+
+  let indexes = []
+
+  for (let i = 0, j = 0; i < maxSize && j < maxResult; i++) {
+    let k = lookup[hashCode(b[i])]
+    if (k !== undefined) {
+      indexes.push(k)
+      j++
+    }
+  }
+
+  // unless we flipped the arguments we must sort the indexes to keep stability
+  if (!flipped) indexes.sort()
+
+  return indexes.map(i => a[i])
 }
 
 /**
@@ -713,7 +743,7 @@ export function filterMissing(obj: object): object {
     }
   } else if (isObject(obj)) {
     for (let k in obj) {
-      if (obj.hasOwnProperty(k)) {
+      if (has(obj, k)) {
         filterMissing(obj[k])
       }
     }

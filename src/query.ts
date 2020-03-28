@@ -9,7 +9,7 @@ import {
   Callback
 } from './util'
 import { Cursor } from './cursor'
-import { OP_QUERY, getOperator } from './internal'
+import { getOperator, OP_QUERY } from './internal'
 
 /**
  * Query object to test collection elements with

@@ -1,6 +1,7 @@
+// Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
+
 import {
   assert,
-  each,
   has,
   into,
   isArray,
@@ -14,6 +15,16 @@ import {
   truthy
 } from '../../util'
 import { computeValue } from '../../internal'
+import { createExpressionOperator, $nin as __nin } from '../predicates'
+
+/**
+ * Returns a boolean indicating whether a specified value is not an array.
+ * Note: This expression operator is missing from the documentation
+ *
+ * @param {Object} obj
+ * @param {Array} expr
+ */
+export const $nin = createExpressionOperator(__nin)
 
 /**
  * Returns the element at the specified array index.
@@ -170,17 +181,6 @@ export function $map(obj: object, expr: any): any {
 }
 
 /**
- * Converts a document to an array of documents representing key-value pairs.
- */
-export function $objectToArray(obj: object, expr: any): any {
-  let val = computeValue(obj, expr)
-  assert(isObject(val), '$objectToArray expression must resolve to an object')
-  let arr = []
-  each(val, (v, k) => arr.push({ k, v }))
-  return arr
-}
-
-/**
  * Returns an array whose elements are a generated sequence of numbers.
  *
  * @param  {Object} obj
@@ -307,17 +307,4 @@ export function $zip(obj: object, expr: any): any {
   }
 
   return result
-}
-
-/**
- * Combines multiple documents into a single document.
- * @param {*} obj
- * @param {*} expr
- */
-export function $mergeObjects(obj: object, expr: any): any {
-  let docs = computeValue(obj, expr)
-  if (isArray(docs)) {
-    return reduce(docs, (memo, o) => Object.assign(memo, o), {})
-  }
-  return {}
 }

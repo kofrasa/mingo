@@ -1,3 +1,7 @@
+/**
+ * Strin Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators
+ */
+
 import { assert, isEqual, isString, isNil, isNumber, isEmpty, inArray } from '../../util'
 import { computeValue } from '../../internal'
 

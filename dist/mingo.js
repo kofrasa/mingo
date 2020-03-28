@@ -161,6 +161,26 @@
     return _assertThisInitialized(self);
   }
 
+  function _toConsumableArray(arr) {
+    return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread();
+  }
+
+  function _arrayWithoutHoles(arr) {
+    if (Array.isArray(arr)) {
+      for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
+
+      return arr2;
+    }
+  }
+
+  function _iterableToArray(iter) {
+    if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter);
+  }
+
+  function _nonIterableSpread() {
+    throw new TypeError("Invalid attempt to spread non-iterable instance");
+  }
+
   // Javascript native types
   var T_NULL = 'null';
   var T_UNDEFINED = 'undefined';
@@ -315,7 +335,7 @@
     return x instanceof Array ? x : [x];
   }
   function has(obj, prop) {
-    return obj.hasOwnProperty(prop);
+    return !!obj && obj.hasOwnProperty(prop);
   }
   var keys = Object.keys; // ////////////////// UTILS ////////////////////
 
@@ -336,7 +356,7 @@
       }
     } else {
       for (var k in obj) {
-        if (obj.hasOwnProperty(k)) {
+        if (has(obj, k)) {
           if (fn(obj[k], k) === false) break;
         }
       }
@@ -403,7 +423,7 @@
       }
     } else {
       Object.keys(obj).forEach(function (k) {
-        if (target.hasOwnProperty(k)) {
+        if (has(target, k)) {
           target[k] = merge(target[k], obj[k], options);
         } else {
           target[k] = obj[k];
@@ -440,10 +460,37 @@
    * @return {Array}    Result array
    */
 
-  function intersection(xs, ys) {
-    var hashes = ys.map(hashCode);
-    return xs.filter(function (v) {
-      return inArray(hashes, hashCode(v));
+  function intersection(a, b) {
+    var flipped = false; // we ensure the left array is always smallest
+
+    if (a.length > b.length) {
+      var t = a;
+      a = b;
+      b = t;
+      flipped = true;
+    }
+
+    var maxSize = Math.max(a.length, b.length);
+    var maxResult = Math.min(a.length, b.length);
+    var lookup = a.reduce(function (memo, v, i) {
+      memo[hashCode(v)] = i;
+      return memo;
+    }, {});
+    var indexes = [];
+
+    for (var i = 0, j = 0; i < maxSize && j < maxResult; i++) {
+      var k = lookup[hashCode(b[i])];
+
+      if (k !== undefined) {
+        indexes.push(k);
+        j++;
+      }
+    } // unless we flipped the arguments we must sort the indexes to keep stability
+
+
+    if (!flipped) indexes.sort();
+    return indexes.map(function (i) {
+      return a[i];
     });
   }
   /**
@@ -932,7 +979,7 @@
       }
     } else if (isObject(obj)) {
       for (var k in obj) {
-        if (obj.hasOwnProperty(k)) {
+        if (has(obj, k)) {
           filterMissing(obj[k]);
         }
       }
@@ -1133,28 +1180,28 @@
     };
   }
 
+  var OP_ACCUMULATOR = 'accumulator';
   var OP_EXPRESSION = 'expression';
-  var OP_GROUP = 'group';
   var OP_PIPELINE = 'pipeline';
   var OP_PROJECTION = 'projection';
   var OP_QUERY = 'query'; // operator definitions
 
   var OPERATORS = Object.create({});
-  each([OP_GROUP, OP_EXPRESSION, OP_PIPELINE, OP_PROJECTION, OP_QUERY], function (cls) {
+  each([OP_ACCUMULATOR, OP_EXPRESSION, OP_PIPELINE, OP_PROJECTION, OP_QUERY], function (cls) {
     OPERATORS[cls] = Object.create({});
   });
   /**
-   * Enables the given operators for the specified category.
+   * Register fully specified operators for the given operator class.
    *
    * @param cls Category of the operator
    * @param operators Name of operator
    */
 
-  function enableOperators(cls, operators) {
+  function useOperators(cls, operators) {
     Object.assign(OPERATORS[cls], operators);
   }
   /**
-   * Returns the operator function as a callable or null if it is not found
+   * Returns the operator function or null if it is not found
    * @param cls Category of the operator
    * @param operator Name of the operator
    */
@@ -1166,7 +1213,7 @@
    * Add new operators
    *
    * @param cls the operator class to extend
-   * @param fn a function returning an object of new operators
+   * @param fn a callback that accepts internal object state and returns an object of new operators.
    */
 
   function addOperators(cls, fn) {
@@ -1188,9 +1235,7 @@
             return function (obj) {
               // value of field must be fully resolved.
               var lhs = resolve(obj, selector);
-              var result = fn(selector, lhs, value);
-              assert(isBoolean(result), "".concat(op, " must return a boolean"));
-              return result;
+              return fn(selector, lhs, value);
             };
           };
         });
@@ -1220,7 +1265,7 @@
     } // toss the operator salad :)
 
 
-    enableOperators(cls, wrapped);
+    useOperators(cls, wrapped);
   } // internal functions available to external operators
 
   var _internal = function _internal() {
@@ -1317,7 +1362,7 @@
    */
 
   function accumulate(collection, field, expr) {
-    var call = getOperator(OP_GROUP, field);
+    var call = getOperator(OP_ACCUMULATOR, field);
     if (call) return call(collection, expr);
 
     if (isObject(expr)) {
@@ -1326,7 +1371,7 @@
         result[key] = accumulate(collection, key, expr[key]); // must run ONLY one group operator per expression
         // if so, return result of the computed value
 
-        if (getOperator(OP_GROUP, key)) {
+        if (getOperator(OP_ACCUMULATOR, key)) {
           result = result[key]; // if there are more keys in expression this is bad
 
           assert(keys(expr).length === 1, "Invalid $group expression '" + JSON.stringify(expr) + "'");
@@ -1357,7 +1402,7 @@
     var call = getOperator(OP_EXPRESSION, operator);
     if (call) return call(obj, expr, options); // we also handle $group accumulator operators
 
-    call = getOperator(OP_GROUP, operator);
+    call = getOperator(OP_ACCUMULATOR, operator);
 
     if (call) {
       // we first fully resolve the expression
@@ -1398,7 +1443,7 @@
         result[key] = computeValue(obj, val, key, options); // must run ONLY one aggregate operator per expression
         // if so, return result of the computed value
 
-        if ([OP_EXPRESSION, OP_GROUP].some(function (c) {
+        if ([OP_EXPRESSION, OP_ACCUMULATOR].some(function (c) {
           return has(OPERATORS[c], key);
         })) {
           // there should be only one operator
@@ -1426,8 +1471,176 @@
   }
 
   /**
+   * Returns an array of all values for the selected field among for each document in that group.
+   *
+   * @param collection
+   * @param expr
+   * @returns {Array|*}
+   */
+
+  function $push(collection, expr) {
+    if (isNil(expr)) return collection;
+    return collection.map(function (obj) {
+      return computeValue(obj, expr);
+    });
+  }
+
+  /**
+   * Returns an array of all the unique values for the selected field among for each document in that group.
+   *
+   * @param collection
+   * @param expr
+   * @returns {*}
+   */
+
+  function $addToSet(collection, expr) {
+    return unique($push(collection, expr));
+  }
+
+  /**
+   * Returns an average of all the values in a group.
+   *
+   * @param collection
+   * @param expr
+   * @returns {number}
+   */
+
+  function $avg(collection, expr) {
+    var data = $push(collection, expr).filter(isNumber);
+    var sum = reduce(data, function (acc, n) {
+      return acc + n;
+    }, 0);
+    return sum / (data.length || 1);
+  }
+
+  /**
+   * Returns the first value in a group.
+   *
+   * @param collection
+   * @param expr
+   * @returns {*}
+   */
+
+  function $first(collection, expr) {
+    return collection.length > 0 ? computeValue(collection[0], expr) : undefined;
+  }
+
+  /**
+   * Returns the last value in a group.
+   *
+   * @param collection
+   * @param expr
+   * @returns {*}
+   */
+
+  function $last(collection, expr) {
+    return collection.length > 0 ? computeValue(collection[collection.length - 1], expr) : undefined;
+  }
+
+  /**
+   * Returns the highest value in a group.
+   *
+   * @param collection
+   * @param expr
+   * @returns {*}
+   */
+
+  function $max(collection, expr) {
+    return reduce($push(collection, expr), function (acc, n) {
+      return isNil(acc) || n > acc ? n : acc;
+    }, undefined);
+  }
+
+  /**
+   * Combines multiple documents into a single document.
+   *
+   * @param collection
+   * @param expr
+   * @returns {Array|*}
+   */
+
+  function $mergeObjects(collection, expr) {
+    return reduce(collection, function (memo, o) {
+      return Object.assign(memo, computeValue(o, expr));
+    }, {});
+  }
+
+  /**
+   * Returns the lowest value in a group.
+   *
+   * @param collection
+   * @param expr
+   * @returns {*}
+   */
+
+  function $min(collection, expr) {
+    return reduce($push(collection, expr), function (acc, n) {
+      return isNil(acc) || n < acc ? n : acc;
+    }, undefined);
+  }
+
+  /**
+   * Returns the population standard deviation of the input values.
+   *
+   * @param  {Array} collection
+   * @param  {Object} expr
+   * @return {Number}
+   */
+
+  function $stdDevPop(collection, expr) {
+    return stddev($push(collection, expr).filter(isNumber), false);
+  }
+
+  /**
+   * Returns the sample standard deviation of the input values.
+   * @param  {Array} collection
+   * @param  {Object} expr
+   * @return {Number|null}
+   */
+
+  function $stdDevSamp(collection, expr) {
+    return stddev($push(collection, expr).filter(isNumber), true);
+  }
+
+  /**
+   * Returns the sum of all the values in a group.
+   *
+   * @param collection
+   * @param expr
+   * @returns {*}
+   */
+
+  function $sum(collection, expr) {
+    if (!isArray(collection)) return 0; // take a short cut if expr is number literal
+
+    if (isNumber(expr)) return collection.length * expr;
+    return reduce($push(collection, expr).filter(isNumber), function (acc, n) {
+      return acc + n;
+    }, 0);
+  }
+
+  /**
+   * Group stage Accumulator Operators. https://docs.mongodb.com/manual/reference/operator/aggregation-
+   */
+
+  var accumulatorOperators = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    $addToSet: $addToSet,
+    $avg: $avg,
+    $first: $first,
+    $last: $last,
+    $max: $max,
+    $mergeObjects: $mergeObjects,
+    $min: $min,
+    $push: $push,
+    $stdDevPop: $stdDevPop,
+    $stdDevSamp: $stdDevSamp,
+    $sum: $sum
+  });
+
+  // Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
+  /**
    * Returns the absolute value of a number.
-   * https://docs.mongodb.com/manual/reference/operator/aggregation/abs/#exp._S_abs
    *
    * @param obj
    * @param expr
@@ -1707,356 +1920,6 @@
     }
 
     return result * sign;
-  }
-
-  /**
-   * Returns the element at the specified array index.
-   *
-   * @param  {Object} obj
-   * @param  {*} expr
-   * @return {*}
-   */
-
-  function $arrayElemAt(obj, expr) {
-    var arr = computeValue(obj, expr);
-    assert(isArray(arr) && arr.length === 2, '$arrayElemAt expression must resolve to array(2)');
-    assert(isArray(arr[0]), 'First operand to $arrayElemAt must resolve to an array');
-    assert(isNumber(arr[1]), 'Second operand to $arrayElemAt must resolve to an integer');
-    var idx = arr[1];
-    arr = arr[0];
-
-    if (idx < 0 && Math.abs(idx) <= arr.length) {
-      return arr[idx + arr.length];
-    } else if (idx >= 0 && idx < arr.length) {
-      return arr[idx];
-    }
-
-    return undefined;
-  }
-  /**
-   * Converts an array of key value pairs to a document.
-   */
-
-  function $arrayToObject(obj, expr) {
-    var arr = computeValue(obj, expr);
-    assert(isArray(arr), '$arrayToObject expression must resolve to an array');
-    return reduce(arr, function (newObj, val) {
-      if (isArray(val) && val.length == 2) {
-        newObj[val[0]] = val[1];
-      } else {
-        assert(isObject(val) && has(val, 'k') && has(val, 'v'), '$arrayToObject expression is invalid.');
-        newObj[val.k] = val.v;
-      }
-
-      return newObj;
-    }, {});
-  }
-  /**
-   * Concatenates arrays to return the concatenated array.
-   *
-   * @param  {Object} obj
-   * @param  {*} expr
-   * @return {*}
-   */
-
-  function $concatArrays(obj, expr) {
-    var arr = computeValue(obj, expr, null);
-    assert(isArray(arr), '$concatArrays must resolve to an array');
-    if (arr.some(isNil)) return null;
-    return arr.reduce(function (acc, item) {
-      return into(acc, item);
-    }, []);
-  }
-  /**
-   * Selects a subset of the array to return an array with only the elements that match the filter condition.
-   *
-   * @param  {Object} obj  [description]
-   * @param  {*} expr [description]
-   * @return {*}      [description]
-   */
-
-  function $filter(obj, expr) {
-    var input = computeValue(obj, expr.input);
-    var asVar = expr['as'];
-    var condExpr = expr['cond'];
-    assert(isArray(input), "$filter 'input' expression must resolve to an array");
-    return input.filter(function (o) {
-      // inject variable
-      var tempObj = {};
-      tempObj['$' + asVar] = o;
-      return computeValue(tempObj, condExpr) === true;
-    });
-  }
-  /**
-   * Returns a boolean indicating whether a specified value is in an array.
-   *
-   * @param {Object} obj
-   * @param {Array} expr
-   */
-
-  function $in(obj, expr) {
-    var val = computeValue(obj, expr[0]);
-    var arr = computeValue(obj, expr[1]);
-    assert(isArray(arr), '$in second argument must be an array');
-    return arr.some(isEqual.bind(null, val));
-  }
-  /**
-   * Searches an array for an occurrence of a specified value and returns the array index of the first occurrence.
-   * If the substring is not found, returns -1.
-   *
-   * @param  {Object} obj
-   * @param  {*} expr
-   * @return {*}
-   */
-
-  function $indexOfArray(obj, expr) {
-    var args = computeValue(obj, expr);
-    if (isNil(args)) return null;
-    var arr = args[0];
-    var searchValue = args[1];
-    if (isNil(arr)) return null;
-    assert(isArray(arr), '$indexOfArray expression must resolve to an array.');
-    var start = args[2] || 0;
-    var end = args[3];
-    if (isNil(end)) end = arr.length;
-    if (start > end) return -1;
-    assert(start >= 0 && end >= 0, '$indexOfArray expression is invalid');
-
-    if (start > 0 || end < arr.length) {
-      arr = arr.slice(start, end);
-    }
-
-    return arr.findIndex(isEqual.bind(null, searchValue)) + start;
-  }
-  /**
-   * Determines if the operand is an array. Returns a boolean.
-   *
-   * @param  {Object}  obj
-   * @param  {*}  expr
-   * @return {Boolean}
-   */
-
-  function $isArray(obj, expr) {
-    return isArray(computeValue(obj, expr[0]));
-  }
-  /**
-   * Applies a sub-expression to each element of an array and returns the array of resulting values in order.
-   *
-   * @param obj
-   * @param expr
-   * @returns {Array|*}
-   */
-
-  function $map(obj, expr) {
-    var inputExpr = computeValue(obj, expr.input);
-    assert(isArray(inputExpr), "$map 'input' expression must resolve to an array");
-    var asExpr = expr['as'];
-    var inExpr = expr['in']; // HACK: add the "as" expression as a value on the object to take advantage of "resolve()"
-    // which will reduce to that value when invoked. The reference to the as expression will be prefixed with "$$".
-    // But since a "$" is stripped of before passing the name to "resolve()" we just need to prepend "$" to the key.
-
-    var tempKey = '$' + asExpr;
-    return inputExpr.map(function (v) {
-      obj[tempKey] = v;
-      return computeValue(obj, inExpr);
-    });
-  }
-  /**
-   * Converts a document to an array of documents representing key-value pairs.
-   */
-
-  function $objectToArray(obj, expr) {
-    var val = computeValue(obj, expr);
-    assert(isObject(val), '$objectToArray expression must resolve to an object');
-    var arr = [];
-    each(val, function (v, k) {
-      return arr.push({
-        k: k,
-        v: v
-      });
-    });
-    return arr;
-  }
-  /**
-   * Returns an array whose elements are a generated sequence of numbers.
-   *
-   * @param  {Object} obj
-   * @param  {*} expr
-   * @return {*}
-   */
-
-  function $range(obj, expr) {
-    var arr = computeValue(obj, expr);
-    var start = arr[0];
-    var end = arr[1];
-    var step = arr[2] || 1;
-    var result = [];
-
-    while (start < end && step > 0 || start > end && step < 0) {
-      result.push(start);
-      start += step;
-    }
-
-    return result;
-  }
-  /**
-   * Applies an expression to each element in an array and combines them into a single value.
-   *
-   * @param {Object} obj
-   * @param {*} expr
-   */
-
-  function $reduce(obj, expr) {
-    var input = computeValue(obj, expr.input);
-    var initialValue = computeValue(obj, expr.initialValue);
-    var inExpr = expr['in'];
-    if (isNil(input)) return null;
-    assert(isArray(input), "$reduce 'input' expression must resolve to an array");
-    return reduce(input, function (acc, n) {
-      return computeValue({
-        '$value': acc,
-        '$this': n
-      }, inExpr);
-    }, initialValue);
-  }
-  /**
-   * Returns an array with the elements in reverse order.
-   *
-   * @param  {Object} obj
-   * @param  {*} expr
-   * @return {*}
-   */
-
-  function $reverseArray(obj, expr) {
-    var arr = computeValue(obj, expr);
-    if (isNil(arr)) return null;
-    assert(isArray(arr), '$reverseArray expression must resolve to an array');
-    var result = [];
-    into(result, arr);
-    result.reverse();
-    return result;
-  }
-  /**
-   * Counts and returns the total the number of items in an array.
-   *
-   * @param obj
-   * @param expr
-   */
-
-  function $size(obj, expr) {
-    var value = computeValue(obj, expr);
-    return isArray(value) ? value.length : undefined;
-  }
-  /**
-   * Returns a subset of an array.
-   *
-   * @param  {Object} obj
-   * @param  {*} expr
-   * @return {*}
-   */
-
-  function $slice(obj, expr) {
-    var arr = computeValue(obj, expr);
-    return slice(arr[0], arr[1], arr[2]);
-  }
-  /**
-   * Merge two lists together.
-   *
-   * Transposes an array of input arrays so that the first element of the output array would be an array containing,
-   * the first element of the first input array, the first element of the second input array, etc.
-   *
-   * @param  {Obj} obj
-   * @param  {*} expr
-   * @return {*}
-   */
-
-  function $zip(obj, expr) {
-    var inputs = computeValue(obj, expr.inputs);
-    var useLongestLength = expr.useLongestLength || false;
-    assert(isArray(inputs), "'inputs' expression must resolve to an array");
-    assert(isBoolean(useLongestLength), "'useLongestLength' must be a boolean");
-
-    if (isArray(expr.defaults)) {
-      assert(truthy(useLongestLength), "'useLongestLength' must be set to true to use 'defaults'");
-    }
-
-    var zipCount = 0;
-
-    for (var i = 0, len = inputs.length; i < len; i++) {
-      var arr = inputs[i];
-      if (isNil(arr)) return null;
-      assert(isArray(arr), "'inputs' expression values must resolve to an array or null");
-      zipCount = useLongestLength ? Math.max(zipCount, arr.length) : Math.min(zipCount || arr.length, arr.length);
-    }
-
-    var result = [];
-    var defaults = expr.defaults || [];
-
-    var _loop = function _loop(_i) {
-      var temp = inputs.map(function (val, index) {
-        return isNil(val[_i]) ? defaults[index] || null : val[_i];
-      });
-      result.push(temp);
-    };
-
-    for (var _i = 0; _i < zipCount; _i++) {
-      _loop(_i);
-    }
-
-    return result;
-  }
-  /**
-   * Combines multiple documents into a single document.
-   * @param {*} obj
-   * @param {*} expr
-   */
-
-  function $mergeObjects(obj, expr) {
-    var docs = computeValue(obj, expr);
-
-    if (isArray(docs)) {
-      return reduce(docs, function (memo, o) {
-        return Object.assign(memo, o);
-      }, {});
-    }
-
-    return {};
-  }
-
-  /**
-   * Returns true only when all its expressions evaluate to true. Accepts any number of argument expressions.
-   *
-   * @param obj
-   * @param expr
-   * @returns {boolean}
-   */
-
-  function $and(obj, expr) {
-    var value = computeValue(obj, expr);
-    return truthy(value) && value.every(truthy);
-  }
-  /**
-   * Returns true when any of its expressions evaluates to true. Accepts any number of argument expressions.
-   *
-   * @param obj
-   * @param expr
-   * @returns {boolean}
-   */
-
-  function $or(obj, expr) {
-    var value = computeValue(obj, expr);
-    return truthy(value) && value.some(truthy);
-  }
-  /**
-   * Returns the boolean value that is the opposite of its argument expression. Accepts a single argument expression.
-   *
-   * @param obj
-   * @param expr
-   * @returns {boolean}
-   */
-
-  function $not(obj, expr) {
-    return !computeValue(obj, expr[0]);
   }
 
   /**
@@ -2790,8 +2653,33 @@
   }
 
   /**
-   * Query and Projection Operators. https://docs.mongodb.com/manual/reference/operator/query/
+   * Returns a query operator created from the predicate
+   * @param pred Predicate function
    */
+
+  function createQueryOperator(pred) {
+    return function (selector, value) {
+      return function (obj) {
+        // value of field must be fully resolved.
+        var lhs = resolve(obj, selector, {
+          preserveMetadata: true
+        });
+        lhs = unwrap(lhs.result, lhs.depth);
+        return pred(lhs, value);
+      };
+    };
+  }
+  /**
+   * Returns an expression operator created from the predicate
+   * @param f Predicate function
+   */
+
+  function createExpressionOperator(f) {
+    return function (obj, expr) {
+      var args = computeValue(obj, expr);
+      return f.apply(void 0, _toConsumableArray(args));
+    };
+  }
   /**
    * Checks that two values are equal.
    *
@@ -2832,7 +2720,7 @@
    * @returns {*}
    */
 
-  function $in$1(a, b) {
+  function $in(a, b) {
     // queries for null should be able to find undefined fields
     if (isNil(a)) return b.some(isNull);
     return intersection(ensureArray(a), b).length > 0;
@@ -2846,7 +2734,7 @@
    */
 
   function $nin(a, b) {
-    return !$in$1(a, b);
+    return !$in(a, b);
   }
   /**
    * Matches values that are less than the value specified in the query.
@@ -2973,7 +2861,7 @@
    * @returns {*|boolean}
    */
 
-  function $size$1(a, b) {
+  function $size(a, b) {
     return a.length === b;
   }
   /**
@@ -3084,20 +2972,341 @@
     });
   }
 
-  function createComparison(f) {
-    return function (obj, expr) {
-      var args = computeValue(obj, expr);
-      return f(args[0], args[1]);
+  // Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
+  /**
+   * Returns a boolean indicating whether a specified value is not an array.
+   * Note: This expression operator is missing from the documentation
+   *
+   * @param {Object} obj
+   * @param {Array} expr
+   */
+
+  var $nin$1 = createExpressionOperator($nin);
+  /**
+   * Returns the element at the specified array index.
+   *
+   * @param  {Object} obj
+   * @param  {*} expr
+   * @return {*}
+   */
+
+  function $arrayElemAt(obj, expr) {
+    var arr = computeValue(obj, expr);
+    assert(isArray(arr) && arr.length === 2, '$arrayElemAt expression must resolve to array(2)');
+    assert(isArray(arr[0]), 'First operand to $arrayElemAt must resolve to an array');
+    assert(isNumber(arr[1]), 'Second operand to $arrayElemAt must resolve to an integer');
+    var idx = arr[1];
+    arr = arr[0];
+
+    if (idx < 0 && Math.abs(idx) <= arr.length) {
+      return arr[idx + arr.length];
+    } else if (idx >= 0 && idx < arr.length) {
+      return arr[idx];
+    }
+
+    return undefined;
+  }
+  /**
+   * Converts an array of key value pairs to a document.
+   */
+
+  function $arrayToObject(obj, expr) {
+    var arr = computeValue(obj, expr);
+    assert(isArray(arr), '$arrayToObject expression must resolve to an array');
+    return reduce(arr, function (newObj, val) {
+      if (isArray(val) && val.length == 2) {
+        newObj[val[0]] = val[1];
+      } else {
+        assert(isObject(val) && has(val, 'k') && has(val, 'v'), '$arrayToObject expression is invalid.');
+        newObj[val.k] = val.v;
+      }
+
+      return newObj;
+    }, {});
+  }
+  /**
+   * Concatenates arrays to return the concatenated array.
+   *
+   * @param  {Object} obj
+   * @param  {*} expr
+   * @return {*}
+   */
+
+  function $concatArrays(obj, expr) {
+    var arr = computeValue(obj, expr, null);
+    assert(isArray(arr), '$concatArrays must resolve to an array');
+    if (arr.some(isNil)) return null;
+    return arr.reduce(function (acc, item) {
+      return into(acc, item);
+    }, []);
+  }
+  /**
+   * Selects a subset of the array to return an array with only the elements that match the filter condition.
+   *
+   * @param  {Object} obj  [description]
+   * @param  {*} expr [description]
+   * @return {*}      [description]
+   */
+
+  function $filter(obj, expr) {
+    var input = computeValue(obj, expr.input);
+    var asVar = expr['as'];
+    var condExpr = expr['cond'];
+    assert(isArray(input), "$filter 'input' expression must resolve to an array");
+    return input.filter(function (o) {
+      // inject variable
+      var tempObj = {};
+      tempObj['$' + asVar] = o;
+      return computeValue(tempObj, condExpr) === true;
+    });
+  }
+  /**
+   * Returns a boolean indicating whether a specified value is in an array.
+   *
+   * @param {Object} obj
+   * @param {Array} expr
+   */
+
+  function $in$1(obj, expr) {
+    var val = computeValue(obj, expr[0]);
+    var arr = computeValue(obj, expr[1]);
+    assert(isArray(arr), '$in second argument must be an array');
+    return arr.some(isEqual.bind(null, val));
+  }
+  /**
+   * Searches an array for an occurrence of a specified value and returns the array index of the first occurrence.
+   * If the substring is not found, returns -1.
+   *
+   * @param  {Object} obj
+   * @param  {*} expr
+   * @return {*}
+   */
+
+  function $indexOfArray(obj, expr) {
+    var args = computeValue(obj, expr);
+    if (isNil(args)) return null;
+    var arr = args[0];
+    var searchValue = args[1];
+    if (isNil(arr)) return null;
+    assert(isArray(arr), '$indexOfArray expression must resolve to an array.');
+    var start = args[2] || 0;
+    var end = args[3];
+    if (isNil(end)) end = arr.length;
+    if (start > end) return -1;
+    assert(start >= 0 && end >= 0, '$indexOfArray expression is invalid');
+
+    if (start > 0 || end < arr.length) {
+      arr = arr.slice(start, end);
+    }
+
+    return arr.findIndex(isEqual.bind(null, searchValue)) + start;
+  }
+  /**
+   * Determines if the operand is an array. Returns a boolean.
+   *
+   * @param  {Object}  obj
+   * @param  {*}  expr
+   * @return {Boolean}
+   */
+
+  function $isArray(obj, expr) {
+    return isArray(computeValue(obj, expr[0]));
+  }
+  /**
+   * Applies a sub-expression to each element of an array and returns the array of resulting values in order.
+   *
+   * @param obj
+   * @param expr
+   * @returns {Array|*}
+   */
+
+  function $map(obj, expr) {
+    var inputExpr = computeValue(obj, expr.input);
+    assert(isArray(inputExpr), "$map 'input' expression must resolve to an array");
+    var asExpr = expr['as'];
+    var inExpr = expr['in']; // HACK: add the "as" expression as a value on the object to take advantage of "resolve()"
+    // which will reduce to that value when invoked. The reference to the as expression will be prefixed with "$$".
+    // But since a "$" is stripped of before passing the name to "resolve()" we just need to prepend "$" to the key.
+
+    var tempKey = '$' + asExpr;
+    return inputExpr.map(function (v) {
+      obj[tempKey] = v;
+      return computeValue(obj, inExpr);
+    });
+  }
+  /**
+   * Returns an array whose elements are a generated sequence of numbers.
+   *
+   * @param  {Object} obj
+   * @param  {*} expr
+   * @return {*}
+   */
+
+  function $range(obj, expr) {
+    var arr = computeValue(obj, expr);
+    var start = arr[0];
+    var end = arr[1];
+    var step = arr[2] || 1;
+    var result = [];
+
+    while (start < end && step > 0 || start > end && step < 0) {
+      result.push(start);
+      start += step;
+    }
+
+    return result;
+  }
+  /**
+   * Applies an expression to each element in an array and combines them into a single value.
+   *
+   * @param {Object} obj
+   * @param {*} expr
+   */
+
+  function $reduce(obj, expr) {
+    var input = computeValue(obj, expr.input);
+    var initialValue = computeValue(obj, expr.initialValue);
+    var inExpr = expr['in'];
+    if (isNil(input)) return null;
+    assert(isArray(input), "$reduce 'input' expression must resolve to an array");
+    return reduce(input, function (acc, n) {
+      return computeValue({
+        '$value': acc,
+        '$this': n
+      }, inExpr);
+    }, initialValue);
+  }
+  /**
+   * Returns an array with the elements in reverse order.
+   *
+   * @param  {Object} obj
+   * @param  {*} expr
+   * @return {*}
+   */
+
+  function $reverseArray(obj, expr) {
+    var arr = computeValue(obj, expr);
+    if (isNil(arr)) return null;
+    assert(isArray(arr), '$reverseArray expression must resolve to an array');
+    var result = [];
+    into(result, arr);
+    result.reverse();
+    return result;
+  }
+  /**
+   * Counts and returns the total the number of items in an array.
+   *
+   * @param obj
+   * @param expr
+   */
+
+  function $size$1(obj, expr) {
+    var value = computeValue(obj, expr);
+    return isArray(value) ? value.length : undefined;
+  }
+  /**
+   * Returns a subset of an array.
+   *
+   * @param  {Object} obj
+   * @param  {*} expr
+   * @return {*}
+   */
+
+  function $slice(obj, expr) {
+    var arr = computeValue(obj, expr);
+    return slice(arr[0], arr[1], arr[2]);
+  }
+  /**
+   * Merge two lists together.
+   *
+   * Transposes an array of input arrays so that the first element of the output array would be an array containing,
+   * the first element of the first input array, the first element of the second input array, etc.
+   *
+   * @param  {Obj} obj
+   * @param  {*} expr
+   * @return {*}
+   */
+
+  function $zip(obj, expr) {
+    var inputs = computeValue(obj, expr.inputs);
+    var useLongestLength = expr.useLongestLength || false;
+    assert(isArray(inputs), "'inputs' expression must resolve to an array");
+    assert(isBoolean(useLongestLength), "'useLongestLength' must be a boolean");
+
+    if (isArray(expr.defaults)) {
+      assert(truthy(useLongestLength), "'useLongestLength' must be set to true to use 'defaults'");
+    }
+
+    var zipCount = 0;
+
+    for (var i = 0, len = inputs.length; i < len; i++) {
+      var arr = inputs[i];
+      if (isNil(arr)) return null;
+      assert(isArray(arr), "'inputs' expression values must resolve to an array or null");
+      zipCount = useLongestLength ? Math.max(zipCount, arr.length) : Math.min(zipCount || arr.length, arr.length);
+    }
+
+    var result = [];
+    var defaults = expr.defaults || [];
+
+    var _loop = function _loop(_i) {
+      var temp = inputs.map(function (val, index) {
+        return isNil(val[_i]) ? defaults[index] || null : val[_i];
+      });
+      result.push(temp);
     };
+
+    for (var _i = 0; _i < zipCount; _i++) {
+      _loop(_i);
+    }
+
+    return result;
   }
 
-  var $eq$1 = createComparison($eq);
-  var $gt$1 = createComparison($gt);
-  var $gte$1 = createComparison($gte);
-  var $lt$1 = createComparison($lt);
-  var $lte$1 = createComparison($lte);
-  var $ne$1 = createComparison($ne);
-  var $nin$1 = createComparison($nin);
+  // Boolean Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#boolean-expression-operators
+  /**
+   * Returns true only when all its expressions evaluate to true. Accepts any number of argument expressions.
+   *
+   * @param obj
+   * @param expr
+   * @returns {boolean}
+   */
+
+  function $and(obj, expr) {
+    var value = computeValue(obj, expr);
+    return truthy(value) && value.every(truthy);
+  }
+  /**
+   * Returns true when any of its expressions evaluates to true. Accepts any number of argument expressions.
+   *
+   * @param obj
+   * @param expr
+   * @returns {boolean}
+   */
+
+  function $or(obj, expr) {
+    var value = computeValue(obj, expr);
+    return truthy(value) && value.some(truthy);
+  }
+  /**
+   * Returns the boolean value that is the opposite of its argument expression. Accepts a single argument expression.
+   *
+   * @param obj
+   * @param expr
+   * @returns {boolean}
+   */
+
+  function $not(obj, expr) {
+    return !computeValue(obj, expr[0]);
+  }
+
+  // Comparison Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#comparison-expression-operators
+  var $eq$1 = createExpressionOperator($eq);
+  var $gt$1 = createExpressionOperator($gt);
+  var $gte$1 = createExpressionOperator($gte);
+  var $lt$1 = createExpressionOperator($lt);
+  var $lte$1 = createExpressionOperator($lte);
+  var $ne$1 = createExpressionOperator($ne);
   /**
    * Compares two values and returns the result of the comparison as an integer.
    *
@@ -3114,7 +3323,7 @@
   }
 
   /**
-   * Conditional operators
+   * Conditional Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#conditional-expression-operators
    */
   /**
    * A ternary operator that evaluates one expression,
@@ -3143,7 +3352,7 @@
     }
 
     var condition = computeValue(obj, ifExpr);
-    return condition ? computeValue(obj, thenExpr) : computeValue(obj, elseExpr);
+    return computeValue(obj, condition ? thenExpr : elseExpr);
   }
   /**
    * An operator that evaluates a series of case expressions. When it finds an expression which
@@ -3175,6 +3384,9 @@
     return isNil(args[0]) ? args[1] : args[0];
   }
 
+  /**
+   * Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
+   */
   var ONE_DAY_MILLIS = 1000 * 60 * 60 * 24;
   /**
    * Computes a date expression
@@ -3660,6 +3872,8 @@
     throw new TypeConvertError("failed to convert ".concat(ctx.input, " to ").concat(ctx.to));
   }
 
+  // Literal Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#literal-expression-operator
+
   /**
    * Return a value without parsing.
    * @param obj
@@ -3669,6 +3883,39 @@
     return expr;
   }
 
+  // Object Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#object-expression-operators
+  /**
+   * Converts a document to an array of documents representing key-value pairs.
+   */
+
+  function $objectToArray(obj, expr) {
+    var val = computeValue(obj, expr);
+    assert(isObject(val), '$objectToArray expression must resolve to an object');
+    var arr = [];
+    each(val, function (v, k) {
+      return arr.push({
+        k: k,
+        v: v
+      });
+    });
+    return arr;
+  }
+  /**
+   * Combines multiple documents into a single document.
+   * @param {*} obj
+   * @param {*} expr
+   */
+
+  function $mergeObjects$1(obj, expr) {
+    var docs = computeValue(obj, expr);
+    return isArray(docs) ? reduce(docs, function (memo, o) {
+      return Object.assign(memo, o);
+    }, {}) : {};
+  }
+
+  /**
+   * Set Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#set-expression-operators
+   */
   /**
    * Returns true if two sets have the same elements.
    * @param obj
@@ -3744,6 +3991,9 @@
     return args.every(truthy);
   }
 
+  /**
+   * Strin Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators
+   */
   /**
    * Concatenates two strings.
    *
@@ -3950,7 +4200,7 @@
   }
 
   /**
-   * Aggregation framework variable operators
+   * Variable Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#variable-expression-operators
    */
   /**
    * Defines variables for use within the scope of a sub-expression and returns the result of the sub-expression.
@@ -3990,22 +4240,21 @@
     $sqrt: $sqrt,
     $subtract: $subtract,
     $trunc: $trunc,
+    $nin: $nin$1,
     $arrayElemAt: $arrayElemAt,
     $arrayToObject: $arrayToObject,
     $concatArrays: $concatArrays,
     $filter: $filter,
-    $in: $in,
+    $in: $in$1,
     $indexOfArray: $indexOfArray,
     $isArray: $isArray,
     $map: $map,
-    $objectToArray: $objectToArray,
     $range: $range,
     $reduce: $reduce,
     $reverseArray: $reverseArray,
-    $size: $size,
+    $size: $size$1,
     $slice: $slice,
     $zip: $zip,
-    $mergeObjects: $mergeObjects,
     $and: $and,
     $or: $or,
     $not: $not,
@@ -4015,7 +4264,6 @@
     $lt: $lt$1,
     $lte: $lte$1,
     $ne: $ne$1,
-    $nin: $nin$1,
     $cmp: $cmp,
     $cond: $cond,
     $switch: $switch,
@@ -4043,6 +4291,8 @@
     $dateToString: $dateToString,
     $dateFromString: $dateFromString,
     $literal: $literal,
+    $objectToArray: $objectToArray,
+    $mergeObjects: $mergeObjects$1,
     $setEquals: $setEquals,
     $setIntersection: $setIntersection,
     $setDifference: $setDifference,
@@ -4062,174 +4312,6 @@
     $toLower: $toLower,
     $toUpper: $toUpper,
     $let: $let
-  });
-
-  /**
-   * Returns an array of all values for the selected field among for each document in that group.
-   *
-   * @param collection
-   * @param expr
-   * @returns {Array|*}
-   */
-
-  function $push(collection, expr) {
-    if (isNil(expr)) return collection;
-    return collection.map(function (obj) {
-      return computeValue(obj, expr);
-    });
-  }
-
-  /**
-   * Returns an array of all the unique values for the selected field among for each document in that group.
-   *
-   * @param collection
-   * @param expr
-   * @returns {*}
-   */
-
-  function $addToSet(collection, expr) {
-    return unique($push(collection, expr));
-  }
-
-  /**
-   * Returns an average of all the values in a group.
-   *
-   * @param collection
-   * @param expr
-   * @returns {number}
-   */
-
-  function $avg(collection, expr) {
-    var data = $push(collection, expr).filter(isNumber);
-    var sum = reduce(data, function (acc, n) {
-      return acc + n;
-    }, 0);
-    return sum / (data.length || 1);
-  }
-
-  /**
-   * Returns the first value in a group.
-   *
-   * @param collection
-   * @param expr
-   * @returns {*}
-   */
-
-  function $first(collection, expr) {
-    return collection.length > 0 ? computeValue(collection[0], expr) : undefined;
-  }
-
-  /**
-   * Returns the last value in a group.
-   *
-   * @param collection
-   * @param expr
-   * @returns {*}
-   */
-
-  function $last(collection, expr) {
-    return collection.length > 0 ? computeValue(collection[collection.length - 1], expr) : undefined;
-  }
-
-  /**
-   * Returns the highest value in a group.
-   *
-   * @param collection
-   * @param expr
-   * @returns {*}
-   */
-
-  function $max(collection, expr) {
-    return reduce($push(collection, expr), function (acc, n) {
-      return isNil(acc) || n > acc ? n : acc;
-    }, undefined);
-  }
-
-  /**
-   * Combines multiple documents into a single document.
-   *
-   * @param collection
-   * @param expr
-   * @returns {Array|*}
-   */
-
-  function $mergeObjects$1(collection, expr) {
-    return reduce(collection, function (memo, o) {
-      return Object.assign(memo, computeValue(o, expr));
-    }, {});
-  }
-
-  /**
-   * Returns the lowest value in a group.
-   *
-   * @param collection
-   * @param expr
-   * @returns {*}
-   */
-
-  function $min(collection, expr) {
-    return reduce($push(collection, expr), function (acc, n) {
-      return isNil(acc) || n < acc ? n : acc;
-    }, undefined);
-  }
-
-  /**
-   * Returns the population standard deviation of the input values.
-   *
-   * @param  {Array} collection
-   * @param  {Object} expr
-   * @return {Number}
-   */
-
-  function $stdDevPop(collection, expr) {
-    return stddev($push(collection, expr).filter(isNumber), false);
-  }
-
-  /**
-   * Returns the sample standard deviation of the input values.
-   * @param  {Array} collection
-   * @param  {Object} expr
-   * @return {Number|null}
-   */
-
-  function $stdDevSamp(collection, expr) {
-    return stddev($push(collection, expr).filter(isNumber), true);
-  }
-
-  /**
-   * Returns the sum of all the values in a group.
-   *
-   * @param collection
-   * @param expr
-   * @returns {*}
-   */
-
-  function $sum(collection, expr) {
-    if (!isArray(collection)) return 0; // take a short cut if expr is number literal
-
-    if (isNumber(expr)) return collection.length * expr;
-    return reduce($push(collection, expr).filter(isNumber), function (acc, n) {
-      return acc + n;
-    }, 0);
-  }
-
-  /**
-   * Group stage Accumulator Operators. https://docs.mongodb.com/manual/reference/operator/aggregation-
-   */
-
-  var accumulatorOperators = /*#__PURE__*/Object.freeze({
-    __proto__: null,
-    $addToSet: $addToSet,
-    $avg: $avg,
-    $first: $first,
-    $last: $last,
-    $max: $max,
-    $mergeObjects: $mergeObjects$1,
-    $min: $min,
-    $push: $push,
-    $stdDevPop: $stdDevPop,
-    $stdDevSamp: $stdDevSamp,
-    $sum: $sum
   });
 
   /**
@@ -5045,97 +5127,112 @@
     $unwind: $unwind
   });
 
-  /**
-   * Projection Operators. https://docs.mongodb.com/manual/reference/operator/projection/
-   */
-  /**
-   * Projects the first element in an array that matches the query condition.
-   *
-   * @param obj
-   * @param field
-   * @param expr
-   */
+  // Query Array Operators: https://docs.mongodb.com/manual/reference/operator/query-array/
+  var $all$1 = createQueryOperator($all);
+  var $elemMatch$1 = createQueryOperator($elemMatch);
+  var $size$2 = createQueryOperator($size);
 
-  function $(obj, expr, field) {
-    throw new Error('$ not implemented');
+  // Query Bitwise Operators: https://docs.mongodb.com/manual/reference/operator/query-bitwise/
+
+  /**
+   * Matches numeric or binary values in which a set of bit positions all have a value of 0.
+   * @param selector
+   * @param value
+   */
+  function $bitsAllClear(selector, value) {
+    throw new Error('$bitsAllClear not implemented');
   }
   /**
-   * Projects only the first element from an array that matches the specified $elemMatch condition.
-   *
-   * @param obj
-   * @param field
-   * @param expr
-   * @returns {*}
+   * Matches numeric or binary values in which a set of bit positions all have a value of 1.
+   * @param selector
+   * @param value
    */
 
-  function $elemMatch$1(obj, expr, field) {
-    var arr = resolve(obj, field);
-    var query = new Query(expr);
-    assert(Array.isArray(arr), '$elemMatch: invalid argument');
-
-    for (var i = 0; i < arr.length; i++) {
-      if (query.test(arr[i])) return [arr[i]];
-    }
-
-    return undefined;
+  function $bitsAllSet(selector, value) {
+    throw new Error('$bitsAllSet not implemented');
   }
   /**
-   * Limits the number of elements projected from an array. Supports skip and limit slices.
-   *
-   * @param obj
-   * @param field
-   * @param expr
+   * Matches numeric or binary values in which any bit from a set of bit positions has a value of 0.
+   * @param selector
+   * @param value
    */
 
-  function $slice$1(obj, expr, field) {
-    var xs = resolve(obj, field);
-    if (!Array.isArray(xs)) return xs;
+  function $bitsAnyClear(selector, value) {
+    throw new Error('$bitsAnyClear not implemented');
+  }
+  /**
+   * Matches numeric or binary values in which any bit from a set of bit positions has a value of 1.
+   * @param selector
+   * @param value
+   */
 
-    if (Array.isArray(expr)) {
-      return slice(xs, expr[0], expr[1]);
+  function $bitsAnySet(selector, value) {
+    throw new Error('$bitsAllClear not implemented');
+  }
+
+  // Query Comparison Operators: https://docs.mongodb.com/manual/reference/operator/query-comparison/
+  var $eq$2 = createQueryOperator($eq);
+  var $gt$2 = createQueryOperator($gt);
+  var $gte$2 = createQueryOperator($gte);
+  var $in$2 = createQueryOperator($in);
+  var $lt$2 = createQueryOperator($lt);
+  var $lte$2 = createQueryOperator($lte);
+  var $ne$2 = createQueryOperator($ne);
+  var $nin$2 = createQueryOperator($nin);
+
+  // Query Element Operators: https://docs.mongodb.com/manual/reference/operator/query-element/
+  var $exists$1 = createQueryOperator($exists);
+  var $type$2 = createQueryOperator($type);
+
+  // Query Evaluation Operators: https://docs.mongodb.com/manual/reference/operator/query-evaluation/
+  var $mod$2 = createQueryOperator($mod$1);
+  var $regex$1 = createQueryOperator($regex);
+  /**
+   * Matches documents that satisfy the specified JSON Schema.
+   *
+   * @param selector
+   * @param value
+   */
+
+  function $jsonSchema(selector, value) {
+    throw new Error('$jsonSchema not implemented');
+  }
+  /**
+   * Matches documents that satisfy a JavaScript expression.
+   *
+   * @param selector
+   * @param value
+   * @returns {Function}
+   */
+
+  function $where(selector, value) {
+    var f;
+
+    if (!isFunction(value)) {
+      f = new Function('return ' + value + ';');
     } else {
-      assert(isNumber(expr), '$slice: invalid arguments for projection');
-      return slice(xs, expr);
+      f = value;
     }
+
+    return function (obj) {
+      return f.call(obj) === true;
+    };
   }
+  /**
+   * Allows the use of aggregation expressions within the query language.
+   *
+   * @param selector
+   * @param value
+   * @returns {Function}
+   */
 
-  var projectionOperators = /*#__PURE__*/Object.freeze({
-    __proto__: null,
-    $: $,
-    $elemMatch: $elemMatch$1,
-    $slice: $slice$1
-  });
-
-  // Query and Projection Operators. https://docs.mongodb.com/manual/reference/operator/query/
-
-  function createQueryOperator(pred) {
-    return function (selector, value) {
-      return function (obj) {
-        // value of field must be fully resolved.
-        var lhs = resolve(obj, selector, {
-          preserveMetadata: true
-        });
-        lhs = unwrap(lhs.result, lhs.depth);
-        return pred(lhs, value);
-      };
+  function $expr(selector, value) {
+    return function (obj) {
+      return computeValue(obj, value);
     };
   }
 
-  var $all$1 = createQueryOperator($all);
-  var $elemMatch$2 = createQueryOperator($elemMatch);
-  var $eq$2 = createQueryOperator($eq);
-  var $exists$1 = createQueryOperator($exists);
-  var $gt$2 = createQueryOperator($gt);
-  var $gte$2 = createQueryOperator($gte);
-  var $in$2 = createQueryOperator($in$1);
-  var $lt$2 = createQueryOperator($lt);
-  var $lte$2 = createQueryOperator($lte);
-  var $mod$2 = createQueryOperator($mod$1);
-  var $ne$2 = createQueryOperator($ne);
-  var $nin$2 = createQueryOperator($nin);
-  var $regex$1 = createQueryOperator($regex);
-  var $size$2 = createQueryOperator($size$1);
-  var $type$2 = createQueryOperator($type);
+  // Query Logical Operators: https://docs.mongodb.com/manual/reference/operator/query-logical/
   /**
    * Joins query clauses with a logical AND returns all documents that match the conditions of both clauses.
    *
@@ -5147,7 +5244,7 @@
   function $and$1(selector, value) {
     assert(isArray(value), 'Invalid expression: $and expects value to be an Array');
     var queries = [];
-    each(value, function (expr) {
+    value.forEach(function (expr) {
       return queries.push(new Query(expr));
     });
     return function (obj) {
@@ -5171,7 +5268,7 @@
   function $or$1(selector, value) {
     assert(isArray(value), 'Invalid expression. $or expects value to be an Array');
     var queries = [];
-    each(value, function (expr) {
+    value.forEach(function (expr) {
       return queries.push(new Query(expr));
     });
     return function (obj) {
@@ -5215,65 +5312,110 @@
       return !query.test(obj);
     };
   }
-  /**
-   * Matches documents that satisfy a JavaScript expression.
-   *
-   * @param selector
-   * @param value
-   * @returns {Function}
-   */
-
-  function $where(selector, value) {
-    var f;
-
-    if (!isFunction(value)) {
-      f = new Function('return ' + value + ';');
-    } else {
-      f = value;
-    }
-
-    return function (obj) {
-      return f.call(obj) === true;
-    };
-  }
-  /**
-   * Allows the use of aggregation expressions within the query language.
-   *
-   * @param selector
-   * @param value
-   * @returns {Function}
-   */
-
-  function $expr(selector, value) {
-    return function (obj) {
-      return computeValue(obj, value);
-    };
-  }
 
   var queryOperators = /*#__PURE__*/Object.freeze({
     __proto__: null,
     $all: $all$1,
-    $elemMatch: $elemMatch$2,
+    $elemMatch: $elemMatch$1,
+    $size: $size$2,
+    $bitsAllClear: $bitsAllClear,
+    $bitsAllSet: $bitsAllSet,
+    $bitsAnyClear: $bitsAnyClear,
+    $bitsAnySet: $bitsAnySet,
     $eq: $eq$2,
-    $exists: $exists$1,
     $gt: $gt$2,
     $gte: $gte$2,
     $in: $in$2,
     $lt: $lt$2,
     $lte: $lte$2,
-    $mod: $mod$2,
     $ne: $ne$2,
     $nin: $nin$2,
-    $regex: $regex$1,
-    $size: $size$2,
+    $exists: $exists$1,
     $type: $type$2,
+    $mod: $mod$2,
+    $regex: $regex$1,
+    $jsonSchema: $jsonSchema,
+    $where: $where,
+    $expr: $expr,
     $and: $and$1,
     $or: $or$1,
     $nor: $nor,
-    $not: $not$1,
-    $where: $where,
-    $expr: $expr
+    $not: $not$1
   });
+
+  /**
+   * Projection Operators. https://docs.mongodb.com/manual/reference/operator/projection/
+   */
+  /**
+   * Projects the first element in an array that matches the query condition.
+   *
+   * @param obj
+   * @param field
+   * @param expr
+   */
+
+  function $(obj, expr, field) {
+    throw new Error('$ not implemented');
+  }
+  /**
+   * Projects only the first element from an array that matches the specified $elemMatch condition.
+   *
+   * @param obj
+   * @param field
+   * @param expr
+   * @returns {*}
+   */
+
+  function $elemMatch$2(obj, expr, field) {
+    var arr = resolve(obj, field);
+    var query = new Query(expr);
+    assert(Array.isArray(arr), '$elemMatch: invalid argument');
+
+    for (var i = 0; i < arr.length; i++) {
+      if (query.test(arr[i])) return [arr[i]];
+    }
+
+    return undefined;
+  }
+  /**
+   * Limits the number of elements projected from an array. Supports skip and limit slices.
+   *
+   * @param obj
+   * @param field
+   * @param expr
+   */
+
+  function $slice$1(obj, expr, field) {
+    var xs = resolve(obj, field);
+    if (!Array.isArray(xs)) return xs;
+
+    if (Array.isArray(expr)) {
+      return slice(xs, expr[0], expr[1]);
+    } else {
+      assert(isNumber(expr), '$slice: invalid arguments for projection');
+      return slice(xs, expr);
+    }
+  }
+
+  var projectionOperators = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    $: $,
+    $elemMatch: $elemMatch$2,
+    $slice: $slice$1
+  });
+
+  // all system operators
+  /**
+   * Enable all supported MongoDB operators
+   */
+
+  function enableSystemOperators() {
+    useOperators(OP_ACCUMULATOR, accumulatorOperators);
+    useOperators(OP_EXPRESSION, expressionOperators);
+    useOperators(OP_PIPELINE, pipelineOperators);
+    useOperators(OP_PROJECTION, projectionOperators);
+    useOperators(OP_QUERY, queryOperators);
+  }
 
   /**
    * Mixin for Collection types that provide a method `toJSON() -> Array[Object]`
@@ -5300,27 +5442,25 @@
     }
   };
 
-  enableOperators(OP_GROUP, accumulatorOperators);
-  enableOperators(OP_EXPRESSION, expressionOperators);
-  enableOperators(OP_PIPELINE, pipelineOperators);
-  enableOperators(OP_PROJECTION, projectionOperators);
-  enableOperators(OP_QUERY, queryOperators); // public interface
+  enableSystemOperators(); // public interface
 
   exports.Aggregator = Aggregator;
   exports.CollectionMixin = CollectionMixin;
   exports.Cursor = Cursor;
   exports.Lazy = Lazy;
+  exports.OP_ACCUMULATOR = OP_ACCUMULATOR;
   exports.OP_EXPRESSION = OP_EXPRESSION;
-  exports.OP_GROUP = OP_GROUP;
   exports.OP_PIPELINE = OP_PIPELINE;
   exports.OP_PROJECTION = OP_PROJECTION;
   exports.OP_QUERY = OP_QUERY;
   exports.Query = Query;
   exports.addOperators = addOperators;
   exports.aggregate = aggregate;
+  exports.enableSystemOperators = enableSystemOperators;
   exports.find = find;
   exports.remove = remove;
   exports.setup = setup;
+  exports.useOperators = useOperators;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 

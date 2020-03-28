@@ -1,3 +1,7 @@
+/**
+ * Type Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#type-expression-operators
+ */
+
 import { isString, jsType } from '../../util'
 import { computeValue } from '../../internal'
 import { $dateToString } from './date'

@@ -53,29 +53,36 @@ For documentation on using query operators see [mongodb](http://docs.mongodb.org
 
 ## Usage
 
-On the server side
-
 ```js
 // Use as es6 module
 import mingo from 'mingo'
 
 // or vanilla nodeJS
 var mingo = require('mingo')
+
+// you must explicitly initialize the operator set to use.
+// for all supported MongoDB operators defined in the library use;
+import 'mingo/init/system-operators'
+
+// or nodeJS
+require('mingo/init/system')
 ```
 
-For the browser
+> The global style import will include all exported methods during bundling
+> To selectively import specific definitions see below
 
-```html
-// minified UMD module
-<script type="text/javascript" src="./dist/mingo.min.js"></script>
-
-// or gzipped UMD module
-<script type="text/javascript" src="./dist/mingo.min.js.gz"></script>
-```
-
-Tiny configuration if needed
+Using specific operators
 
 ```js
+import { enableOperators, OP_QUERY, OP_PIPELINE } from 'mingo'
+import { }
+
+```
+
+Configuration if needed
+
+```js
+
 // setup the key field for your collection
 mingo.setup({
     key: '_id' // default

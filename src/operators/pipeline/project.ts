@@ -19,7 +19,7 @@ import {
   setValue,
   isOperator
 } from '../../util'
-import { computeValue, idKey, OP_PROJECTION, getOperator } from '../../internal'
+import { computeValue, idKey, getOperator, OP_PROJECTION } from '../../internal'
 import { Iterator } from '../../lazy'
 
 

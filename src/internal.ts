@@ -10,38 +10,36 @@ import {
   keys,
   resolve,
   moduleApi,
-  Callback,
-  isBoolean
+  Callback
 } from './util'
 
-// operator classes
+export const OP_ACCUMULATOR = 'accumulator'
 export const OP_EXPRESSION = 'expression'
-export const OP_GROUP = 'group'
 export const OP_PIPELINE = 'pipeline'
 export const OP_PROJECTION = 'projection'
 export const OP_QUERY = 'query'
 
-type OperatorClass = 'expression' | 'group' | 'pipeline' | 'projection' | 'query'
+export type OperatorClass = 'accumulator' | 'expression' | 'pipeline' | 'projection' | 'query'
 
 // operator definitions
 const OPERATORS = Object.create({})
 
-each([OP_GROUP, OP_EXPRESSION, OP_PIPELINE, OP_PROJECTION, OP_QUERY], (cls: OperatorClass) => {
+each([OP_ACCUMULATOR, OP_EXPRESSION, OP_PIPELINE, OP_PROJECTION, OP_QUERY], (cls: OperatorClass) => {
   OPERATORS[cls] = Object.create({})
 })
 
 /**
- * Enables the given operators for the specified category.
+ * Register fully specified operators for the given operator class.
  *
  * @param cls Category of the operator
  * @param operators Name of operator
  */
-export function enableOperators(cls: OperatorClass, operators: object): void {
+export function useOperators(cls: OperatorClass, operators: object): void {
   Object.assign(OPERATORS[cls], operators)
 }
 
 /**
- * Returns the operator function as a callable or null if it is not found
+ * Returns the operator function or null if it is not found
  * @param cls Category of the operator
  * @param operator Name of the operator
  */
@@ -53,7 +51,7 @@ export function getOperator(cls: OperatorClass, operator: string): Callback<any>
  * Add new operators
  *
  * @param cls the operator class to extend
- * @param fn a function returning an object of new operators
+ * @param fn a callback that accepts internal object state and returns an object of new operators.
  */
 export function addOperators(cls: OperatorClass, fn: Callback<any>) {
 
@@ -72,12 +70,10 @@ export function addOperators(cls: OperatorClass, fn: Callback<any>) {
     case OP_QUERY:
       each(newOperators, (fn, op) => {
         fn = fn.bind(newOperators)
-        wrapped[op] = (selector: string, value: any) => (obj: object) => {
+        wrapped[op] = (selector: string, value: any) => (obj: object): boolean => {
           // value of field must be fully resolved.
           let lhs = resolve(obj, selector)
-          let result = fn(selector, lhs, value)
-          assert(isBoolean(result), `${op} must return a boolean`)
-          return result
+          return fn(selector, lhs, value)
         }
       })
       break
@@ -97,10 +93,12 @@ export function addOperators(cls: OperatorClass, fn: Callback<any>) {
   }
 
   // toss the operator salad :)
-  enableOperators(cls, wrapped)
+  useOperators(cls, wrapped)
 }
 
-
+/**
+ * Global internal settings for the library. TODO: scope to import
+ */
 interface Settings {
   key: string
 }
@@ -198,7 +196,7 @@ export function idKey(): string {
  * @returns {*}
  */
 export function accumulate(collection: any[], field: string, expr: any): any {
-  let call = getOperator(OP_GROUP, field)
+  let call = getOperator(OP_ACCUMULATOR, field)
   if (call) return call(collection, expr)
 
   if (isObject(expr)) {
@@ -207,7 +205,7 @@ export function accumulate(collection: any[], field: string, expr: any): any {
       result[key] = accumulate(collection, key, expr[key])
       // must run ONLY one group operator per expression
       // if so, return result of the computed value
-      if (getOperator(OP_GROUP, key)) {
+      if (getOperator(OP_ACCUMULATOR, key)) {
         result = result[key]
         // if there are more keys in expression this is bad
         assert(keys(expr).length === 1, "Invalid $group expression '" + JSON.stringify(expr) + "'")
@@ -241,7 +239,7 @@ export function computeValue(obj: object, expr: any, operator?: string, options?
   if (call) return call(obj, expr, options)
 
   // we also handle $group accumulator operators
-  call = getOperator(OP_GROUP, operator)
+  call = getOperator(OP_ACCUMULATOR, operator)
   if (call) {
     // we first fully resolve the expression
     obj = computeValue(obj, expr, null, options)
@@ -278,7 +276,7 @@ export function computeValue(obj: object, expr: any, operator?: string, options?
       result[key] = computeValue(obj, val, key, options)
       // must run ONLY one aggregate operator per expression
       // if so, return result of the computed value
-      if ([OP_EXPRESSION, OP_GROUP].some(c => has(OPERATORS[c], key))) {
+      if ([OP_EXPRESSION, OP_ACCUMULATOR].some(c => has(OPERATORS[c], key))) {
         // there should be only one operator
         assert(keys(expr).length === 1, "Invalid aggregation expression '" + JSON.stringify(expr) + "'")
         result = result[key]

@@ -52,7 +52,7 @@ test('Custom Operators', function (t) {
 
   t.test('custom group operator', function (t) {
     t.plan(2)
-    mingo.addOperators(mingo.OP_GROUP, function (m) {
+    mingo.addOperators(mingo.OP_ACCUMULATOR, function (m) {
       return {
         '$stddev': function (collection, expr) {
           var result = mingo.aggregate(collection, [{$group: {avg: {$avg: expr}}}])

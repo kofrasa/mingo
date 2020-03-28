@@ -1,5 +1,5 @@
 /**
- * Conditional operators
+ * Conditional Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#conditional-expression-operators
  */
 
 import { assert, isArray, isNil, isObject } from '../../util'
@@ -29,7 +29,7 @@ export function $cond(obj: object, expr: any): any {
     elseExpr = expr.else
   }
   let condition = computeValue(obj, ifExpr)
-  return condition ? computeValue(obj, thenExpr) : computeValue(obj, elseExpr)
+  return computeValue(obj, condition ? thenExpr : elseExpr)
 }
 
 /**

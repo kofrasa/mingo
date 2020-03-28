@@ -1,3 +1,5 @@
+// Boolean Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#boolean-expression-operators
+
 import { computeValue } from '../../internal'
 import { truthy } from '../../util'
 

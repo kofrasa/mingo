@@ -1,3 +1,4 @@
+// Literal Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#literal-expression-operator
 
 /**
  * Return a value without parsing.
