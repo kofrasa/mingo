@@ -110,6 +110,26 @@ export function $strcasecmp(obj: object, expr: any): any {
   return (a > b && 1) || (a < b && -1) || 0
 }
 
+const UTF8_MASK = [0xC0, 0xE0, 0xF0]
+// encodes a unicode code point to a utf8 byte sequence
+// https://encoding.spec.whatwg.org/#utf-8
+function toUtf8(n: number): number[] {
+  if (n < 0x80) return [n]
+  let count = ((n < 0x0800) && 1) || ((n < 0x10000) && 2) || 3
+  const offset = UTF8_MASK[count - 1]
+  let utf8 = [(n >> (6 * count)) + offset]
+  while (count > 0) utf8.push(0x80 | ((n >> (6 * --count)) & 0x3F))
+  return utf8
+}
+
+function utf8Encode(s: string): number[][] {
+  let buf = []
+  for (let i = 0, len = s.length; i < len; i++) {
+    buf.push(toUtf8(s.codePointAt(i)))
+  }
+  return buf
+}
+
 /**
  * Returns a substring of a string, starting at a specified index position and including the specified number of characters.
  * The index is zero-based.
@@ -190,22 +210,78 @@ export function $toUpper(obj: object, expr: any): any {
   return isEmpty(value) ? '' : value.toUpperCase()
 }
 
-const UTF8_MASK = [0xC0, 0xE0, 0xF0]
-// encodes a unicode code point to a utf8 byte sequence
-// https://encoding.spec.whatwg.org/#utf-8
-function toUtf8(n: number) {
-  if (n < 0x80) return [n]
-  let count = ((n < 0x0800) && 1) || ((n < 0x10000) && 2) || 3
-  const offset = UTF8_MASK[count - 1]
-  let utf8 = [(n >> (6 * count)) + offset]
-  while (count > 0) utf8.push(0x80 | ((n >> (6 * --count)) & 0x3F))
-  return utf8
+const WHITESPACE_CHARS = [
+  0x0000, // '\0' Null character
+  0x0020, // ' ', Space
+  0x0009, // '\t' Horizontal tab
+  0x000A, // '\n' Line feed/new line
+  0x000B, // '\v' Vertical tab
+  0x000C, // '\f' Form feed
+  0x000D, // '\r' Carriage return
+  0x00A0, // Non-breaking space
+  0x1680, // Ogham space mark
+  0x2000, // En quad
+  0x2001, // Em quad
+  0x2002, // En space
+  0x2003, // Em space
+  0x2004, // Three-per-em space
+  0x2005, // Four-per-em space
+  0x2006, // Six-per-em space
+  0x2007, // Figure space
+  0x2008, // Punctuation space
+  0x2009, // Thin space
+  0x200A  // Hair space
+]
+
+/**
+ * Trims the resolved string
+ *
+ * @param obj
+ * @param expr
+ * @param options
+ */
+function trimString(obj: object, expr: any, options: { left: boolean, right: boolean }): string {
+  let val = computeValue(obj, expr) || {}
+  let s = val.input as string
+  if (isNil(s)) return null
+
+  let codepoints = isNil(val.chars) ? WHITESPACE_CHARS : val.chars.split('').map((c: string) => c.codePointAt(0))
+
+  let i = 0;
+  let j = s.length - 1
+
+  while (options.left && i <= j && codepoints.indexOf(s[i].codePointAt(0)) !== -1) i++
+  while (options.right && i <= j && codepoints.indexOf(s[j].codePointAt(0)) !== -1) j--
+
+  return s.substring(i, j+1)
 }
 
-function utf8Encode(s: string) {
-  let buf = []
-  for (let i = 0, len = s.length; i < len; i++) {
-    buf.push(toUtf8(s.codePointAt(i)))
-  }
-  return buf
+/**
+ * Removes whitespace characters, including null, or the specified characters from the beginning and end of a string.
+ *
+ * @param obj
+ * @param expr
+ */
+export function $trim(obj: object, expr: any): any {
+  return trimString(obj, expr, { left: true, right: true})
+}
+
+/**
+ * Removes whitespace characters, including null, or the specified characters from the beginning of a string.
+ *
+ * @param obj
+ * @param expr
+ */
+export function $ltrim(obj: object, expr: any): any {
+  return trimString(obj, expr, { left: true, right: false})
+}
+
+/**
+ * Removes whitespace characters, including null, or the specified characters from the end of a string.
+ *
+ * @param obj
+ * @param expr
+ */
+export function $rtrim(obj: object, expr: any): any {
+  return trimString(obj, expr, { left: false, right: true})
 }

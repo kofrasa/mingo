@@ -90,6 +90,27 @@ runTest('String Operators', {
 
   $toUpper: [
     ['abc123', 'ABC123']
+  ],
+
+  $trim: [
+    [{ $trim: { input: "  \n good  bye \t  " } }, 'good  bye'],
+    [{ $trim: { input: " ggggoodbyeeeee", chars: "ge" } }, ' ggggoodby'],
+    [{ $trim: { input: "    ggggoodbyeeeee", chars: " ge" } }, 'oodby'],
+    [{ $trim: { input: null } }, null],
+  ],
+
+  $ltrim: [
+    [{ $ltrim: { input: "  \n good  bye \t  " } }, 'good  bye \t  '],
+    [{ $ltrim: { input: " ggggoodbyeeeee", chars: "ge" } }, ' ggggoodbyeeeee'],
+    [{ $ltrim: { input: "    ggggoodbyeeeee ", chars: " gd" } }, 'oodbyeeeee '],
+    [{ $ltrim: { input: null } }, null],
+  ],
+
+  $rtrim: [
+    [{ $rtrim: { input: "  \n good  bye \t  " } }, '  \n good  bye'],
+    [{ $rtrim: { input: " ggggoodbyeeeee", chars: "ge" } }, ' ggggoodby'],
+    [{ $rtrim: { input: " ggggoodbyeeeee    ", chars: "e " } }, ' ggggoodby'],
+    [{ $rtrim: { input: null } }, null],
   ]
 
 })

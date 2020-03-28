@@ -4090,6 +4090,31 @@
     b = b.toUpperCase();
     return a > b && 1 || a < b && -1 || 0;
   }
+  var UTF8_MASK = [0xC0, 0xE0, 0xF0]; // encodes a unicode code point to a utf8 byte sequence
+  // https://encoding.spec.whatwg.org/#utf-8
+
+  function toUtf8(n) {
+    if (n < 0x80) return [n];
+    var count = n < 0x0800 && 1 || n < 0x10000 && 2 || 3;
+    var offset = UTF8_MASK[count - 1];
+    var utf8 = [(n >> 6 * count) + offset];
+
+    while (count > 0) {
+      utf8.push(0x80 | n >> 6 * --count & 0x3F);
+    }
+
+    return utf8;
+  }
+
+  function utf8Encode(s) {
+    var buf = [];
+
+    for (var i = 0, len = s.length; i < len; i++) {
+      buf.push(toUtf8(s.codePointAt(i)));
+    }
+
+    return buf;
+  }
   /**
    * Returns a substring of a string, starting at a specified index position and including the specified number of characters.
    * The index is zero-based.
@@ -4098,6 +4123,7 @@
    * @param expr
    * @returns {string}
    */
+
 
   function $substrBytes(obj, expr) {
     var args = computeValue(obj, expr);
@@ -4173,30 +4199,75 @@
     var value = computeValue(obj, expr);
     return isEmpty(value) ? '' : value.toUpperCase();
   }
-  var UTF8_MASK = [0xC0, 0xE0, 0xF0]; // encodes a unicode code point to a utf8 byte sequence
-  // https://encoding.spec.whatwg.org/#utf-8
+  var WHITESPACE_CHARS = [0x0000, 0x0020, 0x0009, 0x000A, 0x000B, 0x000C, 0x000D, 0x00A0, 0x1680, 0x2000, 0x2001, 0x2002, 0x2003, 0x2004, 0x2005, 0x2006, 0x2007, 0x2008, 0x2009, 0x200A // Hair space
+  ];
+  /**
+   * Trims the resolved string
+   *
+   * @param obj
+   * @param expr
+   * @param options
+   */
 
-  function toUtf8(n) {
-    if (n < 0x80) return [n];
-    var count = n < 0x0800 && 1 || n < 0x10000 && 2 || 3;
-    var offset = UTF8_MASK[count - 1];
-    var utf8 = [(n >> 6 * count) + offset];
+  function trimString(obj, expr, options) {
+    var val = computeValue(obj, expr) || {};
+    var s = val.input;
+    if (isNil(s)) return null;
+    var codepoints = isNil(val.chars) ? WHITESPACE_CHARS : val.chars.split('').map(function (c) {
+      return c.codePointAt(0);
+    });
+    var i = 0;
+    var j = s.length - 1;
 
-    while (count > 0) {
-      utf8.push(0x80 | n >> 6 * --count & 0x3F);
+    while (options.left && i <= j && codepoints.indexOf(s[i].codePointAt(0)) !== -1) {
+      i++;
     }
 
-    return utf8;
+    while (options.right && i <= j && codepoints.indexOf(s[j].codePointAt(0)) !== -1) {
+      j--;
+    }
+
+    return s.substring(i, j + 1);
   }
+  /**
+   * Removes whitespace characters, including null, or the specified characters from the beginning and end of a string.
+   *
+   * @param obj
+   * @param expr
+   */
 
-  function utf8Encode(s) {
-    var buf = [];
 
-    for (var i = 0, len = s.length; i < len; i++) {
-      buf.push(toUtf8(s.codePointAt(i)));
-    }
+  function $trim(obj, expr) {
+    return trimString(obj, expr, {
+      left: true,
+      right: true
+    });
+  }
+  /**
+   * Removes whitespace characters, including null, or the specified characters from the beginning of a string.
+   *
+   * @param obj
+   * @param expr
+   */
 
-    return buf;
+  function $ltrim(obj, expr) {
+    return trimString(obj, expr, {
+      left: true,
+      right: false
+    });
+  }
+  /**
+   * Removes whitespace characters, including null, or the specified characters from the end of a string.
+   *
+   * @param obj
+   * @param expr
+   */
+
+  function $rtrim(obj, expr) {
+    return trimString(obj, expr, {
+      left: false,
+      right: true
+    });
   }
 
   /**
@@ -4311,6 +4382,9 @@
     $substrCP: $substrCP,
     $toLower: $toLower,
     $toUpper: $toUpper,
+    $trim: $trim,
+    $ltrim: $ltrim,
+    $rtrim: $rtrim,
     $let: $let
   });
 

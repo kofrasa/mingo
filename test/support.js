@@ -36,7 +36,7 @@ exports.runTest = function (description, suite) {
 
         var field = operator
         // use the operator as field if not present in input
-        if (typeof input === 'object') {
+        if (!!input && input.constructor === Object) {
           field = Object.keys(input).find((s) => s[0] === '$') || null
           if (field === null) {
             field = operator
