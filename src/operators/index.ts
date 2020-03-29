@@ -16,25 +16,25 @@ import * as queryEvaluation from './query/evaluation'
 import * as queryLogical from './query/logical'
 
 // helpers
-import { useOperators, OP_ACCUMULATOR, OP_EXPRESSION, OP_PIPELINE, OP_PROJECTION, OP_QUERY } from '../internal'
+import { useOperators, OperatorType } from '../internal'
 
 // intialize default operators
 export function enableDefaultOperators() {
-  useOperators(OP_EXPRESSION, Object.assign({}, booleanOperators, comparsonOperators))
-  useOperators(OP_PIPELINE, { $project, $skip, $limit, $sort })
-  useOperators(OP_PROJECTION, projectionOperators)
-  useOperators(OP_QUERY, Object.assign({}, queryArray, queryComparison, queryElement, queryEvaluation, queryLogical))
+  useOperators(OperatorType.EXPRESSION, Object.assign({}, booleanOperators, comparsonOperators))
+  useOperators(OperatorType.PIPELINE, { $project, $skip, $limit, $sort })
+  useOperators(OperatorType.PROJECTION, projectionOperators)
+  useOperators(OperatorType.QUERY, Object.assign({}, queryArray, queryComparison, queryElement, queryEvaluation, queryLogical))
 }
 
 /**
  * Enable all supported MongoDB operators
  */
 export function enableSystemOperators() {
-  useOperators(OP_ACCUMULATOR, accumulatorOperators)
-  useOperators(OP_EXPRESSION, expressionOperators)
-  useOperators(OP_PIPELINE, pipelineOperators)
-  useOperators(OP_PROJECTION, projectionOperators)
-  useOperators(OP_QUERY, queryOperators)
+  useOperators(OperatorType.ACCUMULATOR, accumulatorOperators)
+  useOperators(OperatorType.EXPRESSION, expressionOperators)
+  useOperators(OperatorType.PIPELINE, pipelineOperators)
+  useOperators(OperatorType.PROJECTION, projectionOperators)
+  useOperators(OperatorType.QUERY, queryOperators)
 }
 
 export * as accumulatorOperators from './accumulator'

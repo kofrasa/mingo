@@ -1154,15 +1154,18 @@
     };
   }
 
-  var OP_ACCUMULATOR = 'accumulator';
-  var OP_EXPRESSION = 'expression';
-  var OP_PIPELINE = 'pipeline';
-  var OP_PROJECTION = 'projection';
-  var OP_QUERY = 'query'; // operator definitions
+  (function (OperatorType) {
+    OperatorType["ACCUMULATOR"] = "accumulator";
+    OperatorType["EXPRESSION"] = "expression";
+    OperatorType["PIPELINE"] = "pipeline";
+    OperatorType["PROJECTION"] = "projection";
+    OperatorType["QUERY"] = "query";
+  })(exports.OperatorType || (exports.OperatorType = {})); // operator definitions
 
-  var OPERATORS = Object.create({});
-  each([OP_ACCUMULATOR, OP_EXPRESSION, OP_PIPELINE, OP_PROJECTION, OP_QUERY], function (cls) {
-    OPERATORS[cls] = Object.create({});
+
+  var OPERATORS = {};
+  each(exports.OperatorType, function (cls) {
+    OPERATORS[cls] = {};
   });
   /**
    * Register fully specified operators for the given operator class.
@@ -1201,7 +1204,7 @@
     var wrapped = {};
 
     switch (cls) {
-      case OP_QUERY:
+      case exports.OperatorType.QUERY:
         each(newOperators, function (fn, op) {
           fn = fn.bind(newOperators);
 
@@ -1215,7 +1218,7 @@
         });
         break;
 
-      case OP_PROJECTION:
+      case exports.OperatorType.PROJECTION:
         each(newOperators, function (fn, op) {
           fn = fn.bind(newOperators);
 
@@ -1336,7 +1339,7 @@
    */
 
   function accumulate(collection, field, expr) {
-    var call = getOperator(OP_ACCUMULATOR, field);
+    var call = getOperator(exports.OperatorType.ACCUMULATOR, field);
     if (call) return call(collection, expr);
 
     if (isObject(expr)) {
@@ -1345,7 +1348,7 @@
         result[key] = accumulate(collection, key, expr[key]); // must run ONLY one group operator per expression
         // if so, return result of the computed value
 
-        if (getOperator(OP_ACCUMULATOR, key)) {
+        if (getOperator(exports.OperatorType.ACCUMULATOR, key)) {
           result = result[key]; // if there are more keys in expression this is bad
 
           assert(keys(expr).length === 1, "Invalid $group expression '" + JSON.stringify(expr) + "'");
@@ -1373,10 +1376,10 @@
     } // if the field of the object is a valid operator
 
 
-    var call = getOperator(OP_EXPRESSION, operator);
+    var call = getOperator(exports.OperatorType.EXPRESSION, operator);
     if (call) return call(obj, expr, options); // we also handle $group accumulator operators
 
-    call = getOperator(OP_ACCUMULATOR, operator);
+    call = getOperator(exports.OperatorType.ACCUMULATOR, operator);
 
     if (call) {
       // we first fully resolve the expression
@@ -1412,12 +1415,12 @@
         return computeValue(obj, item);
       });
     } else if (isObject(expr)) {
-      var result = Object.create({});
+      var result = {};
       each(expr, function (val, key) {
         result[key] = computeValue(obj, val, key, options); // must run ONLY one aggregate operator per expression
         // if so, return result of the computed value
 
-        if ([OP_EXPRESSION, OP_ACCUMULATOR].some(function (c) {
+        if ([exports.OperatorType.EXPRESSION, exports.OperatorType.ACCUMULATOR].some(function (c) {
           return has(OPERATORS[c], key);
         })) {
           // there should be only one operator
@@ -2264,7 +2267,7 @@
           each(this.__operators, function (operator) {
             var operatorKeys = keys(operator);
             var op = operatorKeys[0];
-            var call = getOperator(OP_PIPELINE, op);
+            var call = getOperator(exports.OperatorType.PIPELINE, op);
             assert(operatorKeys.length === 1 && !!call, "invalid aggregation operator ".concat(op));
             iterator = call(iterator, operator[op], _this.__options);
           });
@@ -2544,7 +2547,7 @@
     }, {
       key: "_processOperator",
       value: function _processOperator(field, operator, value) {
-        var call = getOperator(OP_QUERY, operator);
+        var call = getOperator(exports.OperatorType.QUERY, operator);
         assert(!!call, "unknown operator ".concat(operator));
 
         this.__compiled.push(call(field, value));
@@ -4863,7 +4866,7 @@
         var subExprKeys = keys(subExpr);
         var operator = subExprKeys.length == 1 ? subExprKeys[0] : null; // first try a projection operator
 
-        var call = getOperator(OP_PROJECTION, operator);
+        var call = getOperator(exports.OperatorType.PROJECTION, operator);
 
         if (call) {
           // apply the projection operator on the operator expression for the key
@@ -5552,11 +5555,11 @@
    */
 
   function enableSystemOperators() {
-    useOperators(OP_ACCUMULATOR, accumulatorOperators);
-    useOperators(OP_EXPRESSION, expressionOperators);
-    useOperators(OP_PIPELINE, pipelineOperators);
-    useOperators(OP_PROJECTION, projectionOperators);
-    useOperators(OP_QUERY, queryOperators);
+    useOperators(exports.OperatorType.ACCUMULATOR, accumulatorOperators);
+    useOperators(exports.OperatorType.EXPRESSION, expressionOperators);
+    useOperators(exports.OperatorType.PIPELINE, pipelineOperators);
+    useOperators(exports.OperatorType.PROJECTION, projectionOperators);
+    useOperators(exports.OperatorType.QUERY, queryOperators);
   }
 
   enableSystemOperators(); // public interface
@@ -5564,11 +5567,6 @@
   exports.Aggregator = Aggregator;
   exports.Cursor = Cursor;
   exports.Lazy = Lazy;
-  exports.OP_ACCUMULATOR = OP_ACCUMULATOR;
-  exports.OP_EXPRESSION = OP_EXPRESSION;
-  exports.OP_PIPELINE = OP_PIPELINE;
-  exports.OP_PROJECTION = OP_PROJECTION;
-  exports.OP_QUERY = OP_QUERY;
   exports.Query = Query;
   exports.addOperators = addOperators;
   exports.aggregate = aggregate;

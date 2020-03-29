@@ -19,7 +19,7 @@ import {
   setValue,
   isOperator
 } from '../../util'
-import { computeValue, idKey, getOperator, OP_PROJECTION } from '../../internal'
+import { computeValue, idKey, getOperator, OperatorType } from '../../internal'
 import { Iterator } from '../../lazy'
 
 
@@ -107,7 +107,7 @@ function processObject(obj: object, expr: any, expressionKeys: string[], idOnlyE
       let operator = subExprKeys.length == 1 ? subExprKeys[0] : null
 
       // first try a projection operator
-      let call = getOperator(OP_PROJECTION, operator)
+      let call = getOperator(OperatorType.PROJECTION, operator)
       if (call) {
         // apply the projection operator on the operator expression for the key
         if (operator === '$slice') {

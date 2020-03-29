@@ -9,7 +9,7 @@ import {
   Callback
 } from './util'
 import { Cursor } from './cursor'
-import { getOperator, OP_QUERY } from './internal'
+import { getOperator, OperatorType } from './internal'
 
 /**
  * Query object to test collection elements with
@@ -57,7 +57,7 @@ export class Query {
   }
 
   _processOperator(field: string, operator: string, value: any) {
-    let call = getOperator(OP_QUERY, operator)
+    let call = getOperator(OperatorType.QUERY, operator)
     assert(!!call, `unknown operator ${operator}`)
     this.__compiled.push(call(field, value))
   }

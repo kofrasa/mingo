@@ -1,5 +1,5 @@
 import { assert, each, isArray, isEmpty, keys } from './util'
-import { getOperator, OP_PIPELINE } from './internal'
+import { getOperator, OperatorType } from './internal'
 import { Lazy, Iterator, Source } from './lazy'
 
 /**
@@ -33,7 +33,7 @@ export class Aggregator {
       each(this.__operators, (operator) => {
         let operatorKeys = keys(operator)
         let op = operatorKeys[0]
-        let call = getOperator(OP_PIPELINE, op)
+        let call = getOperator(OperatorType.PIPELINE, op)
         assert(operatorKeys.length === 1 && !!call, `invalid aggregation operator ${op}`)
         iterator = call(iterator, operator[op], this.__options)
       })

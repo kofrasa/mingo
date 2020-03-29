@@ -1,12 +1,13 @@
 var test = require('tape')
 var samples = require('./support')
 var mingo = require('../es5')
+var OperatorType = mingo.OperatorType
 
 test('Custom Operators', function (t) {
   t.test('custom pipeline operator', function (t) {
     t.plan(1)
 
-    mingo.addOperators(mingo.OP_PIPELINE, function (m) {
+    mingo.addOperators(OperatorType.PIPELINE, function (m) {
       return {
         '$pluck': function (collection, expr) {
           return collection.map(function (item) {
@@ -23,7 +24,7 @@ test('Custom Operators', function (t) {
   t.test('custom query operator', function (t) {
     t.plan(2)
 
-    mingo.addOperators(mingo.OP_QUERY, function () {
+    mingo.addOperators(OperatorType.QUERY, function () {
       return {
         '$between': function (selector, value, args) {
           return value >= args[0] && value <= args[1]
@@ -36,7 +37,7 @@ test('Custom Operators', function (t) {
     t.equal(2, result.length, 'can add new query operator')
 
     try {
-      mingo.addOperators(mingo.OP_QUERY, function () {
+      mingo.addOperators(OperatorType.QUERY, function () {
         return {
           '$between': function (selector, value, args) {
             var query = {}
@@ -52,7 +53,7 @@ test('Custom Operators', function (t) {
 
   t.test('custom group operator', function (t) {
     t.plan(2)
-    mingo.addOperators(mingo.OP_ACCUMULATOR, function (m) {
+    mingo.addOperators(OperatorType.ACCUMULATOR, function (m) {
       return {
         '$stddev': function (collection, expr) {
           var result = mingo.aggregate(collection, [{$group: {avg: {$avg: expr}}}])
