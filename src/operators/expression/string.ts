@@ -287,17 +287,18 @@ export function $rtrim(obj: object, expr: any): any {
 }
 
 /**
- * Applies a regular expression (regex) to a string and returns information on the first matched substring.
+ * Performs a regex search
  *
  * @param obj
  * @param expr
+ * @param opts
  */
-export function $regexFind(obj: object, expr: any): any {
+function regexSearch(obj: object, expr: any, opts: { global: boolean }): any {
   let val = computeValue(obj, expr)
 
-  if (!isString(val.input)) return null
+  if (!isString(val.input)) return []
 
-  if (!!val.options) {
+  if (val.options) {
     assert(val.options.indexOf('x') === -1, "extended capability option 'x' not supported")
     assert(val.options.indexOf('g') === -1, "global option 'g' not supported")
   }
@@ -305,15 +306,34 @@ export function $regexFind(obj: object, expr: any): any {
   let input = val.input as string
   let re = new RegExp(val.regex, val.options)
 
-  let m = input.match(re)
+  let m = null
+  let matches = []
+  let offset = 0
+  while (m = input.match(re)) {
+    let result = { match: m[0], idx: m.index + offset, captures: [] }
+    for (let i = 1; i < m.length; i++) {
+      result.captures.push(m[i] || null)
+    }
 
-  if (m) {
-    let result = { match: m[0], idx: m.index, captures: [] }
-    for (let i = 1; i < m.length; i++) result.captures.push(m[i] || null)
-    return result
+    matches.push(result)
+    if (!opts.global) break
+
+    offset = m.index + m[0].length
+    input = input.substr(offset)
   }
 
-  return null
+  return matches
+}
+
+/**
+ * Applies a regular expression (regex) to a string and returns information on the first matched substring.
+ *
+ * @param obj
+ * @param expr
+ */
+export function $regexFind(obj: object, expr: any): any {
+  let result = regexSearch(obj, expr, { global: false })
+  return result.length === 0 ? null : result[0]
 }
 
 /**
@@ -323,7 +343,7 @@ export function $regexFind(obj: object, expr: any): any {
  * @param expr
  */
 export function $regexFindAll(obj: object, expr: any): any {
-
+  return regexSearch(obj, expr, { global: true })
 }
 
 /**
@@ -333,5 +353,5 @@ export function $regexFindAll(obj: object, expr: any): any {
  * @param expr
  */
 export function $regexMatch(obj: object, expr: any): any {
-
+  return regexSearch(obj, expr, { global: false }).length != 0
 }

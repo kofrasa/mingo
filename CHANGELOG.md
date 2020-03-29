@@ -6,7 +6,7 @@
 - Remove `VERSION` fields as information can be sourced from `package.json` directly
 - Implement type expression operators `$type`, `$convert`, `$toBool`, `$toDate`, `$toString`, `$toInt`, `$toLong`, `$toDouble`, `$toDecimal`
 - Implement `$dateFromString` operator
-- Implement string operators: `$trim`, `$rtrim`, `$ltrim`, `$regexFind`
+- Implement string operators: `$trim`, `$rtrim`, `$ltrim`, `$regexFind`, `$regexFindAll`, `$regexMatch`
 - Add timezone support for all date operators
 - Return all date operator results in UTC
 - Build ES5 and ES6 libraries with support for selective import

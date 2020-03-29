@@ -4245,29 +4245,32 @@
     });
   }
   /**
-   * Applies a regular expression (regex) to a string and returns information on the first matched substring.
+   * Performs a regex search
    *
    * @param obj
    * @param expr
+   * @param opts
    */
 
-  function $regexFind(obj, expr) {
+  function regexSearch(obj, expr, opts) {
     var val = computeValue(obj, expr);
-    if (!isString(val.input)) return null;
+    if (!isString(val.input)) return [];
 
-    if (!!val.options) {
+    if (val.options) {
       assert(val.options.indexOf('x') === -1, "extended capability option 'x' not supported");
       assert(val.options.indexOf('g') === -1, "global option 'g' not supported");
     }
 
     var input = val.input;
     var re = new RegExp(val.regex, val.options);
-    var m = input.match(re);
+    var m = null;
+    var matches = [];
+    var offset = 0;
 
-    if (m) {
+    while (m = input.match(re)) {
       var result = {
         match: m[0],
-        idx: m.index,
+        idx: m.index + offset,
         captures: []
       };
 
@@ -4275,10 +4278,27 @@
         result.captures.push(m[i] || null);
       }
 
-      return result;
+      matches.push(result);
+      if (!opts.global) break;
+      offset = m.index + m[0].length;
+      input = input.substr(offset);
     }
 
-    return null;
+    return matches;
+  }
+  /**
+   * Applies a regular expression (regex) to a string and returns information on the first matched substring.
+   *
+   * @param obj
+   * @param expr
+   */
+
+
+  function $regexFind(obj, expr) {
+    var result = regexSearch(obj, expr, {
+      global: false
+    });
+    return result.length === 0 ? null : result[0];
   }
   /**
    * Applies a regular expression (regex) to a string and returns information on the all matched substrings.
@@ -4287,7 +4307,11 @@
    * @param expr
    */
 
-  function $regexFindAll(obj, expr) {}
+  function $regexFindAll(obj, expr) {
+    return regexSearch(obj, expr, {
+      global: true
+    });
+  }
   /**
    * Applies a regular expression (regex) to a string and returns a boolean that indicates if a match is found or not.
    *
@@ -4295,7 +4319,11 @@
    * @param expr
    */
 
-  function $regexMatch(obj, expr) {}
+  function $regexMatch(obj, expr) {
+    return regexSearch(obj, expr, {
+      global: false
+    }).length != 0;
+  }
 
   /**
    * Variable Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#variable-expression-operators
