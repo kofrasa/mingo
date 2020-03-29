@@ -22,27 +22,30 @@ JavaScript implementation of MongoDB query language
   - [Element Operators](https://docs.mongodb.com/manual/reference/operator/query-element/)
   - [Evaluation Operators](https://docs.mongodb.com/manual/reference/operator/query-evaluation/)
   - [Logical Operators](https://docs.mongodb.com/manual/reference/operator/query-logical/)
+  - [Projection Operators](https://docs.mongodb.com/manual/reference/operator/projection/)
 - Aggregation Framework Operators
   - [Pipeline Operators](https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline/)
-  - [Group Operators](https://docs.mongodb.com/manual/reference/operator/aggregation-group/)
-  - [Projection Operators](https://docs.mongodb.com/manual/reference/operator/projection/)
-  - [Arithmetic Operators](https://docs.mongodb.com/manual/reference/operator/aggregation-arithmetic/)
-  - [Array Operators](https://docs.mongodb.com/manual/reference/operator/aggregation-array/)
-  - [Boolean Operators](https://docs.mongodb.com/manual/reference/operator/aggregation-boolean/)
-  - [Comparisons Operators](https://docs.mongodb.com/manual/reference/operator/aggregation-comparison/)
-  - [Conditional Operators](https://docs.mongodb.com/manual/reference/operator/aggregation-conditional/)
-  - [Date Operators](https://docs.mongodb.com/manual/reference/operator/aggregation-date/)
-  - [Literal Operators](https://docs.mongodb.com/manual/reference/operator/aggregation-literal/)
-  - [Set Operators](https://docs.mongodb.com/manual/reference/operator/aggregation-set/)
-  - [String Operators](https://docs.mongodb.com/manual/reference/operator/aggregation-string/)
-  - [Variable Operators](https://docs.mongodb.com/manual/reference/operator/aggregation-projection/)
-- Support for adding custom operators
+  - [Accumulator Operators](https://docs.mongodb.com/manual/reference/operator/aggregation#accumulators-group/)
+  - [Expression Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#expression-operators)
+    - [Arithmetic Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators)
+    - [Array Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators/)
+    - [Boolean Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#boolean-expression-operators/)
+    - [Comparisons Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#comparison-expression-operators/)
+    - [Conditional Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#conditional-expression-operators/)
+    - [Date Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators/)
+    - [Literal Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#literal-expression-operators/)
+    - [Object Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#object-expression-operators)
+    - [Set Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#set-expression-operators/)
+    - [Type Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#type-expression-operators)
+    - [String Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators)
+    - [Variable Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#variable-expression-operators)
+- Support for adding custom operators using `mingo.addOperators`
 - Match against user-defined types
 - Support for aggregaion variables
   - [`$$ROOT`,`$$CURRENT`,`$$DESCEND`,`$$PRUNE`,`$$KEEP`,`$$REMOVE`](https://docs.mongodb.com/manual/reference/aggregation-variables/)
 - ES6 module compatible
 - Support integrating with custom collections via mixin
-- Query filter and projection streaming.
+- Query filtering and aggregation streaming.
 
 For documentation on using query operators see [mongodb](http://docs.mongodb.org/manual/reference/operator/query/)
 
@@ -50,43 +53,37 @@ For documentation on using query operators see [mongodb](http://docs.mongodb.org
 
 - [API](https://github.com/kofrasa/mingo/wiki/API)
 - [Custom Operators](https://github.com/kofrasa/mingo/wiki/Custom-Operators)
+- [System Operators](https://github.com/kofrasa/mingo/wiki/System-Operators)
 
 ## Usage
 
 ```js
 // Use as es6 module
-import mingo from 'mingo'
+import * as mingo from 'mingo'
 
 // or vanilla nodeJS
 var mingo = require('mingo')
 
-// you must explicitly initialize the operator set to use.
-// for all supported MongoDB operators defined in the library use;
-import 'mingo/init/system-operators'
-
-// or nodeJS
-require('mingo/init/system')
 ```
 
-> The global style import will include all exported methods during bundling
-> To selectively import specific definitions see below
-
-Using specific operators
+## Configuration
 
 ```js
-import { enableOperators, OP_QUERY, OP_PIPELINE } from 'mingo'
-import { }
 
-```
-
-Configuration if needed
-
-```js
+import { setup, enableSystemOperators } from 'mingo'
 
 // setup the key field for your collection
-mingo.setup({
-    key: '_id' // default
+setup({
+  key: '_id' // default
 });
+
+// enable all available system operators
+enableSystemOperators()
+
+// this includes all operators and will increase the final bundle size significantly for users' project.
+// to avoid bloating your bundle size, select and register operators to use explicitly.
+
+// The query and projection operators are loaded by default on first time import
 ```
 
 ## Using query object to test objects
@@ -95,12 +92,12 @@ mingo.setup({
 // create a query with criteria
 // find all grades for homework with score >= 50
 let query = new mingo.Query({
-    type: "homework",
-    score: { $gte: 50 }
+  type: "homework",
+  score: { $gte: 50 }
 });
 
 // test if an object matches query
-query.test(someObject)
+query.test(doc)
 ```
 
 ## Searching and Filtering
@@ -116,15 +113,15 @@ cursor = mingo.find(collection, criteria)
 
 // sort, skip and limit by chaining
 cursor.sort({student_id: 1, score: -1})
-    .skip(100)
-    .limit(100)
+  .skip(100)
+  .limit(100)
 
 // count matches. exhausts cursor
 cursor.count()
 
 // classic cursor iterator (old school)
 while (cursor.hasNext()) {
-    console.log(cursor.next())
+  console.log(cursor.next())
 }
 
 // ES6 iterators (new cool)
@@ -139,10 +136,19 @@ cursor.all()
 ## Aggregation Pipeline
 
 ```js
-let agg = new mingo.Aggregator([
-    {'$match': { "type": "homework"}},
-    {'$group':{'_id':'$student_id', 'score':{$min:'$score'}}},
-    {'$sort':{'_id': 1, 'score': 1}}
+import { Aggregator, useOperators, OP_PIPELINE, OP_ACCUMULATOR } from 'mingo'
+import { $match, $group, $sort } from 'mingo/operators/pipeline'
+import { $min } from 'mingo/operators/accumulator'
+
+// ensure the required operators are loaded.
+// this only needs to be done once so can be placed in a top-level initialization module
+useOperators(OP_PIPELINE, { $match, $group, $sort })
+useOperators(OP_ACCUMULATOR, { $min })
+
+let agg = new Aggregator([
+  {'$match': { "type": "homework"}},
+  {'$group': {'_id':'$student_id', 'score':{$min:'$score'}}},
+  {'$sort': {'_id': 1, 'score': 1}}
 ])
 
 // return an iterator for streaming results
@@ -152,37 +158,16 @@ let stream = agg.stream(collection)
 let result = agg.run(collection)
 ```
 
-## Integration with custom collection
+## Benefits
 
-```js
-// using Backbone.Collection as an example (any user-defined object will do)
-let Grades = Backbone.Collection.extend(mingo.CollectionMixin)
-
-// `collection` is an array of objects
-let grades = new Grades(collection)
-
-// find students with grades less than 50 in homework or quiz
-// sort by score ascending and type descending
-cursor = grades.query({
-  $or: [{type: "quiz", score: {$lt: 50}}, {type: "homework", score: {$lt: 50}}]
-}).sort({score: 1, type: -1}).limit(10)
-
-// return grade with the lowest score
-cursor.next()
-```
-
-The collection to mixin needs to provide a method with signature `toJSON() -> Array[Object]`.
-
-## Why
-
-- Alternative to writing lots of custom code for transforming collection of objects
+- Better alternative to writing custom code for transforming collection of objects
 - Quick validation of MongoDB queries without the need for a database
 - MongoDB query language is among the best in the market and is well documented
 
 ## Contributing
 
 - Squash changes into one commit
-- Run `make` to ensure tests pass
+- Run `make` to build and execute unit tests
 - Submit pull request
 
 ## License

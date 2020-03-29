@@ -1,26 +1,18 @@
 var test = require('tape')
-var Backbone = require('backbone')
 var mingo = require('../es5')
 var samples = require('./support')
 
-var MingoCollection = Backbone.Collection.extend(mingo.CollectionMixin)
 
 test('10gen Education: M101P', function (t) {
-  var grades = new MingoCollection(samples.simpleGradesData)
-  var cursor = grades.query({
+  var cursor = mingo.find(samples.simpleGradesData, {
     type: 'exam',
     score: { $gte: 65 }
   })
+
   var student = cursor.sort({ 'score': 1 }).limit(1).next()
   t.equal(student.student_id, 22, 'Student ID with lowest exam score is 22')
 
-  var lowest = grades.aggregate([
-    { '$match': { 'type': 'homework' } },
-    { '$group': { '_id': '$student_id', 'score': { $min: '$score' } } },
-    { '$sort': { '_id': 1, 'score': 1 } }
-  ])
-
-  var homework = grades.query({ type: 'homework' }).sort({ 'student_id': 1, 'score': 1 }).all()
+  var homework = mingo.find(samples.simpleGradesData, { type: 'homework' }).sort({ 'student_id': 1, 'score': 1 }).all()
   var ids = []
   var sid = null
   for (var i = 0, j = 0; i < homework.length; i++) {
@@ -31,7 +23,7 @@ test('10gen Education: M101P', function (t) {
   }
 
   t.equal(ids.length, 200, '200 minimum homework scores found')
-  var result = mingo.remove(grades.toJSON(), { '_id': { $in: ids } })
+  var result = mingo.remove(samples.simpleGradesData, { '_id': { $in: ids } })
 
   // var res = Mingo.find(result).sort({'score':-1}).skip(100).limit(1).next();
   // console.log(res);

@@ -1,5 +1,5 @@
 import { cloneDeep } from '../../util'
-import { redactObj } from '../../internal'
+import { redact } from '../../internal'
 import { Iterator } from '../../lazy'
 
 
@@ -9,5 +9,5 @@ import { Iterator } from '../../lazy'
  * https://docs.mongodb.com/manual/reference/operator/aggregation/redact/
  */
 export function $redact(collection: Iterator, expr: any, opt?: object): Iterator {
-  return collection.map(obj => redactObj(cloneDeep(obj), expr))
+  return collection.map(obj => redact(cloneDeep(obj), expr))
 }

@@ -1301,13 +1301,13 @@
             result = [];
             each(current, function (elem) {
               if (isObject(elem)) {
-                elem = redactObj(elem, expr, options);
+                elem = redact(elem, expr, options);
               }
 
               if (!isNil(elem)) result.push(elem);
             });
           } else {
-            result = redactObj(current, expr, options);
+            result = redact(current, expr, options);
           }
 
           if (isNil(result)) {
@@ -1440,7 +1440,7 @@
    * @return {*} Returns the redacted value
    */
 
-  function redactObj(obj, expr, options) {
+  function redact(obj, expr, options) {
     var result = computeValue(obj, expr, null, options);
     return has(redactVariables, result) ? redactVariables[result](obj, expr, options) : result;
   }
@@ -4975,7 +4975,7 @@
 
   function $redact(collection, expr, opt) {
     return collection.map(function (obj) {
-      return redactObj(cloneDeep(obj), expr);
+      return redact(cloneDeep(obj), expr);
     });
   }
 
@@ -5560,35 +5560,9 @@
     useOperators(OP_QUERY, queryOperators);
   }
 
-  /**
-   * Mixin for Collection types that provide a method `toJSON() -> Array[Object]`
-   */
-
-  var CollectionMixin = {
-    /**
-     * Runs a query and returns a cursor to the result
-     * @param criteria
-     * @param projection
-     * @returns {Cursor}
-     */
-    query: function query(criteria, projection) {
-      return new Query(criteria).find(this.toJSON(), projection);
-    },
-
-    /**
-     * Runs the given aggregation operators on this collection
-     * @params pipeline
-     * @returns {Array}
-     */
-    aggregate: function aggregate(pipeline) {
-      return new Aggregator(pipeline).run(this.toJSON());
-    }
-  };
-
   enableSystemOperators(); // public interface
 
   exports.Aggregator = Aggregator;
-  exports.CollectionMixin = CollectionMixin;
   exports.Cursor = Cursor;
   exports.Lazy = Lazy;
   exports.OP_ACCUMULATOR = OP_ACCUMULATOR;

@@ -17,6 +17,7 @@
 - Add `filterMissing` and `MISSING` to module API and export `MISSING` value.
 - Unexport and rename `Lazy.isIterator` to `Lazy.isGenerator`
 - Rename constant `OP_GROUP` to `OP_ACCUMULATOR` and change value from 'group' to 'accumulator'
+- Removed `CollectionMixin`
 
 ## 2.5.2 / 2020-03-17
 

@@ -161,12 +161,12 @@ const redactVariables = {
           result = []
           each(current, (elem) => {
             if (isObject(elem)) {
-              elem = redactObj(elem, expr, options)
+              elem = redact(elem, expr, options)
             }
             if (!isNil(elem)) result.push(elem)
           })
         } else {
-          result = redactObj(current, expr, options)
+          result = redact(current, expr, options)
         }
 
         if (isNil(result)) {
@@ -296,7 +296,7 @@ export function computeValue(obj: object, expr: any, operator?: string, options?
  * @param  {*} opt  Options for value
  * @return {*} Returns the redacted value
  */
-export function redactObj(obj: object, expr: any, options?: Options): object {
+export function redact(obj: object, expr: any, options?: Options): object {
   let result = computeValue(obj, expr, null, options)
   return has(redactVariables, result)
     ? redactVariables[result](obj, expr, options)
