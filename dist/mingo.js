@@ -1043,20 +1043,11 @@
   function isOperator(name) {
     return !!name && name[0] === '$';
   }
-
-  function regexOptions(options) {
-    var modifiers;
-    modifiers += options.ignoreCase ? 'i' : '';
-    modifiers += options.multiline ? 'm' : '';
-    modifiers += options.global ? 'g' : '';
-    return modifiers;
-  }
   /**
    * Simplify expression for easy evaluation with query operators map
    * @param expr
    * @returns {*}
    */
-
 
   function normalize(expr) {
     // normalized primitives
@@ -1069,7 +1060,7 @@
     } // normalize object expression
 
 
-    if (expr instanceof Object) {
+    if (isObject(expr)) {
       var exprKeys = keys(expr); // no valid query operator found, so we do simple comparison
 
       if (!exprKeys.some(isOperator)) {
@@ -1079,24 +1070,8 @@
       } // ensure valid regex
 
 
-      if (inArray(exprKeys, '$regex')) {
-        var regex = new RegExp(expr['$regex']);
-        var options = expr['$options'] || '';
-        var modifiers;
-        var source;
-
-        if (regex instanceof RegExp) {
-          source = regex.source;
-        } else {
-          source = regex;
-        }
-
-        modifiers = regexOptions({
-          ignoreCase: regex.ignoreCase || options.indexOf('i') >= 0,
-          multiline: regex.multiline || options.indexOf('m') >= 0,
-          global: regex.global || options.indexOf('g') >= 0
-        });
-        expr['$regex'] = new RegExp(source, options);
+      if (has(expr, '$regex') && has(expr, '$options')) {
+        expr['$regex'] = new RegExp(expr['$regex'], expr['$options']);
         delete expr['$options'];
       }
     }
@@ -2991,17 +2966,16 @@
    */
 
   function $arrayElemAt(obj, expr) {
-    var arr = computeValue(obj, expr);
-    assert(isArray(arr) && arr.length === 2, '$arrayElemAt expression must resolve to array(2)');
-    assert(isArray(arr[0]), 'First operand to $arrayElemAt must resolve to an array');
-    assert(isNumber(arr[1]), 'Second operand to $arrayElemAt must resolve to an integer');
-    var idx = arr[1];
-    arr = arr[0];
+    var args = computeValue(obj, expr);
+    assert(isArray(args) && args.length === 2, '$arrayElemAt expression must resolve to array(2)');
+    if (args.some(isNil)) return null;
+    var index = args[1];
+    var arr = args[0];
 
-    if (idx < 0 && Math.abs(idx) <= arr.length) {
-      return arr[idx + arr.length];
-    } else if (idx >= 0 && idx < arr.length) {
-      return arr[idx];
+    if (index < 0 && Math.abs(index) <= arr.length) {
+      return arr[(index + arr.length) % arr.length];
+    } else if (index >= 0 && index < arr.length) {
+      return arr[index];
     }
 
     return undefined;
@@ -3033,7 +3007,7 @@
    */
 
   function $concatArrays(obj, expr) {
-    var arr = computeValue(obj, expr, null);
+    var arr = computeValue(obj, expr);
     assert(isArray(arr), '$concatArrays must resolve to an array');
     if (arr.some(isNil)) return null;
     return arr.reduce(function (acc, item) {
@@ -3068,10 +3042,11 @@
    */
 
   function $in$1(obj, expr) {
-    var val = computeValue(obj, expr[0]);
-    var arr = computeValue(obj, expr[1]);
+    var args = computeValue(obj, expr);
+    var item = args[0];
+    var arr = args[1];
     assert(isArray(arr), '$in second argument must be an array');
-    return arr.some(isEqual.bind(null, val));
+    return arr.some(isEqual.bind(null, item));
   }
   /**
    * Searches an array for an occurrence of a specified value and returns the array index of the first occurrence.
@@ -4269,6 +4244,58 @@
       right: true
     });
   }
+  /**
+   * Applies a regular expression (regex) to a string and returns information on the first matched substring.
+   *
+   * @param obj
+   * @param expr
+   */
+
+  function $regexFind(obj, expr) {
+    var val = computeValue(obj, expr);
+    if (!isString(val.input)) return null;
+
+    if (!!val.options) {
+      assert(val.options.indexOf('x') === -1, "extended capability option 'x' not supported");
+      assert(val.options.indexOf('g') === -1, "global option 'g' not supported");
+    }
+
+    var input = val.input;
+    var re = new RegExp(val.regex, val.options);
+    var m = input.match(re);
+
+    if (m) {
+      var result = {
+        match: m[0],
+        idx: m.index,
+        captures: []
+      };
+
+      for (var i = 1; i < m.length; i++) {
+        result.captures.push(m[i] || null);
+      }
+
+      return result;
+    }
+
+    return null;
+  }
+  /**
+   * Applies a regular expression (regex) to a string and returns information on the all matched substrings.
+   *
+   * @param obj
+   * @param expr
+   */
+
+  function $regexFindAll(obj, expr) {}
+  /**
+   * Applies a regular expression (regex) to a string and returns a boolean that indicates if a match is found or not.
+   *
+   * @param obj
+   * @param expr
+   */
+
+  function $regexMatch(obj, expr) {}
 
   /**
    * Variable Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#variable-expression-operators
@@ -4385,6 +4412,9 @@
     $trim: $trim,
     $ltrim: $ltrim,
     $rtrim: $rtrim,
+    $regexFind: $regexFind,
+    $regexFindAll: $regexFindAll,
+    $regexMatch: $regexMatch,
     $let: $let
   });
 
@@ -4404,7 +4434,12 @@
       var newObj = cloneDeep(obj);
       each(newFields, function (field) {
         var newValue = computeValue(obj, expr[field]);
-        setValue(newObj, field, newValue);
+
+        if (newValue !== undefined) {
+          setValue(newObj, field, newValue);
+        } else {
+          removeValue(newObj, field);
+        }
       });
       return newObj;
     });
@@ -4803,7 +4838,7 @@
 
         var call = getOperator(OP_PROJECTION, operator);
 
-        if (!!call) {
+        if (call) {
           // apply the projection operator on the operator expression for the key
           if (operator === '$slice') {
             // $slice is handled differently for aggregation and projection operations
@@ -4824,10 +4859,16 @@
         } else if (has(obj, key)) {
           // compute the value for the sub expression for the key
           validateExpression(subExpr);
-          var nestedObj = obj[key];
-          value = Array.isArray(nestedObj) ? nestedObj.map(function (o) {
-            return processObject(o, subExpr, subExprKeys, false);
-          }) : processObject(nestedObj, subExpr, subExprKeys, false);
+          var ctx = obj[key];
+
+          if (Array.isArray(ctx)) {
+            value = ctx.map(function (o) {
+              return processObject(o, subExpr, subExprKeys, false);
+            });
+          } else {
+            ctx = isObject(ctx) ? ctx : obj;
+            value = processObject(ctx, subExpr, subExprKeys, false);
+          }
         } else {
           // compute the value for the sub expression for the key
           value = computeValue(obj, subExpr);

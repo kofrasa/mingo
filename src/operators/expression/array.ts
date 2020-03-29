@@ -34,16 +34,17 @@ export const $nin = createExpressionOperator(__nin)
  * @return {*}
  */
 export function $arrayElemAt(obj: object, expr: any): any {
-  let arr = computeValue(obj, expr)
-  assert(isArray(arr) && arr.length === 2, '$arrayElemAt expression must resolve to array(2)')
-  assert(isArray(arr[0]), 'First operand to $arrayElemAt must resolve to an array')
-  assert(isNumber(arr[1]), 'Second operand to $arrayElemAt must resolve to an integer')
-  let idx = arr[1]
-  arr = arr[0]
-  if (idx < 0 && Math.abs(idx) <= arr.length) {
-    return arr[idx + arr.length]
-  } else if (idx >= 0 && idx < arr.length) {
-    return arr[idx]
+  let args = computeValue(obj, expr)
+  assert(isArray(args) && args.length === 2, '$arrayElemAt expression must resolve to array(2)')
+
+  if (args.some(isNil)) return null
+
+  let index = args[1]
+  let arr = args[0]
+  if (index < 0 && Math.abs(index) <= arr.length) {
+    return arr[(index + arr.length) % arr.length]
+  } else if (index >= 0 && index < arr.length) {
+    return arr[index]
   }
   return undefined
 }
@@ -54,6 +55,7 @@ export function $arrayElemAt(obj: object, expr: any): any {
 export function $arrayToObject(obj: object, expr: any): any {
   let arr = computeValue(obj, expr)
   assert(isArray(arr), '$arrayToObject expression must resolve to an array')
+
   return reduce(arr, (newObj, val) => {
     if (isArray(val) && val.length == 2) {
       newObj[val[0]] = val[1]
@@ -73,8 +75,9 @@ export function $arrayToObject(obj: object, expr: any): any {
  * @return {*}
  */
 export function $concatArrays(obj: object, expr: any): any {
-  let arr = computeValue(obj, expr, null)
+  let arr = computeValue(obj, expr)
   assert(isArray(arr), '$concatArrays must resolve to an array')
+
   if (arr.some(isNil)) return null
   return arr.reduce((acc: any[], item: any) => into(acc, item), [])
 }
@@ -108,10 +111,11 @@ export function $filter(obj: object, expr: any): any {
  * @param {Array} expr
  */
 export function $in(obj: object, expr: any): any {
-  let val = computeValue(obj, expr[0])
-  let arr = computeValue(obj, expr[1])
+  let args = computeValue(obj, expr)
+  let item = args[0]
+  let arr = args[1]
   assert(isArray(arr), '$in second argument must be an array')
-  return arr.some(isEqual.bind(null, val))
+  return arr.some(isEqual.bind(null, item))
 }
 
 /**

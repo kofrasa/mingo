@@ -1,4 +1,4 @@
-import { cloneDeep, each, keys, setValue } from '../../util'
+import { cloneDeep, each, keys, setValue, removeValue } from '../../util'
 import { computeValue } from '../../internal'
 import { Iterator } from '../../lazy'
 
@@ -19,7 +19,11 @@ export function $addFields(collection: Iterator, expr: any, opt?: object): Itera
     let newObj = cloneDeep(obj)
     each(newFields, (field) => {
       let newValue = computeValue(obj, expr[field])
-      setValue(newObj, field, newValue)
+      if (newValue !== undefined) {
+        setValue(newObj, field, newValue)
+      } else {
+        removeValue(newObj, field)
+      }
     })
     return newObj
   })

@@ -108,7 +108,7 @@ function processObject(obj: object, expr: any, expressionKeys: string[], idOnlyE
 
       // first try a projection operator
       let call = getOperator(OP_PROJECTION, operator)
-      if (!!call) {
+      if (call) {
         // apply the projection operator on the operator expression for the key
         if (operator === '$slice') {
           // $slice is handled differently for aggregation and projection operations
@@ -129,11 +129,13 @@ function processObject(obj: object, expr: any, expressionKeys: string[], idOnlyE
       } else if (has(obj, key)) {
         // compute the value for the sub expression for the key
         validateExpression(subExpr)
-
-        let nestedObj = obj[key]
-        value = Array.isArray(nestedObj) ?
-          nestedObj.map(o => processObject(o, subExpr, subExprKeys, false)) :
-          processObject(nestedObj, subExpr, subExprKeys, false)
+        let ctx = obj[key]
+        if (Array.isArray(ctx)) {
+          value = ctx.map(o => processObject(o, subExpr, subExprKeys, false))
+        } else {
+          ctx = isObject(ctx) ? ctx : obj
+          value = processObject(ctx, subExpr, subExprKeys, false)
+        }
       } else {
         // compute the value for the sub expression for the key
         value = computeValue(obj, subExpr)

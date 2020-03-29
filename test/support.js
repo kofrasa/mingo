@@ -66,14 +66,15 @@ exports.runTest = function (description, suite) {
 exports.runTestPipeline = function (description, suite) {
   test(description, function (t) {
     suite.forEach(function (unitTest) {
-      var pipeline = unitTest.query
       var input = unitTest.input
+      var pipeline = unitTest.query
       var check = unitTest.check
+      var message = unitTest.message || "actual equals expected"
       var actual = mingo.aggregate(input, pipeline)
       if (typeof check === 'function') {
         check(actual, t)
       } else {
-        t.deepEqual(actual, check, unitTest.message || "actual equals expected")
+        t.deepEqual(actual, check, message)
       }
     })
     t.end()

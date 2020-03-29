@@ -6,6 +6,9 @@ release:
 build:
 	@npm run build
 
+compile:
+	@npm run compile
+
 compress: build
 	@npm run postrelease
 
@@ -15,7 +18,7 @@ clean:
 coverage:
 	@npm run coverage
 
-test: build
+test: compile
 	@npm run test
 
 .PHONY: clean test coverage

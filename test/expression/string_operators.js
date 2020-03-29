@@ -1,8 +1,10 @@
-var runTest = require('./../support').runTest
+var test = require('tape')
+var support = require('./../support')
+var mingo = require('../../es5')
 
 var opt = {err:true}
 
-runTest('String Operators', {
+support.runTest('String Operators', {
   $concat: [
     [[null, 'abc'], null],
     [['a', '-', 'c'], 'a-c']
@@ -112,5 +114,281 @@ runTest('String Operators', {
     [{ $rtrim: { input: " ggggoodbyeeeee    ", chars: "e " } }, ' ggggoodby'],
     [{ $rtrim: { input: null } }, null],
   ]
-
 })
+
+
+var data = [
+  { "_id": 1, "fname": "Carol", "lname": "Smith", "phone": "718-555-0113" },
+  { "_id": 2, "fname": "Daryl", "lname": "Doe", "phone": "212-555-8832" },
+  { "_id": 3, "fname": "Polly", "lname": "Andrews", "phone": "208-555-1932" },
+  { "_id": 4, "fname": "Colleen", "lname": "Duncan", "phone": "775-555-0187" },
+  { "_id": 5, "fname": "Luna", "lname": "Clarke", "phone": "917-555-4414" }
+]
+
+var dataForOptions = [
+  { _id: 1, description: "Single LINE description." },
+  { _id: 2, description: "First lines\nsecond line" },
+  { _id: 3, description: "Many spaces before     line" },
+  { _id: 4, description: "Multiple\nline descriptions" },
+  { _id: 5, description: "anchors, links and hyperlinks" },
+  { _id: 6, description: "métier work vocation" }
+]
+
+support.runTestPipeline('String regex operators', [
+  {
+    message: 'can apply $regexFind',
+    input: [
+      { "_id" : 1, "category" : "café" },
+      { "_id" : 2, "category" : "cafe" },
+      { "_id" : 3, "category" : "cafE" }
+    ],
+    query: [ { $addFields: { resultObject: { $regexFind: { input: "$category", regex: /cafe/ }  } } } ],
+    check : [
+      { "_id" : 1, "category" : "café", "resultObject" : null },
+      { "_id" : 2, "category" : "cafe", "resultObject" : { "match" : "cafe", "idx" : 0, "captures" : [ ] } },
+      { "_id" : 3, "category" : "cafE", "resultObject" : null }
+    ]
+  },
+
+  {
+    message: "$regexFind with 'captures': 1",
+    input: data,
+    query: [
+      {
+        $project: {
+          returnObject: {
+            $regexFind: { input: "$fname", regex: /(C(ar)*)ol/ }
+          }
+        }
+      }
+    ],
+    check: [
+      { "_id" : 1, "returnObject" : { "match" : "Carol", "idx" : 0, "captures" : [ "Car", "ar" ] } },
+      { "_id" : 2, "returnObject" : null },
+      { "_id" : 3, "returnObject" : null },
+      { "_id" : 4, "returnObject" : { "match" : "Col", "idx" : 0, "captures" : [ "C", null ] } },
+      { "_id" : 5, "returnObject" : null }
+    ]
+  },
+
+  {
+    message: "$regexFind with 'captures': 2",
+    input: data,
+    query: [
+      {
+        $project: {
+          nycContacts: {
+            $regexFind: { input: "$phone", regex: /^(718).*|^(212).*|^(917).*/ }
+          }
+        }
+      }
+    ],
+    check: [
+      { "_id" : 1, "nycContacts" : { "match" : "718-555-0113", "idx" : 0, "captures" : [ "718", null, null ] } },
+      { "_id" : 2, "nycContacts" : { "match" : "212-555-8832", "idx" : 0, "captures" : [ null, "212", null ] } },
+      { "_id" : 3, "nycContacts" : null },
+      { "_id" : 4, "nycContacts" : null },
+      { "_id" : 5, "nycContacts" : { "match" : "917-555-4414", "idx" : 0, "captures" : [ null, null, "917" ] } }
+    ]
+  },
+
+  {
+    message: '$regexFind without grouping',
+    input: dataForOptions,
+    query: [ { $addFields: { returnObject: { $regexFind: { input: "$description", regex: /line/ } } } } ],
+    check: [
+      { "_id" : 1, "description" : "Single LINE description.", "returnObject" : null },
+      { "_id" : 2, "description" : "First lines\nsecond line", "returnObject" : { "match" : "line", "idx" : 6, "captures" : [ ] } },
+      { "_id" : 3, "description" : "Many spaces before     line", "returnObject" : { "match" : "line", "idx" : 23, "captures" : [ ] } },
+      { "_id" : 4, "description" : "Multiple\nline descriptions", "returnObject" : { "match" : "line", "idx" : 9, "captures" : [ ] } },
+      { "_id" : 5, "description" : "anchors, links and hyperlinks", "returnObject" : null },
+      { "_id" : 6, "description" : "métier work vocation", "returnObject" : null }
+    ]
+  },
+
+  {
+    message: '$regexFind with grouping',
+    input: dataForOptions,
+    query: [ { $addFields: { returnObject: { $regexFind: { input: "$description", regex: /lin(e|k)/ } } } } ],
+    check: [
+      { "_id" : 1, "description" : "Single LINE description.", "returnObject" : null },
+      { "_id" : 2, "description" : "First lines\nsecond line", "returnObject" : { "match" : "line", "idx" : 6, "captures" : [ "e" ] } },
+      { "_id" : 3, "description" : "Many spaces before     line", "returnObject" : { "match" : "line", "idx" : 23, "captures" : [ "e" ] } },
+      { "_id" : 4, "description" : "Multiple\nline descriptions", "returnObject" : { "match" : "line", "idx" : 9, "captures" : [ "e" ] } },
+      { "_id" : 5, "description" : "anchors, links and hyperlinks", "returnObject" : { "match" : "link", "idx" : 9, "captures" : [ "k" ] } },
+      { "_id" : 6, "description" : "métier work vocation", "returnObject" : null }
+    ]
+  },
+
+  {
+    message: "$regexFind 'idx' is codepoint",
+    input: dataForOptions,
+    query: [ { $addFields: { returnObject: { $regexFind: { input: "$description", regex: /tier/ } } } } ],
+    check: [
+      { "_id" : 1, "description" : "Single LINE description.", "returnObject" : null },
+      { "_id" : 2, "description" : "First lines\nsecond line", "returnObject" : null },
+      { "_id" : 3, "description" : "Many spaces before     line", "returnObject" : null },
+      { "_id" : 4, "description" : "Multiple\nline descriptions", "returnObject" : null },
+      { "_id" : 5, "description" : "anchors, links and hyperlinks", "returnObject" : null },
+      { "_id" : 6, "description" : "métier work vocation", "returnObject" : { "match" : "tier", "idx" : 2, "captures" : [ ] } }
+    ]
+  },
+
+  {
+    message: "$regexFind with option 'i'",
+    input: dataForOptions,
+    query: [ { $addFields: { returnObject: { $regexFind: { input: "$description", regex: "line", options:"i" } } } } ],
+    check: [
+      { "_id" : 1, "description" : "Single LINE description.", "returnObject" : { "match" : "LINE", "idx" : 7, "captures" : [ ] } },
+      { "_id" : 2, "description" : "First lines\nsecond line", "returnObject" : { "match" : "line", "idx" : 6, "captures" : [ ] } },
+      { "_id" : 3, "description" : "Many spaces before     line", "returnObject" : { "match" : "line", "idx" : 23, "captures" : [ ] } },
+      { "_id" : 4, "description" : "Multiple\nline descriptions", "returnObject" : { "match" : "line", "idx" : 9, "captures" : [ ] } },
+      { "_id" : 5, "description" : "anchors, links and hyperlinks", "returnObject" : null },
+      { "_id" : 6, "description" : "métier work vocation", "returnObject" : null }
+    ]
+  },
+
+  {
+    message: "$regexFind with option 'm'",
+    input: dataForOptions,
+    query: [ { $addFields: { returnObject: { $regexFind: { input: "$description", regex: /^s/im } } } } ],
+    check: [
+      { "_id" : 1, "description" : "Single LINE description.", "returnObject" : { "match" : "S", "idx" : 0, "captures" : [ ] } },
+      { "_id" : 2, "description" : "First lines\nsecond line", "returnObject" : { "match" : "s", "idx" : 12, "captures" : [ ] } },
+      { "_id" : 3, "description" : "Many spaces before     line", "returnObject" : null },
+      { "_id" : 4, "description" : "Multiple\nline descriptions", "returnObject" : null },
+      { "_id" : 5, "description" : "anchors, links and hyperlinks", "returnObject" : null },
+      { "_id" : 6, "description" : "métier work vocation", "returnObject" : null }
+    ]
+  },
+
+  {
+    message: "$regexFind with option 's'",
+    input: dataForOptions,
+    query: [ { $addFields: { returnObject: { $regexFind: { input: "$description", regex:/m.*line/, options: "si"  } } } } ],
+    check: [
+      { "_id" : 1, "description" : "Single LINE description.", "returnObject" : null },
+      { "_id" : 2, "description" : "First lines\nsecond line", "returnObject" : null },
+      { "_id" : 3, "description" : "Many spaces before     line", "returnObject" : { "match" : "Many spaces before     line", "idx" : 0, "captures" : [ ] } },
+      { "_id" : 4, "description" : "Multiple\nline descriptions", "returnObject" : { "match" : "Multiple\nline", "idx" : 0, "captures" : [ ] } },
+      { "_id" : 5, "description" : "anchors, links and hyperlinks", "returnObject" : null },
+      { "_id" : 6, "description" : "métier work vocation", "returnObject" : null }
+    ]
+  },
+
+  // Not supported
+  // {
+  //   message: "$regexFind with option 'x'",
+  //   input: dataForOptions,
+  //   query: [ { $addFields: { returnObject: { $regexFind: { input: "$description", regex: /lin(e|k) # matches line or link/, options: "x" } } } } ],
+  //   check: [
+  //     { "_id" : 1, "description" : "Single LINE description.", "returnObject" : null },
+  //     { "_id" : 2, "description" : "First lines\nsecond line", "returnObject" : null },
+  //     { "_id" : 3, "description" : "Many spaces before     line", "returnObject" : { "match" : "Many spaces before     line", "idx" : 0, "captures" : [ ] } },
+  //     { "_id" : 4, "description" : "Multiple\nline descriptions", "returnObject" : { "match" : "Multiple\nline", "idx" : 0, "captures" : [ ] } },
+  //     { "_id" : 5, "description" : "anchors, links and hyperlinks", "returnObject" : null },
+  //     { "_id" : 6, "description" : "métier work vocation", "returnObject" : null }
+  //   ]
+  // }
+
+  {
+    message: "$regexFind to Parse Email from String",
+    input: [
+      { "_id" : 1, comment: "Hi, I'm just reading about MongoDB -- aunt.arc.tica@example.com"  },
+      { "_id" : 2, comment: "I wanted to concatenate a string" },
+      { "_id" : 3, comment: "I can't find how to convert a date to string. cam@mongodb.com" },
+      { "_id" : 4, comment: "It's just me. I'm testing.  fred@MongoDB.com" }
+    ],
+    query: [
+      { $addFields: { "email": { $regexFind: { input: "$comment", regex: /[a-z0-9_.+-]+@[a-z0-9_.+-]+\.[a-z0-9_.+-]+/i } } } },
+      { $set: { email: "$email.match"} }
+    ],
+    check: [
+      { "_id" : 1, "comment" : "Hi, I'm just reading about MongoDB -- aunt.arc.tica@example.com", "email" : "aunt.arc.tica@example.com" },
+      { "_id" : 2, "comment" : "I wanted to concatenate a string" },
+      { "_id" : 3, "comment" : "I can't find how to convert a date to string. cam@mongodb.com", "email" : "cam@mongodb.com" },
+      { "_id" : 4, "comment" : "It's just me. I'm testing.  fred@MongoDB.com", "email" : "fred@MongoDB.com" }
+    ]
+  },
+
+  {
+    message: "$regexFind to String Elements of an Array",
+    input: [
+      { "_id" : 1, name: "Aunt Arc Tikka", details: [ "+672-19-9999", "aunt.arc.tica@example.com" ] },
+      { "_id" : 2, name: "Belle Gium",  details: [ "+32-2-111-11-11", "belle.gium@example.com" ] },
+      { "_id" : 3, name: "Cam Bo Dia",  details: [ "+855-012-000-0000", "cam.bo.dia@example.com" ] },
+      { "_id" : 4, name: "Fred", details: [ "+1-111-222-3333" ] }
+   ],
+    query: [
+      { $unwind: "$details" },
+      {
+        $addFields: {
+          "regexemail": { $regexFind: { input: "$details", regex: /^[a-z0-9_.+-]+@[a-z0-9_.+-]+\.[a-z0-9_.+-]+$/, options: "i" } },
+          "regexphone": { $regexFind: { input: "$details", regex: /^[+]{0,1}[0-9]*\-?[0-9_\-]+$/ } }
+        }
+      },
+      { $project: { _id: 1, name: 1, details: { email: "$regexemail.match", phone: "$regexphone.match" } } },
+      { $group: { _id: "$_id", name: { $first: "$name" }, details: { $mergeObjects: "$details"} } },
+      { $sort: { _id: 1 } }
+    ],
+    // Stage 1
+    // check: [
+    //   { "_id" : 1, "name" : "Aunt Arc Tikka", "details" : "+672-19-9999" },
+    //   { "_id" : 1, "name" : "Aunt Arc Tikka", "details" : "aunt.arc.tica@example.com" },
+    //   { "_id" : 2, "name" : "Belle Gium", "details" : "+32-2-111-11-11" },
+    //   { "_id" : 2, "name" : "Belle Gium", "details" : "belle.gium@example.com" },
+    //   { "_id" : 3, "name" : "Cam Bo Dia", "details" : "+855-012-000-0000" },
+    //   { "_id" : 3, "name" : "Cam Bo Dia", "details" : "cam.bo.dia@example.com" },
+    //   { "_id" : 4, "name" : "Fred", "details" : "+1-111-222-3333" }
+    // ]
+    // Stage 2
+    // check: [
+    //   { "_id" : 1, "name" : "Aunt Arc Tikka", "details" : "+672-19-9999", "regexemail" : null, "regexphone" : { "match" : "+672-19-9999", "idx" : 0, "captures" : [ ] } },
+    //   { "_id" : 1, "name" : "Aunt Arc Tikka", "details" : "aunt.arc.tica@example.com", "regexemail" : { "match" : "aunt.arc.tica@example.com", "idx" : 0, "captures" : [ ] }, "regexphone" : null },
+    //   { "_id" : 2, "name" : "Belle Gium", "details" : "+32-2-111-11-11", "regexemail" : null, "regexphone" : { "match" : "+32-2-111-11-11", "idx" : 0, "captures" : [ ] } },
+    //   { "_id" : 2, "name" : "Belle Gium", "details" : "belle.gium@example.com", "regexemail" : { "match" : "belle.gium@example.com", "idx" : 0, "captures" : [ ] }, "regexphone" : null },
+    //   { "_id" : 3, "name" : "Cam Bo Dia", "details" : "+855-012-000-0000", "regexemail" : null, "regexphone" : { "match" : "+855-012-000-0000", "idx" : 0, "captures" : [ ] } },
+    //   { "_id" : 3, "name" : "Cam Bo Dia", "details" : "cam.bo.dia@example.com", "regexemail" : { "match" : "cam.bo.dia@example.com", "idx" : 0, "captures" : [ ] }, "regexphone" : null },
+    //   { "_id" : 4, "name" : "Fred", "details" : "+1-111-222-3333", "regexemail" : null, "regexphone" : { "match" : "+1-111-222-3333", "idx" : 0, "captures" : [ ] } }
+    // ]
+    // Stage 3
+    // check: [
+    //   { "_id" : 1, "name" : "Aunt Arc Tikka", "details" : { "phone" : "+672-19-9999" } },
+    //   { "_id" : 1, "name" : "Aunt Arc Tikka", "details" : { "email" : "aunt.arc.tica@example.com" } },
+    //   { "_id" : 2, "name" : "Belle Gium", "details" : { "phone" : "+32-2-111-11-11" } },
+    //   { "_id" : 2, "name" : "Belle Gium", "details" : { "email" : "belle.gium@example.com" } },
+    //   { "_id" : 3, "name" : "Cam Bo Dia", "details" : { "phone" : "+855-012-000-0000" } },
+    //   { "_id" : 3, "name" : "Cam Bo Dia", "details" : { "email" : "cam.bo.dia@example.com" } },
+    //   { "_id" : 4, "name" : "Fred", "details" : { "phone" : "+1-111-222-3333" } }
+    // ]
+    check: [
+      { "_id" : 1, "name" : "Aunt Arc Tikka", "details" : { "phone" : "+672-19-9999", "email" : "aunt.arc.tica@example.com" } },
+      { "_id" : 2, "name" : "Belle Gium", "details" : { "phone" : "+32-2-111-11-11", "email" : "belle.gium@example.com" } },
+      { "_id" : 3, "name" : "Cam Bo Dia", "details" : { "phone" : "+855-012-000-0000", "email" : "cam.bo.dia@example.com" } },
+      { "_id" : 4, "name" : "Fred", "details" : { "phone" : "+1-111-222-3333" } }
+    ]
+  },
+
+  {
+    message: "$regexFind: Use Captured Groupings to Parse User Name",
+    input: [
+      { "_id" : 1, name: "Aunt Arc Tikka", "email" : "aunt.tica@example.com" },
+      { "_id" : 2, name: "Belle Gium", "email" : "belle.gium@example.com" },
+      { "_id" : 3, name: "Cam Bo Dia", "email" : "cam.dia@example.com" },
+      { "_id" : 4, name: "Fred"  }
+    ],
+    query: [
+      {
+        $addFields: { "username": { $regexFind: { input: "$email", regex: /^([a-z0-9_.+-]+)@[a-z0-9_.+-]+\.[a-z0-9_.+-]+$/, options: "i" } } }
+      },
+      { $set: { username: { $arrayElemAt:  [ "$username.captures", 0 ] } } }
+    ],
+    check: [
+      { "_id" : 1, "name" : "Aunt Arc Tikka", "email" : "aunt.tica@example.com", "username" : "aunt.tica" },
+      { "_id" : 2, "name" : "Belle Gium", "email" : "belle.gium@example.com", "username" : "belle.gium" },
+      { "_id" : 3, "name" : "Cam Bo Dia", "email" : "cam.dia@example.com", "username" : "cam.dia" },
+      { "_id" : 4, "name" : "Fred", "username" : null }
+    ]
+  }
+
+])

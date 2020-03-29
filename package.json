@@ -12,7 +12,7 @@
     "compress": "uglifyjs dist/mingo.js --comments '/^!/' --compress --mangle --sourcemap dist/mingo.min.map --output dist/mingo.min.js",
     "release": "npm run clean && npm run build && npm test",
     "postrelease": "npm run compress",
-    "test": "NODE_ENV=test nyc --reporter=lcov --reporter=text tape test/*.js test/**/*.js",
+    "test": "npm run compile && NODE_ENV=test nyc --reporter=lcov --reporter=text tape test/**/*.js",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov"
   },
   "repository": {

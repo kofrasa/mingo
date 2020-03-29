@@ -807,27 +807,19 @@ export function isOperator(name: string): boolean {
   return !!name && name[0] === '$'
 }
 
-function regexOptions(options: { ignoreCase: boolean, global: boolean, multiline: boolean } ): string {
-  let modifiers: string
-  modifiers += options.ignoreCase ? 'i' : ''
-  modifiers += options.multiline ? 'm' : ''
-  modifiers += options.global ? 'g' : ''
-  return modifiers
-}
-
 /**
  * Simplify expression for easy evaluation with query operators map
  * @param expr
  * @returns {*}
  */
-export function normalize (expr: any): object {
+export function normalize (expr: any): any {
   // normalized primitives
   if (inArray(JS_SIMPLE_TYPES, jsType(expr))) {
     return isRegExp(expr) ? { '$regex': expr } : { '$eq': expr }
   }
 
   // normalize object expression
-  if (expr instanceof Object) {
+  if (isObject(expr)) {
     let exprKeys = keys(expr)
 
     // no valid query operator found, so we do simple comparison
@@ -836,30 +828,13 @@ export function normalize (expr: any): object {
     }
 
     // ensure valid regex
-    if (inArray(exprKeys, '$regex')) {
-      let regex = new RegExp(expr['$regex'])
-      let options = expr['$options'] || ''
-      let modifiers: string
-      let source: string
-
-      if (regex instanceof RegExp) {
-        source = regex.source
-      } else {
-        source = regex as string
-      }
-
-      modifiers = regexOptions({
-        ignoreCase: regex.ignoreCase || options.indexOf('i') >= 0,
-        multiline: regex.multiline || options.indexOf('m') >= 0,
-        global: regex.global || options.indexOf('g') >= 0
-      })
-
-      expr['$regex'] = new RegExp(source, options)
+    if (has(expr, '$regex') && has(expr, '$options')) {
+      expr['$regex'] = new RegExp(expr['$regex'], expr['$options'])
       delete expr['$options']
     }
   }
 
-  return expr as object
+  return expr
 }
 
 /**

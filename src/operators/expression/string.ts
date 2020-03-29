@@ -2,7 +2,7 @@
  * Strin Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators
  */
 
-import { assert, isEqual, isString, isNil, isNumber, isEmpty, inArray } from '../../util'
+import { assert, isEqual, isString, isNil, isNumber, isEmpty, inArray, isRegExp } from '../../util'
 import { computeValue } from '../../internal'
 
 /**
@@ -284,4 +284,54 @@ export function $ltrim(obj: object, expr: any): any {
  */
 export function $rtrim(obj: object, expr: any): any {
   return trimString(obj, expr, { left: false, right: true})
+}
+
+/**
+ * Applies a regular expression (regex) to a string and returns information on the first matched substring.
+ *
+ * @param obj
+ * @param expr
+ */
+export function $regexFind(obj: object, expr: any): any {
+  let val = computeValue(obj, expr)
+
+  if (!isString(val.input)) return null
+
+  if (!!val.options) {
+    assert(val.options.indexOf('x') === -1, "extended capability option 'x' not supported")
+    assert(val.options.indexOf('g') === -1, "global option 'g' not supported")
+  }
+
+  let input = val.input as string
+  let re = new RegExp(val.regex, val.options)
+
+  let m = input.match(re)
+
+  if (m) {
+    let result = { match: m[0], idx: m.index, captures: [] }
+    for (let i = 1; i < m.length; i++) result.captures.push(m[i] || null)
+    return result
+  }
+
+  return null
+}
+
+/**
+ * Applies a regular expression (regex) to a string and returns information on the all matched substrings.
+ *
+ * @param obj
+ * @param expr
+ */
+export function $regexFindAll(obj: object, expr: any): any {
+
+}
+
+/**
+ * Applies a regular expression (regex) to a string and returns a boolean that indicates if a match is found or not.
+ *
+ * @param obj
+ * @param expr
+ */
+export function $regexMatch(obj: object, expr: any): any {
+
 }
