@@ -136,14 +136,14 @@ cursor.all()
 ## Aggregation Pipeline
 
 ```js
-import { Aggregator, useOperators, OP_PIPELINE, OP_ACCUMULATOR } from 'mingo'
+import { Aggregator, useOperators, OperatorType } from 'mingo'
 import { $match, $group, $sort } from 'mingo/operators/pipeline'
 import { $min } from 'mingo/operators/accumulator'
 
 // ensure the required operators are loaded.
 // this only needs to be done once so can be placed in a top-level initialization module
-useOperators(OP_PIPELINE, { $match, $group, $sort })
-useOperators(OP_ACCUMULATOR, { $min })
+useOperators(OperatorType.PIPELINE, { $match, $group, $sort })
+useOperators(OperatorType.ACCUMULATOR, { $min })
 
 let agg = new Aggregator([
   {'$match': { "type": "homework"}},
