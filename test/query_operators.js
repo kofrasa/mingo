@@ -2,7 +2,6 @@ var test = require('tape')
 var mingo = require('../es5/')
 
 var samples = require('./support')
-var ObjectId = require('bson').ObjectId
 
 var idStr = "123456789abe"
 var obj = samples.personData
@@ -13,6 +12,10 @@ obj['today'] = new Date()
 mingo.setup({
   'key': '_id'
 })
+
+function ObjectId(id) {
+  this._id = id
+}
 
 test('Comparison, Evaluation, and Element Operators', function (t) {
   var queries = [

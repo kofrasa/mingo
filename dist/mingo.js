@@ -1057,20 +1057,19 @@
       } : {
         '$eq': expr
       };
-    } // normalize object expression
+    } // normalize object expression. using ObjectLike handles custom types
 
 
-    if (isObject(expr)) {
-      var exprKeys = keys(expr); // no valid query operator found, so we do simple comparison
-
-      if (!exprKeys.some(isOperator)) {
+    if (isObjectLike(expr)) {
+      // no valid query operator found, so we do simple comparison
+      if (!keys(expr).some(isOperator)) {
         return {
           '$eq': expr
         };
       } // ensure valid regex
 
 
-      if (has(expr, '$regex') && has(expr, '$options')) {
+      if (has(expr, '$regex')) {
         expr['$regex'] = new RegExp(expr['$regex'], expr['$options']);
         delete expr['$options'];
       }

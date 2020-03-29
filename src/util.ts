@@ -818,17 +818,16 @@ export function normalize (expr: any): any {
     return isRegExp(expr) ? { '$regex': expr } : { '$eq': expr }
   }
 
-  // normalize object expression
-  if (isObject(expr)) {
-    let exprKeys = keys(expr)
+  // normalize object expression. using ObjectLike handles custom types
+  if (isObjectLike(expr)) {
 
     // no valid query operator found, so we do simple comparison
-    if (!exprKeys.some(isOperator)) {
+    if (!keys(expr).some(isOperator)) {
       return { '$eq': expr }
     }
 
     // ensure valid regex
-    if (has(expr, '$regex') && has(expr, '$options')) {
+    if (has(expr, '$regex')) {
       expr['$regex'] = new RegExp(expr['$regex'], expr['$options'])
       delete expr['$options']
     }
