@@ -1,7 +1,7 @@
 // Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
 
 import { assert, isDate, isNil, isNumber, isArray, reduce } from '../../util'
-import { computeValue } from '../../internal'
+import { computeValue } from '../../core'
 
 type NumberOrNull = number | null
 

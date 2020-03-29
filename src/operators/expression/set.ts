@@ -3,7 +3,7 @@
  */
 
 import { union, unique, intersection, notInArray, truthy } from '../../util'
-import { computeValue } from '../../internal'
+import { computeValue } from '../../core'
 
 /**
  * Returns true if two sets have the same elements.

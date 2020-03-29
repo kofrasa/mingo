@@ -16,7 +16,7 @@ import * as queryEvaluation from './query/evaluation'
 import * as queryLogical from './query/logical'
 
 // helpers
-import { useOperators, OperatorType } from '../internal'
+import { useOperators, OperatorType } from '../core'
 
 // intialize default operators
 export function enableDefaultOperators() {

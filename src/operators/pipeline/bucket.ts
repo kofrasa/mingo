@@ -5,7 +5,7 @@ import {
   getType,
   isNil
 } from '../../util'
-import { accumulate, computeValue } from '../../internal'
+import { accumulate, computeValue } from '../../core'
 import { Lazy, Iterator } from '../../lazy'
 
 /**

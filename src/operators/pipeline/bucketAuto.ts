@@ -6,7 +6,7 @@ import {
   memoize,
   sortBy
 } from '../../util'
-import { accumulate, computeValue, idKey } from '../../internal'
+import { accumulate, computeValue, idKey } from '../../core'
 import { Iterator } from '../../lazy'
 
 

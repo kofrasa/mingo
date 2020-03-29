@@ -1,6 +1,6 @@
 // Comparison Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#comparison-expression-operators
 
-import { computeValue } from '../../internal'
+import { computeValue } from '../../core'
 import {
   createExpressionOperator,
   $eq as __eq,

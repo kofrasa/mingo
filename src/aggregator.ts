@@ -1,5 +1,5 @@
 import { assert, each, isArray, isEmpty, keys } from './util'
-import { getOperator, OperatorType } from './internal'
+import { getOperator, OperatorType } from './core'
 import { Lazy, Iterator, Source } from './lazy'
 
 /**

@@ -3,7 +3,7 @@
  */
 
 import { assert, isArray, isNil, isObject } from '../../util'
-import { computeValue } from '../../internal'
+import { computeValue } from '../../core'
 
 /**
  * A ternary operator that evaluates one expression,

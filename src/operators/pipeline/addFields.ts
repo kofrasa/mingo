@@ -1,5 +1,5 @@
 import { cloneDeep, each, keys, setValue, removeValue } from '../../util'
-import { computeValue } from '../../internal'
+import { computeValue } from '../../core'
 import { Iterator } from '../../lazy'
 
 /**

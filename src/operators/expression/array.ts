@@ -14,7 +14,7 @@ import {
   slice,
   truthy
 } from '../../util'
-import { computeValue } from '../../internal'
+import { computeValue } from '../../core'
 import { createExpressionOperator, $nin as __nin } from '../predicates'
 
 /**

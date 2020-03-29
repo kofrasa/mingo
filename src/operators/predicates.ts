@@ -38,7 +38,7 @@ import {
   unwrap
 } from '../util'
 import { Query } from '../query'
-import { computeValue } from '../internal'
+import { computeValue } from '../core'
 
 /**
  * Returns a query operator created from the predicate

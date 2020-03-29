@@ -2,7 +2,7 @@
  * Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
  */
 
-import { computeValue } from '../../internal'
+import { computeValue } from '../../core'
 import { isObject, isString, isDate } from '../../util'
 
 const ONE_DAY_MILLIS = 1000 * 60 * 60 * 24

@@ -5570,7 +5570,6 @@
   exports.Query = Query;
   exports.addOperators = addOperators;
   exports.aggregate = aggregate;
-  exports.enableSystemOperators = enableSystemOperators;
   exports.find = find;
   exports.remove = remove;
   exports.setup = setup;

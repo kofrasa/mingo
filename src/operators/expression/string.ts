@@ -3,7 +3,7 @@
  */
 
 import { assert, isEqual, isString, isNil, isNumber, isEmpty, inArray, isRegExp } from '../../util'
-import { computeValue } from '../../internal'
+import { computeValue } from '../../core'
 
 /**
  * Concatenates two strings.

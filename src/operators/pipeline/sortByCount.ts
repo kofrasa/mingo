@@ -1,4 +1,4 @@
-import { idKey } from '../../internal'
+import { idKey } from '../../core'
 import { $group } from './group'
 import { $sort, SortOptions } from './sort'
 import { Iterator } from '../../lazy'

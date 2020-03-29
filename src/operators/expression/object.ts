@@ -7,7 +7,7 @@ import {
   isObject,
   reduce
 } from '../../util'
-import { computeValue } from '../../internal'
+import { computeValue } from '../../core'
 
 /**
  * Converts a document to an array of documents representing key-value pairs.

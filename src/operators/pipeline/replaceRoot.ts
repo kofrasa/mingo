@@ -1,5 +1,5 @@
 import { assert, isObject } from '../../util'
-import { computeValue } from '../../internal'
+import { computeValue } from '../../core'
 import { Iterator } from '../../lazy'
 
 

@@ -167,7 +167,7 @@ let result = agg.run(collection)
 ## Contributing
 
 - Squash changes into one commit
-- Run `make` to build and execute unit tests
+- Run `make test` to build and execute unit tests
 - Submit pull request
 
 ## License

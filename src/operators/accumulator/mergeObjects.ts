@@ -1,5 +1,5 @@
 import { reduce } from '../../util'
-import { computeValue } from '../../internal'
+import { computeValue } from '../../core'
 
 /**
  * Combines multiple documents into a single document.

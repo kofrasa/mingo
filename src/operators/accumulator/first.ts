@@ -1,4 +1,4 @@
-import { computeValue } from '../../internal'
+import { computeValue } from '../../core'
 
 /**
  * Returns the first value in a group.

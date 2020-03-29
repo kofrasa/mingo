@@ -3,7 +3,7 @@
  */
 
 import { isString, jsType } from '../../util'
-import { computeValue } from '../../internal'
+import { computeValue } from '../../core'
 import { $dateToString } from './date'
 import { T_BOOLEAN, T_BOOL, T_NUMBER, T_REGEXP, T_REGEX, MIN_INT, MAX_INT, MAX_LONG, MIN_LONG } from '../../constants'
 

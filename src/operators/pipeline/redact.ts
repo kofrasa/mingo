@@ -1,5 +1,5 @@
 import { cloneDeep } from '../../util'
-import { redact } from '../../internal'
+import { redact } from '../../core'
 import { Iterator } from '../../lazy'
 
 

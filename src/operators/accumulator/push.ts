@@ -1,5 +1,5 @@
 import { isNil } from '../../util'
-import { computeValue } from '../../internal'
+import { computeValue } from '../../core'
 
 /**
  * Returns an array of all values for the selected field among for each document in that group.

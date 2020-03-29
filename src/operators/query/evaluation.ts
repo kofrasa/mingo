@@ -6,7 +6,7 @@ import {
   $regex as __regex
 } from '../predicates'
 import { Callback, isFunction } from '../../util'
-import { computeValue } from '../../internal'
+import { computeValue } from '../../core'
 
 export const $mod = createQueryOperator(__mod)
 export const $regex = createQueryOperator(__regex)
