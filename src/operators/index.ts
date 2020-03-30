@@ -18,7 +18,9 @@ import * as queryLogical from './query/logical'
 // helpers
 import { useOperators, OperatorType } from '../core'
 
-// intialize default operators
+/**
+ * Intialize default operators. This includes query and projection operators
+ */
 export function enableDefaultOperators() {
   useOperators(OperatorType.EXPRESSION, Object.assign({}, booleanOperators, comparsonOperators))
   useOperators(OperatorType.PIPELINE, { $project, $skip, $limit, $sort })

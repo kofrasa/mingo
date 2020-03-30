@@ -25,27 +25,42 @@ const items = _.range(10 * 1000).map(id => {
 
 test('Aggregation performance', function (t) {
   const time1 = performance.now();
-  const metrics = mingo.aggregate(items, [
-    {
+  const metrics = mingo.aggregate(items, [{
       $match: {
         'active': true
       }
     },
     {
       $project: {
-        'booksSize': {$size: '$books'},
-        'authorsSize': {$size: '$authors'}
+        'booksSize': {
+          $size: '$books'
+        },
+        'authorsSize': {
+          $size: '$authors'
+        }
       }
     },
     {
       $group: {
         '_id': void 0,
-        'maxBooksCount': {$max: '$booksSize'},
-        'allBooksSum': {$sum: '$booksSize'},
-        'avgBooksCount': {$avg: '$booksSize'},
-        'maxAuthorsCount': {$max: '$authorsSize'},
-        'allAuthorsSum': {$sum: '$authorsSize'},
-        'avgAuthorsCount': {$avg: '$authorsSize'}
+        'maxBooksCount': {
+          $max: '$booksSize'
+        },
+        'allBooksSum': {
+          $sum: '$booksSize'
+        },
+        'avgBooksCount': {
+          $avg: '$booksSize'
+        },
+        'maxAuthorsCount': {
+          $max: '$authorsSize'
+        },
+        'allAuthorsSum': {
+          $sum: '$authorsSize'
+        },
+        'avgAuthorsCount': {
+          $avg: '$authorsSize'
+        }
       }
     }
   ]);
@@ -69,30 +84,27 @@ test("Sorting performance", function (t) {
   }
 
   const arrayToSort = [];
-  for(var i = 0; i < 5000; i++){
+  for (var i = 0; i < 5000; i++) {
     arrayToSort.push(makeid(20));
   }
 
-  const mingoSorter1 = new mingo.Aggregator(
-                  [
-                      { $sort: {
-                          number: 1
-                      } }
-                  ],
-                  {
-                      collation: {
-                          locale: 'en',
-                          strength: 1
-                      }
-                  }
-              );
+  const mingoSorter1 = new mingo.Aggregator([{
+    $sort: {
+      number: 1
+    }
+  }], {
+    collation: {
+      locale: 'en',
+      strength: 1
+    }
+  });
   const mingoSorter2 = new mingo.Aggregator(
-                  [
-                      { $sort: {
-                          number: 1
-                      } }
-                  ]
-              );
+    [{
+      $sort: {
+        number: 1
+      }
+    }]
+  );
 
   console.time('MINGO SORT WITH LOCALE');
   const result1 = mingoSorter1.run(arrayToSort);
@@ -103,11 +115,13 @@ test("Sorting performance", function (t) {
   console.timeEnd('MINGO SORT WITHOUT LOCALE');
 
   console.time('NATIVE SORT WITH LOCALE');
-  const result4 = arrayToSort.concat().sort(function (a,b){
-      const r = a.localeCompare(b, "en", {sensitivity:'base'})
-      if (r < 0) return -1
-      if (r > 0) return 1
-      return 0
+  const result4 = arrayToSort.concat().sort(function (a, b) {
+    const r = a.localeCompare(b, "en", {
+      sensitivity: 'base'
+    })
+    if (r < 0) return -1
+    if (r > 0) return 1
+    return 0
   });
   console.timeEnd('NATIVE SORT WITH LOCALE');
 

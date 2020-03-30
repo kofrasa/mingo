@@ -10,7 +10,8 @@ import {
   keys,
   resolve,
   moduleApi,
-  Callback
+  Callback,
+  unwrap
 } from './util'
 
 
@@ -73,7 +74,8 @@ export function addOperators(cls: OperatorType, fn: Callback<any>) {
         fn = fn.bind(newOperators)
         wrapped[op] = (selector: string, value: any) => (obj: object): boolean => {
           // value of field must be fully resolved.
-          let lhs = resolve(obj, selector)
+          let lhs = resolve(obj, selector, { preserveMetadata: true })
+          lhs = unwrap(lhs.result, lhs.depth)
           return fn(selector, lhs, value)
         }
       })

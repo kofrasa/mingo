@@ -10,6 +10,7 @@ import {
 } from './util'
 import { Cursor } from './cursor'
 import { getOperator, OperatorType } from './core'
+import { Source } from './lazy'
 
 /**
  * Query object to test collection elements with
@@ -82,7 +83,7 @@ export class Query {
    * @param projection
    * @returns {Cursor}
    */
-  find(collection: object[], projection?: object): Cursor {
+  find(collection: Source, projection?: object): Cursor {
     return new Cursor(collection, x => this.test(x), projection)
   }
 

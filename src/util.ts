@@ -2,20 +2,7 @@
  * Utility functions
  */
 
-import {
-  JS_SIMPLE_TYPES,
-  MISSING,
-  T_ARRAY,
-  T_BOOLEAN,
-  T_DATE,
-  T_FUNCTION,
-  T_NULL,
-  T_NUMBER,
-  T_OBJECT,
-  T_REGEXP,
-  T_STRING,
-  T_UNDEFINED
-} from './constants'
+import { MISSING, JsType } from './constants'
 
 export interface Callback<T> {
   (...args: any): T
@@ -24,6 +11,8 @@ export interface Callback<T> {
 export interface Predicate<T> {
   (...args: T[]): boolean
 }
+
+type CompareResult = -1 | 0 | 1
 
 interface Comparator<T> {
   (left: T, right: T): CompareResult
@@ -37,8 +26,6 @@ interface ResolveOptions {
   preserveMetadata?: boolean
   preserveMissing?: boolean
 }
-
-type CompareResult = -1 | 0 | 1
 
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/includes
 if (!Array.prototype.includes) {
@@ -92,6 +79,9 @@ if (!Array.prototype.includes) {
   });
 }
 
+// no array, object, or function types
+const JS_SIMPLE_TYPES = [JsType.NULL, JsType.UNDEFINED, JsType.BOOLEAN, JsType.NUMBER, JsType.STRING, JsType.DATE, JsType.REGEXP]
+
 export function assert (condition: boolean, message: string): void {
   if (!condition) throw new Error(message)
 }
@@ -122,15 +112,15 @@ export function getType (v: any): string {
   return v.constructor.name
 }
 export function jsType (v: any): string { return getType(v).toLowerCase() }
-export function isBoolean (v: any): v is boolean { return typeof v === T_BOOLEAN }
-export function isString (v: any): v is string { return typeof v === T_STRING }
-export function isNumber (v: any): v is number { return !isNaN(v) && typeof v === T_NUMBER  }
+export function isBoolean (v: any): v is boolean { return typeof v === JsType.BOOLEAN }
+export function isString (v: any): v is string { return typeof v === JsType.STRING }
+export function isNumber (v: any): v is number { return !isNaN(v) && typeof v === JsType.NUMBER  }
 export const isArray = Array.isArray || (v => v instanceof Array)
 export function isObject(v: any): boolean  { return !!v && v.constructor === Object }
 export function isObjectLike (v: any): boolean  { return v === Object(v) } // objects, arrays, functions, date, custom object
 export function isDate (v: any): boolean  { return v instanceof Date }
 export function isRegExp (v: any): boolean { return v instanceof RegExp }
-export function isFunction (v: any) { return typeof v === T_FUNCTION }
+export function isFunction (v: any) { return typeof v === JsType.FUNCTION }
 export function isNil (v: any): boolean  { return v === null || v === undefined }
 export function isNull (v: any): boolean  { return v === null }
 export function isUndefined (v: any): boolean  { return v === undefined }
@@ -362,17 +352,17 @@ export function isEqual(a: any, b: any): boolean {
 
     // unequal types and functions cannot be equal.
     let typename = jsType(a)
-    if (typename !== jsType(b) || typename === T_FUNCTION) return false
+    if (typename !== jsType(b) || typename === JsType.FUNCTION) return false
 
     // leverage toString for Date and RegExp types
     switch (typename) {
-      case T_ARRAY:
+      case JsType.ARRAY:
         if (a.length !== b.length) return false
         if (a.length === b.length && a.length === 0) continue
         into(lhs, a)
         into(rhs, b)
         break
-      case T_OBJECT:
+      case JsType.OBJECT:
         // deep compare objects
         let ka = keys(a)
         let kb = keys(b)
@@ -431,21 +421,21 @@ export function unique (xs: any[]): any[] {
 export function encode (value: any): string {
   let type = jsType(value)
   switch (type) {
-    case T_BOOLEAN:
-    case T_NUMBER:
-    case T_REGEXP:
+    case JsType.BOOLEAN:
+    case JsType.NUMBER:
+    case JsType.REGEXP:
       return value.toString()
-    case T_STRING:
+    case JsType.STRING:
       return JSON.stringify(value)
-    case T_DATE:
+    case JsType.DATE:
       return value.toISOString()
-    case T_NULL:
-    case T_UNDEFINED:
+    case JsType.NULL:
+    case JsType.UNDEFINED:
       return type
-    case T_ARRAY:
+    case JsType.ARRAY:
       return '[' + value.map(encode) + ']'
     default:
-      let prefix = (type === T_OBJECT)? '' : `${getType(value)}`
+      let prefix = (type === JsType.OBJECT)? '' : `${getType(value)}`
       let objKeys = keys(value)
       objKeys.sort()
       return `${prefix}{` + objKeys.map(k => `${encode(k)}:${encode(value[k])}`) + '}'
@@ -619,7 +609,7 @@ export function memoize (fn: Callback<any>): Callback<any> {
  * @returns {*}
  * @private
  */
-export function getValue (obj: object, field: any): any {
+function getValue (obj: object, field: any): any {
   return isObjectLike(obj) ? obj[field] : undefined
 }
 

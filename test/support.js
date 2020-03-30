@@ -1,6 +1,7 @@
 var fs = require('fs')
 var test = require('tape')
 var mingo = require('../es5')
+var computeValue = require('../es5/core').computeValue
 
 exports.personData = JSON.parse(fs.readFileSync(__dirname + '/data/person.json'))
 exports.simpleGradesData = JSON.parse(fs.readFileSync(__dirname + '/data/grades_simple.json'))
@@ -15,13 +16,6 @@ exports.groupByObjectsData = [
   {'date_buckets': {'date': '2015-04-29T00:17:03.107Z', 'day': 28, 'hour': 18, 'minute': 17, 'sec': 3, 'hour_minute': '18:17'}, 'Keyword ID': 'sr3_HZAarvKy', 'Creative ID': '6074827333', 'Keyword': 'Drain Clogs', 'Match Type': 'bp', 'Device': 'c', 'Conversions': [1, 0, 0, 1, 0, 0, 0, 0, 0], 'Revenues': [5, 0, 0, 5, 0, 0, 0, 0, 0], 'account_id': 'baron'},
   {'date_buckets': {'date': '2015-04-29T00:17:03.107Z', 'day': 28, 'hour': 18, 'minute': 17, 'sec': 3, 'hour_minute': '18:17'}, 'Keyword ID': 'sr3_irU8fFk0', 'Creative ID': '6074827289', 'Keyword': 'unclog bathtub drain', 'Match Type': 'bp', 'Device': 'c', 'Conversions': [1, 0, 0, 1, 0, 0, 0, 0, 0], 'Revenues': [5, 0, 0, 5, 0, 0, 0, 0, 0], 'account_id': 'baron'}
 ]
-
-function computeValue(obj, input, field) {
-  var expr = {}
-  expr[field] = input
-  var result = mingo.aggregate([ obj ], [ { $addFields: {test: expr} }, { $project: { test: 1} } ])[0]
-  return result.test
-}
 
 exports.runTest = function (description, suite) {
   Object.entries(suite).forEach(function (arr) {

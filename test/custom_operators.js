@@ -3,6 +3,7 @@ var samples = require('./support')
 var mingo = require('../es5')
 var OperatorType = mingo.OperatorType
 
+
 test('Custom Operators', function (t) {
   t.test('custom pipeline operator', function (t) {
     t.plan(1)
@@ -51,7 +52,7 @@ test('Custom Operators', function (t) {
     }
   })
 
-  t.test('custom group operator', function (t) {
+  t.test('custom accumulator operator', function (t) {
     t.plan(2)
     mingo.addOperators(OperatorType.ACCUMULATOR, function (m) {
       return {

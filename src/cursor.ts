@@ -1,6 +1,6 @@
 import { isObject, Callback, Predicate } from './util'
 import { Aggregator } from './aggregator'
-import { Lazy, Iterator } from './lazy'
+import { Lazy, Iterator, Source } from './lazy'
 import { CollationSpec } from './operators/pipeline/sort'
 
 /**
@@ -12,16 +12,16 @@ import { CollationSpec } from './operators/pipeline/sort'
  */
 export class Cursor {
 
-  private __filterFn: Callback<any>
-  private __source: object[]
+  private __predicate: Predicate<any>
+  private __source: Source
   private __projection: object
   private __operators: object[]
   private __result: Iterator
   private __stack: any[]
   private __options: object
 
-  constructor(source: object[], filterFn: Predicate<any>, projection?: object) {
-    this.__filterFn = filterFn
+  constructor(source: Source, predicate: Predicate<any>, projection?: object) {
+    this.__predicate = predicate
     this.__source = source
     this.__projection = projection
     this.__operators = []
@@ -38,7 +38,7 @@ export class Cursor {
     if (isObject(this.__projection)) this.__operators.push({ '$project': this.__projection })
 
     // filter collection
-    this.__result = Lazy(this.__source).filter(this.__filterFn)
+    this.__result = Lazy(this.__source).filter(this.__predicate)
 
     if (this.__operators.length > 0) {
       this.__result = (new Aggregator(this.__operators, this.__options)).stream(this.__result)

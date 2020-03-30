@@ -2,18 +2,12 @@
  * Query and Projection Operators. https://docs.mongodb.com/manual/reference/operator/query/
  */
 import {
-  T_ARRAY,
-  T_BOOL,
-  T_DATE,
-  T_NULL,
-  T_OBJECT,
-  T_REGEX,
-  T_STRING,
-  T_UNDEFINED,
   MAX_INT,
   MIN_INT,
   MAX_LONG,
-  MIN_LONG
+  MIN_LONG,
+  JsType,
+  BsonType
 } from '../constants'
 import {
   ensureArray,
@@ -35,16 +29,18 @@ import {
   keys,
   Predicate,
   resolve,
-  unwrap
+  unwrap,
+  Callback,
 } from '../util'
 import { Query } from '../query'
 import { computeValue } from '../core'
 
 /**
  * Returns a query operator created from the predicate
+ *
  * @param pred Predicate function
  */
-export function createQueryOperator(pred: Predicate<any>) {
+export function createQueryOperator(pred: Predicate<any>): Callback<any> {
   return (selector: string, value: any) => (obj: object) => {
     // value of field must be fully resolved.
     let lhs = resolve(obj, selector, { preserveMetadata: true })
@@ -55,6 +51,7 @@ export function createQueryOperator(pred: Predicate<any>) {
 
 /**
  * Returns an expression operator created from the predicate
+ *
  * @param f Predicate function
  */
 export function createExpressionOperator(f: Predicate<any>) {
@@ -272,41 +269,42 @@ export function $elemMatch(a: any[], b: object): boolean {
 export function $type(a: any, b: number | string): boolean {
   switch (b) {
     case 1:
-    case 'double':
-      return isNumber(a) && a.toString().indexOf('.') !== -1
+    case 19:
+    case BsonType.DOUBLE:
+    case BsonType.DECIMAL:
+      return isNumber(a)
     case 2:
-    case T_STRING:
+    case JsType.STRING:
       return isString(a)
     case 3:
-    case T_OBJECT:
+    case JsType.OBJECT:
       return isObject(a)
     case 4:
-    case T_ARRAY:
+    case JsType.ARRAY:
       return isArray(a)
     case 6:
-    case T_UNDEFINED:
+    case JsType.UNDEFINED:
       return isNil(a)
     case 8:
-    case T_BOOL:
+    case JsType.BOOLEAN:
+    case BsonType.BOOL:
       return isBoolean(a)
     case 9:
-    case T_DATE:
+    case JsType.DATE:
       return isDate(a)
     case 10:
-    case T_NULL:
+    case JsType.NULL:
       return isNull(a)
     case 11:
-    case T_REGEX:
+    case JsType.REGEXP:
+    case BsonType.REGEX:
       return isRegExp(a)
     case 16:
-    case 'int':
+    case BsonType.INT:
       return isNumber(a) && a >= MIN_INT && a <= MAX_INT && a.toString().indexOf('.') === -1
     case 18:
-    case 'long':
+    case BsonType.LONG:
       return isNumber(a) && a >= MIN_LONG && a <= MAX_LONG && a.toString().indexOf('.') === -1
-    case 19:
-    case 'decimal':
-      return isNumber(a)
     default:
       return false
   }

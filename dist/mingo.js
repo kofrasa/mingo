@@ -181,26 +181,37 @@
     throw new TypeError("Invalid attempt to spread non-iterable instance");
   }
 
-  // Javascript native types
-  var T_NULL = 'null';
-  var T_UNDEFINED = 'undefined';
-  var T_BOOL = 'bool';
-  var T_BOOLEAN = 'boolean';
-  var T_NUMBER = 'number';
-  var T_STRING = 'string';
-  var T_DATE = 'date';
-  var T_REGEX = 'regex';
-  var T_REGEXP = 'regexp';
-  var T_ARRAY = 'array';
-  var T_OBJECT = 'object';
-  var T_FUNCTION = 'function'; // no array, object, or function types
-
-  var JS_SIMPLE_TYPES = [T_NULL, T_UNDEFINED, T_BOOLEAN, T_NUMBER, T_STRING, T_DATE, T_REGEXP];
-  var MISSING = function MISSING() {};
   var MAX_INT = 2147483647;
   var MIN_INT = -2147483648;
   var MAX_LONG = Number.MAX_SAFE_INTEGER;
   var MIN_LONG = Number.MIN_SAFE_INTEGER;
+  var MISSING = function MISSING() {}; // Javascript native types
+
+  var JsType;
+
+  (function (JsType) {
+    JsType["NULL"] = "null";
+    JsType["UNDEFINED"] = "undefined";
+    JsType["BOOLEAN"] = "boolean";
+    JsType["NUMBER"] = "number";
+    JsType["STRING"] = "string";
+    JsType["DATE"] = "date";
+    JsType["REGEXP"] = "regexp";
+    JsType["ARRAY"] = "array";
+    JsType["OBJECT"] = "object";
+    JsType["FUNCTION"] = "function";
+  })(JsType || (JsType = {}));
+
+  var BsonType;
+
+  (function (BsonType) {
+    BsonType["BOOL"] = "bool";
+    BsonType["INT"] = "int";
+    BsonType["LONG"] = "long";
+    BsonType["DOUBLE"] = "double";
+    BsonType["DECIMAL"] = "decimal";
+    BsonType["REGEX"] = "regex";
+  })(BsonType || (BsonType = {}));
 
   if (!Array.prototype.includes) {
     Object.defineProperty(Array.prototype, 'includes', {
@@ -248,8 +259,10 @@
         return false;
       }
     });
-  }
+  } // no array, object, or function types
 
+
+  var JS_SIMPLE_TYPES = [JsType.NULL, JsType.UNDEFINED, JsType.BOOLEAN, JsType.NUMBER, JsType.STRING, JsType.DATE, JsType.REGEXP];
   function assert(condition, message) {
     if (!condition) throw new Error(message);
   }
@@ -282,13 +295,13 @@
     return getType(v).toLowerCase();
   }
   function isBoolean(v) {
-    return _typeof(v) === T_BOOLEAN;
+    return _typeof(v) === JsType.BOOLEAN;
   }
   function isString(v) {
-    return _typeof(v) === T_STRING;
+    return _typeof(v) === JsType.STRING;
   }
   function isNumber(v) {
-    return !isNaN(v) && _typeof(v) === T_NUMBER;
+    return !isNaN(v) && _typeof(v) === JsType.NUMBER;
   }
   var isArray = Array.isArray || function (v) {
     return v instanceof Array;
@@ -307,7 +320,7 @@
     return v instanceof RegExp;
   }
   function isFunction(v) {
-    return _typeof(v) === T_FUNCTION;
+    return _typeof(v) === JsType.FUNCTION;
   }
   function isNil(v) {
     return v === null || v === undefined;
@@ -562,17 +575,17 @@
       if (a === b) continue; // unequal types and functions cannot be equal.
 
       var typename = jsType(a);
-      if (typename !== jsType(b) || typename === T_FUNCTION) return false; // leverage toString for Date and RegExp types
+      if (typename !== jsType(b) || typename === JsType.FUNCTION) return false; // leverage toString for Date and RegExp types
 
       switch (typename) {
-        case T_ARRAY:
+        case JsType.ARRAY:
           if (a.length !== b.length) return false;
           if (a.length === b.length && a.length === 0) continue;
           into(lhs, a);
           into(rhs, b);
           break;
 
-        case T_OBJECT:
+        case JsType.OBJECT:
           // deep compare objects
           var ka = keys(a);
           var kb = keys(b); // check length of keys early
@@ -634,26 +647,26 @@
     var type = jsType(value);
 
     switch (type) {
-      case T_BOOLEAN:
-      case T_NUMBER:
-      case T_REGEXP:
+      case JsType.BOOLEAN:
+      case JsType.NUMBER:
+      case JsType.REGEXP:
         return value.toString();
 
-      case T_STRING:
+      case JsType.STRING:
         return JSON.stringify(value);
 
-      case T_DATE:
+      case JsType.DATE:
         return value.toISOString();
 
-      case T_NULL:
-      case T_UNDEFINED:
+      case JsType.NULL:
+      case JsType.UNDEFINED:
         return type;
 
-      case T_ARRAY:
+      case JsType.ARRAY:
         return '[' + value.map(encode) + ']';
 
       default:
-        var prefix = type === T_OBJECT ? '' : "".concat(getType(value));
+        var prefix = type === JsType.OBJECT ? '' : "".concat(getType(value));
         var objKeys = keys(value);
         objKeys.sort();
         return "".concat(prefix, "{") + objKeys.map(function (k) {
@@ -853,6 +866,7 @@
    * @param selector {String} dot separated path to field
    * @returns {*}
    */
+
 
   function resolve(obj, selector, options) {
     var depth = 0; // options
@@ -1211,7 +1225,10 @@
           wrapped[op] = function (selector, value) {
             return function (obj) {
               // value of field must be fully resolved.
-              var lhs = resolve(obj, selector);
+              var lhs = resolve(obj, selector, {
+                preserveMetadata: true
+              });
+              lhs = unwrap(lhs.result, lhs.depth);
               return fn(selector, lhs, value);
             };
           };
@@ -2313,10 +2330,10 @@
    */
 
   var Cursor = /*#__PURE__*/function () {
-    function Cursor(source, filterFn, projection) {
+    function Cursor(source, predicate, projection) {
       _classCallCheck(this, Cursor);
 
-      this.__filterFn = filterFn;
+      this.__predicate = predicate;
       this.__source = source;
       this.__projection = projection;
       this.__operators = [];
@@ -2334,7 +2351,7 @@
           '$project': this.__projection
         }); // filter collection
 
-        this.__result = Lazy(this.__source).filter(this.__filterFn);
+        this.__result = Lazy(this.__source).filter(this.__predicate);
 
         if (this.__operators.length > 0) {
           this.__result = new Aggregator(this.__operators, this.__options).stream(this.__result);
@@ -2631,6 +2648,7 @@
 
   /**
    * Returns a query operator created from the predicate
+   *
    * @param pred Predicate function
    */
 
@@ -2648,6 +2666,7 @@
   }
   /**
    * Returns an expression operator created from the predicate
+   *
    * @param f Predicate function
    */
 
@@ -2891,52 +2910,52 @@
   function $type(a, b) {
     switch (b) {
       case 1:
-      case 'double':
-        return isNumber(a) && a.toString().indexOf('.') !== -1;
+      case 19:
+      case BsonType.DOUBLE:
+      case BsonType.DECIMAL:
+        return isNumber(a);
 
       case 2:
-      case T_STRING:
+      case JsType.STRING:
         return isString(a);
 
       case 3:
-      case T_OBJECT:
+      case JsType.OBJECT:
         return isObject(a);
 
       case 4:
-      case T_ARRAY:
+      case JsType.ARRAY:
         return isArray(a);
 
       case 6:
-      case T_UNDEFINED:
+      case JsType.UNDEFINED:
         return isNil(a);
 
       case 8:
-      case T_BOOL:
+      case JsType.BOOLEAN:
+      case BsonType.BOOL:
         return isBoolean(a);
 
       case 9:
-      case T_DATE:
+      case JsType.DATE:
         return isDate(a);
 
       case 10:
-      case T_NULL:
+      case JsType.NULL:
         return isNull(a);
 
       case 11:
-      case T_REGEX:
+      case JsType.REGEXP:
+      case BsonType.REGEX:
         return isRegExp(a);
 
       case 16:
-      case 'int':
+      case BsonType.INT:
         return isNumber(a) && a >= MIN_INT && a <= MAX_INT && a.toString().indexOf('.') === -1;
 
       case 18:
-      case 'long':
+      case BsonType.LONG:
         return isNumber(a) && a >= MIN_LONG && a <= MAX_LONG && a.toString().indexOf('.') === -1;
-
-      case 19:
-      case 'decimal':
-        return isNumber(a);
 
       default:
         return false;
@@ -3698,15 +3717,15 @@
     var typename = jsType(val);
 
     switch (typename) {
-      case T_BOOLEAN:
-        return T_BOOL;
+      case JsType.BOOLEAN:
+        return BsonType.BOOL;
 
-      case T_NUMBER:
-        if (val.toString().indexOf('.') >= 0) return 'double';
-        return val >= MIN_INT && val <= MAX_INT ? 'int' : 'long';
+      case JsType.NUMBER:
+        if (val.toString().indexOf('.') >= 0) return BsonType.DOUBLE;
+        return val >= MIN_INT && val <= MAX_INT ? BsonType.INT : BsonType.LONG;
 
-      case T_REGEXP:
-        return T_REGEX;
+      case JsType.REGEXP:
+        return BsonType.REGEX;
 
       default:
         return typename;
@@ -3818,29 +3837,31 @@
     try {
       switch (ctx.to) {
         case 2:
-        case 'string':
+        case JsType.STRING:
           return $toString(obj, ctx.input);
 
         case 8:
-        case 'bool':
+        case JsType.BOOLEAN:
+        case BsonType.BOOL:
           return $toBool(obj, ctx.input);
 
         case 9:
-        case 'date':
+        case JsType.DATE:
           return $toDate(obj, ctx.input);
 
         case 1:
         case 19:
-        case 'double':
-        case 'decimal':
+        case BsonType.DOUBLE:
+        case BsonType.DECIMAL:
+        case JsType.NUMBER:
           return $toDouble(obj, ctx.input);
 
         case 16:
-        case 'int':
+        case BsonType.INT:
           return $toInt(obj, ctx.input);
 
         case 18:
-        case 'long':
+        case BsonType.LONG:
           return $toLong(obj, ctx.input);
       }
     } catch (e) {}
@@ -5570,6 +5591,7 @@
   exports.Query = Query;
   exports.addOperators = addOperators;
   exports.aggregate = aggregate;
+  exports.enableSystemOperators = enableSystemOperators;
   exports.find = find;
   exports.remove = remove;
   exports.setup = setup;

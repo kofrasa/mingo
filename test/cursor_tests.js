@@ -2,7 +2,8 @@ var test = require('tape')
 var mingo = require('../es5')
 var samples = require('./support')
 
-test('Mingo.Cursor tests', function (t) {
+
+test('Cursor tests', function (t) {
   // create a query with no criteria
   var query = new mingo.Query({})
   function newCursor() {

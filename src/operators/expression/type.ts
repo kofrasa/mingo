@@ -5,7 +5,7 @@
 import { isString, jsType } from '../../util'
 import { computeValue } from '../../core'
 import { $dateToString } from './date'
-import { T_BOOLEAN, T_BOOL, T_NUMBER, T_REGEXP, T_REGEX, MIN_INT, MAX_INT, MAX_LONG, MIN_LONG } from '../../constants'
+import { MIN_INT, MAX_INT, MAX_LONG, MIN_LONG, JsType, BsonType } from '../../constants'
 
 class TypeConvertError extends Error {
   constructor(message: string) {
@@ -17,13 +17,13 @@ export function $type(obj: object, expr: any): string {
   let val = computeValue(obj, expr)
   let typename = jsType(val)
   switch (typename) {
-    case T_BOOLEAN:
-      return T_BOOL
-    case T_NUMBER:
-      if (val.toString().indexOf('.') >= 0) return 'double'
-      return val >= MIN_INT && val <= MAX_INT ? 'int' : 'long'
-    case T_REGEXP:
-      return T_REGEX
+    case JsType.BOOLEAN:
+      return BsonType.BOOL
+    case JsType.NUMBER:
+      if (val.toString().indexOf('.') >= 0) return BsonType.DOUBLE
+      return val >= MIN_INT && val <= MAX_INT ? BsonType.INT : BsonType.LONG
+    case JsType.REGEXP:
+      return BsonType.REGEX
     default:
       return typename
   }
@@ -151,29 +151,31 @@ export function $convert(obj: object, expr: any): any {
   try {
     switch (ctx.to) {
       case 2:
-      case 'string':
+      case JsType.STRING:
         return $toString(obj, ctx.input)
 
       case 8:
-      case 'bool':
+      case JsType.BOOLEAN:
+      case BsonType.BOOL:
         return $toBool(obj, ctx.input)
 
       case 9:
-      case 'date':
+      case JsType.DATE:
         return $toDate(obj, ctx.input)
 
       case 1:
       case 19:
-      case 'double':
-      case 'decimal':
+      case BsonType.DOUBLE:
+      case BsonType.DECIMAL:
+      case JsType.NUMBER:
         return $toDouble(obj, ctx.input)
 
       case 16:
-      case 'int':
+      case BsonType.INT:
         return $toInt(obj, ctx.input)
 
       case 18:
-      case 'long':
+      case BsonType.LONG:
         return $toLong(obj, ctx.input)
     }
   } catch (e) {}
