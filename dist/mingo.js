@@ -780,17 +780,28 @@
       result.groups[index].push(obj);
     });
     return result;
-  }
+  } // max elements to push.
+  // See argument limit https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/apply
+
+  var MAX_ARRAY_PUSH = 50000;
   /**
    * Push elements in given array into target array
    *
-   * @param {*} target The array to push into
-   * @param {*} xs The array of elements to push
+   * @param {*} dest The array to push into
+   * @param {*} src The array of elements to push
    */
 
-  function into(target, xs) {
-    Array.prototype.push.apply(target, xs);
-    return target;
+  function into(dest, src) {
+    // push arrary in batches to handle large inputs
+    var i = Math.ceil(src.length / MAX_ARRAY_PUSH);
+    var begin = 0;
+
+    while (i-- > 0) {
+      Array.prototype.push.apply(dest, src.slice(begin, begin + MAX_ARRAY_PUSH));
+      begin += MAX_ARRAY_PUSH;
+    }
+
+    return dest;
   }
   /**
    * Find the insert index for the given key in a sorted array.

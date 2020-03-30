@@ -8,7 +8,7 @@
     "build": "npm run compile && npm run bundle",
     "bundle": "rollup -c rollup.umd.js",
     "clean": "rm -fr lib es5 dist",
-    "compile": "tsc && tsc --build tsconfig.es5.json",
+    "compile": "tsc && tsc --project tsconfig.es5.json",
     "compress": "uglifyjs dist/mingo.js --comments '/^!/' --compress --mangle --sourcemap dist/mingo.min.map --output dist/mingo.min.js",
     "release": "npm run clean && npm run build && npm test",
     "postrelease": "npm run compress",

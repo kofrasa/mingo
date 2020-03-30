@@ -546,15 +546,25 @@ export function groupBy (collection: any[], fn: Callback<any>): { keys: any[], g
   return result
 }
 
+// max elements to push.
+// See argument limit https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/apply
+const MAX_ARRAY_PUSH = 50000
+
 /**
  * Push elements in given array into target array
  *
- * @param {*} target The array to push into
- * @param {*} xs The array of elements to push
+ * @param {*} dest The array to push into
+ * @param {*} src The array of elements to push
  */
-export function into (target: any[], xs: any): any[] {
-  Array.prototype.push.apply(target, xs)
-  return target
+export function into (dest: any[], src: any[]): any[] {
+  // push arrary in batches to handle large inputs
+  let i = Math.ceil(src.length / MAX_ARRAY_PUSH)
+  let begin = 0
+  while (i-- > 0) {
+    Array.prototype.push.apply(dest, src.slice(begin, begin + MAX_ARRAY_PUSH))
+    begin += MAX_ARRAY_PUSH
+  }
+  return dest
 }
 
 /**
