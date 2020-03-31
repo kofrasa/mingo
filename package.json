@@ -37,7 +37,7 @@
     "lodash": "4.17.15",
     "nyc": "15.0.0",
     "perf_hooks": "0.0.1",
-    "rollup": "2.2.0",
+    "rollup": "2.3.2",
     "rollup-plugin-babel": "4.4.0",
     "@rollup/plugin-commonjs": "11.0.2",
     "@rollup/plugin-node-resolve": "7.1.1",
