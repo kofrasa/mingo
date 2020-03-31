@@ -3,7 +3,7 @@
   "version": "3.0.0",
   "description": "JavaScript implementation of MongoDB query language",
   "main": "./es5/index.js",
-  "module": "./index.js",
+  "module": "./lib/index.js",
   "scripts": {
     "build": "npm run compile && npm run bundle",
     "bundle": "rollup -c rollup.umd.js",

@@ -30,7 +30,7 @@ interface ResolveOptions {
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/includes
 if (!Array.prototype.includes) {
   Object.defineProperty(Array.prototype, 'includes', {
-    value: function(valueToFind: any, fromIndex?: number) {
+    value: function (valueToFind: any, fromIndex?: number) {
 
       if (this == null) {
         throw new TypeError('"this" is null or not defined');
@@ -82,14 +82,14 @@ if (!Array.prototype.includes) {
 // no array, object, or function types
 const JS_SIMPLE_TYPES = [JsType.NULL, JsType.UNDEFINED, JsType.BOOLEAN, JsType.NUMBER, JsType.STRING, JsType.DATE, JsType.REGEXP]
 
-export function assert (condition: boolean, message: string): void {
+export function assert(condition: boolean, message: string): void {
   if (!condition) throw new Error(message)
 }
 
 /**
  * Deep clone an object
  */
-export function cloneDeep (obj: any): any {
+export function cloneDeep(obj: any): any {
   if (isArray(obj)) return obj.map(cloneDeep)
   if (isDate(obj)) return new Date(obj)
   if (isObject(obj)) return objectMap(obj, cloneDeep)
@@ -99,42 +99,43 @@ export function cloneDeep (obj: any): any {
 /**
  * Shallow clone an object
  */
-export function clone (obj: any): any {
+export function clone(obj: any): any {
   if (isArray(obj)) return into([], obj)
   if (isDate(obj)) return new Date(obj)
   if (isObject(obj)) return Object.assign({}, obj)
   return obj
 }
 
-export function getType (v: any): string {
+export function getType(v: any): string {
   if (v === null) return 'Null'
   if (v === undefined) return 'Undefined'
   return v.constructor.name
 }
-export function jsType (v: any): string { return getType(v).toLowerCase() }
-export function isBoolean (v: any): v is boolean { return typeof v === JsType.BOOLEAN }
-export function isString (v: any): v is string { return typeof v === JsType.STRING }
-export function isNumber (v: any): v is number { return !isNaN(v) && typeof v === JsType.NUMBER  }
+
+export function jsType(v: any): string { return getType(v).toLowerCase() }
+export function isBoolean(v: any): v is boolean { return typeof v === JsType.BOOLEAN }
+export function isString(v: any): v is string { return typeof v === JsType.STRING }
+export function isNumber(v: any): v is number { return !isNaN(v) && typeof v === JsType.NUMBER }
 export const isArray = Array.isArray || (v => v instanceof Array)
-export function isObject(v: any): boolean  { return !!v && v.constructor === Object }
-export function isObjectLike (v: any): boolean  { return v === Object(v) } // objects, arrays, functions, date, custom object
-export function isDate (v: any): boolean  { return v instanceof Date }
-export function isRegExp (v: any): boolean { return v instanceof RegExp }
-export function isFunction (v: any) { return typeof v === JsType.FUNCTION }
-export function isNil (v: any): boolean  { return v === null || v === undefined }
-export function isNull (v: any): boolean  { return v === null }
-export function isUndefined (v: any): boolean  { return v === undefined }
-export function inArray (arr: any[], item: any): boolean  { return arr.includes(item) }
-export function notInArray (arr: any[], item: any): boolean  { return !inArray(arr, item) }
-export function truthy (arg: any): boolean  { return !!arg }
-export function isEmpty (x: any): boolean {
+export function isObject(v: any): boolean { return !!v && v.constructor === Object }
+export function isObjectLike(v: any): boolean { return v === Object(v) } // objects, arrays, functions, date, custom object
+export function isDate(v: any): boolean { return v instanceof Date }
+export function isRegExp(v: any): boolean { return v instanceof RegExp }
+export function isFunction(v: any) { return typeof v === JsType.FUNCTION }
+export function isNil(v: any): boolean { return v === null || v === undefined }
+export function isNull(v: any): boolean { return v === null }
+export function isUndefined(v: any): boolean { return v === undefined }
+export function inArray(arr: any[], item: any): boolean { return arr.includes(item) }
+export function notInArray(arr: any[], item: any): boolean { return !inArray(arr, item) }
+export function truthy(arg: any): boolean { return !!arg }
+export function isEmpty(x: any): boolean {
   return isNil(x) ||
     isArray(x) && x.length === 0 ||
     isObject(x) && keys(x).length === 0 || !x
 }
 // ensure a value is an array
-export function ensureArray (x: any): any[] { return x instanceof Array ? x : [x] }
-export function has (obj: object, prop: any): boolean { return !!obj && obj.hasOwnProperty(prop) }
+export function ensureArray(x: any): any[] { return x instanceof Array ? x : [x] }
+export function has(obj: object, prop: any): boolean { return !!obj && obj.hasOwnProperty(prop) }
 export const keys = Object.keys
 
 // ////////////////// UTILS ////////////////////
@@ -146,7 +147,7 @@ export const keys = Object.keys
  * @param  {*}   ctx  The object to use a context
  * @return {void}
  */
-export function each (obj: object, fn: Callback<any>): void {
+export function each(obj: object, fn: Callback<any>): void {
   if (obj instanceof Array) {
     let arr = obj as any[]
     for (let i = 0, len = arr.length; i < len; i++) {
@@ -168,7 +169,7 @@ export function each (obj: object, fn: Callback<any>): void {
  * @param  {Function} fn The transform function
  * @return {Array|Object} Result object after applying the transform
  */
-export function objectMap (obj: object, fn: Callback<any>): object {
+export function objectMap(obj: object, fn: Callback<any>): object {
   let o = {}
   let objKeys = keys(obj)
   for (let i = 0; i < objKeys.length; i++) {
@@ -236,7 +237,7 @@ export function merge(target: object, obj: object, options: MergeOptions): objec
  * @param accumulator
  * @returns {*}
  */
-export function reduce<T> (collection: object, fn: Callback<any>, accumulator: T): T {
+export function reduce<T>(collection: object, fn: Callback<any>, accumulator: T): T {
   if (Array.isArray(collection)) {
     return collection.reduce(fn, accumulator)
   }
@@ -252,7 +253,7 @@ export function reduce<T> (collection: object, fn: Callback<any>, accumulator: T
  * @param  {Array} ys The second array
  * @return {Array}    Result array
  */
-export function intersection (a: any[], b: any[]): any[] {
+export function intersection(a: any[], b: any[]): any[] {
   let flipped = false
 
   // we ensure the left array is always smallest
@@ -294,7 +295,7 @@ export function intersection (a: any[], b: any[]): any[] {
  * @param  {Array} ys The second array
  * @return {Array}   The result array
  */
-export function union (xs: any[], ys: any[]): any[] {
+export function union(xs: any[], ys: any[]): any[] {
   return into(into([], xs), ys.filter(notInArray.bind(null, xs)))
 }
 
@@ -304,7 +305,7 @@ export function union (xs: any[], ys: any[]): any[] {
  * @param  {Array} xs The array to flatten
  * @param {Number} depth The number of nested lists to iterate
  */
-export function flatten (xs: any[], depth: number = -1): any[] {
+export function flatten(xs: any[], depth: number = -1): any[] {
   let arr = []
   function flatten2(ys: any[], iter: number) {
     for (let i = 0, len = ys.length; i < len; i++) {
@@ -399,7 +400,7 @@ export function isEqual(a: any, b: any): boolean {
  * @param  {Array} xs The input collection
  * @return {Array}    A new collection with unique values
  */
-export function unique (xs: any[]): any[] {
+export function unique(xs: any[]): any[] {
   let h = {}
   let arr = []
   each(xs, item => {
@@ -418,7 +419,7 @@ export function unique (xs: any[]): any[] {
  * @param value
  * @returns {*}
  */
-export function encode (value: any): string {
+export function encode(value: any): string {
   let type = jsType(value)
   switch (type) {
     case JsType.BOOLEAN:
@@ -435,7 +436,7 @@ export function encode (value: any): string {
     case JsType.ARRAY:
       return '[' + value.map(encode) + ']'
     default:
-      let prefix = (type === JsType.OBJECT)? '' : `${getType(value)}`
+      let prefix = (type === JsType.OBJECT) ? '' : `${getType(value)}`
       let objKeys = keys(value)
       objKeys.sort()
       return `${prefix}{` + objKeys.map(k => `${encode(k)}:${encode(value[k])}`) + '}'
@@ -450,7 +451,7 @@ export function encode (value: any): string {
  * @param value
  * @returns {*}
  */
-export function hashCode (value: any): number | null {
+export function hashCode(value: any): number | null {
   if (isNil(value)) return null
 
   let hash = 0
@@ -465,7 +466,7 @@ export function hashCode (value: any): number | null {
  * @param {*} a
  * @param {*} b
  */
-export function compare (a: any, b: any): CompareResult {
+export function compare(a: any, b: any): CompareResult {
   if (a < b) return -1
   if (a > b) return 1
   return 0
@@ -481,7 +482,7 @@ export function compare (a: any, b: any): CompareResult {
  * @param {Function} cmp The comparator function to use for comparing values
  * @return {Array} Returns a new sorted array by the given iteratee
  */
-export function sortBy (collection: any[], fn: Callback<any>, cmp?: Comparator<any>): any[] {
+export function sortBy(collection: any[], fn: Callback<any>, cmp?: Comparator<any>): any[] {
   let sorted = []
   let result = []
   let hash = new Object
@@ -523,7 +524,7 @@ export function sortBy (collection: any[], fn: Callback<any>, cmp?: Comparator<a
  * @param fn {Function} to compute the group key of an item in the collection
  * @returns {{keys: Array, groups: Array}}
  */
-export function groupBy (collection: any[], fn: Callback<any>): { keys: any[], groups: any[] } {
+export function groupBy(collection: any[], fn: Callback<any>): { keys: any[], groups: any[] } {
   let result = {
     'keys': [],
     'groups': []
@@ -556,7 +557,7 @@ const MAX_ARRAY_PUSH = 50000
  * @param {*} dest The array to push into
  * @param {*} src The array of elements to push
  */
-export function into (dest: any[], src: any[]): any[] {
+export function into(dest: any[], src: any[]): any[] {
   // push arrary in batches to handle large inputs
   let i = Math.ceil(src.length / MAX_ARRAY_PUSH)
   let begin = 0
@@ -573,7 +574,7 @@ export function into (dest: any[], src: any[]): any[] {
  * @param {*} array The sorted array to search
  * @param {*} item The search key
  */
-export function findIndex (array: any[], item: any): number {
+export function findIndex(array: any[], item: any): number {
   // uses binary search
   let lo = 0
   let hi = array.length - 1
@@ -598,7 +599,7 @@ export function findIndex (array: any[], item: any): number {
  *
  * @param {*} fn The function object to memoize
  */
-export function memoize (fn: Callback<any>): Callback<any> {
+export function memoize(fn: Callback<any>): Callback<any> {
   return ((memo) => {
     return (...args: any): any => {
       let key = hashCode(args)
@@ -607,7 +608,7 @@ export function memoize (fn: Callback<any>): Callback<any> {
       }
       return memo[key]
     }
-  })({/* storage */})
+  })({/* storage */ })
 }
 
 // mingo internal
@@ -619,7 +620,7 @@ export function memoize (fn: Callback<any>): Callback<any> {
  * @returns {*}
  * @private
  */
-function getValue (obj: object, field: any): any {
+function getValue(obj: object, field: any): any {
   return isObjectLike(obj) ? obj[field] : undefined
 }
 
@@ -629,7 +630,7 @@ function getValue (obj: object, field: any): any {
  * @param selector {String} dot separated path to field
  * @returns {*}
  */
-export function resolve (obj: object, selector: string, options?: ResolveOptions): any {
+export function resolve(obj: object, selector: string, options?: ResolveOptions): any {
   let depth = 0
 
   // options
@@ -679,10 +680,10 @@ export function resolve (obj: object, selector: string, options?: ResolveOptions
  * @param obj {Object} the object context
  * @param selector {String} dot separated path to field
  */
-export function resolveGraph (obj: object, selector: string, options?: ResolveOptions): any {
+export function resolveGraph(obj: object, selector: string, options?: ResolveOptions): any {
   // options
   if (options === undefined) {
-    options = { preserveMissing: false}
+    options = { preserveMissing: false }
   }
 
   let names: string[] = selector.split('.')
@@ -759,7 +760,7 @@ export function filterMissing(obj: object): object {
  * @param  {Boolean} force Force generating missing parts of object graph
  * @return {*}
  */
-export function traverse (obj: object, selector: string, fn: Callback<void>, force?: boolean): void {
+export function traverse(obj: object, selector: string, fn: Callback<void>, force?: boolean): void {
   let names = selector.split('.')
   let key = names[0]
   let next = names.slice(1).join('.')
@@ -782,13 +783,13 @@ export function traverse (obj: object, selector: string, fn: Callback<void>, for
  * @param selector {String} path to field
  * @param value {*} the value to set
  */
-export function setValue (obj: object, selector: string, value: any): void {
+export function setValue(obj: object, selector: string, value: any): void {
   traverse(obj, selector, (item: object, key: any) => {
     item[key] = value
   }, true)
 }
 
-export function removeValue (obj: any, selector: any): void {
+export function removeValue(obj: any, selector: any): void {
   traverse(obj, selector, (item: any, key: any) => {
     if (item instanceof Array && /^\d+$/.test(key)) {
       item.splice(parseInt(key), 1)
@@ -812,7 +813,7 @@ export function isOperator(name: string): boolean {
  * @param expr
  * @returns {*}
  */
-export function normalize (expr: any): any {
+export function normalize(expr: any): any {
   // normalized primitives
   if (inArray(JS_SIMPLE_TYPES, jsType(expr))) {
     return isRegExp(expr) ? { '$regex': expr } : { '$eq': expr }
@@ -844,7 +845,7 @@ export function normalize (expr: any): any {
  * @param  {Number} limit
  * @return {Array}
  */
-export function slice (xs: any[], skip: number, limit?: number): any[] {
+export function slice(xs: any[], skip: number, limit?: number): any[] {
   // MongoDB $slice works a bit differently from Array.slice
   // Uses single argument for 'limit' and array argument [skip, limit]
   if (isNil(limit)) {
@@ -871,37 +872,10 @@ export function slice (xs: any[], skip: number, limit?: number): any[] {
  * @param {Boolean} if true calculates a sample standard deviation, otherwise calculates a population stddev
  * @return {Number}
  */
-export function stddev (data: number[], sampled: boolean): number {
+export function stddev(data: number[], sampled: boolean): number {
   let sum = reduce(data, (acc: number, n: number) => acc + n, 0)
   let N = data.length || 1
   let correction = (sampled && 1) || 0
   let avg = sum / N
   return Math.sqrt(reduce(data, (acc: number, n: number) => acc + Math.pow(n - avg, 2), 0) / (N - correction))
-}
-
-/**
- * Exported to the users to allow writing custom operators
- */
-export function moduleApi () {
-  return {
-    clone,
-    cloneDeep,
-    filterMissing,
-    hashCode,
-    isArray,
-    isBoolean,
-    isDate,
-    isEmpty,
-    isEqual,
-    isFunction,
-    isNil,
-    isNull,
-    isNumber,
-    isObject,
-    isRegExp,
-    isString,
-    isUndefined,
-    resolve,
-    resolveGraph
-  }
 }

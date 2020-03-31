@@ -4,6 +4,7 @@
     "target": "es5",
     "moduleResolution": "node",
     "module": "commonjs",
+    "declaration": true,
     "allowSyntheticDefaultImports": true
   },
   "exclude": ["node_modules", "es5", "index.d.ts", "test"],

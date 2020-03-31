@@ -1,7 +1,7 @@
 import {
   assert,
   each,
-  findInsertIndex,
+  findIndex,
   getType,
   isNil
 } from '../../util'
@@ -41,10 +41,10 @@ export function $bucket(collection: Iterator, expr: any, opt?: object): Iterator
   // add default key if provided
   if (!isNil(defaultKey)) grouped[defaultKey] = []
 
-  let iterator: Iterator | boolean = false
+  let iterator: Iterator = null
 
   return Lazy(() => {
-    if (!(iterator instanceof Iterator)) {
+    if (iterator === null) {
       collection.each((obj: object) => {
         let key = computeValue(obj, expr.groupBy)
 
@@ -53,7 +53,7 @@ export function $bucket(collection: Iterator, expr: any, opt?: object): Iterator
           grouped[defaultKey].push(obj)
         } else {
           assert(key >= lower && key < upper, "$bucket 'groupBy' expression must resolve to a value in range of boundaries")
-          let index = findInsertIndex(boundaries, key)
+          let index = findIndex(boundaries, key)
           let boundKey = boundaries[Math.max(0, index - 1)]
           grouped[boundKey].push(obj)
         }

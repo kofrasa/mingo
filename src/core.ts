@@ -1,7 +1,9 @@
 import {
   assert,
-  each,
+  clone,
+  cloneDeep,
   has,
+  each,
   isArray,
   isNil,
   isObject,
@@ -9,9 +11,10 @@ import {
   isString,
   keys,
   resolve,
-  moduleApi,
+  resolveGraph,
   Callback,
   unwrap
+
 } from './util'
 
 
@@ -57,7 +60,7 @@ export function getOperator(cls: OperatorType, operator: string): Callback<any> 
  */
 export function addOperators(cls: OperatorType, fn: Callback<any>) {
 
-  const newOperators = fn(_internal())
+  const newOperators = fn()
 
   // check for existing operators
   each(newOperators, (_, op) => {
@@ -100,17 +103,14 @@ export function addOperators(cls: OperatorType, fn: Callback<any>) {
 }
 
 /**
- * Global internal settings for the library. TODO: scope to import
+ * Global internal config for the library
  */
-interface Settings {
+interface Config {
   key: string
 }
 
-// internal functions available to external operators
-export const _internal = () => Object.assign({ computeValue }, moduleApi())
-
 // Settings used by Mingo internally
-const settings = {
+const settings: Config = {
   key: '_id'
 }
 
@@ -118,7 +118,7 @@ const settings = {
  * Setup default settings for Mingo
  * @param options
  */
-export function setup(options: Settings) {
+export function setup(options: Config) {
   Object.assign(settings, options)
 }
 
@@ -146,13 +146,13 @@ const systemVariables = {
  * @type {Object}
  */
 const redactVariables = {
-  '$$KEEP'(obj: object, expr: object, options?: Options): any {
+  '$$KEEP'(obj: object, expr: object, options?: ComputeOptions): any {
     return obj
   },
-  '$$PRUNE'(obj: object, expr: object, options?: Options): any {
+  '$$PRUNE'(obj: object, expr: object, options?: ComputeOptions): any {
     return undefined
   },
-  '$$DESCEND'(obj: object, expr: object, options?: Options): any {
+  '$$DESCEND'(obj: object, expr: object, options?: ComputeOptions): any {
     // traverse nested documents iff there is a $cond
     if (!has(expr, '$cond')) return obj
 
@@ -219,7 +219,7 @@ export function accumulate(collection: any[], field: string, expr: any): any {
   }
 }
 
-interface Options {
+interface ComputeOptions {
   root: object
 }
 
@@ -232,7 +232,7 @@ interface Options {
  * @param options {Object} extra options
  * @returns {*}
  */
-export function computeValue(obj: object, expr: any, operator?: string, options?: Options): any {
+export function computeValue(obj: object, expr: any, operator?: string, options?: ComputeOptions): any {
   if (options === undefined) {
     options = { root: obj }
   }
@@ -299,7 +299,7 @@ export function computeValue(obj: object, expr: any, operator?: string, options?
  * @param  {*} opt  Options for value
  * @return {*} Returns the redacted value
  */
-export function redact(obj: object, expr: any, options?: Options): object {
+export function redact(obj: object, expr: any, options?: ComputeOptions): object {
   let result = computeValue(obj, expr, null, options)
   return has(redactVariables, result)
     ? redactVariables[result](obj, expr, options)

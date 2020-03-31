@@ -63,8 +63,12 @@ import * as mingo from 'mingo'
 
 // or vanilla nodeJS
 var mingo = require('mingo')
-
 ```
+
+Since version `3.0.0` only [Query and Projection](https://docs.mongodb.com/manual/reference/operator/query/) operators are loaded by default via `enableDefaultOperators` in the main module file.
+
+Other operators may be selectively imported and registered via ES6 module syntax to support tree-shaking in your project.
+To include all available operators import and run `enableSystemOperators` from the main module.
 
 ## Configuration
 
@@ -103,13 +107,17 @@ query.test(doc)
 ## Searching and Filtering
 
 ```js
+import * as mingo from 'mingo'
 // input is either an Array or any iterable source (i.e Object{next:Function}) including ES6 generators.
+let criteria = { score: { $gt: 10 } }
+
+let query = new mingo.Query(criteria)
 
 // filter collection with find()
 let cursor = query.find(collection)
 
-// shorthand with query criteria
-cursor = mingo.find(collection, criteria)
+// alternatively use shorthand
+// cursor = mingo.find(collection, criteria)
 
 // sort, skip and limit by chaining
 cursor.sort({student_id: 1, score: -1})

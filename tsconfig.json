@@ -4,6 +4,7 @@
     "target": "es6",
     "moduleResolution": "node",
     "module": "es2015",
+    "declaration": true,
     "allowSyntheticDefaultImports": true
   },
   "exclude": ["node_modules", "lib", "index.d.ts", "test"],
