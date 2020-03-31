@@ -573,7 +573,7 @@ export function into (dest: any[], src: any[]): any[] {
  * @param {*} array The sorted array to search
  * @param {*} item The search key
  */
-export function findInsertIndex (array: any[], item: any): number {
+export function findIndex (array: any[], item: any): number {
   // uses binary search
   let lo = 0
   let hi = array.length - 1
