@@ -38,9 +38,3 @@ export function enableSystemOperators() {
   useOperators(OperatorType.PROJECTION, projectionOperators)
   useOperators(OperatorType.QUERY, queryOperators)
 }
-
-export * as accumulatorOperators from './accumulator'
-export * as expressionOperators from './expression'
-export * as pipelineOperators from './pipeline'
-export * as projectionOperators from './projection'
-export * as queryOperators from './query'

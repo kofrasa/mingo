@@ -1,14 +1,7 @@
 /**
- * Query and Projection Operators. https://docs.mongodb.com/manual/reference/operator/query/
+ * Predicates used for Query and Expression operators.
  */
-import {
-  MAX_INT,
-  MIN_INT,
-  MAX_LONG,
-  MIN_LONG,
-  JsType,
-  BsonType
-} from '../constants'
+
 import {
   ensureArray,
   flatten,
@@ -31,6 +24,12 @@ import {
   resolve,
   unwrap,
   Callback,
+  MAX_INT,
+  MIN_INT,
+  MAX_LONG,
+  MIN_LONG,
+  JsType,
+  BsonType
 } from '../util'
 import { Query } from '../query'
 import { computeValue } from '../core'

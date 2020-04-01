@@ -1,7 +1,5 @@
 import {
   assert,
-  clone,
-  cloneDeep,
   has,
   each,
   isArray,
@@ -11,10 +9,7 @@ import {
   isString,
   keys,
   resolve,
-  resolveGraph,
-  Callback,
   unwrap
-
 } from './util'
 
 
@@ -48,7 +43,7 @@ export function useOperators(cls: OperatorType, operators: object): void {
  * @param cls Category of the operator
  * @param operator Name of the operator
  */
-export function getOperator(cls: OperatorType, operator: string): Callback<any> {
+export function getOperator(cls: OperatorType, operator: string): Function {
   return has(OPERATORS[cls], operator) ? OPERATORS[cls][operator] : null
 }
 
@@ -56,11 +51,11 @@ export function getOperator(cls: OperatorType, operator: string): Callback<any> 
  * Add new operators
  *
  * @param cls the operator class to extend
- * @param fn a callback that accepts internal object state and returns an object of new operators.
+ * @param operatorFn a callback that accepts internal object state and returns an object of new operators.
  */
-export function addOperators(cls: OperatorType, fn: Callback<any>) {
+export function addOperators(cls: OperatorType, operatorFn: Function) {
 
-  const newOperators = fn()
+  const newOperators = operatorFn()
 
   // check for existing operators
   each(newOperators, (_, op) => {

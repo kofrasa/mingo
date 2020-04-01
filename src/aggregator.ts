@@ -10,11 +10,11 @@ import { Lazy, Iterator, Source } from './lazy'
  */
 export class Aggregator {
 
-  private __operators: object[]
+  private __pipeline: object[]
   private __options: object
 
-  constructor(operators: object[], options?: object) {
-    this.__operators = operators
+  constructor(pipeline: object[], options?: object) {
+    this.__pipeline = pipeline
     this.__options = options
   }
 
@@ -28,9 +28,9 @@ export class Aggregator {
   stream(collection: Source): Iterator {
     let iterator: Iterator = Lazy(collection)
 
-    if (!isEmpty(this.__operators)) {
+    if (!isEmpty(this.__pipeline)) {
       // run aggregation pipeline
-      each(this.__operators, (operator) => {
+      each(this.__pipeline, (operator) => {
         let operatorKeys = keys(operator)
         let op = operatorKeys[0]
         let call = getOperator(OperatorType.PIPELINE, op)
@@ -46,7 +46,7 @@ export class Aggregator {
    * @param {*} collection
    * @param {*} query
    */
-  run(collection: object[]): any[] {
+  run(collection: Source): any[] {
     return this.stream(collection).value()
   }
 }

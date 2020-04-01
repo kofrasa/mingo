@@ -1,6 +1,7 @@
 var test = require('tape')
 var samples = require('./support')
 var mingo = require('../es5')
+var computeValue = require('../es5/core').computeValue
 var OperatorType = mingo.OperatorType
 
 
@@ -11,14 +12,15 @@ test('Custom Operators', function (t) {
     mingo.addOperators(OperatorType.PIPELINE, function (m) {
       return {
         '$pluck': function (collection, expr) {
-          return collection.map(function (item) {
-            return m.resolve(item, expr)
+          var agg = new mingo.Aggregator([ { '$project': { '__temp__': expr } } ])
+          return agg.stream(collection).map(function (item) {
+            return item['__temp__']
           })
         }
       }
     })
 
-    var result = mingo.aggregate(samples.complexGradesData, [{$unwind: '$scores'}, {$pluck: 'scores.score'}])
+    var result = mingo.aggregate(samples.complexGradesData, [{$unwind: '$scores'}, {$pluck: '$scores.score'}])
     t.ok(typeof result[0] === 'number', 'can add new pipeline operator')
   })
 
@@ -54,13 +56,13 @@ test('Custom Operators', function (t) {
 
   t.test('custom accumulator operator', function (t) {
     t.plan(2)
-    mingo.addOperators(OperatorType.ACCUMULATOR, function (m) {
+    mingo.addOperators(OperatorType.ACCUMULATOR, function () {
       return {
         '$stddev': function (collection, expr) {
           var result = mingo.aggregate(collection, [{$group: {avg: {$avg: expr}}}])
           var avg = result[0].avg
           var diffs = collection.map(function (item) {
-            var v = m.computeValue(item, expr) - avg
+            var v = computeValue(item, expr) - avg
             return v * v
           })
           var variance = diffs.reduce(function (memo, val) {

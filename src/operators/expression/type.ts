@@ -2,10 +2,9 @@
  * Type Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#type-expression-operators
  */
 
-import { isString, jsType } from '../../util'
+import { isString, jsType, MIN_INT, MAX_INT, MAX_LONG, MIN_LONG, JsType, BsonType } from '../../util'
 import { computeValue } from '../../core'
 import { $dateToString } from './date'
-import { MIN_INT, MAX_INT, MAX_LONG, MIN_LONG, JsType, BsonType } from '../../constants'
 
 class TypeConvertError extends Error {
   constructor(message: string) {
