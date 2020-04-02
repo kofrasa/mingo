@@ -55,7 +55,7 @@ export function getOperator(cls: OperatorType, operator: string): Function {
  */
 export function addOperators(cls: OperatorType, operatorFn: Function) {
 
-  const newOperators = operatorFn()
+  const newOperators = operatorFn({ accumulate, computeValue, idKey, resolve })
 
   // check for existing operators
   each(newOperators, (_, op) => {
