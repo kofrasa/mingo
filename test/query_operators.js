@@ -1,10 +1,10 @@
-var test = require('tape')
-var mingo = require('../es5')
+import test from 'tape'
+import * as mingo from '../lib'
 
-var samples = require('./support')
+import * as samples from './support'
 
-var idStr = "123456789abe"
-var obj = samples.personData
+let idStr = "123456789abe"
+let obj = samples.personData
 obj['_id'] = new ObjectId(idStr)
 obj['today'] = new Date()
 
@@ -18,7 +18,7 @@ function ObjectId(id) {
 }
 
 test('Comparison, Evaluation, and Element Operators', function (t) {
-  var queries = [
+  let queries = [
     [{_id: new ObjectId(idStr)}, 'can match against user-defined types'],
     [{firstName: 'Francis'}, 'can check for equality with $eq'],
     [{lastName: /^a.+e/i}, 'can check against regex with literal'],
@@ -49,20 +49,20 @@ test('Comparison, Evaluation, and Element Operators', function (t) {
   ]
 
   queries.forEach(function (q) {
-    var query = new mingo.Query(q[0])
+    let query = new mingo.Query(q[0])
     t.ok(query.test(obj), q[1])
   })
 
   //https://github.com/kofrasa/mingo/issues/54
-  var data = [{ _id: 1, item: null }, { _id: 2 }]
-  var result = mingo.find(data, {item: null}).all()
+  let data = [{ _id: 1, item: null }, { _id: 2 }]
+  let result = mingo.find(data, {item: null}).all()
   t.deepEqual(result, data, "can match null and missing types correctly")
 
   t.end()
 })
 
 test('project $type operator', function (t) {
-  var obj = {
+  let obj = {
     double: 12323.4,
     string: "me",
     obj: {},
@@ -75,7 +75,7 @@ test('project $type operator', function (t) {
     long: Math.pow(2,32),
     decimal: 20.7823e10
   }
-  var queries = [
+  let queries = [
     [{double: {$type: 1}}, 'can match $type 1 "double"'],
     [{string: {$type: 2}}, 'can match $type 2 "string"'],
     [{obj: {$type: 3}}, 'can match $type 3 "object"'],
@@ -92,7 +92,7 @@ test('project $type operator', function (t) {
   ]
 
   queries.forEach(function (q) {
-    var query = new mingo.Query(q[0])
+    let query = new mingo.Query(q[0])
     t.ok(query.test(obj), q[1])
   })
 
@@ -103,7 +103,7 @@ test('project $type operator', function (t) {
 test('Match $all with $elemMatch on nested elements', function (t) {
   t.plan(1)
 
-  var data = [
+  let data = [
     {
       user: {
         username: 'User1',
@@ -123,16 +123,16 @@ test('Match $all with $elemMatch on nested elements', function (t) {
       }
     }
   ]
-  var criteria = {
+  let criteria = {
     'user.projects': {'$all': [ {'$elemMatch': {'rating.complexity': {'$gt': 6}}} ]}
   }
   // It should return one user object
-  var result = mingo.find(data, criteria).count()
+  let result = mingo.find(data, criteria).count()
   t.ok(result === 1, 'can match using $all with $elemMatch on nested elements')
 })
 
 test('Projection $elemMatch operator', function (t) {
-  var data = [
+  let data = [
     {
       _id: 1,
       zipcode: "63109",
@@ -168,7 +168,7 @@ test('Projection $elemMatch operator', function (t) {
     }
   ]
 
-  var result = mingo.find(data, { zipcode: "63109" }, { students: { $elemMatch: { school: 102 } } } ).all()
+  let result = mingo.find(data, { zipcode: "63109" }, { students: { $elemMatch: { school: 102 } } } ).all()
   t.deepEqual(result, [
     { "_id" : 1, "students" : [ { "name" : "john", "school" : 102, "age" : 10 } ] },
     { "_id" : 3 },
@@ -190,14 +190,14 @@ test('Projection $elemMatch operator', function (t) {
 })
 
 test('Query $elemMatch operator', function (t) {
-  var result = mingo.find([
+  let result = mingo.find([
     { _id: 1, results: [ 82, 85, 88 ] },
     { _id: 2, results: [ 75, 88, 89 ] }
   ], { results: { $elemMatch: { $gte: 80, $lt: 85 } } }).all()[0]
 
   t.deepEqual(result, { "_id" : 1, "results" : [ 82, 85, 88 ] }, 'simple $elemMatch query')
 
-  var products = [
+  let products = [
     { _id: 1, results: [ { product: "abc", score: 10 }, { product: "xyz", score: 5 } ] },
     { _id: 2, results: [ { product: "abc", score: 8 }, { product: "xyz", score: 7 } ] },
     { _id: 3, results: [ { product: "abc", score: 7 }, { product: "xyz", score: 8 } ] }
@@ -214,7 +214,7 @@ test('Query $elemMatch operator', function (t) {
   t.deepEqual(result, products, '$elemMatch single document')
 
   // Test for https://github.com/kofrasa/mingo/issues/103
-  var fixtures = [
+  let fixtures = [
     [ { $eq: 50 } ],
     [ { $lt: 50 } ],
     [ { $lte: 50 } ],
@@ -235,7 +235,7 @@ test('Query $elemMatch operator', function (t) {
 test('Evaluate $where last', function (t) {
   t.plan(2)
 
-  var data = [
+  let data = [
     {
       user: {
         username: 'User1',
@@ -258,13 +258,13 @@ test('Evaluate $where last', function (t) {
     }
   ]
 
-  var criteria = {
+  let criteria = {
     'user.color': {$exists: true},
     'user.number': {$exists: true},
     $where: 'this.user.color === "green" && this.user.number === 42'
   }
   // It should return one user object
-  var result = mingo.find(data, criteria).count()
+  let result = mingo.find(data, criteria).count()
   t.ok(result === 1, 'can safely reference properties on this using $where and $exists')
 
   criteria = {
@@ -276,13 +276,13 @@ test('Evaluate $where last', function (t) {
     ]
   }
   // It should return one user object
-  var result = mingo.find(data, criteria).count()
+  result = mingo.find(data, criteria).count()
   t.ok(result === 1, 'can safely reference properties on this using multiple $where operators and $exists')
 })
 
 test('Query projection operators', function (t) {
-  var data = [obj]
-  var result = mingo.find(data, {}, {'languages.programming': {$slice: [-3, 2]}}).next()
+  let data = [obj]
+  let result = mingo.find(data, {}, {'languages.programming': {$slice: [-3, 2]}}).next()
   t.deepEqual(result['languages']['programming'], ['Javascript', 'Bash'], 'should project with $slice operator')
 
   // special tests
@@ -294,7 +294,7 @@ test('Query projection operators', function (t) {
     }]
   }]
 
-  var expected = {'key0': [{'key1': [[[{'key2': [{'a': 'value2'}, {'a': 'dummy'}]}]]]}]}
+  let expected = {'key0': [{'key1': [[[{'key2': [{'a': 'value2'}, {'a': 'dummy'}]}]]]}]}
 
   result = mingo.find(data, {'key0.key1.key2': 'value'}, {'key0.key1.key2.a': 1}).next()
   t.deepEqual(result, expected, 'should project only selected object graph from nested arrays')
@@ -332,7 +332,7 @@ test('Query projection operators', function (t) {
 })
 
 test('Logical Operators', function (t) {
-  var queries = [
+  let queries = [
     [{$and: [{firstName: 'Francis'}, {lastName: /^a.+e/i}]}, 'can use conjunction true AND true'],
     [{$and: [{firstName: 'Francis'}, {lastName: 'Amoah'}]}, false, 'can use conjunction true AND false'],
     [{$and: [{firstName: 'Enoch'}, {lastName: 'Asante'}]}, false, 'can use conjunction false AND true'],
@@ -361,7 +361,7 @@ test('Logical Operators', function (t) {
 })
 
 test('Query array operators', function (t) {
-  var data = [
+  let data = [
     {
       '_id': '5234ccb7687ea597eabee677',
       'code': 'efg',
@@ -381,7 +381,7 @@ test('Query array operators', function (t) {
       ]
     }
   ]
-  var q = new mingo.Query({
+  let q = new mingo.Query({
     qty: {
       $all: [
         {'$elemMatch': {size: 'M', num: {$gt: 50}}},
@@ -390,7 +390,7 @@ test('Query array operators', function (t) {
     }
   })
 
-  var result = true
+  let result = true
   data.forEach(function (obj) {
     result = result && q.test(obj)
   })
@@ -404,7 +404,7 @@ test('Query array operators', function (t) {
     }]
   }]
 
-  var fixtures = [
+  let fixtures = [
     [{'key0.key1.key2.a': 'value2'}, [], 'should not match without array index selector to nested value '],
     [{'key0.key1.0.key2.a': 'value2'}, [], 'should not match without enough depth for array index selector to nested value'],
     [{'key0.key1.0.0.key2.a': 'value2'}, data, 'should match with full array index selector to deeply nested value'],
@@ -415,11 +415,11 @@ test('Query array operators', function (t) {
   ]
 
   fixtures.forEach(function (row) {
-    var query = row[0],
+    let query = row[0],
       expected = row[1],
       message = row[2]
 
-    var result = mingo.find(data, query).all()
+    let result = mingo.find(data, query).all()
     t.deepEqual(result, expected, message)
   })
 
@@ -432,8 +432,8 @@ test('Query array operators', function (t) {
 
   // should match whole objects
   fixtures.forEach(function (row) {
-    var query = row[0], message = row[1]
-    var result = mingo.find(data, query)
+    let query = row[0], message = row[1]
+    let result = mingo.find(data, query)
 
     // using iterator
     t.deepEqual(Array.from(result), data, message)
@@ -460,11 +460,11 @@ test('Query array operators', function (t) {
   ], "should project all matched elements of nested array")
 
   // https://github.com/kofrasa/mingo/issues/105 - fix merging distinct objects during projection
-  var result = mingo.find([ { items: [ { from: 1 }, { to: 2 } ] } ], {}, { 'items.from': 1, 'items.to': 1 }).all();
+  result = mingo.find([ { items: [ { from: 1 }, { to: 2 } ] } ], {}, { 'items.from': 1, 'items.to': 1 }).all();
   t.deepEqual(result, [ { items: [ { from: 1 }, { to: 2 } ] } ], "should project multiple nested elements")
 
   // extended test for missing keys of nested values
-  var result = mingo.find([ { items: [ { from: 1, to: null }, { to: 2 } ] } ], {}, { 'items.from': 1, 'items.to': 1 }).all();
+  result = mingo.find([ { items: [ { from: 1, to: null }, { to: 2 } ] } ], {}, { 'items.from': 1, 'items.to': 1 }).all();
   t.deepEqual(result, [ { items: [ { from: 1, to: null }, { to: 2 } ] } ], "project multiple nested elements with missing keys")
 
   // https://github.com/kofrasa/mingo/issues/106 - fix nested elements splitting after projection due to out of order matching
@@ -496,7 +496,7 @@ test('Query array operators', function (t) {
 test('$regex test', function (t) {
 
   // no regex - returns expected list: 1 element - ok
-  var res = []
+  let res = []
   res.push(mingo.find([{l1: [{ tags: ['tag1', 'tag2'] }, {'notags': 'yep'}]}], {'l1.tags': 'tag1'}).all())
 
   // with regex - but searched property is not an array: ok
@@ -516,7 +516,7 @@ test('$regex test', function (t) {
 test('$expr tests', function (t) {
   // https://docs.mongodb.com/manual/reference/operator/query/expr/
 
-  var res = mingo.find([
+  let res = mingo.find([
       { "_id" : 1, "category" : "food", "budget": 400, "spent": 450 },
       { "_id" : 2, "category" : "drinks", "budget": 100, "spent": 150 },
       { "_id" : 3, "category" : "clothes", "budget": 100, "spent": 50 },
@@ -559,17 +559,17 @@ test('$expr tests', function (t) {
 })
 
 test('null or missing fields', function (t) {
-  var data = [ { _id: 1, item: null }, { _id: 2 } ]
-  var fixtures = [
+  let data = [ { _id: 1, item: null }, { _id: 2 } ]
+  let fixtures = [
     // query, result, message
     [ { item: null }, [ { _id: 1, item: null }, { _id: 2 } ], 'should return all documents' ],
     [ { item : { $type: 10 } }, [ { _id: 1, item: null } ], 'should return one document with null field' ],
     [ { item : { $exists: false } }, [ { _id: 2 } ], 'should return one document without null field' ],
     [ { item : { $in: [null, false] } }, [ { _id: 1, item: null }, { _id: 2 } ], '$in should return all documents' ],
   ]
-  for (var i = 0; i < fixtures.length; i++) {
-    var arr = fixtures[i]
-    var res = mingo.find(data, arr[0]).all()
+  for (let i = 0; i < fixtures.length; i++) {
+    let arr = fixtures[i]
+    let res = mingo.find(data, arr[0]).all()
     t.deepEqual(res, arr[1], arr[2])
   }
   t.end()

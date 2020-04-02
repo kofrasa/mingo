@@ -1,8 +1,8 @@
-var test = require('tape')
-var mingo = require('../../es5')
+import test from 'tape'
+import * as mingo from '../../lib'
 
 test('Variable Operators', function (t) {
-  var result = mingo.aggregate([
+  let result = mingo.aggregate([
     {_id: 1, price: 10, tax: 0.50, applyDiscount: true},
     {_id: 2, price: 10, tax: 0.25, applyDiscount: false}
   ], [

@@ -1,9 +1,9 @@
-var test = require('tape')
-var mingo = require('../../es5')
-var samples = require('../support')
+import test from 'tape'
+import * as mingo from '../../lib'
+import * as samples from '../support'
 
 test('$group pipeline operator', function (t) {
-  var data = [
+  let data = [
     { '_id': 1, 'name': 'dave123', 'quiz': 1, 'score': 85 },
     { '_id': 2, 'name': 'dave2', 'quiz': 1, 'score': 90 },
     { '_id': 3, 'name': 'ahn', 'quiz': 1, 'score': 71 },
@@ -12,7 +12,7 @@ test('$group pipeline operator', function (t) {
     { '_id': 6, 'name': 'ty', 'quiz': 2, 'score': 82 }
   ]
 
-  var result = mingo.aggregate(data, [
+  let result = mingo.aggregate(data, [
     { $sort: { name: 1 } },
     {
       $group: {
@@ -49,7 +49,7 @@ test('$group pipeline operator', function (t) {
 
 test("$group pipeline operator: more examples", function (t) {
 
-  var sales = [
+  let sales = [
     { "_id": 1, "item": "abc", "price": 10, "quantity": 2, "date": new Date("2014-01-01T08:00:00Z") },
     { "_id": 2, "item": "jkl", "price": 20, "quantity": 1, "date": new Date("2014-02-03T09:00:00Z") },
     { "_id": 3, "item": "xyz", "price": "5", "quantity": 5, "date": new Date("2014-02-03T09:05:00Z") },
@@ -58,10 +58,10 @@ test("$group pipeline operator: more examples", function (t) {
     { "_id": 5, "item": "xyz", "price": 5, "quantity": 10, "date": new Date("2014-02-15T09:05:00Z") }
   ];
 
-  var flattened = mingo.aggregate(samples.studentsData, [
+  let flattened = mingo.aggregate(samples.studentsData, [
     { '$unwind': '$scores' }
   ]);
-  var grouped = mingo.aggregate(flattened, [{
+  let grouped = mingo.aggregate(flattened, [{
     '$group': {
       '_id': '$scores.type', 'highest': { $max: '$scores.score' },
       'lowest': { $min: '$scores.score' }, 'average': { $avg: '$scores.score' }, 'count': { $sum: 1 }
@@ -102,7 +102,7 @@ test("$group pipeline operator: more examples", function (t) {
     { "total": 1, "keyword": "unclog bathtub drain" }
   ], "can group by object key");
 
-  var books = [
+  let books = [
     { "_id": 8751, "title": "The Banquet", "author": "Dante", "copies": 2 },
     { "_id": 8752, "title": "Divine Comedy", "author": "Dante", "copies": 1 },
     { "_id": 8645, "title": "Eclogues", "author": "Dante", "copies": 2 },
@@ -110,7 +110,7 @@ test("$group pipeline operator: more examples", function (t) {
     { "_id": 7020, "title": "Iliad", "author": "Homer", "copies": 10 }
   ];
 
-  result = mingo.aggregate(books, [
+  let result = mingo.aggregate(books, [
       { $group: { _id: "$author", books: { $push: "$title" } } },
       { $sort: { _id: -1 } }
     ]
@@ -145,7 +145,7 @@ test("$group pipeline operator: more examples", function (t) {
     }
   ], "Group Documents by author");
 
-  expected = [
+  let expected = [
     { "_id": "Homer", "books": ["The Odyssey", "Iliad"] },
     { "_id": "Dante", "books": ["The Banquet", "Divine Comedy", "Eclogues"] }
   ];
@@ -171,23 +171,23 @@ test("$group pipeline operator: more examples", function (t) {
 });
 
 test("$group pipeline operator is idempotent", function (t) {
-  var aggregator = [{
+  let aggregator = [{
     $group: {
       _id: "$student_id",
       score: { $min: '$score' }
     }
   }];
 
-  var input = [
+  let input = [
     { type: "exam", student_id: 2, score: 5 },
     { type: "exam", student_id: 1, score: 5 },
     { type: "homework", student_id: 1, score: 7 },
     { type: "homework", student_id: 2, score: 10 }
   ];
 
-  var passOne = mingo.aggregate(input, aggregator);
+  let passOne = mingo.aggregate(input, aggregator);
 
-  var passTwo = mingo.aggregate(input, aggregator);
+  let passTwo = mingo.aggregate(input, aggregator);
 
   t.deepEqual(passTwo, passOne, '2nd-pass $group result is identical to the 1st-pass results.')
 

@@ -1,9 +1,9 @@
-var test = require('tape')
-var mingo = require('../../es5')
+import test from 'tape'
+import * as mingo from '../../lib'
 
 test('Boolean Operators', function (t) {
   t.plan(5)
-  var inventory = [
+  let inventory = [
     {'_id': 1, 'item': 'abc1', description: 'product 1', qty: 300},
     {'_id': 2, 'item': 'abc2', description: 'product 2', qty: 200},
     {'_id': 3, 'item': 'xyz1', description: 'product 3', qty: 250},
@@ -11,7 +11,7 @@ test('Boolean Operators', function (t) {
     {'_id': 5, 'item': 'VWZ2', description: 'product 5', qty: 180}
   ]
 
-  var result = mingo.aggregate(inventory, [{
+  let result = mingo.aggregate(inventory, [{
     $project: {
       item: 1,
       result: {$and: [{$gt: ['$qty', 100]}, {$lt: ['$qty', 250]}]}

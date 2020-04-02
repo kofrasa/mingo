@@ -1,9 +1,9 @@
-var test = require('tape')
-var mingo = require('../../es5')
+import test from 'tape'
+import * as mingo from '../../lib'
 
 test("$bucket pipeline operator", function (t) {
 
-  var artwork = [
+  let artwork = [
     {
       "_id": 1, "title": "The Pillars of Society", "artist": "Grosz", "year": 1926,
       "price": 199.99, "tags": ["painting", "satire", "Expressionism", "caricature"]
@@ -40,7 +40,7 @@ test("$bucket pipeline operator", function (t) {
     }
   ]
 
-  var result = mingo.aggregate(artwork, [
+  let result = mingo.aggregate(artwork, [
     {
       $bucket: {
         groupBy: "$price",

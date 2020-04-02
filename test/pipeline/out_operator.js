@@ -1,8 +1,8 @@
-var test = require('tape')
-var mingo = require('../../es5')
+import test from 'tape'
+import * as mingo from '../../lib'
 
 test('$out pipeline operator', function (t) {
-  var data = [
+  let data = [
     { "_id" : 8751, "title" : "The Banquet", "author" : "Dante", "copies" : 2 },
     { "_id" : 8752, "title" : "Divine Comedy", "author" : "Dante", "copies" : 1 },
     { "_id" : 8645, "title" : "Eclogues", "author" : "Dante", "copies" : 2 },
@@ -10,8 +10,8 @@ test('$out pipeline operator', function (t) {
     { "_id" : 7020, "title" : "Iliad", "author" : "Homer", "copies" : 10 }
   ]
 
-  var output = []
-  var result = mingo.aggregate(data, [
+  let output = []
+  let result = mingo.aggregate(data, [
     { $group : { _id : "$author", books: { $push: "$title" } } },
     { $out : output }
   ])

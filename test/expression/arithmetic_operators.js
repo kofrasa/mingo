@@ -1,8 +1,6 @@
-var test = require('tape')
-var mingo = require('../../es5')
-var runTest = require('./../support').runTest
+import * as support from '../support'
 
-runTest("Arithmetic Operators", {
+support.runTest("Arithmetic Operators", {
   $abs: [
     [{ $abs: null },	null],
     [{ $abs: -1 },	1],

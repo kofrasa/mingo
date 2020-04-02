@@ -1,7 +1,7 @@
-var fs = require('fs')
-var test = require('tape')
-var mingo = require('../es5')
-var computeValue = require('../es5/core').computeValue
+import fs from 'fs'
+import test from 'tape'
+import * as mingo from '../lib'
+import { computeValue } from '../lib/core'
 
 exports.personData = JSON.parse(fs.readFileSync(__dirname + '/data/person.json'))
 exports.simpleGradesData = JSON.parse(fs.readFileSync(__dirname + '/data/grades_simple.json'))
@@ -19,16 +19,16 @@ exports.groupByObjectsData = [
 
 exports.runTest = function (description, suite) {
   Object.entries(suite).forEach(function (arr) {
-    var operator = arr[0]
-    var examples = arr[1]
+    let operator = arr[0]
+    let examples = arr[1]
     test(description + ': ' + operator, function (t) {
       examples.forEach(function (val) {
-        var input = val[0]
-        var expected = val[1]
-        var ctx = val[2] || { err: false }
-        var obj = ctx.obj || {}
+        let input = val[0]
+        let expected = val[1]
+        let ctx = val[2] || { err: false }
+        let obj = ctx.obj || {}
 
-        var field = operator
+        let field = operator
         // use the operator as field if not present in input
         if (!!input && input.constructor === Object) {
           field = Object.keys(input).find((s) => s[0] === '$') || null
@@ -42,8 +42,8 @@ exports.runTest = function (description, suite) {
         if (ctx.err) {
           t.throws(() => computeValue(obj, input, field), JSON.stringify(input) + '\t=>\t' + expected)
         } else {
-          var actual = computeValue(obj, input, field)
-          var message =  operator + ':\t' + JSON.stringify(input) + '\t=>\t' + JSON.stringify(expected)
+          let actual = computeValue(obj, input, field)
+          let message =  operator + ':\t' + JSON.stringify(input) + '\t=>\t' + JSON.stringify(expected)
           // NaNs don't compare
           if (actual !== actual && expected !== expected) actual = expected = 0
           t.deepEqual(actual, expected, message)
@@ -60,11 +60,11 @@ exports.runTest = function (description, suite) {
 exports.runTestPipeline = function (description, suite) {
   test(description, function (t) {
     suite.forEach(function (unitTest) {
-      var input = unitTest.input
-      var pipeline = unitTest.query
-      var check = unitTest.check
-      var message = unitTest.message || "actual equals expected"
-      var actual = mingo.aggregate(input, pipeline)
+      let input = unitTest.input
+      let pipeline = unitTest.query
+      let check = unitTest.check
+      let message = unitTest.message || "actual equals expected"
+      let actual = mingo.aggregate(input, pipeline)
       if (typeof check === 'function') {
         check(actual, t)
       } else {

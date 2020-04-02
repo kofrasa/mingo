@@ -1,4 +1,4 @@
-var samples = require('../support')
+import * as samples from '../support'
 
 samples.runTestPipeline("$match pipeline operator", [
   {

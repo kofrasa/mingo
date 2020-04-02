@@ -1,8 +1,8 @@
-var test = require('tape')
-var isEqual = require('../es5/util').isEqual
+import test from 'tape'
+import { isEqual } from '../lib/util'
 
 test('Test isEqual', function (t) {
-  var sample = [
+  let sample = [
     [NaN, 0 / 0, true],
     [NaN, NaN, true],
     [0, -0, true],
@@ -18,7 +18,7 @@ test('Test isEqual', function (t) {
     [function () {}, function () {}, false],
     [Object.prototype.toString, Object.prototype.toString, true]
   ]
-  var b = true
+  let b = true
   sample.forEach(function (arr) {
     let r = isEqual(arr[0], arr[1])
     b = b && (r === arr[2])

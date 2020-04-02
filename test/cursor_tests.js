@@ -1,16 +1,16 @@
-var test = require('tape')
-var mingo = require('../es5')
-var samples = require('./support')
+import test from 'tape'
+import * as mingo from '../lib'
+import * as samples from './support'
 
 
 test('Cursor tests', function (t) {
   // create a query with no criteria
-  var query = new mingo.Query({})
+  let query = new mingo.Query({})
   function newCursor() {
     return query.find(samples.simpleGradesData)
   }
 
-  var cursor = newCursor()
+  let cursor = newCursor()
   cursor.skip(10).limit(10)
   t.equal(cursor.hasNext(), true, 'can peek for an item with hasNext()')
   t.ok(cursor.next(), 'can select next item with next()')

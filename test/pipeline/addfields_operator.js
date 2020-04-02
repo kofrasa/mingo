@@ -1,11 +1,11 @@
-var test = require('tape')
-var mingo = require('../../es5')
+import test from 'tape'
+import * as mingo from '../../lib'
 
 /**
  * Tests for $addFields operator
  */
 test("$addFields pipeline operator", function (t) {
-  var scores = [
+  let scores = [
     {
       _id: 1,
       student: "Maya",
@@ -22,7 +22,7 @@ test("$addFields pipeline operator", function (t) {
     }
   ];
 
-  var result = mingo.aggregate(scores, [
+  let result = mingo.aggregate(scores, [
     {
       $addFields: {
         totalHomework: { $sum: "$homework" },
@@ -59,7 +59,7 @@ test("$addFields pipeline operator", function (t) {
     }
   ], "Using Two $addFields Stages");
 
-  var vehicles = [
+  let vehicles = [
     { _id: 1, type: "car", specs: { doors: 4, wheels: 4 } },
     { _id: 2, type: "motorcycle", specs: { doors: 0, wheels: 2 } },
     { _id: 3, type: "jet ski" }
@@ -80,7 +80,7 @@ test("$addFields pipeline operator", function (t) {
   ], "Adding Fields to an Embedded Document");
 
 
-  var animals = [{ _id: 1, dogs: 10, cats: 15 }];
+  let animals = [{ _id: 1, dogs: 10, cats: 15 }];
 
   result = mingo.aggregate(animals, [
     {
@@ -90,7 +90,7 @@ test("$addFields pipeline operator", function (t) {
 
   t.deepEqual(result, [{ _id: 1, dogs: 10, cats: 20 }], "Overwriting an existing field");
 
-  var fruit = [
+  let fruit = [
     { "_id": 1, "item": "tangerine", "type": "citrus" },
     { "_id": 2, "item": "lemon", "type": "citrus" },
     { "_id": 3, "item": "grapefruit", "type": "citrus" }
@@ -135,7 +135,7 @@ test("$addFields pipeline operator", function (t) {
     }],
   }]
 
-  var actual = mingo.aggregate(col, [{
+  let actual = mingo.aggregate(col, [{
     $addFields: {
       accountInfo: {
         $arrayElemAt: ['$accounts', 0],

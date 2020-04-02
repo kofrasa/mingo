@@ -1,10 +1,10 @@
-var test = require('tape')
-var mingo = require('../../es5')
+import test from 'tape'
+import * as mingo from '../../lib'
 
 test('Set Operators', function (t) {
   t.plan(7)
 
-  var experiments = [
+  let experiments = [
     {'_id': 1, 'A': ['red', 'blue'], 'B': ['red', 'blue']},
     {'_id': 2, 'A': ['red', 'blue'], 'B': ['blue', 'red', 'blue']},
     {'_id': 3, 'A': ['red', 'blue'], 'B': ['red', 'blue', 'green']},
@@ -17,7 +17,7 @@ test('Set Operators', function (t) {
   ]
 
   // equality
-  var result = mingo.aggregate(experiments, [
+  let result = mingo.aggregate(experiments, [
     {$project: {A: 1, B: 1, sameElements: {$setEquals: ['$A', '$B']}, _id: 0}}
   ])
   t.deepEqual(result, [
@@ -96,7 +96,7 @@ test('Set Operators', function (t) {
     {'A': [], 'B': ['red'], 'AisSubset': true}
   ], 'aggregate with $setIsSubset')
 
-  var surveyData = [
+  let surveyData = [
     {'_id': 1, 'responses': [true]},
     {'_id': 2, 'responses': [true, false]},
     {'_id': 3, 'responses': []},

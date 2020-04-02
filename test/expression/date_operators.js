@@ -1,10 +1,10 @@
-var test = require('tape')
-var mingo = require('../../es5')
+import test from 'tape'
+import * as mingo from '../../lib'
 
 
 test("Date Operators", function (t) {
 
-  var projectionOperator = {
+  let projectionOperator = {
     $project: {
       year: {$year: "$date"},
       month: {$month: "$date"},
@@ -21,7 +21,7 @@ test("Date Operators", function (t) {
     }
   }
 
-  var result = mingo.aggregate([{
+  let result = mingo.aggregate([{
     "_id": 1, "item": "abc", "price": 10, "quantity": 2, "date": new Date("2014-01-01T08:15:39.736Z")
   }], [ projectionOperator ]).pop()
 

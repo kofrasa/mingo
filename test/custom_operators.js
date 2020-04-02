@@ -1,7 +1,7 @@
-var test = require('tape')
-var support = require('./support')
-var mingo = require('../es5')
-var OperatorType = mingo.OperatorType
+import test from 'tape'
+import * as support from './support'
+import * as mingo from '../lib'
+let OperatorType = mingo.OperatorType
 
 
 test('Custom Operators', function (t) {
@@ -11,7 +11,7 @@ test('Custom Operators', function (t) {
     mingo.addOperators(OperatorType.PIPELINE, function (m) {
       return {
         '$pluck': function (collection, expr) {
-          var agg = new mingo.Aggregator([ { '$project': { '__temp__': expr } } ])
+          let agg = new mingo.Aggregator([ { '$project': { '__temp__': expr } } ])
           return agg.stream(collection).map(function (item) {
             return item['__temp__']
           })
@@ -19,7 +19,7 @@ test('Custom Operators', function (t) {
       }
     })
 
-    var result = mingo.aggregate(support.complexGradesData, [{$unwind: '$scores'}, {$pluck: '$scores.score'}])
+    let result = mingo.aggregate(support.complexGradesData, [{$unwind: '$scores'}, {$pluck: '$scores.score'}])
     t.ok(typeof result[0] === 'number', 'can add new pipeline operator')
   })
 
@@ -34,15 +34,15 @@ test('Custom Operators', function (t) {
       }
     })
 
-    var coll = [{a: 1, b: 1}, {a: 7, b: 1}, {a: 10, b: 6}, {a: 20, b: 10}]
-    var result = mingo.find(coll, {a: {'$between': [5, 10]}}, null).all()
+    let coll = [{a: 1, b: 1}, {a: 7, b: 1}, {a: 10, b: 6}, {a: 20, b: 10}]
+    let result = mingo.find(coll, {a: {'$between': [5, 10]}}, null).all()
     t.equal(2, result.length, 'can add new query operator')
 
     try {
       mingo.addOperators(OperatorType.QUERY, function () {
         return {
           '$between': function (selector, value, args) {
-            var query = {}
+            let query = {}
             query[selector] = {$gte: args[0], $lte: args[1]}
             return new mingo.Query(query)
           }
@@ -58,20 +58,20 @@ test('Custom Operators', function (t) {
     mingo.addOperators(OperatorType.ACCUMULATOR, function (m) {
       return {
         '$stddev': function (collection, expr) {
-          var result = mingo.aggregate(collection, [{$group: {avg: {$avg: expr}}}])
-          var avg = result[0].avg
-          var diffs = collection.map(function (item) {
-            var v = m.computeValue(item, expr) - avg
+          let result = mingo.aggregate(collection, [{$group: {avg: {$avg: expr}}}])
+          let avg = result[0].avg
+          let diffs = collection.map(function (item) {
+            let v = m.computeValue(item, expr) - avg
             return v * v
           })
-          var variance = diffs.reduce(function (memo, val) {
+          let variance = diffs.reduce(function (memo, val) {
             return memo + val
           }, 0) / diffs.length
           return Math.sqrt(variance)
         }
       }
     })
-    result = mingo.aggregate(support.complexGradesData, [{$unwind: '$scores'}, {$group: {stddev: {$stddev: '$scores.score'}}}])
+    let result = mingo.aggregate(support.complexGradesData, [{$unwind: '$scores'}, {$group: {stddev: {$stddev: '$scores.score'}}}])
     t.ok(result.length === 1, 'must return one result after grouping')
     t.equal(28.57362029450366, result[0].stddev, 'must return correct stddev')
   })

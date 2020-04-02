@@ -1,12 +1,12 @@
-var test = require('tape')
-var mingo = require('../../es5')
+import test from 'tape'
+import * as mingo from '../../lib'
 
 
 /**
  * Tests for $sortByCount operator
  */
 test("$sortByCount pipeline operator", function (t) {
-  var exhibits = [
+  let exhibits = [
     {
       "_id": 1,
       "title": "The Pillars of Society",
@@ -41,7 +41,7 @@ test("$sortByCount pipeline operator", function (t) {
     { "_id": 8, "title": "Blue Flower", "artist": "O'Keefe", "year": 1918, "tags": ["abstract", "painting"] }
   ];
 
-  var result = mingo.aggregate(exhibits, [{ $unwind: "$tags" }, { $sortByCount: "$tags" }]);
+  let result = mingo.aggregate(exhibits, [{ $unwind: "$tags" }, { $sortByCount: "$tags" }]);
 
   t.equals(result.every(function (o) {
     return Object.keys(o).length === 2

@@ -1,9 +1,9 @@
-var test = require('tape')
-var mingo = require('../../es5')
+import test from 'tape'
+import * as mingo from '../../lib'
 
 test('$bucketAuto piepline operator', function (t) {
 
-  var artwork = [
+  let artwork = [
     {
       "_id": 1, "title": "The Pillars of Society", "artist": "Grosz", "year": 1926,
       "price": 199.99,
@@ -46,7 +46,7 @@ test('$bucketAuto piepline operator', function (t) {
     }
   ]
 
-  var result = mingo.aggregate(artwork, [
+  let result = mingo.aggregate(artwork, [
     {
       $bucketAuto: {
         groupBy: "$price",
@@ -86,8 +86,8 @@ test('$bucketAuto piepline operator', function (t) {
     }
   ], 'can apply $bucketAuto operator')
 
-  var things = []
-  for (var i = 0; i < 100; i++) {
+  let things = []
+  for (let i = 0; i < 100; i++) {
     things.push({ _id: i })
   }
 

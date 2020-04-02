@@ -1,5 +1,5 @@
-var test = require('tape')
-var mingo = require('../../es5')
+import test from 'tape'
+import * as mingo from '../../lib'
 
 
 /**
@@ -7,7 +7,7 @@ var mingo = require('../../es5')
  * https://docs.mongodb.com/manual/reference/operator/aggregation/redact/
  */
 test("$redact pipeline operator", function (t) {
-  var data = [{
+  let data = [{
     _id: 1,
     title: "123 Department Report",
     tags: ["G", "STLW"],
@@ -34,8 +34,8 @@ test("$redact pipeline operator", function (t) {
     ]
   }];
 
-  var userAccess = ["STLW", "G"];
-  var query = [
+  let userAccess = ["STLW", "G"];
+  let query = [
     { $match: { year: 2014 } },
     {
       $redact: {
@@ -48,7 +48,7 @@ test("$redact pipeline operator", function (t) {
     }
   ];
 
-  var result = mingo.aggregate(data, query);
+  let result = mingo.aggregate(data, query);
 
   t.deepEqual(result, [
     {

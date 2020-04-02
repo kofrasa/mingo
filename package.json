@@ -7,12 +7,12 @@
   "scripts": {
     "build": "npm run compile && npm run bundle",
     "bundle": "rollup -c rollup.umd.js",
-    "clean": "rm -fr lib es5 dist",
-    "compile": "tsc && tsc --project tsconfig.es5.json",
+    "clean": "rm -fr lib dist",
+    "compile": "tsc",
     "compress": "uglifyjs dist/mingo.js --comments '/^!/' --compress --mangle --sourcemap dist/mingo.min.map --output dist/mingo.min.js",
     "release": "npm run clean && npm run build && npm test",
     "postrelease": "npm run compress",
-    "test": "npm run compile && NODE_ENV=test nyc --reporter=lcov --reporter=text tape test/*.js test/**/*.js",
+    "test": "npm run compile && NODE_ENV=test nyc --reporter=lcov --reporter=text ./run-test test/*.js test/**/*.js",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov"
   },
   "repository": {
@@ -21,7 +21,6 @@
   },
   "files": [
     "lib/",
-    "es5/",
     "index.js",
     "index.d.ts",
     "LICENSE",

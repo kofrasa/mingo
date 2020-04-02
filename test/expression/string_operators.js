@@ -1,8 +1,6 @@
-var test = require('tape')
-var support = require('./../support')
-var mingo = require('../../es5')
+import * as support from '../support'
 
-var opt = {err:true}
+let opt = { err: true }
 
 support.runTest('String Operators', {
   $concat: [
@@ -117,7 +115,7 @@ support.runTest('String Operators', {
 })
 
 
-var data = [
+let data = [
   { "_id": 1, "fname": "Carol", "lname": "Smith", "phone": "718-555-0113" },
   { "_id": 2, "fname": "Daryl", "lname": "Doe", "phone": "212-555-8832" },
   { "_id": 3, "fname": "Polly", "lname": "Andrews", "phone": "208-555-1932" },
@@ -125,7 +123,7 @@ var data = [
   { "_id": 5, "fname": "Luna", "lname": "Clarke", "phone": "917-555-4414" }
 ]
 
-var productsData = [
+let productsData = [
   { _id: 1, description: "Single LINE description." },
   { _id: 2, description: "First lines\nsecond line" },
   { _id: 3, description: "Many spaces before     line" },

@@ -1,7 +1,7 @@
-var test = require('tape')
-var performance = require('perf_hooks').performance
-var mingo = require('../es5')
-var _ = require('lodash');
+import test from 'tape'
+let performance = require('perf_hooks').performance
+import * as mingo from '../lib'
+import * as _ from 'lodash';
 
 const items = _.range(10 * 1000).map(id => {
   return {
@@ -75,16 +75,16 @@ test('Aggregation performance', function (t) {
 
 test("Sorting performance", function (t) {
   function makeid(length) {
-    var text = "";
-    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    for (var i = 0; i < length; i++) {
+    let text = "";
+    let possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    for (let i = 0; i < length; i++) {
       text += possible.charAt(Math.floor(Math.random() * possible.length));
     }
     return text;
   }
 
   const arrayToSort = [];
-  for (var i = 0; i < 5000; i++) {
+  for (let i = 0; i < 5000; i++) {
     arrayToSort.push(makeid(20));
   }
 

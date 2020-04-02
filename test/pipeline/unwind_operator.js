@@ -1,15 +1,15 @@
-var test = require('tape')
-var mingo = require('../../es5')
-var samples = require('../support')
+import test from 'tape'
+import * as mingo from '../../lib'
+import * as samples from '../support'
 
 
 test("$unwind pipeline operator", function (t) {
-  var flattened = mingo.aggregate(samples.studentsData, [
+  let flattened = mingo.aggregate(samples.studentsData, [
     { '$unwind': '$scores' }
   ]);
   t.ok(flattened.length === 800, "can unwind array value in collection");
 
-  var data = [
+  let data = [
     { "_id" : 1, "item" : "ABC", "sizes": [ "S", "M", "L"] },
     { "_id" : 2, "item" : "EFG", "sizes" : [ ] },
     { "_id" : 3, "item" : "IJK", "sizes": "M" },
@@ -17,9 +17,9 @@ test("$unwind pipeline operator", function (t) {
     { "_id" : 5, "item" : "XYZ", "sizes" : null }
   ]
 
-  var a = mingo.aggregate(data, [ { $unwind: "$sizes" } ] )
-  var b = mingo.aggregate(data, [ { $unwind: { path: "$sizes" } } ] )
-  var expected = [
+  let a = mingo.aggregate(data, [ { $unwind: "$sizes" } ] )
+  let b = mingo.aggregate(data, [ { $unwind: { path: "$sizes" } } ] )
+  let expected = [
     { "_id" : 1, "item" : "ABC", "sizes" : "S" },
     { "_id" : 1, "item" : "ABC", "sizes" : "M" },
     { "_id" : 1, "item" : "ABC", "sizes" : "L" },
@@ -28,7 +28,7 @@ test("$unwind pipeline operator", function (t) {
   t.deepEqual(a, expected, 'can $unwind with field path')
   t.deepEqual(b, expected, 'can $unwind with object expression')
 
-  var result = mingo.aggregate(data, [ { $unwind: { path: "$sizes", includeArrayIndex: "arrayIndex" } } ] )
+  let result = mingo.aggregate(data, [ { $unwind: { path: "$sizes", includeArrayIndex: "arrayIndex" } } ] )
   t.deepEqual(result, [
     { "_id" : 1, "item" : "ABC", "sizes" : "S", "arrayIndex" : 0 },
     { "_id" : 1, "item" : "ABC", "sizes" : "M", "arrayIndex" : 1 },

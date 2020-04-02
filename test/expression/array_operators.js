@@ -1,9 +1,9 @@
-var test = require('tape')
-var mingo = require('../../es5')
-var runTest = require('./../support').runTest
+import test from 'tape'
+import * as mingo from '../../lib'
+import * as support from '../support'
 
 
-runTest('Array Operators', {
+support.runTest('Array Operators', {
   $arrayElemAt: [
     [{ $arrayElemAt: [ [ 1, 2, 3 ], 0 ] }, 1],
     [{ $arrayElemAt: [ [ 1, 2, 3 ], -2 ] }, 2],
@@ -166,7 +166,7 @@ runTest('Array Operators', {
 
 test('Array Operators: $map', function (t) {
   // $map
-  var result = mingo.aggregate([
+  let result = mingo.aggregate([
     {_id: 1, quizzes: [5, 6, 7]},
     {_id: 2, quizzes: []},
     {_id: 3, quizzes: [3, 8, 9]}
@@ -193,14 +193,14 @@ test('Array Operators: $map', function (t) {
 })
 
 test('more $slice examples', function (t) {
-  var data = [
+  let data = [
     { "_id" : 1, "name" : "dave123", favorites: [ "chocolate", "cake", "butter", "apples" ] },
     { "_id" : 2, "name" : "li", favorites: [ "apples", "pudding", "pie" ] },
     { "_id" : 3, "name" : "ahn", favorites: [ "pears", "pecans", "chocolate", "cherries" ] },
     { "_id" : 4, "name" : "ty", favorites: [ "ice cream" ] }
   ]
 
-  var result = mingo.aggregate(data,[
+  let result = mingo.aggregate(data,[
     { $project: { name: 1, threeFavorites: { $slice: [ "$favorites", 3 ] } } }
   ])
 
@@ -216,12 +216,12 @@ test('more $slice examples', function (t) {
 
 test('Array Operators: $arrayToObject + $objectToArray', function (t) {
   // $arrayToObject + $objectToArray
-  var inventory = [
+  let inventory = [
     { "_id" : 1, "item" : "ABC1", instock: { warehouse1: 2500, warehouse2: 500 } },
     { "_id" : 2, "item" : "ABC2", instock: { warehouse2: 500, warehouse3: 200} }
   ]
 
-  result = mingo.aggregate(inventory, [
+  let result = mingo.aggregate(inventory, [
     { $addFields: { instock: { $objectToArray: "$instock" } } },
     { $addFields: { instock: { $concatArrays: [ "$instock", [ { "k": "total", "v": { $sum: "$instock.v" } } ] ] } } } ,
     { $addFields: { instock: { $arrayToObject: "$instock" } } }
@@ -235,42 +235,42 @@ test('Array Operators: $arrayToObject + $objectToArray', function (t) {
 })
 
 test('$concatArrays more examples', function (t) {
-  var inventory = [
-        { "_id" : 1, "instock": [1, 2, 3], "ordered": [4, 5, 6], "shipped": [7, 8, 9]},
-        { "_id" : 2, "instock": [10] }
-      ]
+  let inventory = [
+    { "_id" : 1, "instock": [1, 2, 3], "ordered": [4, 5, 6], "shipped": [7, 8, 9]},
+    { "_id" : 2, "instock": [10] }
+  ]
 
-      result = mingo.aggregate(inventory, [
-        { $project: { ids: { $concatArrays: ["$instock", "$ordered", "$shipped"] } } }
-      ])
+  let result = mingo.aggregate(inventory, [
+    { $project: { ids: { $concatArrays: ["$instock", "$ordered", "$shipped"] } } }
+  ])
 
-      t.deepEqual([
-        { ids: [ 1, 2, 3, 4, 5, 6, 7, 8, 9 ], _id: 1 },
-        { ids: null, _id: 2 }
-      ], result, 'can concat more than 2 arrays using $concatArrays')
-      t.end()
+  t.deepEqual([
+    { ids: [ 1, 2, 3, 4, 5, 6, 7, 8, 9 ], _id: 1 },
+    { ids: null, _id: 2 }
+  ], result, 'can concat more than 2 arrays using $concatArrays')
+  t.end()
 })
 
 test('More $mergeObjects tests', function (t) {
-  var orders = [
+  let orders = [
     { "_id" : 1, "item" : "abc", "price" : 12, "ordered" : 2 },
     { "_id" : 2, "item" : "jkl", "price" : 20, "ordered" : 1 }
   ]
 
-  var items = [
+  let items = [
     { "_id" : 1, "item" : "abc", description: "product 1", "instock" : 120 },
     { "_id" : 2, "item" : "def", description: "product 2", "instock" : 80 },
     { "_id" : 3, "item" : "jkl", description: "product 3", "instock" : 60 }
   ]
 
-  var result = mingo.aggregate(orders, [
+  let result = mingo.aggregate(orders, [
     {
-       $lookup: {
-          from: items,
-          localField: "item",    // field in the orders collection
-          foreignField: "item",  // field in the items collection
-          as: "fromItems"
-       }
+      $lookup: {
+        from: items,
+        localField: "item",    // field in the orders collection
+        foreignField: "item",  // field in the items collection
+        as: "fromItems"
+      }
     },
     {
        $replaceRoot: { newRoot: { $mergeObjects: [ { $arrayElemAt: [ "$fromItems", 0 ] }, "$$ROOT" ] } }
@@ -283,7 +283,7 @@ test('More $mergeObjects tests', function (t) {
   { "_id" : 2, "item" : "jkl", "description" : "product 3", "instock" : 60, "price" : 20, "ordered" : 1 }
  ], result, "can $mergeObject within expression")
 
- var sales = [
+ let sales = [
     { _id: 1, year: 2017, item: "A", quantity: { "2017Q1": 500, "2017Q2": 500 } },
     { _id: 2, year: 2016, item: "A", quantity: { "2016Q1": 400, "2016Q2": 300, "2016Q3": 0, "2016Q4": 0 } } ,
     { _id: 3, year: 2017, item: "B", quantity: { "2017Q1": 300 } },

@@ -1,18 +1,18 @@
-var test = require('tape')
-var mingo = require('../../es5')
+import test from 'tape'
+import * as mingo from '../../lib'
 
 
 /**
  * Tests for $lookup operator
  */
 test('$lookup pipeline operator', function (t) {
-  var orders = [
+  let orders = [
     { "_id": 1, "item": { name: "abc" }, "price": 12, "quantity": 2 },
     { "_id": 2, "item": { name: "jkl" }, "price": 20, "quantity": 1 },
     { "_id": 3 }
   ]
 
-  var inventory = [
+  let inventory = [
     { "_id": 1, "sku": "abc", description: "product 1", "instock": 120 },
     { "_id": 2, "sku": "def", description: "product 2", "instock": 80 },
     { "_id": 3, "sku": "ijk", description: "product 3", "instock": 60 },
@@ -21,7 +21,7 @@ test('$lookup pipeline operator', function (t) {
     { "_id": 6 }
   ]
 
-  var result = mingo.aggregate(orders, [
+  let result = mingo.aggregate(orders, [
     {
       $lookup: {
         from: inventory,

@@ -1,19 +1,19 @@
-var test = require('tape')
-var mingo = require('../../es5')
-var samples = require('../support')
+import test from 'tape'
+import * as mingo from '../../lib'
+import * as samples from '../support'
 
 test("$sort pipeline operator", function (t) {
-  var result = mingo.aggregate(samples.studentsData, [
+  let result = mingo.aggregate(samples.studentsData, [
     { '$sort': { '_id': -1 } }
   ]);
   t.ok(result[0]['_id'] === 199, "can sort collection with $sort");
 
-  var data = [
+  let data = [
     { _id: 'c', date: new Date(2018, 1, 1) },
     { _id: 'a', date: new Date(2017, 1, 1) },
     { _id: 'b', date: new Date(2017, 1, 1) }
   ];
-  var expected = [
+  let expected = [
     { _id: 'a', date: new Date(2017, 1, 1) },
     { _id: 'b', date: new Date(2017, 1, 1) },
     { _id: 'c', date: new Date(2018, 1, 1) },
@@ -35,7 +35,8 @@ test('sort with collation', function (t) {
     { "name" : "21" },
     { "name" : "100" },
   ]
-  result = mingo.find(english, {}).collation({locale: "en"}).sort({name: 1}).all()
+
+  let result = mingo.find(english, {}).collation({locale: "en"}).sort({name: 1}).all()
   t.deepEqual(result, [
     { "name" : "100" },
     { "name" : "21" },

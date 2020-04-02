@@ -1,12 +1,12 @@
-var test = require('tape')
-var mingo = require('../../es5')
+import test from 'tape'
+import * as mingo from '../../lib'
 
 
 /**
  * Tests for $sample operator
  */
 test("$sample pipeline operator", function (t) {
-  var users = [
+  let users = [
     { "_id": 1, "name": "dave123", "q1": true, "q2": true },
     { "_id": 2, "name": "dave2", "q1": false, "q2": false },
     { "_id": 3, "name": "ahn", "q1": true, "q2": true },
@@ -16,7 +16,7 @@ test("$sample pipeline operator", function (t) {
     { "_id": 7, "name": "ty", "q1": false, "q2": true }
   ];
 
-  var result = mingo.aggregate(users,
+  let result = mingo.aggregate(users,
     [{ $sample: { size: 3 } }]
   );
 

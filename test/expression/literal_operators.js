@@ -1,9 +1,9 @@
-var test = require('tape')
-var mingo = require('../../es5')
+import test from 'tape'
+import * as mingo from '../../lib'
 
 test('Literal Operators', function (t) {
   t.plan(1)
-  var result = mingo.aggregate([
+  let result = mingo.aggregate([
     {'_id': 1, 'item': 'abc123', price: '$2.50'},
     {'_id': 2, 'item': 'xyz123', price: '1'},
     {'_id': 3, 'item': 'ijk123', price: '$1'}

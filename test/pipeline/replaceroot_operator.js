@@ -1,11 +1,11 @@
-var test = require('tape')
-var mingo = require('../../es5')
+import test from 'tape'
+import * as mingo from '../../lib'
 
 /**
  * Tests for $replaceRoot operator
  */
 test("$replaceRoot pipeline operator", function (t) {
-  var produce = [
+  let produce = [
     {
       "_id": 1,
       "fruit": ["apples", "oranges"],
@@ -20,7 +20,7 @@ test("$replaceRoot pipeline operator", function (t) {
     }
   ];
 
-  var result = mingo.aggregate(produce, [
+  let result = mingo.aggregate(produce, [
     {
       $replaceRoot: { newRoot: "$in_stock" }
     }
@@ -31,7 +31,7 @@ test("$replaceRoot pipeline operator", function (t) {
     { "beets": 130, "yams": 200 }
   ], "$replaceRoot with an embedded document");
 
-  var people = [
+  let people = [
     { "_id": 1, "name": "Arlene", "age": 34, "pets": { "dogs": 2, "cats": 1 } },
     { "_id": 2, "name": "Sam", "age": 41, "pets": { "cats": 1, "hamsters": 3 } },
     { "_id": 3, "name": "Maria", "age": 25 }
@@ -51,7 +51,7 @@ test("$replaceRoot pipeline operator", function (t) {
     { "cats": 1, "hamsters": 3 }
   ], "$replaceRoot with a $match stage");
 
-  var contacts = [
+  let contacts = [
     { "_id": 1, "first_name": "Gary", "last_name": "Sheffield", "city": "New York" },
     { "_id": 2, "first_name": "Nancy", "last_name": "Walker", "city": "Anaheim" },
     { "_id": 3, "first_name": "Peter", "last_name": "Sumner", "city": "Toledo" }

@@ -1,6 +1,6 @@
-var runTest = require('./../support').runTest
+import * as support from '../support'
 
-runTest('Conditional Operators', {
+support.runTest('Conditional Operators', {
   $cond: [
     [{ 'if': {$lte: [200, 200]}, then: 'low', 'else': 'high'}, 'low'],
     [{ 'if': {$lte: [500, 200]}, then: 'low', 'else': 'high'}, 'high'],

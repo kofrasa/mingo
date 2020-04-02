@@ -18,7 +18,7 @@ clean:
 coverage:
 	@npm run coverage
 
-test: compile
+test:
 	@npm run test
 
 .PHONY: clean test coverage

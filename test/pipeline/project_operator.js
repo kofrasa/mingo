@@ -1,7 +1,7 @@
-var mingo = require('../../es5')
-var samples = require('../support')
+import * as mingo from '../../lib'
+import * as samples from '../support'
 
-var productsData = [
+let productsData = [
   { "_id": 1, "item": "abc1", description: "product 1", qty: 300 },
   { "_id": 2, "item": "abc2", description: "product 2", qty: 200 },
   { "_id": 3, "item": "xyz1", description: "product 3", qty: 250 },
@@ -26,11 +26,11 @@ samples.runTestPipeline("$project pipeline operator", [
     ],
     input: samples.studentsData,
     check: function (result, t) {
-      var fields = Object.keys(result[0]);
+      let fields = Object.keys(result[0]);
       t.equal(fields.length, 4, "can project fields with $project");
       fields.includes
       t.ok(fields.includes('type'), "can rename fields with $project");
-      var temp = result[0]['details'];
+      let temp = result[0]['details'];
       t.ok(Object.keys(temp).length === 1, "can create and populate sub-documents");
     }
   },
@@ -91,7 +91,7 @@ samples.runTestPipeline("$project pipeline operator", [
       { '$limit': 1 }
     ],
     check: function (result, t) {
-    var fields = Object.keys(result[0]);
+    let fields = Object.keys(result[0]);
     t.ok(fields.length === 2, "2/3 fields are included. Instead: " + fields.length);
     t.ok(fields.indexOf('name') === -1, "name is excluded");
     t.ok(fields.indexOf('_id') >= 0, "_id is included");
@@ -110,7 +110,7 @@ samples.runTestPipeline("$project pipeline operator", [
       { '$limit': 1 }
     ],
     check: function (result, t) {
-      var fields = Object.keys(result[0]);
+      let fields = Object.keys(result[0]);
       t.ok(fields.length === 2, "2/3 fields are included. Instead: " + fields.length);
       t.ok(fields.indexOf('name') >= 0, "name is included");
       t.ok(fields.indexOf('_id') === -1, "_id is excluded");
