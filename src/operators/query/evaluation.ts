@@ -4,7 +4,7 @@ import {
   createQueryOperator,
   $mod as __mod,
   $regex as __regex
-} from '../predicates'
+} from '../.internal/predicates'
 import { Callback, isFunction } from '../../util'
 import { computeValue } from '../../core'
 

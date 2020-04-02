@@ -59,7 +59,7 @@ For documentation on using query operators see [mongodb](http://docs.mongodb.org
 
 ```js
 // Use as es6 module
-import * as mingo from 'mingo'
+import mingo from 'mingo'
 
 // or vanilla nodeJS
 var mingo = require('mingo')

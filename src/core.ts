@@ -266,7 +266,7 @@ export function computeValue(obj: object, expr: any, operator?: string, options?
   }
 
   // check and return value if already in a resolved state
-  if (Array.isArray(expr)) {
+  if (isArray(expr)) {
     return expr.map(item => computeValue(obj, item))
   } else if (isObject(expr)) {
     let result = {}

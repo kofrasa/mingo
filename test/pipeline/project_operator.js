@@ -1,4 +1,4 @@
-import * as mingo from '../../lib'
+import mingo from '../../lib'
 import * as samples from '../support'
 
 let productsData = [

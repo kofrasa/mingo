@@ -1,18 +1,19 @@
 import test from 'tape'
-import * as mingo from '../lib'
-import * as samples from './support'
+import { Query } from '../lib/query'
+import { Aggregator } from '../lib/aggregator'
+import { simpleGradesData } from './support'
 
 
 test('10gen Education: M101P', function (t) {
-  let cursor = mingo.find(samples.simpleGradesData, {
+  let cursor = new Query({
     type: 'exam',
     score: { $gte: 65 }
-  })
+  }).find(simpleGradesData)
 
   let student = cursor.sort({ 'score': 1 }).limit(1).next()
   t.equal(student.student_id, 22, 'Student ID with lowest exam score is 22')
 
-  let homework = mingo.find(samples.simpleGradesData, { type: 'homework' }).sort({ 'student_id': 1, 'score': 1 }).all()
+  let homework = new Query({ type: 'homework' }).find(simpleGradesData).sort({ 'student_id': 1, 'score': 1 }).all()
   let ids = []
   let sid = null
   for (let i = 0, j = 0; i < homework.length; i++) {
@@ -23,7 +24,7 @@ test('10gen Education: M101P', function (t) {
   }
 
   t.equal(ids.length, 200, '200 minimum homework scores found')
-  let result = mingo.remove(samples.simpleGradesData, { '_id': { $in: ids } })
+  let result = new Query({ '_id': { $in: ids } }).remove(simpleGradesData)
 
   // let res = Mingo.find(result).sort({'score':-1}).skip(100).limit(1).next();
   // console.log(res);
@@ -31,11 +32,11 @@ test('10gen Education: M101P', function (t) {
 
   t.equal(result.length, 600, 'remove lowest homework from grades for each student. count is 600')
 
-  let res = mingo.aggregate(result, [
+  let res = new Aggregator([
     { '$group': { '_id': '$student_id', 'average': { $avg: '$score' } } },
     { '$sort': { 'average': -1 } },
     { '$limit': 1 }
-  ])
+  ]).run(result)
   t.equal(res[0]['_id'], 54, 'student with highest average has id 54')
   t.end()
 })

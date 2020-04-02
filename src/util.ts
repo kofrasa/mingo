@@ -265,8 +265,8 @@ export function merge(target: object, obj: object, options: MergeOptions): objec
  * @param accumulator
  * @returns {*}
  */
-export function reduce<T>(collection: object, fn: Callback<any>, accumulator: T): T {
-  if (Array.isArray(collection)) {
+export function reduce<T>(collection: object | any[], fn: Callback<any>, accumulator: T): T {
+  if (collection instanceof Array) {
     return collection.reduce(fn, accumulator)
   }
   // array-like objects
@@ -672,7 +672,7 @@ export function resolve(obj: object, selector: string, options?: ResolveOptions)
       let field = path[i]
       let isText = field.match(/^\d+$/) === null
 
-      if (isText && Array.isArray(value)) {
+      if (isText && isArray(value)) {
         // On the first iteration, we check if we received a stop flag.
         // If so, we stop to prevent iterating over a nested array value
         // on consecutive object keys in the selector.
@@ -762,7 +762,7 @@ export function resolveGraph(obj: object, selector: string, options?: ResolveOpt
  * @param {*} obj The object the filter
  */
 export function filterMissing(obj: object): object {
-  if (Array.isArray(obj)) {
+  if (obj instanceof Array) {
     for (let i = obj.length - 1; i >= 0; i--) {
       if (obj[i] === MISSING) {
         obj.splice(i, 1)

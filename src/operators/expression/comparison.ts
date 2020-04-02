@@ -9,7 +9,7 @@ import {
   $lt as __lt,
   $lte as __lte,
   $ne as __ne
-} from '../predicates'
+} from '../.internal/predicates'
 
 export const $eq = createExpressionOperator(__eq)
 export const $gt = createExpressionOperator(__gt)

@@ -10,7 +10,7 @@ import {
   $lte as __lte,
   $ne as __ne,
   $nin as __nin,
-} from '../predicates'
+} from '../.internal/predicates'
 
 export const $eq = createQueryOperator(__eq)
 export const $gt = createQueryOperator(__gt)

@@ -1,4 +1,4 @@
-import { assert, each, isArray, isEmpty, keys } from './util'
+import { assert, each, isEmpty, keys } from './util'
 import { getOperator, OperatorType } from './core'
 import { Lazy, Iterator, Source } from './lazy'
 
@@ -49,17 +49,4 @@ export class Aggregator {
   run(collection: Source): any[] {
     return this.stream(collection).value()
   }
-}
-
-/**
- * Return the result collection after running the aggregation pipeline for the given collection.
- * Shorthand for `(new Aggregator(pipeline, options)).run(collection)`
- *
- * @param {Array} collection Collection or stream of objects
- * @param {Array} pipeline The pipeline operators to use
- * @returns {Array}
- */
-export function aggregate(collection: object[], pipeline: object[], options?: object): any[] {
-  assert(isArray(pipeline), 'Aggregation pipeline must be an array')
-  return (new Aggregator(pipeline, options)).run(collection)
 }

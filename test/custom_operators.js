@@ -1,7 +1,7 @@
 import test from 'tape'
 import * as support from './support'
-import * as mingo from '../lib'
-let OperatorType = mingo.OperatorType
+import mingo from '../lib'
+import { OperatorType } from '../lib'
 
 
 test('Custom Operators', function (t) {

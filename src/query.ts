@@ -99,26 +99,3 @@ export class Query {
     }, [])
   }
 }
-
-/**
- * Performs a query on a collection and returns a cursor object.
- *
- * @param collection
- * @param criteria
- * @param projection
- * @returns {Cursor}
- */
-export function find(collection: object[], criteria: object, projection?: object): Cursor {
-  return new Query(criteria).find(collection, projection)
-}
-
-/**
- * Returns a new array without objects which match the criteria
- *
- * @param collection
- * @param criteria
- * @returns {Array}
- */
-export function remove(collection: object[], criteria: object): object[] {
-  return new Query(criteria).remove(collection)
-}

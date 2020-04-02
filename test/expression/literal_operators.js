@@ -1,5 +1,5 @@
 import test from 'tape'
-import * as mingo from '../../lib'
+import mingo from '../../lib'
 
 test('Literal Operators', function (t) {
   t.plan(1)

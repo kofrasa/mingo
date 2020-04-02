@@ -96,7 +96,7 @@ function processObject(obj: object, expr: any, expressionKeys: string[], idOnlyE
       value = computeValue(obj, subExpr, key)
     } else if (inArray([1, true], subExpr)) {
       // For direct projections, we use the resolved object value
-    } else if (Array.isArray(subExpr)) {
+    } else if (subExpr instanceof Array) {
       value = subExpr.map(v => {
         let r = computeValue(obj, v)
         if (isNil(r)) return null
@@ -130,7 +130,7 @@ function processObject(obj: object, expr: any, expressionKeys: string[], idOnlyE
         // compute the value for the sub expression for the key
         validateExpression(subExpr)
         let ctx = obj[key]
-        if (Array.isArray(ctx)) {
+        if (ctx instanceof Array) {
           value = ctx.map(o => processObject(o, subExpr, subExprKeys, false))
         } else {
           ctx = isObject(ctx) ? ctx : obj

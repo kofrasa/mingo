@@ -1,9 +1,7 @@
-/**
- * Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
- */
+// Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
 
 import { computeValue } from '../../core'
-import { isObject, isString, isDate } from '../../util'
+import { isArray, isObject, isString, isDate } from '../../util'
 
 const ONE_DAY_MILLIS = 1000 * 60 * 60 * 24
 
@@ -199,7 +197,7 @@ export function $dateToString(obj: object, expr: any): string {
     let hdlr = DATE_SYM_TABLE[matches[i]]
     let value: string
 
-    if (Array.isArray(hdlr)) {
+    if (isArray(hdlr)) {
       // reuse date operators
       let fn = hdlr[1]
       let pad = hdlr[2]
@@ -280,7 +278,7 @@ export function $dateFromString(obj: object, expr: any): any {
     let formatSpecifier = matches[i]
     let hdlr = DATE_SYM_TABLE[formatSpecifier]
 
-    if (Array.isArray(hdlr)) {
+    if (isArray(hdlr)) {
       // get pattern and alias from table
       let name = hdlr[0]
       let pattern = hdlr[3]

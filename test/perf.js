@@ -1,6 +1,6 @@
 import test from 'tape'
 let performance = require('perf_hooks').performance
-import * as mingo from '../lib'
+import mingo from '../lib'
 import * as _ from 'lodash';
 
 const items = _.range(10 * 1000).map(id => {

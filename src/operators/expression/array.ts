@@ -15,7 +15,7 @@ import {
   truthy
 } from '../../util'
 import { computeValue } from '../../core'
-import { createExpressionOperator, $nin as __nin } from '../predicates'
+import { createExpressionOperator, $nin as __nin } from '.././.internal/predicates'
 
 /**
  * Returns a boolean indicating whether a specified value is not an array.

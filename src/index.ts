@@ -1,11 +1,86 @@
-import { enableSystemOperators } from './operators'
+import { setup, addOperators, OperatorType } from './core'
+import { enableDefaultOperators, enableSystemOperators } from './operators'
+import { Query } from './query'
+import { Aggregator } from './aggregator'
+import { Cursor } from './cursor'
+import { Lazy } from './lazy'
 
+// Starting in 3.0.0 only Query and Projection operators are enabled by default.
+// If the default import is not used, the operators must be manually enabled.
+// All system operators can be enabled via `enableSystemOperators`.
+// Operators may also be selectively imported from the 'operators' module support tree-shaking.
+
+// TODO: update after fixing tests
 enableSystemOperators()
 
-// public interface
-export { setup, addOperators, useOperators, OperatorType } from './core'
-export { enableSystemOperators } from './operators'
-export { Query, find, remove } from './query'
-export { Aggregator, aggregate } from './aggregator'
+/**
+ * Performs a query on a collection and returns a cursor object.
+ * Shorthand for `Query(criteria).find(collection, projection)`
+ *
+ * @param collection Array of objects
+ * @param criteria Query criteria
+ * @param projection Projection criteria
+ * @returns {Cursor} A cursor of results
+ */
+export function find(collection: object[], criteria: object, projection?: object): Cursor {
+  return new Query(criteria).find(collection, projection)
+}
+
+/**
+ * Returns a new array without objects which match the criteria
+ *
+ * @param collection Array of objects
+ * @param criteria Query criteria of objects to remove
+ * @returns {Array} New filtered array
+ */
+export function remove(collection: object[], criteria: object): object[] {
+  return new Query(criteria).remove(collection)
+}
+
+/**
+ * Return the result collection after running the aggregation pipeline for the given collection.
+ * Shorthand for `(new Aggregator(pipeline, options)).run(collection)`
+ *
+ * @param {Array} collection Collection or stream of objects
+ * @param {Array} pipeline The pipeline operators to use
+ * @returns {Array} New array of results
+ */
+export function aggregate(collection: object[], pipeline: object[], options?: object): any[] {
+  return (new Aggregator(pipeline, options)).run(collection)
+}
+
+export { setup, addOperators, OperatorType } from './core'
+export { enableDefaultOperators, enableSystemOperators } from './operators'
+export { Query } from './query'
+export { Aggregator } from './aggregator'
 export { Cursor } from './cursor'
 export { Lazy } from './lazy'
+
+// backward-compatibility with 2.x.x
+export const OP_EXPRESSION = OperatorType.EXPRESSION
+export const OP_GROUP = OperatorType.ACCUMULATOR
+export const OP_PIPELINE = OperatorType.PIPELINE
+export const OP_PROJECTION = OperatorType.PROJECTION
+export const OP_QUERY = OperatorType.QUERY
+
+
+// default interface
+export default {
+  OP_EXPRESSION,
+  OP_GROUP,
+  OP_PIPELINE,
+  OP_PROJECTION,
+  OP_QUERY,
+  Aggregator,
+  Query,
+  Cursor,
+  Lazy,
+  OperatorType,
+  addOperators,
+  aggregate,
+  enableDefaultOperators,
+  enableSystemOperators,
+  find,
+  remove,
+  setup
+}

@@ -16,8 +16,10 @@
 - Rename `resolveObj` to `resolveGraph` and change `option.preserveMissingValues` to `option.preserveMissing`
 - Add `filterMissing` and `MISSING` to module API and export `MISSING` value.
 - Unexport and rename `Lazy.isIterator` to `Lazy.isGenerator`
-- Replace `OP_XXX` constants with enums `OperatorType.XXX`
+- Replace `OP_XXX` constants with enum `OperatorType.XXX`
 - Removed `CollectionMixin`
+- Expose library via `esm` dependency
+- Enable only Query and Projection operators on default import
 
 ## 2.5.2 / 2020-03-17
 

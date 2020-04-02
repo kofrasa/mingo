@@ -1,5 +1,5 @@
 import { objectMap } from '../../util'
-import { aggregate } from '../../aggregator'
+import { Aggregator } from '../../aggregator'
 import { Iterator } from '../../lazy'
 
 
@@ -9,6 +9,6 @@ import { Iterator } from '../../lazy'
  */
 export function $facet(collection: Iterator, expr: any, opt?: object): Iterator {
   return collection.transform(array => {
-    return [objectMap(expr, pipeline => aggregate(array, pipeline))]
+    return [ objectMap(expr, pipeline => new Aggregator(pipeline).run(array)) ]
   })
 }

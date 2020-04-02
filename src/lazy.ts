@@ -149,7 +149,7 @@ export class Iterator {
         if (o.done) throw DONE
         return o.value
       }
-    } else if (Array.isArray(source)) {
+    } else if (source instanceof Array) {
       const data = source
       const size = data.length
       let index = 0
@@ -158,6 +158,7 @@ export class Iterator {
         throw DONE
       }
     } else if (!(source instanceof Function)) {
+      console.log(source)
       throw new Error("Source is not iterable. Must be Array, Function, or Generator")
     }
 
