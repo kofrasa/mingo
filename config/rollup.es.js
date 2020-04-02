@@ -19,7 +19,7 @@ function version () {
 }
 
 export default {
-  input: './index.js',
+  input: './lib/index.js',
   output: [
     {
       file: `dist/${MODULE}.es6.js`,
@@ -31,7 +31,7 @@ export default {
   plugins: [
     version(),
     resolve({
-      mainFields: ['module', 'main']
+      mainFields: ['module']
     }),
     commonjs()
   ]

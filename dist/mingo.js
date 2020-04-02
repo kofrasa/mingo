@@ -1,12 +1,12 @@
-//! mingo.js 2.5.2
+//! mingo.js 2.5.3
 //! Copyright (c) 2020 Francis Asante
 //! MIT
 
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
-  typeof define === 'function' && define.amd ? define(['exports'], factory) :
-  (global = global || self, factory(global.mingo = {}));
-}(this, (function (exports) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+  typeof define === 'function' && define.amd ? define(factory) :
+  (global = global || self, global.mingo = factory());
+}(this, (function () { 'use strict';
 
   function _typeof(obj) {
     "@babel/helpers - typeof";
@@ -47,7 +47,7 @@
   }
 
   function _slicedToArray(arr, i) {
-    return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest();
+    return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest();
   }
 
   function _arrayWithHoles(arr) {
@@ -55,10 +55,7 @@
   }
 
   function _iterableToArrayLimit(arr, i) {
-    if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) {
-      return;
-    }
-
+    if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return;
     var _arr = [];
     var _n = true;
     var _d = false;
@@ -84,8 +81,25 @@
     return _arr;
   }
 
+  function _unsupportedIterableToArray(o, minLen) {
+    if (!o) return;
+    if (typeof o === "string") return _arrayLikeToArray(o, minLen);
+    var n = Object.prototype.toString.call(o).slice(8, -1);
+    if (n === "Object" && o.constructor) n = o.constructor.name;
+    if (n === "Map" || n === "Set") return Array.from(n);
+    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
+  }
+
+  function _arrayLikeToArray(arr, len) {
+    if (len == null || len > arr.length) len = arr.length;
+
+    for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
+
+    return arr2;
+  }
+
   function _nonIterableRest() {
-    throw new TypeError("Invalid attempt to destructure non-iterable instance");
+    throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
   }
 
   // Javascript native types
@@ -3559,8 +3573,6 @@
     return computeValue(obj, inExpr);
   }
 
-
-
   var expressionOperators = /*#__PURE__*/Object.freeze({
     __proto__: null,
     $abs: $abs,
@@ -4952,27 +4964,29 @@
     }
   };
 
-  enableSystemOperators(); // public interface
-  var VERSION = '2.5.2';
+  enableSystemOperators();
+  var VERSION = '2.5.3'; // mingo!
 
-  exports.Aggregator = Aggregator;
-  exports.CollectionMixin = CollectionMixin;
-  exports.Cursor = Cursor;
-  exports.Lazy = Lazy;
-  exports.OP_EXPRESSION = OP_EXPRESSION;
-  exports.OP_GROUP = OP_GROUP;
-  exports.OP_PIPELINE = OP_PIPELINE;
-  exports.OP_PROJECTION = OP_PROJECTION;
-  exports.OP_QUERY = OP_QUERY;
-  exports.Query = Query;
-  exports.VERSION = VERSION;
-  exports._internal = _internal;
-  exports.addOperators = addOperators;
-  exports.aggregate = aggregate;
-  exports.find = find;
-  exports.remove = remove;
-  exports.setup = setup;
+  var index = {
+    _internal: _internal,
+    Aggregator: Aggregator,
+    CollectionMixin: CollectionMixin,
+    Cursor: Cursor,
+    Lazy: Lazy,
+    OP_EXPRESSION: OP_EXPRESSION,
+    OP_GROUP: OP_GROUP,
+    OP_PIPELINE: OP_PIPELINE,
+    OP_PROJECTION: OP_PROJECTION,
+    OP_QUERY: OP_QUERY,
+    Query: Query,
+    VERSION: VERSION,
+    addOperators: addOperators,
+    aggregate: aggregate,
+    find: find,
+    remove: remove,
+    setup: setup
+  };
 
-  Object.defineProperty(exports, '__esModule', { value: true });
+  return index;
 
 })));

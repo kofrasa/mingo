@@ -1,4 +1,4 @@
-//! mingo.js 2.5.2
+//! mingo.js 2.5.3
 //! Copyright (c) 2020 Francis Asante
 //! MIT
 
@@ -3187,8 +3187,6 @@ function $let (obj, expr) {
   return computeValue(obj, inExpr)
 }
 
-
-
 var expressionOperators = /*#__PURE__*/Object.freeze({
   __proto__: null,
   $abs: $abs,
@@ -4511,6 +4509,27 @@ const CollectionMixin = {
 
 enableSystemOperators();
 
-const VERSION = '2.5.2';
+const VERSION = '2.5.3';
 
-export { Aggregator, CollectionMixin, Cursor, Lazy, OP_EXPRESSION, OP_GROUP, OP_PIPELINE, OP_PROJECTION, OP_QUERY, Query, VERSION, _internal, addOperators, aggregate, find, remove, setup };
+// mingo!
+var index = {
+  _internal,
+  Aggregator,
+  CollectionMixin,
+  Cursor,
+  Lazy,
+  OP_EXPRESSION,
+  OP_GROUP,
+  OP_PIPELINE,
+  OP_PROJECTION,
+  OP_QUERY,
+  Query,
+  VERSION,
+  addOperators,
+  aggregate,
+  find,
+  remove,
+  setup
+};
+
+export default index;

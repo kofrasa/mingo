@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.5.3 / 2020-04-02
+
+- Restore default export on module entry point. Fixes #130
+
 ## 2.5.2 / 2020-03-17
 
 - Revert to using `dist/mingo.js` as main entry point for package. Fixes [#125](https://github.com/kofrasa/mingo/issues/125)

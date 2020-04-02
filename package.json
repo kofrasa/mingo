@@ -1,9 +1,9 @@
 {
   "name": "mingo",
-  "version": "2.5.2",
+  "version": "2.5.3",
   "description": "JavaScript implementation of MongoDB query language",
   "main": "./dist/mingo.js",
-  "module": "dist/mingo.es6.js",
+  "module": "./lib/index.js",
   "scripts": {
     "clean": "rm -fr dist/*",
     "build.umd": "rollup -c config/rollup.umd.js",
