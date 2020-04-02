@@ -506,21 +506,21 @@ export function compare(a: any, b: any): CompareResult {
  * This implementation treats null/undefined sort keys as less than every other type
  *
  * @param {Array}   collection
- * @param {Function} fn The function used to resolve sort keys
- * @param {Function} cmp The comparator function to use for comparing values
- * @return {Array} Returns a new sorted array by the given iteratee
+ * @param {Function} keyFn The sort key function used to resolve sort keys
+ * @param {Function} comparator The comparator function to use for comparing keys. Defaults to standard comparison via `compare(...)`
+ * @return {Array} Returns a new sorted array by the given key and comparator function
  */
-export function sortBy(collection: any[], fn: Callback<any>, cmp?: Comparator<any>): any[] {
+export function sortBy(collection: any[], keyFn: Callback<any>, comparator?: Comparator<any>): any[] {
   let sorted = []
   let result = []
   let hash = new Object
-  cmp = cmp || compare
+  comparator = comparator || compare
 
   if (isEmpty(collection)) return collection
 
   for (let i = 0; i < collection.length; i++) {
     let obj = collection[i]
-    let key = fn(obj, i)
+    let key = keyFn(obj, i)
 
     // objects with nil keys will go in first
     if (isNil(key)) {
@@ -536,7 +536,7 @@ export function sortBy(collection: any[], fn: Callback<any>, cmp?: Comparator<an
   }
 
   // use native array sorting but enforce stableness
-  sorted.sort(cmp)
+  sorted.sort(comparator)
 
   for (let i = 0; i < sorted.length; i++) {
     into(result, hash[sorted[i]])

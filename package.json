@@ -2,7 +2,7 @@
   "name": "mingo",
   "version": "3.0.0",
   "description": "JavaScript implementation of MongoDB query language",
-  "main": "./es5/index.js",
+  "main": "index.js",
   "module": "./lib/index.js",
   "scripts": {
     "build": "npm run compile && npm run bundle",
@@ -28,6 +28,9 @@
     "README.md",
     "CHANGELOG.md"
   ],
+  "dependencies": {
+    "esm": "3.2.25"
+  },
   "devDependencies": {
     "@babel/preset-env": "7.9.0",
     "@babel/plugin-external-helpers": "7.8.3",
@@ -60,6 +63,5 @@
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/kofrasa/mingo/issues"
-  },
-  "dependencies": {}
+  }
 }

@@ -11,7 +11,7 @@ const BANNER = fs.readFileSync(`${__dirname}/templates/header.txt`, 'utf8')
   .replace('@VERSION', packageDetails.version)
 
 export default {
-  input: './index.js',
+  input: './lib/index.js',
   output: [
     {
       file: `dist/${MODULE}.js`,
@@ -22,7 +22,8 @@ export default {
   ],
   plugins: [
     resolve({
-      mainFields: ['module', 'main']
+      mainFields: ['main'],
+      preferBuiltins: true
     }),
     commonjs(),
     babel({

@@ -1,7 +1,6 @@
 var test = require('tape')
-var samples = require('./support')
+var support = require('./support')
 var mingo = require('../es5')
-var computeValue = require('../es5/core').computeValue
 var OperatorType = mingo.OperatorType
 
 
@@ -20,7 +19,7 @@ test('Custom Operators', function (t) {
       }
     })
 
-    var result = mingo.aggregate(samples.complexGradesData, [{$unwind: '$scores'}, {$pluck: '$scores.score'}])
+    var result = mingo.aggregate(support.complexGradesData, [{$unwind: '$scores'}, {$pluck: '$scores.score'}])
     t.ok(typeof result[0] === 'number', 'can add new pipeline operator')
   })
 
@@ -56,13 +55,13 @@ test('Custom Operators', function (t) {
 
   t.test('custom accumulator operator', function (t) {
     t.plan(2)
-    mingo.addOperators(OperatorType.ACCUMULATOR, function () {
+    mingo.addOperators(OperatorType.ACCUMULATOR, function (m) {
       return {
         '$stddev': function (collection, expr) {
           var result = mingo.aggregate(collection, [{$group: {avg: {$avg: expr}}}])
           var avg = result[0].avg
           var diffs = collection.map(function (item) {
-            var v = computeValue(item, expr) - avg
+            var v = m.computeValue(item, expr) - avg
             return v * v
           })
           var variance = diffs.reduce(function (memo, val) {
@@ -72,7 +71,7 @@ test('Custom Operators', function (t) {
         }
       }
     })
-    result = mingo.aggregate(samples.complexGradesData, [{$unwind: '$scores'}, {$group: {stddev: {$stddev: '$scores.score'}}}])
+    result = mingo.aggregate(support.complexGradesData, [{$unwind: '$scores'}, {$group: {stddev: {$stddev: '$scores.score'}}}])
     t.ok(result.length === 1, 'must return one result after grouping')
     t.equal(28.57362029450366, result[0].stddev, 'must return correct stddev')
   })
