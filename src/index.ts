@@ -54,31 +54,28 @@ export { Aggregator } from './aggregator'
 export { Cursor } from './cursor'
 export { Lazy } from './lazy'
 
-// backward-compatibility with 2.x.x
-export const OP_EXPRESSION = OperatorType.EXPRESSION
-export const OP_GROUP = OperatorType.ACCUMULATOR
-export const OP_PIPELINE = OperatorType.PIPELINE
-export const OP_PROJECTION = OperatorType.PROJECTION
-export const OP_QUERY = OperatorType.QUERY
-
 
 // default interface
 export default {
-  OP_EXPRESSION,
-  OP_GROUP,
-  OP_PIPELINE,
-  OP_PROJECTION,
-  OP_QUERY,
   Aggregator,
   Query,
   Cursor,
   Lazy,
-  OperatorType,
   addOperators,
   aggregate,
-  enableDefaultOperators,
-  enableSystemOperators,
   find,
   remove,
-  setup
+  setup,
+
+  // Deprecated. Preserved for backward-compatibility with 2.x.x. Users should prefer OperatorType
+  OP_EXPRESSION: OperatorType.EXPRESSION,
+  OP_GROUP: OperatorType.ACCUMULATOR,
+  OP_PIPELINE: OperatorType.PIPELINE,
+  OP_PROJECTION: OperatorType.PROJECTION,
+  OP_QUERY: OperatorType.QUERY,
+
+  // Since 3.0.0
+  OperatorType,
+  enableDefaultOperators,
+  enableSystemOperators,
 }

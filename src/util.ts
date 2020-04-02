@@ -55,58 +55,6 @@ interface ResolveOptions {
   preserveMissing?: boolean
 }
 
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/includes
-if (!Array.prototype.includes) {
-  Object.defineProperty(Array.prototype, 'includes', {
-    value: function (valueToFind: any, fromIndex?: number) {
-
-      if (this == null) {
-        throw new TypeError('"this" is null or not defined');
-      }
-
-      // 1. Let O be ? ToObject(this value).
-      var o = Object(this);
-
-      // 2. Let len be ? ToLength(? Get(O, "length")).
-      var len = o.length >>> 0;
-
-      // 3. If len is 0, return false.
-      if (len === 0) {
-        return false;
-      }
-
-      // 4. Let n be ? ToInteger(fromIndex).
-      //    (If fromIndex is undefined, this step produces the value 0.)
-      var n = fromIndex | 0;
-
-      // 5. If n ≥ 0, then
-      //  a. Let k be n.
-      // 6. Else n < 0,
-      //  a. Let k be len + n.
-      //  b. If k < 0, let k be 0.
-      var k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
-
-      function sameValueZero(x: any, y: any): boolean {
-        return x === y || (typeof x === 'number' && typeof y === 'number' && isNaN(x) && isNaN(y));
-      }
-
-      // 7. Repeat, while k < len
-      while (k < len) {
-        // a. Let elementK be the result of ? Get(O, ! ToString(k)).
-        // b. If SameValueZero(valueToFind, elementK) is true, return true.
-        if (sameValueZero(o[k], valueToFind)) {
-          return true;
-        }
-        // c. Increase k by 1.
-        k++;
-      }
-
-      // 8. Return false
-      return false;
-    }
-  });
-}
-
 // no array, object, or function types
 const JS_SIMPLE_TYPES = [JsType.NULL, JsType.UNDEFINED, JsType.BOOLEAN, JsType.NUMBER, JsType.STRING, JsType.DATE, JsType.REGEXP]
 
@@ -153,7 +101,7 @@ export function isFunction(v: any) { return typeof v === JsType.FUNCTION }
 export function isNil(v: any): boolean { return v === null || v === undefined }
 export function isNull(v: any): boolean { return v === null }
 export function isUndefined(v: any): boolean { return v === undefined }
-export function inArray(arr: any[], item: any): boolean { return arr.includes(item) }
+export function inArray(arr: any[], item: any): boolean { return arr.indexOf(item) !== -1 }
 export function notInArray(arr: any[], item: any): boolean { return !inArray(arr, item) }
 export function truthy(arg: any): boolean { return !!arg }
 export function isEmpty(x: any): boolean {

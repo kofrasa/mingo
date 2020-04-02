@@ -6,12 +6,6 @@ release:
 build:
 	@npm run build
 
-compile:
-	@npm run compile
-
-compress: build
-	@npm run postrelease
-
 clean:
 	@npm run clean
 
