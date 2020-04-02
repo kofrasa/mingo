@@ -8,10 +8,8 @@ import { Lazy } from './lazy'
 // Starting in 3.0.0 only Query and Projection operators are enabled by default.
 // If the default import is not used, the operators must be manually enabled.
 // All system operators can be enabled via `enableSystemOperators`.
-// Operators may also be selectively imported from the 'operators' module support tree-shaking.
-
-// TODO: update after fixing tests
-enableSystemOperators()
+// Operators may also be selectively imported from the 'operators' module to support tree-shaking.
+enableDefaultOperators()
 
 /**
  * Performs a query on a collection and returns a cursor object.

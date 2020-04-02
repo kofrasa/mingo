@@ -3,6 +3,8 @@ import test from 'tape'
 import mingo from '../lib'
 import { computeValue } from '../lib/core'
 
+mingo.enableSystemOperators()
+
 export const personData = JSON.parse(fs.readFileSync(__dirname + '/data/person.json'))
 export const simpleGradesData = JSON.parse(fs.readFileSync(__dirname + '/data/grades_simple.json'))
 export const complexGradesData = JSON.parse(fs.readFileSync(__dirname + '/data/grades_complex.json'))
