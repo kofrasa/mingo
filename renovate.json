@@ -10,28 +10,16 @@
   },
   "packageRules": [
     {
-      "packagePatterns": ["^babel"],
-      "groupName": "babel"
-    },
-    {
-      "packagePatterns": ["^rollup"],
-      "groupName": "rollup"
+      "packageNames": ["esm"],
+      "groupName": "esm"
     },
     {
       "packageNames": ["benchmark"],
       "groupName": "benchmark"
     },
     {
-      "packageNames": ["bson"],
-      "groupName": "bson"
-    },
-    {
       "packageNames": ["codecov"],
       "groupName": "codecov"
-    },
-    {
-      "packagePatterns": ["istanbul"],
-      "groupName": "istanbul"
     },
     {
       "packageNames": ["lodash"],
@@ -48,10 +36,6 @@
     {
       "packageNames": ["tape"],
       "groupName": "tape"
-    },
-    {
-      "packageNames": ["uglify-js"],
-      "groupName": "uglify-js"
     }
   ]
 }
