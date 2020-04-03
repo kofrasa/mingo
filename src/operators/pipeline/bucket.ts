@@ -1,7 +1,6 @@
 import {
   assert,
   each,
-  findIndex,
   getType,
   isNil
 } from '../../util'
@@ -53,7 +52,7 @@ export function $bucket(collection: Iterator, expr: any, opt?: object): Iterator
           grouped[defaultKey].push(obj)
         } else {
           assert(key >= lower && key < upper, "$bucket 'groupBy' expression must resolve to a value in range of boundaries")
-          let index = findIndex(boundaries, key)
+          let index = findInsertIndex(boundaries, key)
           let boundKey = boundaries[Math.max(0, index - 1)]
           grouped[boundKey].push(obj)
         }
@@ -71,4 +70,27 @@ export function $bucket(collection: Iterator, expr: any, opt?: object): Iterator
 
     return iterator.next()
   })
+}
+
+/**
+ * Find the insert index for the given key in a sorted array.
+ *
+ * @param {*} sorted The sorted array to search
+ * @param {*} item The search key
+ */
+function findInsertIndex(sorted: any[], item: any): number {
+  // uses binary search
+  let lo = 0
+  let hi = sorted.length - 1
+  while (lo <= hi) {
+    let mid = Math.round(lo + (hi - lo) / 2)
+    if (item < sorted[mid]) {
+      hi = mid - 1
+    } else if (item > sorted[mid]) {
+      lo = mid + 1
+    } else {
+      return mid
+    }
+  }
+  return lo
 }

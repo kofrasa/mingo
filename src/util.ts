@@ -497,17 +497,19 @@ export function sortBy(collection: any[], keyFn: Callback<any>, comparator?: Com
  * Groups the collection into sets by the returned key
  *
  * @param collection
- * @param fn {Function} to compute the group key of an item in the collection
+ * @param keyFn {Function} to compute the group key of an item in the collection
  * @returns {{keys: Array, groups: Array}}
  */
-export function groupBy(collection: any[], fn: Callback<any>): { keys: any[], groups: any[] } {
+export function groupBy(collection: any[], keyFn: Callback<any>): { keys: any[], groups: any[] } {
   let result = {
-    'keys': [],
-    'groups': []
+    keys: [],
+    groups: []
   }
+
   let lookup = {}
+
   each(collection, obj => {
-    let key = fn(obj)
+    let key = keyFn(obj)
     let hash = hashCode(key)
     let index = -1
 
@@ -517,9 +519,11 @@ export function groupBy(collection: any[], fn: Callback<any>): { keys: any[], gr
       result.keys.push(key)
       result.groups.push([])
     }
+
     index = lookup[hash]
     result.groups[index].push(obj)
   })
+
   return result
 }
 
@@ -542,29 +546,6 @@ export function into(dest: any[], src: any[]): any[] {
     begin += MAX_ARRAY_PUSH
   }
   return dest
-}
-
-/**
- * Find the insert index for the given key in a sorted array.
- *
- * @param {*} array The sorted array to search
- * @param {*} item The search key
- */
-export function findIndex(array: any[], item: any): number {
-  // uses binary search
-  let lo = 0
-  let hi = array.length - 1
-  while (lo <= hi) {
-    let mid = Math.round(lo + (hi - lo) / 2)
-    if (item < array[mid]) {
-      hi = mid - 1
-    } else if (item > array[mid]) {
-      lo = mid + 1
-    } else {
-      return mid
-    }
-  }
-  return lo
 }
 
 /**

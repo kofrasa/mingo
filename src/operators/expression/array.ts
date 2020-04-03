@@ -13,7 +13,7 @@ import {
   truthy
 } from '../../util'
 import { computeValue } from '../../core'
-import { createExpressionOperator, $nin as __nin } from '.././.internal/predicates'
+import { createExpressionOperator, $nin as __nin } from '../.internal/predicates'
 
 /**
  * Returns a boolean indicating whether a specified value is not an array.
@@ -144,7 +144,16 @@ export function $indexOfArray(obj: object, expr: any): any {
   if (start > 0 || end < arr.length) {
     arr = arr.slice(start, end)
   }
-  return arr.findIndex(isEqual.bind(null, searchValue)) + start
+
+  // Array.prototype.findIndex not supported in IE9 hence this workaround
+  let index = -1;
+  arr.some((v: any, i: number) => {
+    let b = isEqual(v, searchValue)
+    if (b) index = i
+    return b
+  })
+
+  return index + start
 }
 
 /**

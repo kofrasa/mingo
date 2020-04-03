@@ -19,7 +19,7 @@ import * as queryLogical from './query/logical'
 import { useOperators, OperatorType } from '../core'
 
 /**
- * Intialize default operators. This includes query and projection operators
+ * Enable default operators. This includes only query and projection operators
  */
 export function enableDefaultOperators() {
   useOperators(OperatorType.EXPRESSION, Object.assign({}, booleanOperators, comparsonOperators))

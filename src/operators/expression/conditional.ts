@@ -41,11 +41,16 @@ export function $cond(obj: object, expr: any): any {
  * @param expr
  */
 export function $switch(obj: object, expr: any): any {
-  let validBranch = expr.branches.find((branch: { case: any, then: any }) => {
-    return computeValue(obj, branch.case)
+  let thenExpr = null
+
+  // Array.prototype.find not supported in IE, hence the '.some()' proxy
+  expr.branches.some((b: { case: any, then: any }) => {
+    let found = computeValue(obj, b.case)
+    if (found) thenExpr = b.then
+    return found
   })
 
-  return computeValue(obj, !!validBranch ? validBranch.then : expr.default)
+  return computeValue(obj, !!thenExpr ? thenExpr : expr.default)
 }
 
 /**
