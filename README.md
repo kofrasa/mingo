@@ -93,6 +93,8 @@ enableSystemOperators()
 ## Using query object to test objects
 
 ```js
+import mingo from 'mingo'
+
 // create a query with criteria
 // find all grades for homework with score >= 50
 let query = new mingo.Query({
@@ -107,7 +109,8 @@ query.test(doc)
 ## Searching and Filtering
 
 ```js
-import * as mingo from 'mingo'
+import mingo from 'mingo'
+
 // input is either an Array or any iterable source (i.e Object{next:Function}) including ES6 generators.
 let criteria = { score: { $gt: 10 } }
 
@@ -145,11 +148,11 @@ cursor.all()
 
 ```js
 import { Aggregator, useOperators, OperatorType } from 'mingo'
-import { $match, $group, $sort } from 'mingo/operators/pipeline'
-import { $min } from 'mingo/operators/accumulator'
+import { $match, $group, $sort } from 'mingo/lib/operators/pipeline'
+import { $min } from 'mingo/lib/operators/accumulator'
 
-// ensure the required operators are loaded.
-// this only needs to be done once so can be placed in a top-level initialization module
+// only query and projection operators are loaded by default.
+// ensure the required operators are preloaded prior to using them.
 useOperators(OperatorType.PIPELINE, { $match, $group, $sort })
 useOperators(OperatorType.ACCUMULATOR, { $min })
 

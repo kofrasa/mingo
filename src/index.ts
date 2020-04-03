@@ -1,4 +1,4 @@
-import { setup, addOperators, OperatorType } from './core'
+import { setup, addOperators, useOperators, OperatorType } from './core'
 import { enableDefaultOperators, enableSystemOperators } from './operators'
 import { Query } from './query'
 import { Aggregator } from './aggregator'
@@ -10,6 +10,14 @@ import { Lazy } from './lazy'
 // All system operators can be enabled via `enableSystemOperators`.
 // Operators may also be selectively imported from the 'operators' module to support tree-shaking.
 enableDefaultOperators()
+
+export { setup, addOperators, useOperators, OperatorType } from './core'
+export { enableDefaultOperators, enableSystemOperators } from './operators'
+export { Query } from './query'
+export { Aggregator } from './aggregator'
+export { Cursor } from './cursor'
+export { Lazy } from './lazy'
+
 
 /**
  * Performs a query on a collection and returns a cursor object.
@@ -47,13 +55,6 @@ export function aggregate(collection: object[], pipeline: object[], options?: ob
   return (new Aggregator(pipeline, options)).run(collection)
 }
 
-export { setup, addOperators, OperatorType } from './core'
-export { enableDefaultOperators, enableSystemOperators } from './operators'
-export { Query } from './query'
-export { Aggregator } from './aggregator'
-export { Cursor } from './cursor'
-export { Lazy } from './lazy'
-
 
 // default interface
 export default {
@@ -76,6 +77,7 @@ export default {
 
   // Since 3.0.0
   OperatorType,
+  useOperators,
   enableDefaultOperators,
   enableSystemOperators,
 }
