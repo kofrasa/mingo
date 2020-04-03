@@ -1,4 +1,3 @@
-import { reduce } from '../../util'
 import { computeValue } from '../../core'
 
 /**
@@ -9,5 +8,5 @@ import { computeValue } from '../../core'
  * @returns {Array|*}
  */
 export function $mergeObjects(collection: any[], expr: any): any {
-  return reduce(collection, (memo, o) => Object.assign(memo, computeValue(o, expr)), {})
+  return collection.reduce((memo, o) => Object.assign(memo, computeValue(o, expr)), {})
 }

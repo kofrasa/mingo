@@ -2,7 +2,7 @@
  * Type Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#type-expression-operators
  */
 
-import { isString, jsType, MIN_INT, MAX_INT, MAX_LONG, MIN_LONG, JsType, BsonType } from '../../util'
+import { isString, getType, MIN_INT, MAX_INT, MAX_LONG, MIN_LONG, JsType, BsonType } from '../../util'
 import { computeValue } from '../../core'
 import { $dateToString } from './date'
 
@@ -14,8 +14,9 @@ class TypeConvertError extends Error {
 
 export function $type(obj: object, expr: any): string {
   let val = computeValue(obj, expr)
-  let typename = jsType(val)
-  switch (typename) {
+  let typename = getType(val)
+  let nativeType = typename.toLowerCase()
+  switch (nativeType) {
     case JsType.BOOLEAN:
       return BsonType.BOOL
     case JsType.NUMBER:
@@ -23,7 +24,16 @@ export function $type(obj: object, expr: any): string {
       return val >= MIN_INT && val <= MAX_INT ? BsonType.INT : BsonType.LONG
     case JsType.REGEXP:
       return BsonType.REGEX
+    case JsType.STRING:
+    case JsType.DATE:
+    case JsType.ARRAY:
+    case JsType.OBJECT:
+    case JsType.FUNCTION:
+    case JsType.NULL:
+    case JsType.UNDEFINED:
+      return nativeType
     default:
+      // unrecognized custom type
       return typename
   }
 }

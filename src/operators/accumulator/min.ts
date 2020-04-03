@@ -1,4 +1,3 @@
-import { isNil, reduce } from '../../util'
 import { $push } from './push'
 
 /**
@@ -9,5 +8,7 @@ import { $push } from './push'
  * @returns {*}
  */
 export function $min(collection: any[], expr: any): any {
-  return reduce($push(collection, expr), (acc, n) => (isNil(acc) || n < acc) ? n : acc, undefined)
+  let nums = $push(collection, expr) as number[]
+  let n = nums.reduce((acc, n) => n < acc ? n : acc, Infinity)
+  return n === Infinity ? undefined : n
 }

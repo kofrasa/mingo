@@ -7,6 +7,7 @@ export const MIN_INT = -2147483648
 export const MAX_LONG = Number.MAX_SAFE_INTEGER
 export const MIN_LONG = Number.MIN_SAFE_INTEGER
 
+// special value to identify missing items. treated differently from undefined
 const MISSING = () => { }
 
 // Javascript native types
@@ -23,6 +24,7 @@ export enum JsType {
   FUNCTION = 'function'
 }
 
+// MongoDB BSON types
 export enum BsonType {
   BOOL = 'bool',
   INT = 'int',
@@ -32,24 +34,25 @@ export enum BsonType {
   REGEX = 'regex'
 }
 
+// Generic callback
 export interface Callback<T> {
   (...args: any): T
 }
 
+// Generic predicate
 export interface Predicate<T> {
   (...args: T[]): boolean
 }
 
+// Result of comparator function
 type CompareResult = -1 | 0 | 1
 
+// Generic comparator callback
 interface Comparator<T> {
   (left: T, right: T): CompareResult
 }
 
-interface MergeOptions {
-  flatten?: boolean
-}
-
+// Options to resolve() and resolveGraph() functions
 interface ResolveOptions {
   preserveMetadata?: boolean
   preserveMissing?: boolean
@@ -82,13 +85,16 @@ export function clone(obj: any): any {
   return obj
 }
 
+/**
+ * Returns the name of type of value given by its constructor.
+ * If missing returns "null" or "undefined" their respective values.
+ * @param v A value
+ */
 export function getType(v: any): string {
-  if (v === null) return 'Null'
-  if (v === undefined) return 'Undefined'
+  if (v === null) return 'null'
+  if (v === undefined) return 'undefined'
   return v.constructor.name
 }
-
-export function jsType(v: any): string { return getType(v).toLowerCase() }
 export function isBoolean(v: any): v is boolean { return typeof v === JsType.BOOLEAN }
 export function isString(v: any): v is string { return typeof v === JsType.STRING }
 export function isNumber(v: any): v is number { return !isNaN(v) && typeof v === JsType.NUMBER }
@@ -101,7 +107,14 @@ export function isFunction(v: any) { return typeof v === JsType.FUNCTION }
 export function isNil(v: any): boolean { return v === null || v === undefined }
 export function isNull(v: any): boolean { return v === null }
 export function isUndefined(v: any): boolean { return v === undefined }
-export function inArray(arr: any[], item: any): boolean { return arr.indexOf(item) !== -1 }
+export const inArray = (() => {
+  // if Array.includes is not supported
+  if (!Array.prototype.includes) {
+    return (arr: any[], item: any): boolean => (item === NaN) ? arr.some(v => v === NaN) : arr.indexOf(item) >= 0
+  }
+  // default
+  return (arr: Array<any>, item: any): boolean => arr.includes(item)
+})()
 export function notInArray(arr: any[], item: any): boolean { return !inArray(arr, item) }
 export function truthy(arg: any): boolean { return !!arg }
 export function isEmpty(x: any): boolean {
@@ -109,12 +122,10 @@ export function isEmpty(x: any): boolean {
     isArray(x) && x.length === 0 ||
     isObject(x) && keys(x).length === 0 || !x
 }
-// ensure a value is an array
+// ensure a value is an array or wrapped within one
 export function ensureArray(x: any): any[] { return x instanceof Array ? x : [x] }
 export function has(obj: object, prop: any): boolean { return !!obj && obj.hasOwnProperty(prop) }
 export const keys = Object.keys
-
-// ////////////////// UTILS ////////////////////
 
 /**
  * Iterate over an array or object
@@ -153,6 +164,11 @@ export function objectMap(obj: object, fn: Callback<any>): object {
     o[k] = fn(obj[k], k)
   }
   return o
+}
+
+// Options to merge function
+interface MergeOptions {
+  flatten?: boolean
 }
 
 /**
@@ -204,22 +220,6 @@ export function merge(target: object, obj: object, options: MergeOptions): objec
   }
 
   return target
-}
-
-/**
- * Reduce any array-like object
- * @param collection
- * @param fn
- * @param accumulator
- * @returns {*}
- */
-export function reduce<T>(collection: object | any[], fn: Callback<any>, accumulator: T): T {
-  if (collection instanceof Array) {
-    return collection.reduce(fn, accumulator)
-  }
-  // array-like objects
-  each(collection, (v, k) => accumulator = fn(accumulator, v, k, collection))
-  return accumulator
 }
 
 /**
@@ -328,11 +328,11 @@ export function isEqual(a: any, b: any): boolean {
     if (a === b) continue
 
     // unequal types and functions cannot be equal.
-    let typename = jsType(a)
-    if (typename !== jsType(b) || typename === JsType.FUNCTION) return false
+    let nativeType = getType(a).toLowerCase()
+    if (nativeType !== getType(b).toLowerCase() || nativeType === JsType.FUNCTION) return false
 
     // leverage toString for Date and RegExp types
-    switch (typename) {
+    switch (nativeType) {
       case JsType.ARRAY:
         if (a.length !== b.length) return false
         if (a.length === b.length && a.length === 0) continue
@@ -395,8 +395,8 @@ export function unique(xs: any[]): any[] {
  * @param value
  * @returns {*}
  */
-export function encode(value: any): string {
-  let type = jsType(value)
+function encode(value: any): string {
+  let type = getType(value).toLowerCase()
   switch (type) {
     case JsType.BOOLEAN:
     case JsType.NUMBER:
@@ -425,7 +425,7 @@ export function encode(value: any): string {
  * This version performs well and can hash 10^6 documents in ~3s with on average 100 collisions.
  *
  * @param value
- * @returns {*}
+ * @returns {number|null}
  */
 export function hashCode(value: any): number | null {
   if (isNil(value)) return null
@@ -606,7 +606,7 @@ function getValue(obj: object, field: any): any {
  * @param selector {String} dot separated path to field
  * @returns {*}
  */
-export function resolve(obj: object, selector: string, options?: ResolveOptions): any {
+export function resolve(obj: object | any[], selector: string, options?: ResolveOptions): any {
   let depth = 0
 
   // options
@@ -614,13 +614,14 @@ export function resolve(obj: object, selector: string, options?: ResolveOptions)
     options = { preserveMetadata: false }
   }
 
-  function resolve2(o: object, path: string[]): any {
+  function resolve2(o: object | any[], path: string[]): any {
     let value = o
     for (let i = 0; i < path.length; i++) {
       let field = path[i]
       let isText = field.match(/^\d+$/) === null
 
-      if (isText && isArray(value)) {
+      // using instanceof to aid typescript compiler
+      if (isText && value instanceof Array) {
         // On the first iteration, we check if we received a stop flag.
         // If so, we stop to prevent iterating over a nested array value
         // on consecutive object keys in the selector.
@@ -628,7 +629,7 @@ export function resolve(obj: object, selector: string, options?: ResolveOptions)
 
         depth += 1
         path = path.slice(i)
-        value = reduce(value, (acc: any[], item: any) => {
+        value = value.reduce<any[]>((acc: any[], item: any) => {
           let v = resolve2(item, path)
           if (v !== undefined) acc.push(v)
           return acc
@@ -642,7 +643,7 @@ export function resolve(obj: object, selector: string, options?: ResolveOptions)
     return value
   }
 
-  obj = inArray(JS_SIMPLE_TYPES, jsType(obj)) ? obj : resolve2(obj, selector.split('.'))
+  obj = inArray(JS_SIMPLE_TYPES, getType(obj).toLowerCase()) ? obj : resolve2(obj, selector.split('.'))
 
   return options.preserveMetadata === true
     ? { result: obj, depth: depth }
@@ -791,7 +792,7 @@ export function isOperator(name: string): boolean {
  */
 export function normalize(expr: any): any {
   // normalized primitives
-  if (inArray(JS_SIMPLE_TYPES, jsType(expr))) {
+  if (inArray(JS_SIMPLE_TYPES, getType(expr).toLowerCase())) {
     return isRegExp(expr) ? { '$regex': expr } : { '$eq': expr }
   }
 
@@ -849,9 +850,9 @@ export function slice(xs: any[], skip: number, limit?: number): any[] {
  * @return {Number}
  */
 export function stddev(data: number[], sampled: boolean): number {
-  let sum = reduce(data, (acc: number, n: number) => acc + n, 0)
+  let sum = data.reduce((acc: number, n: number) => acc + n, 0)
   let N = data.length || 1
   let correction = (sampled && 1) || 0
   let avg = sum / N
-  return Math.sqrt(reduce(data, (acc: number, n: number) => acc + Math.pow(n - avg, 2), 0) / (N - correction))
+  return Math.sqrt(data.reduce((acc: number, n: number) => acc + Math.pow(n - avg, 2), 0) / (N - correction))
 }

@@ -1,4 +1,4 @@
-import { isArray, isNumber, reduce } from '../../util'
+import { isArray, isNumber } from '../../util'
 import { $push } from './push'
 
 /**
@@ -13,6 +13,6 @@ export function $sum(collection: any[], expr: any): any {
 
   // take a short cut if expr is number literal
   if (isNumber(expr)) return collection.length * expr
-
-  return reduce($push(collection, expr).filter(isNumber), (acc, n) => acc + n, 0)
+  let nums = $push(collection, expr).filter(isNumber) as number[]
+  return nums.reduce((acc, n) => acc + n, 0)
 }

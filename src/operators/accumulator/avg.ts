@@ -1,4 +1,4 @@
-import { isNumber, reduce } from '../../util'
+import { isNumber } from '../../util'
 import { $push } from './push'
 
 /**
@@ -9,7 +9,7 @@ import { $push } from './push'
  * @returns {number}
  */
 export function $avg(collection: any[], expr: any): any {
-  let data = $push(collection, expr).filter(isNumber)
-  let sum = reduce(data, (acc, n) => acc + n, 0)
+  let data = $push(collection, expr).filter(isNumber) as number[]
+  let sum = data.reduce<number>((acc: number, n: number) => acc + n, 0)
   return sum / (data.length || 1)
 }

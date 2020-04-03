@@ -7,10 +7,8 @@ import {
   isArray,
   isEqual,
   isObject,
-  isNumber,
   isBoolean,
   isNil,
-  reduce,
   slice,
   truthy
 } from '../../util'
@@ -53,10 +51,10 @@ export function $arrayElemAt(obj: object, expr: any): any {
  * Converts an array of key value pairs to a document.
  */
 export function $arrayToObject(obj: object, expr: any): any {
-  let arr = computeValue(obj, expr)
+  let arr = computeValue(obj, expr) as any[]
   assert(isArray(arr), '$arrayToObject expression must resolve to an array')
 
-  return reduce(arr, (newObj, val) => {
+  return arr.reduce((newObj, val) => {
     if (isArray(val) && val.length == 2) {
       newObj[val[0]] = val[1]
     } else {
@@ -75,7 +73,7 @@ export function $arrayToObject(obj: object, expr: any): any {
  * @return {*}
  */
 export function $concatArrays(obj: object, expr: any): any {
-  let arr = computeValue(obj, expr)
+  let arr = computeValue(obj, expr) as any[]
   assert(isArray(arr), '$concatArrays must resolve to an array')
 
   if (arr.some(isNil)) return null
@@ -214,13 +212,14 @@ export function $range(obj: object, expr: any): any {
  * @param {*} expr
  */
 export function $reduce(obj: object, expr: any): any {
-  let input = computeValue(obj, expr.input)
+  let input = computeValue(obj, expr.input) as any[]
   let initialValue = computeValue(obj, expr.initialValue)
   let inExpr = expr['in']
 
   if (isNil(input)) return null
   assert(isArray(input), "$reduce 'input' expression must resolve to an array")
-  return reduce(input, (acc, n) => computeValue({ '$value': acc, '$this': n }, inExpr), initialValue)
+
+  return input.reduce((acc, n) => computeValue({ '$value': acc, '$this': n }, inExpr), initialValue)
 }
 
 /**

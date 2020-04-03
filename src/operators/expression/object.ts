@@ -3,9 +3,7 @@
 import {
   assert,
   each,
-  isArray,
-  isObject,
-  reduce
+  isObject
 } from '../../util'
 import { computeValue } from '../../core'
 
@@ -27,5 +25,5 @@ export function $objectToArray(obj: object, expr: any): any {
  */
 export function $mergeObjects(obj: object, expr: any): any {
   let docs = computeValue(obj, expr)
-  return isArray(docs) ? reduce(docs, (memo, o) => Object.assign(memo, o), {}): {}
+  return docs instanceof Array ? docs.reduce((memo, o) => Object.assign(memo, o), {}): {}
 }

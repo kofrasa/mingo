@@ -1,6 +1,6 @@
 // Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
 
-import { assert, isDate, isNil, isNumber, isArray, reduce } from '../../util'
+import { assert, isDate, isNil, isNumber, isArray } from '../../util'
 import { computeValue } from '../../core'
 
 type NumberOrNull = number | null
@@ -25,9 +25,9 @@ export function $abs(obj: object, expr: any): NumberOrNull {
  * @returns {Object}
  */
 export function $add(obj: object, expr: any): number | Date {
-  let args = computeValue(obj, expr)
+  let args = computeValue(obj, expr) as any[]
   let foundDate = false
-  let result = reduce(args, (acc: number, val: any) => {
+  let result = args.reduce((acc: number, val: any) => {
     if (isDate(val)) {
       assert(!foundDate, "'$add' can only have one date value")
       foundDate = true
@@ -158,8 +158,8 @@ export function $mod(obj: object, expr: any): number {
  * @returns {Object}
  */
 export function $multiply(obj: object, expr: any): number {
-  let args = computeValue(obj, expr)
-  return reduce(args, (acc, num) => acc * num, 1)
+  let args = computeValue(obj, expr) as number[]
+  return args.reduce((acc, num) => acc * num, 1)
 }
 
 /**

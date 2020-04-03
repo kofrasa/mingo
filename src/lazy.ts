@@ -158,7 +158,6 @@ export class Iterator {
         throw DONE
       }
     } else if (!(source instanceof Function)) {
-      console.log(source)
       throw new Error("Source is not iterable. Must be Array, Function, or Generator")
     }
 

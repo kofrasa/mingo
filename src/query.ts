@@ -5,7 +5,6 @@ import {
   isObject,
   isOperator,
   normalize,
-  reduce,
   Callback
 } from './util'
 import { Cursor } from './cursor'
@@ -93,7 +92,7 @@ export class Query {
    * @returns {Array}
    */
   remove(collection: object[]): object[] {
-    return reduce(collection, (acc, obj) => {
+    return collection.reduce<object[]>((acc: object[], obj: object) => {
       if (!this.test(obj)) acc.push(obj)
       return acc
     }, [])
