@@ -22,7 +22,6 @@ import {
   keys,
   Predicate,
   resolve,
-  unwrap,
   Callback,
   MAX_INT,
   MIN_INT,
@@ -42,8 +41,7 @@ import { computeValue } from '../../core'
 export function createQueryOperator(pred: Predicate<any>): Callback<any> {
   return (selector: string, value: any) => (obj: object) => {
     // value of field must be fully resolved.
-    let lhs = resolve(obj, selector, { preserveMetadata: true })
-    lhs = unwrap(lhs.result, lhs.depth)
+    let lhs = resolve(obj, selector, { unwrapArray: true })
     return pred(lhs, value)
   }
 }

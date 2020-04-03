@@ -8,7 +8,7 @@
   "scripts": {
     "build": "tsc",
     "clean": "rm -fr lib",
-    "release": "npm run clean && npm run build && npm test",
+    "release": "npm run clean && npm test",
     "postrelease": "npm run coverage",
     "test": "npm run build && NODE_ENV=test nyc --reporter=lcov --reporter=text ./run-test test/*.js test/**/*.js",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov"

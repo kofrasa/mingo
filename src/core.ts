@@ -8,8 +8,7 @@ import {
   isObjectLike,
   isString,
   keys,
-  resolve,
-  unwrap
+  resolve
 } from './util'
 
 
@@ -72,8 +71,7 @@ export function addOperators(cls: OperatorType, operatorFn: Function) {
         fn = fn.bind(newOperators)
         wrapped[op] = (selector: string, value: any) => (obj: object): boolean => {
           // value of field must be fully resolved.
-          let lhs = resolve(obj, selector, { preserveMetadata: true })
-          lhs = unwrap(lhs.result, lhs.depth)
+          let lhs = resolve(obj, selector, { unwrapArray: true })
           return fn(selector, lhs, value)
         }
       })

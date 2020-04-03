@@ -54,7 +54,7 @@ interface Comparator<T> {
 
 // Options to resolve() and resolveGraph() functions
 interface ResolveOptions {
-  preserveMetadata?: boolean
+  unwrapArray?: boolean
   preserveMissing?: boolean
 }
 
@@ -281,29 +281,18 @@ export function union(xs: any[], ys: any[]): any[] {
  * @param  {Array} xs The array to flatten
  * @param {Number} depth The number of nested lists to iterate
  */
-export function flatten(xs: any[], depth: number = -1): any[] {
+export function flatten(xs: any[], depth: number): any[] {
   let arr = []
-  function flatten2(ys: any[], iter: number) {
+  function flatten2(ys: any[], n: number) {
     for (let i = 0, len = ys.length; i < len; i++) {
-      if (isArray(ys[i]) && (iter > 0 || iter < 0)) {
-        flatten2(ys[i], Math.max(-1, iter - 1))
+      if (isArray(ys[i]) && (n > 0 || n < 0)) {
+        flatten2(ys[i], Math.max(-1, n - 1))
       } else {
         arr.push(ys[i])
       }
     }
   }
   flatten2(xs, depth)
-  return arr
-}
-
-/**
- * Unwrap a single element array to specified depth
- * @param {Array} arr
- * @param {Number} depth
- */
-export function unwrap(arr: any[], depth: number): any[] {
-  if (depth < 1) return arr
-  while (depth-- && isArray(arr) && arr.length === 1) arr = arr[0]
   return arr
 }
 
@@ -582,6 +571,17 @@ function getValue(obj: object, field: any): any {
 }
 
 /**
+ * Unwrap a single element array to specified depth
+ * @param {Array} arr
+ * @param {Number} depth
+ */
+function unwrap(arr: any[], depth: number): any[] {
+  if (depth < 1) return arr
+  while (depth-- && arr.length === 1) arr = arr[0]
+  return arr
+}
+
+/**
  * Resolve the value of the field (dot separated) on the given object
  * @param obj {Object} the object context
  * @param selector {String} dot separated path to field
@@ -592,7 +592,7 @@ export function resolve(obj: object | any[], selector: string, options?: Resolve
 
   // options
   if (options === undefined) {
-    options = { preserveMetadata: false }
+    options = { unwrapArray: false }
   }
 
   function resolve2(o: object | any[], path: string[]): any {
@@ -626,9 +626,7 @@ export function resolve(obj: object | any[], selector: string, options?: Resolve
 
   obj = inArray(JS_SIMPLE_TYPES, getType(obj).toLowerCase()) ? obj : resolve2(obj, selector.split('.'))
 
-  return options.preserveMetadata === true
-    ? { result: obj, depth: depth }
-    : obj
+  return obj instanceof Array && options.unwrapArray ? unwrap(obj, depth) : obj
 }
 
 /**
