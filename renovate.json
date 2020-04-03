@@ -14,10 +14,6 @@
       "groupName": "esm"
     },
     {
-      "packageNames": ["benchmark"],
-      "groupName": "benchmark"
-    },
-    {
       "packageNames": ["codecov"],
       "groupName": "codecov"
     },
@@ -36,6 +32,10 @@
     {
       "packageNames": ["tape"],
       "groupName": "tape"
+    },
+    {
+      "packageNames": ["typescript"],
+      "groupName": "typescript"
     }
   ]
 }

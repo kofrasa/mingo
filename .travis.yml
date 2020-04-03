@@ -4,4 +4,7 @@ node_js:
   - lts/*
   - node
 
+before_script:
+  - npm i -g typescript esm
+
 after_success: npm run coverage

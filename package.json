@@ -10,7 +10,7 @@
     "clean": "rm -fr lib",
     "release": "npm run clean && npm test",
     "postrelease": "npm run coverage",
-    "test": "npm run build && NODE_ENV=test nyc --reporter=lcov --reporter=text ./run-test test/*.js test/**/*.js",
+    "test": "npm run build && NODE_ENV=test nyc --reporter=lcov --reporter=text ./runtest.sh",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov"
   },
   "repository": {
@@ -28,12 +28,12 @@
     "esm": "3.2.25"
   },
   "devDependencies": {
-    "benchmark": "2.1.4",
     "codecov": "3.6.5",
     "lodash": "4.17.15",
     "nyc": "15.0.0",
     "perf_hooks": "0.0.1",
-    "tape": "4.13.2"
+    "tape": "4.13.2",
+    "typescript": "3.8.3"
   },
   "keywords": [
     "util",
