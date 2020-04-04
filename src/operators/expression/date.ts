@@ -11,7 +11,7 @@ const ONE_DAY_MILLIS = 1000 * 60 * 60 * 24
 function computeDate(obj: any, expr: any): Date {
   let d = computeValue(obj, expr)
   if (isDate(d)) return d
-  if (isString(decodeURI)) throw Error('cannot take a string as an argument')
+  if (isString(d)) throw Error('cannot take a string as an argument')
 
   let tz = 0
   if (isObject(d)) {

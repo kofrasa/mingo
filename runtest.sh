@@ -1,7 +1,11 @@
 #!/bin/bash
 
 # declare the tests to run. all tests by default
-TESTS=${1:-"test/*.js test/**/*.js"}
+if [ $# -eq 0 ]; then
+  TESTS="test/*.js test/**/*.js"
+else
+  TESTS="$*"
+fi
 
 # define the temporary main test script
 FILE=testmain.js
