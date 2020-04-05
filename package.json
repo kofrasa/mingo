@@ -30,7 +30,7 @@
   "devDependencies": {
     "codecov": "3.6.5",
     "lodash": "4.17.15",
-    "nyc": "15.0.0",
+    "nyc": "15.0.1",
     "perf_hooks": "0.0.1",
     "tape": "4.13.2",
     "typescript": "3.8.3"
