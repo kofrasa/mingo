@@ -1,7 +1,7 @@
-import { idKey } from '../../core'
 import { $group } from './group'
-import { $sort, SortOptions } from './sort'
+import { $sort } from './sort'
 import { Iterator } from '../../lazy'
+import { Options } from '../../core'
 
 /**
  * Groups incoming documents based on the value of a specified expression,
@@ -11,16 +11,17 @@ import { Iterator } from '../../lazy'
  *
  * @param  {Array} collection
  * @param  {Object} expr
- * @param  {Object} opt
+ * @param  {Object} options
  * @return {*}
  */
-export function $sortByCount(collection: Iterator, expr: any, opt?: SortOptions): Iterator {
+export function $sortByCount(collection: Iterator, expr: any, options: Options): Iterator {
   let newExpr = { count: { $sum: 1 } }
-  newExpr[idKey()] = expr
+
+  newExpr['_id'] = expr
 
   return $sort(
-    $group(collection, newExpr),
+    $group(collection, newExpr, options),
     { count: -1 },
-    opt
+    options
   )
 }

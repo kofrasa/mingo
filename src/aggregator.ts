@@ -1,5 +1,5 @@
 import { assert, each, isEmpty, keys } from './util'
-import { getOperator, OperatorType } from './core'
+import { getOperator, OperatorType, Options, createConfig, Config } from './core'
 import { Lazy, Iterator, Source } from './lazy'
 
 /**
@@ -11,11 +11,13 @@ import { Lazy, Iterator, Source } from './lazy'
 export class Aggregator {
 
   private __pipeline: object[]
-  private __options: object
+  private __options: Options
 
-  constructor(pipeline: object[], options?: object) {
-    this.__pipeline = pipeline
-    this.__options = options
+  constructor(pipeline: object[], opts?: Config | Options) {
+    this.__pipeline =  pipeline
+    let o = opts as object
+    this.__options = o && o['config'] ? o as Options : { config: opts as Config }
+    this.__options.config = this.__options.config || createConfig()
   }
 
   /**

@@ -1,8 +1,24 @@
-import { each, groupBy, into, isEmpty, isObject, isString, keys, sortBy, compare, resolve } from '../../util'
+import {
+  each,
+  groupBy,
+  into,
+  isEmpty,
+  isObject,
+  isString,
+  keys,
+  sortBy,
+  compare,
+  resolve,
+  Comparator
+} from '../../util'
 import { Iterator } from '../../lazy'
+import { Options } from '../../core'
 
-export interface SortOptions {
-  collation: CollationSpec
+/**
+ * Options to sort operator
+ */
+export interface SortOptions extends Options {
+  collation?: CollationSpec
 }
 
 export interface CollationSpec {
@@ -21,15 +37,14 @@ export interface CollationSpec {
  *
  * @param collection
  * @param sortKeys
- * @param  {Object} opt
+ * @param  {Object} options
  * @returns {*}
  */
-export function $sort(collection: Iterator, sortKeys: object, opt?: SortOptions): Iterator {
+export function $sort(collection: Iterator, sortKeys: object, options: SortOptions): Iterator {
   if (isEmpty(sortKeys) || !isObject(sortKeys)) return collection
 
-  opt = opt || Object.create({})
   let cmp = compare
-  let collationSpec = opt['collation']
+  let collationSpec = options['collation']
 
   // use collation comparator if provided
   if (isObject(collationSpec) && isString(collationSpec.locale)) {
@@ -86,7 +101,7 @@ const COLLATION_STRENGTH = {
  *   backwards: boolean // unsupported
  * }
  */
-function collationComparator(spec) {
+function collationComparator(spec: CollationSpec): Comparator<any> {
 
   let localeOpt = {
     sensitivity: COLLATION_STRENGTH[spec.strength || 3],
@@ -103,7 +118,7 @@ function collationComparator(spec) {
 
   const collator = new Intl.Collator(spec.locale, localeOpt)
 
-  return (a, b) => {
+  return (a: any, b: any) => {
     // non strings
     if (!isString(a) || !isString(b)) return compare(a, b)
 

@@ -8,11 +8,6 @@ let obj = samples.personData
 obj['_id'] = new ObjectId(idStr)
 obj['today'] = new Date()
 
-// test configurations
-mingo.setup({
-  'key': '_id'
-})
-
 function ObjectId(id) {
   this._id = id
 }

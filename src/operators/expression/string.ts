@@ -2,8 +2,8 @@
  * Strin Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators
  */
 
-import { assert, isEqual, isString, isNil, isNumber, isEmpty, inArray, isRegExp } from '../../util'
-import { computeValue } from '../../core'
+import { assert, isEqual, isString, isNil, isNumber, isEmpty, inArray } from '../../util'
+import { computeValue, Options } from '../../core'
 
 /**
  * Concatenates two strings.
@@ -12,8 +12,8 @@ import { computeValue } from '../../core'
  * @param expr
  * @returns {string|*}
  */
-export function $concat(obj: object, expr: any): any {
-  let args = computeValue(obj, expr)
+export function $concat(obj: object, expr: any, options: Options): any {
+  let args = computeValue(obj, expr, null, options)
   // does not allow concatenation with nulls
   if ([null, undefined].some(inArray.bind(null, args))) return null
   return args.join('')
@@ -27,8 +27,8 @@ export function $concat(obj: object, expr: any): any {
  * @param  {*} expr
  * @return {*}
  */
-export function $indexOfBytes(obj: object, expr: any): any {
-  let arr = computeValue(obj, expr)
+export function $indexOfBytes(obj: object, expr: any, options: Options): any {
+  let arr = computeValue(obj, expr, null, options)
   const errorMsg = '$indexOfBytes expression resolves to invalid an argument'
 
   if (isNil(arr[0])) return null
@@ -63,8 +63,8 @@ export function $indexOfBytes(obj: object, expr: any): any {
  * @param  {Array} expr
  * @return {Array} Returns an array of substrings.
  */
-export function $split(obj: object, expr: any): any {
-  let args = computeValue(obj, expr)
+export function $split(obj: object, expr: any, options: Options): any {
+  let args = computeValue(obj, expr, null, options)
   if (isNil(args[0])) return null
   assert(args.every(isString), '$split expression must result to array(2) of strings')
   return args[0].split(args[1])
@@ -77,8 +77,8 @@ export function $split(obj: object, expr: any): any {
  * @param  {String} expr
  * @return {Number}
  */
-export function $strLenBytes(obj: object, expr: any): any {
-  return ~-encodeURI(computeValue(obj, expr)).split(/%..|./).length
+export function $strLenBytes(obj: object, expr: any, options: Options): any {
+  return ~-encodeURI(computeValue(obj, expr, null, options)).split(/%..|./).length
 }
 
 /**
@@ -88,8 +88,8 @@ export function $strLenBytes(obj: object, expr: any): any {
  * @param  {String} expr
  * @return {Number}
  */
-export function $strLenCP(obj: object, expr: any): any {
-  return computeValue(obj, expr).length
+export function $strLenCP(obj: object, expr: any, options: Options): any {
+  return computeValue(obj, expr, null, options).length
 }
 
 /**
@@ -99,8 +99,8 @@ export function $strLenCP(obj: object, expr: any): any {
  * @param expr
  * @returns {number}
  */
-export function $strcasecmp(obj: object, expr: any): any {
-  let args = computeValue(obj, expr)
+export function $strcasecmp(obj: object, expr: any, options: Options): any {
+  let args = computeValue(obj, expr, null, options)
   let a = args[0]
   let b = args[1]
   if (isEqual(a, b) || args.every(isNil)) return 0
@@ -138,8 +138,8 @@ function utf8Encode(s: string): number[][] {
  * @param expr
  * @returns {string}
  */
-export function $substrBytes(obj: object, expr: any): any {
-  let args = computeValue(obj, expr)
+export function $substrBytes(obj: object, expr: any, options: Options): any {
+  let args = computeValue(obj, expr, null, options)
   let s = args[0]
   let index = args[1]
   let count = args[2]
@@ -165,8 +165,8 @@ export function $substrBytes(obj: object, expr: any): any {
  * @param expr
  * @returns {string}
  */
-export function $substr(obj: object, expr: any): any {
-  let args = computeValue(obj, expr)
+export function $substr(obj: object, expr: any, options: Options): any {
+  let args = computeValue(obj, expr, null, options)
   let s = args[0]
   let index = args[1]
   let count = args[2]
@@ -182,8 +182,8 @@ export function $substr(obj: object, expr: any): any {
   return ''
 }
 
-export function $substrCP(obj: object, expr: any): any {
-  return $substr(obj, expr)
+export function $substrCP(obj: object, expr: any, options: Options): any {
+  return $substr(obj, expr, options)
 }
 
 /**
@@ -193,8 +193,8 @@ export function $substrCP(obj: object, expr: any): any {
  * @param expr
  * @returns {string}
  */
-export function $toLower(obj: object, expr: any): any {
-  let value = computeValue(obj, expr)
+export function $toLower(obj: object, expr: any, options: Options): any {
+  let value = computeValue(obj, expr, null, options)
   return isEmpty(value) ? '' : value.toLowerCase()
 }
 
@@ -205,8 +205,8 @@ export function $toLower(obj: object, expr: any): any {
  * @param expr
  * @returns {string}
  */
-export function $toUpper(obj: object, expr: any): any {
-  let value = computeValue(obj, expr)
+export function $toUpper(obj: object, expr: any, options: Options): any {
+  let value = computeValue(obj, expr, null, options)
   return isEmpty(value) ? '' : value.toUpperCase()
 }
 
@@ -240,8 +240,8 @@ const WHITESPACE_CHARS = [
  * @param expr
  * @param options
  */
-function trimString(obj: object, expr: any, options: { left: boolean, right: boolean }): string {
-  let val = computeValue(obj, expr) || {}
+function trimString(obj: object, expr: any, options: Options, trimOpts: { left: boolean, right: boolean }): string {
+  let val = computeValue(obj, expr, null, options)
   let s = val.input as string
   if (isNil(s)) return null
 
@@ -250,8 +250,8 @@ function trimString(obj: object, expr: any, options: { left: boolean, right: boo
   let i = 0;
   let j = s.length - 1
 
-  while (options.left && i <= j && codepoints.indexOf(s[i].codePointAt(0)) !== -1) i++
-  while (options.right && i <= j && codepoints.indexOf(s[j].codePointAt(0)) !== -1) j--
+  while (trimOpts.left && i <= j && codepoints.indexOf(s[i].codePointAt(0)) !== -1) i++
+  while (trimOpts.right && i <= j && codepoints.indexOf(s[j].codePointAt(0)) !== -1) j--
 
   return s.substring(i, j+1)
 }
@@ -262,8 +262,8 @@ function trimString(obj: object, expr: any, options: { left: boolean, right: boo
  * @param obj
  * @param expr
  */
-export function $trim(obj: object, expr: any): any {
-  return trimString(obj, expr, { left: true, right: true})
+export function $trim(obj: object, expr: any, options: Options): any {
+  return trimString(obj, expr, options, { left: true, right: true})
 }
 
 /**
@@ -272,8 +272,8 @@ export function $trim(obj: object, expr: any): any {
  * @param obj
  * @param expr
  */
-export function $ltrim(obj: object, expr: any): any {
-  return trimString(obj, expr, { left: true, right: false})
+export function $ltrim(obj: object, expr: any, options: Options): any {
+  return trimString(obj, expr, options, { left: true, right: false})
 }
 
 /**
@@ -282,8 +282,8 @@ export function $ltrim(obj: object, expr: any): any {
  * @param obj
  * @param expr
  */
-export function $rtrim(obj: object, expr: any): any {
-  return trimString(obj, expr, { left: false, right: true})
+export function $rtrim(obj: object, expr: any, options: Options): any {
+  return trimString(obj, expr, options, { left: false, right: true })
 }
 
 /**
@@ -293,8 +293,8 @@ export function $rtrim(obj: object, expr: any): any {
  * @param expr
  * @param opts
  */
-function regexSearch(obj: object, expr: any, opts: { global: boolean }): any {
-  let val = computeValue(obj, expr)
+function regexSearch(obj: object, expr: any, options: Options, reOpts: { global: boolean }): any {
+  let val = computeValue(obj, expr, null, options)
 
   if (!isString(val.input)) return []
 
@@ -316,7 +316,7 @@ function regexSearch(obj: object, expr: any, opts: { global: boolean }): any {
     }
 
     matches.push(result)
-    if (!opts.global) break
+    if (!reOpts.global) break
 
     offset = m.index + m[0].length
     input = input.substr(offset)
@@ -331,8 +331,8 @@ function regexSearch(obj: object, expr: any, opts: { global: boolean }): any {
  * @param obj
  * @param expr
  */
-export function $regexFind(obj: object, expr: any): any {
-  let result = regexSearch(obj, expr, { global: false })
+export function $regexFind(obj: object, expr: any, options: Options): any {
+  let result = regexSearch(obj, expr, options, { global: false })
   return result.length === 0 ? null : result[0]
 }
 
@@ -342,8 +342,8 @@ export function $regexFind(obj: object, expr: any): any {
  * @param obj
  * @param expr
  */
-export function $regexFindAll(obj: object, expr: any): any {
-  return regexSearch(obj, expr, { global: true })
+export function $regexFindAll(obj: object, expr: any, options: Options): any {
+  return regexSearch(obj, expr, options, { global: true })
 }
 
 /**
@@ -352,6 +352,6 @@ export function $regexFindAll(obj: object, expr: any): any {
  * @param obj
  * @param expr
  */
-export function $regexMatch(obj: object, expr: any): any {
-  return regexSearch(obj, expr, { global: false }).length != 0
+export function $regexMatch(obj: object, expr: any, options: Options): any {
+  return regexSearch(obj, expr, options, { global: false }).length != 0
 }

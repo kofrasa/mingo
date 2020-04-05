@@ -3,7 +3,7 @@
  */
 
 import { assert, isArray, isNil, isObject } from '../../util'
-import { computeValue } from '../../core'
+import { computeValue, Options } from '../../core'
 
 /**
  * A ternary operator that evaluates one expression,
@@ -12,7 +12,7 @@ import { computeValue } from '../../core'
  * @param obj
  * @param expr
  */
-export function $cond(obj: object, expr: any): any {
+export function $cond(obj: object, expr: any, options: Options): any {
   let ifExpr: any
   let thenExpr: any
   let elseExpr: any
@@ -28,8 +28,8 @@ export function $cond(obj: object, expr: any): any {
     thenExpr = expr.then
     elseExpr = expr.else
   }
-  let condition = computeValue(obj, ifExpr)
-  return computeValue(obj, condition ? thenExpr : elseExpr)
+  let condition = computeValue(obj, ifExpr, null , options)
+  return computeValue(obj, condition ? thenExpr : elseExpr, null, options)
 }
 
 /**
@@ -40,17 +40,17 @@ export function $cond(obj: object, expr: any): any {
  * @param obj
  * @param expr
  */
-export function $switch(obj: object, expr: any): any {
+export function $switch(obj: object, expr: any, options: Options): any {
   let thenExpr = null
 
   // Array.prototype.find not supported in IE, hence the '.some()' proxy
   expr.branches.some((b: { case: any, then: any }) => {
-    let found = computeValue(obj, b.case)
+    let found = computeValue(obj, b.case, null, options)
     if (found) thenExpr = b.then
     return found
   })
 
-  return computeValue(obj, !!thenExpr ? thenExpr : expr.default)
+  return computeValue(obj, !!thenExpr ? thenExpr : expr.default, null, options)
 }
 
 /**
@@ -61,8 +61,8 @@ export function $switch(obj: object, expr: any): any {
  * @param expr
  * @returns {*}
  */
-export function $ifNull(obj: object, expr: any): any {
+export function $ifNull(obj: object, expr: any, options: Options): any {
   assert(isArray(expr) && expr.length === 2, '$ifNull expression must resolve to array(2)')
-  let args = computeValue(obj, expr)
+  let args = computeValue(obj, expr, null, options)
   return isNil(args[0]) ? args[1] : args[0]
 }

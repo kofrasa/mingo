@@ -2,6 +2,7 @@
 
 import { assert, isArray, resolve } from '../../util'
 import { Query } from '../../query'
+import { Options } from '../../core'
 
 /**
  * Projects only the first element from an array that matches the specified $elemMatch condition.
@@ -11,9 +12,9 @@ import { Query } from '../../query'
  * @param expr
  * @returns {*}
  */
-export function $elemMatch(obj: object, expr: any, field: string): any {
+export function $elemMatch(obj: object, expr: any, field: string, options: Options): any {
   let arr = resolve(obj, field)
-  let query = new Query(expr)
+  let query = new Query(expr, options.config)
 
   assert(isArray(arr), '$elemMatch: argument must resolve to array')
 

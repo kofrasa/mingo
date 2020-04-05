@@ -1,22 +1,22 @@
 // Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
 
-import { computeValue } from '../../core'
-import { isArray, isObject, isString, isDate } from '../../util'
+import { computeValue, Options } from '../../core'
+import { isArray, isObject, isString, isDate, has } from '../../util'
 
 const ONE_DAY_MILLIS = 1000 * 60 * 60 * 24
 
 /**
  * Computes a date expression
  */
-function computeDate(obj: any, expr: any): Date {
-  let d = computeValue(obj, expr)
+function computeDate(obj: any, expr: any, options: Options): Date {
+  let d = computeValue(obj, expr, null, options)
   if (isDate(d)) return d
   if (isString(d)) throw Error('cannot take a string as an argument')
 
   let tz = 0
-  if (isObject(d)) {
-    tz = parseTimezone(computeValue(obj, d.timezone))
-    d = computeValue(obj, d.date)
+  if (isObject(d) && has(d, 'date') && has(d, 'timezone')) {
+    tz = parseTimezone(computeValue(obj, d.timezone, null, options))
+    d = computeValue(obj, d.date, null, options)
   }
 
   d = new Date(d)
@@ -31,8 +31,8 @@ function computeDate(obj: any, expr: any): Date {
  * @param obj
  * @param expr
  */
-export function $dayOfYear(obj: object, expr: any): number {
-  let d = computeDate(obj, expr)
+export function $dayOfYear(obj: object, expr: any, options: Options): number {
+  let d = computeDate(obj, expr, options)
   let start = new Date(d.getUTCFullYear(), 0, 0)
   let diff = d.getTime() - start.getTime()
   return Math.round(diff / ONE_DAY_MILLIS)
@@ -43,8 +43,8 @@ export function $dayOfYear(obj: object, expr: any): number {
  * @param obj
  * @param expr
  */
-export function $dayOfMonth(obj: object, expr: any): number {
-  let d = computeDate(obj, expr)
+export function $dayOfMonth(obj: object, expr: any, options: Options): number {
+  let d = computeDate(obj, expr, options)
   return d.getUTCDate()
 }
 
@@ -53,8 +53,8 @@ export function $dayOfMonth(obj: object, expr: any): number {
  * @param obj
  * @param expr
  */
-export function $dayOfWeek(obj: object, expr: any): number {
-  let d = computeDate(obj, expr)
+export function $dayOfWeek(obj: object, expr: any, options: Options): number {
+  let d = computeDate(obj, expr, options)
   return d.getUTCDay() + 1
 }
 
@@ -63,8 +63,8 @@ export function $dayOfWeek(obj: object, expr: any): number {
  * @param obj
  * @param expr
  */
-export function $year(obj: object, expr: any): number {
-  let d = computeDate(obj, expr)
+export function $year(obj: object, expr: any, options: Options): number {
+  let d = computeDate(obj, expr, options)
   return d.getUTCFullYear()
 }
 
@@ -73,8 +73,8 @@ export function $year(obj: object, expr: any): number {
  * @param obj
  * @param expr
  */
-export function $month(obj: object, expr: any): number {
-  let d = computeDate(obj, expr)
+export function $month(obj: object, expr: any, options: Options): number {
+  let d = computeDate(obj, expr, options)
   return d.getUTCMonth() + 1
 }
 
@@ -84,9 +84,9 @@ export function $month(obj: object, expr: any): number {
  * @param obj
  * @param expr
  */
-export function $week(obj: object, expr: any): number {
+export function $week(obj: object, expr: any, options: Options): number {
   // source: http://stackoverflow.com/a/6117889/1370481
-  let d = computeDate(obj, expr)
+  let d = computeDate(obj, expr, options)
 
   // Copy date so don't modify original
   d = new Date(+d)
@@ -105,8 +105,8 @@ export function $week(obj: object, expr: any): number {
  * @param obj
  * @param expr
  */
-export function $hour(obj: object, expr: any): number {
-  let d = computeDate(obj, expr)
+export function $hour(obj: object, expr: any, options: Options): number {
+  let d = computeDate(obj, expr, options)
   return d.getUTCHours()
 }
 
@@ -115,8 +115,8 @@ export function $hour(obj: object, expr: any): number {
  * @param obj
  * @param expr
  */
-export function $minute(obj: object, expr: any): number {
-  let d = computeDate(obj, expr)
+export function $minute(obj: object, expr: any, options: Options): number {
+  let d = computeDate(obj, expr, options)
   return d.getUTCMinutes()
 }
 
@@ -125,8 +125,8 @@ export function $minute(obj: object, expr: any): number {
  * @param obj
  * @param expr
  */
-export function $second(obj: object, expr: any): number {
-  let d = computeDate(obj, expr)
+export function $second(obj: object, expr: any, options: Options): number {
+  let d = computeDate(obj, expr, options)
   return d.getUTCSeconds()
 }
 
@@ -135,8 +135,8 @@ export function $second(obj: object, expr: any): number {
  * @param obj
  * @param expr
  */
-export function $millisecond(obj: object, expr: any): number {
-  let d = computeDate(obj, expr)
+export function $millisecond(obj: object, expr: any, options: Options): number {
+  let d = computeDate(obj, expr, options)
   return d.getUTCMilliseconds()
 }
 
@@ -188,9 +188,10 @@ function parseTimezone(tzStr?: string): number {
  * @param obj current object
  * @param expr operator expression
  */
-export function $dateToString(obj: object, expr: any): string {
-  let format = computeValue(obj, expr.format)
-  let date = computeValue(obj, expr.date)
+export function $dateToString(obj: object, expr: any, options: Options): string {
+  let args = computeValue(obj, expr, null, options)
+  let format = args.format
+  let date = args.date
   let matches = format.match(/(%%|%Y|%G|%m|%d|%H|%M|%S|%L|%u|%V|%z|%Z)/g)
 
   for (let i = 0, len = matches.length; i < len; i++) {
@@ -234,18 +235,18 @@ const PARAMS__DATE_FROM_STRING = ['dateString', 'format', 'timezone', 'onError',
  * @param obj
  * @param expr
  */
-export function $dateFromString(obj: object, expr: any): any {
+export function $dateFromString(obj: object, expr: any, options: Options): any {
   let ctx: {
     dateString?: string
     timezone?: string
     format?: string
     onError?: any
     onNull?: any
-  } = Object.create({})
+  } = computeValue(obj, expr, null, options)
 
-  PARAMS__DATE_FROM_STRING.forEach((k: string) => {
-    ctx[k] = computeValue(obj, expr[k])
-  })
+  // PARAMS__DATE_FROM_STRING.forEach((k: string) => {
+  //   ctx[k] = computeValue(obj, expr[k], null, options)
+  // })
 
   ctx.format = ctx.format || "%Y-%m-%dT%H:%M:%S.%LZ"
   ctx.onNull = ctx.onNull || null

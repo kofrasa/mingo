@@ -19,7 +19,7 @@ import {
   setValue,
   isOperator
 } from '../../util'
-import { computeValue, idKey, getOperator, OperatorType } from '../../core'
+import { computeValue, getOperator, OperatorType, Options } from '../../core'
 import { Iterator } from '../../lazy'
 
 
@@ -32,49 +32,50 @@ import { Iterator } from '../../lazy'
  * @param opt
  * @returns {Array}
  */
-export function $project(collection: Iterator, expr: any, opt?: object): Iterator {
+export function $project(collection: Iterator, expr: any, options: Options): Iterator {
   if (isEmpty(expr)) return collection
 
   // result collection
   let expressionKeys = keys(expr)
-  let idOnlyExcludedExpression = false
-  const ID_KEY = idKey()
+  let idOnlyExcluded = false
 
   // validate inclusion and exclusion
-  validateExpression(expr)
+  validateExpression(expr, options)
+
+  const ID_KEY = options.config.idKey
 
   if (inArray(expressionKeys, ID_KEY)) {
     let id = expr[ID_KEY]
     if (id === 0 || id === false) {
       expressionKeys = expressionKeys.filter(notInArray.bind(null, [ID_KEY]))
-      assert(notInArray(expressionKeys, ID_KEY), 'Must not contain collections id key')
-      idOnlyExcludedExpression = isEmpty(expressionKeys)
+      idOnlyExcluded = expressionKeys.length == 0
     }
   } else {
     // if not specified the add the ID field
     expressionKeys.push(ID_KEY)
   }
 
-  return collection.map(obj => processObject(obj, expr, expressionKeys, idOnlyExcludedExpression))
+  return collection.map(obj => processObject(obj, expr, options, expressionKeys, idOnlyExcluded))
 }
 
 /**
  * Process the expression value for $project operators
  *
- * @param {Object} obj The object to use as context
+ * @param {Object} obj The object to use as options
  * @param {Object} expr The experssion object of $project operator
  * @param {Array} expressionKeys The key in the 'expr' object
- * @param {Boolean} idOnlyExcludedExpression Boolean value indicating whether only the ID key is excluded
+ * @param {Boolean} idOnlyExcluded Boolean value indicating whether only the ID key is excluded
  */
-function processObject(obj: object, expr: any, expressionKeys: string[], idOnlyExcludedExpression: boolean): object {
-  const ID_KEY = idKey()
+function processObject(obj: object, expr: any, options: Options, expressionKeys: string[], idOnlyExcluded: boolean): object {
 
   let newObj = new Object
   let foundSlice = false
   let foundExclusion = false
   let dropKeys: string[] = []
 
-  if (idOnlyExcludedExpression) {
+  const ID_KEY = options.config.idKey
+
+  if (idOnlyExcluded) {
     dropKeys.push(ID_KEY)
   }
 
@@ -93,12 +94,12 @@ function processObject(obj: object, expr: any, expressionKeys: string[], idOnlyE
       // tiny optimization here to skip over id
       value = obj[key]
     } else if (isString(subExpr)) {
-      value = computeValue(obj, subExpr, key)
+      value = computeValue(obj, subExpr, key, options)
     } else if (inArray([1, true], subExpr)) {
       // For direct projections, we use the resolved object value
     } else if (subExpr instanceof Array) {
       value = subExpr.map(v => {
-        let r = computeValue(obj, v)
+        let r = computeValue(obj, v, null, options)
         if (isNil(r)) return null
         return r
       })
@@ -118,27 +119,27 @@ function processObject(obj: object, expr: any, expressionKeys: string[], idOnlyE
             foundSlice = true
           } else {
             // $slice for aggregation operation
-            value = computeValue(obj, subExpr, key)
+            value = computeValue(obj, subExpr, key, options)
           }
         } else {
-          value = call(obj, subExpr[operator], key)
+          value = call(obj, subExpr[operator], key, options)
         }
       } else if (isOperator(operator)) {
         // compute if operator key
-        value = computeValue(obj, subExpr[operator], operator)
+        value = computeValue(obj, subExpr[operator], operator, options)
       } else if (has(obj, key)) {
         // compute the value for the sub expression for the key
-        validateExpression(subExpr)
-        let ctx = obj[key]
-        if (ctx instanceof Array) {
-          value = ctx.map(o => processObject(o, subExpr, subExprKeys, false))
+        validateExpression(subExpr, options)
+        let target = obj[key]
+        if (target instanceof Array) {
+          value = target.map(o => processObject(o, subExpr, options, subExprKeys, false))
         } else {
-          ctx = isObject(ctx) ? ctx : obj
-          value = processObject(ctx, subExpr, subExprKeys, false)
+          target = isObject(target) ? target : obj
+          value = processObject(target, subExpr, options, subExprKeys, false)
         }
       } else {
         // compute the value for the sub expression for the key
-        value = computeValue(obj, subExpr)
+        value = computeValue(obj, subExpr, null, options)
       }
     } else {
       dropKeys.push(key)
@@ -170,10 +171,12 @@ function processObject(obj: object, expr: any, expressionKeys: string[], idOnlyE
   // filter out all missing values preserved to support correct merging
   filterMissing(newObj)
 
-  // if projection included $slice operator
-  // Also if exclusion fields are found or we want to exclude only the id field
-  // include keys that were not explicitly excluded
-  if (foundSlice || foundExclusion || idOnlyExcludedExpression) {
+  // For the following cases we include all keys on the object that were not explicitly excluded.
+  //
+  // 1. projection included $slice operator
+  // 2. some fields were explicitly excluded
+  // 3. only the id field was excluded
+  if (foundSlice || foundExclusion || idOnlyExcluded) {
     newObj = Object.assign({}, obj, newObj)
     if (dropKeys.length > 0) {
       newObj = cloneDeep(newObj)
@@ -189,11 +192,10 @@ function processObject(obj: object, expr: any, expressionKeys: string[], idOnlyE
  *
  * @param {Object} expr The expression given for the projection
  */
-function validateExpression(expr: object): void {
-  const ID_KEY = idKey()
+function validateExpression(expr: object, options: Options): void {
   let check = [false, false]
   each(expr, (v, k) => {
-    if (k === ID_KEY) return
+    if (k === options.config.idKey) return
     if (v === 0 || v === false) {
       check[0] = true
     } else if (v === 1 || v === true) {

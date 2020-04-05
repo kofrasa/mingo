@@ -1,4 +1,5 @@
 import { Iterator } from '../../lazy'
+import { Options } from '../../core'
 
 
 /**
@@ -6,9 +7,9 @@ import { Iterator } from '../../lazy'
  *
  * @param collection
  * @param value
- * @param opt
+ * @param options
  * @returns {Object|*}
  */
-export function $limit(collection: Iterator, expr: number, opt?: object): Iterator {
+export function $limit(collection: Iterator, expr: number, options: Options): Iterator {
   return collection.take(expr)
 }

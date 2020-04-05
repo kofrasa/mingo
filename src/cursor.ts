@@ -2,6 +2,7 @@ import { isObject, Callback, Predicate } from './util'
 import { Aggregator } from './aggregator'
 import { Lazy, Iterator, Source } from './lazy'
 import { CollationSpec } from './operators/pipeline/sort'
+import { Options, Config } from './core'
 
 /**
  * Cursor to iterate and perform filtering on matched objects
@@ -12,22 +13,22 @@ import { CollationSpec } from './operators/pipeline/sort'
  */
 export class Cursor {
 
-  private __predicate: Predicate<any>
+  private __predicateFn: Predicate<any>
   private __source: Source
   private __projection: object
   private __operators: object[]
   private __result: Iterator
   private __stack: any[]
-  private __options: object
+  private __options: Options
 
-  constructor(source: Source, predicate: Predicate<any>, projection?: object) {
-    this.__predicate = predicate
+  constructor(source: Source, predicate: Predicate<any>, projection: object, config: Config) {
+    this.__predicateFn = predicate
     this.__source = source
     this.__projection = projection
     this.__operators = []
     this.__result = null
     this.__stack = []
-    this.__options = {}
+    this.__options = { config }
   }
 
   _fetch() {
@@ -38,7 +39,7 @@ export class Cursor {
     if (isObject(this.__projection)) this.__operators.push({ '$project': this.__projection })
 
     // filter collection
-    this.__result = Lazy(this.__source).filter(this.__predicate)
+    this.__result = Lazy(this.__source).filter(this.__predicateFn)
 
     if (this.__operators.length > 0) {
       this.__result = (new Aggregator(this.__operators, this.__options)).stream(this.__result)
@@ -95,10 +96,10 @@ export class Cursor {
 
   /**
    * Specifies the collation for the cursor returned by the `mingo.Query.find`
-   * @param {*} options
+   * @param {*} spec
    */
-  collation(options: CollationSpec): Cursor {
-    this.__options['collation'] = options
+  collation(spec: CollationSpec): Cursor {
+    Object.assign(this.__options, { collation: spec })
     return this
   }
 

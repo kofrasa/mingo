@@ -8,7 +8,7 @@ import {
   Callback
 } from './util'
 import { Cursor } from './cursor'
-import { getOperator, OperatorType } from './core'
+import { getOperator, OperatorType, createConfig, Options, Config } from './core'
 import { Source } from './lazy'
 
 /**
@@ -21,9 +21,11 @@ export class Query {
 
   private __criteria: object
   private __compiled: Callback<any>[]
+  private __config: Config
 
-  constructor(criteria: object) {
+  constructor(criteria: object, config?: Config) {
     this.__criteria = criteria
+    this.__config = config || createConfig()
     this.__compiled = []
     this._compile()
   }
@@ -59,7 +61,7 @@ export class Query {
   _processOperator(field: string, operator: string, value: any) {
     let call = getOperator(OperatorType.QUERY, operator)
     assert(!!call, `unknown operator ${operator}`)
-    this.__compiled.push(call(field, value))
+    this.__compiled.push(call(field, value, this.__config))
   }
 
   /**
@@ -83,7 +85,7 @@ export class Query {
    * @returns {Cursor}
    */
   find(collection: Source, projection?: object): Cursor {
-    return new Cursor(collection, x => this.test(x), projection)
+    return new Cursor(collection, x => this.test(x), projection || {}, this.__config)
   }
 
   /**

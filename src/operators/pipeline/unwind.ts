@@ -1,18 +1,17 @@
 import { cloneDeep, isArray, isEmpty, isString, resolve, setValue, removeValue } from '../../util'
 import { Lazy, Iterator } from '../../lazy'
+import { Options } from '../../core'
 
 /**
  * Takes an array of documents and returns them as a stream of documents.
  *
  * @param collection
  * @param expr
- * @param  {Object} opt
+ * @param options
  * @returns {Array}
  */
-export function $unwind(collection: Iterator, expr: any, opt?: object): Iterator {
-  if (isString(expr)) {
-    expr = { path: expr }
-  }
+export function $unwind(collection: Iterator, expr: any, options: Options): Iterator {
+  if (isString(expr)) expr = { path: expr }
 
   let field = expr.path.substr(1)
   let includeArrayIndex = expr.includeArrayIndex || false

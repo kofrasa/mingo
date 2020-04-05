@@ -3,7 +3,7 @@
  */
 
 import { isString, getType, MIN_INT, MAX_INT, MAX_LONG, MIN_LONG, JsType, BsonType } from '../../util'
-import { computeValue } from '../../core'
+import { computeValue, Options } from '../../core'
 import { $dateToString } from './date'
 
 class TypeConvertError extends Error {
@@ -12,8 +12,8 @@ class TypeConvertError extends Error {
   }
 }
 
-export function $type(obj: object, expr: any): string {
-  let val = computeValue(obj, expr)
+export function $type(obj: object, expr: any, options: Options): string {
+  let val = computeValue(obj, expr, null, options)
   let typename = getType(val)
   let nativeType = typename.toLowerCase()
   switch (nativeType) {
@@ -44,28 +44,28 @@ export function $type(obj: object, expr: any): string {
  * @param obj
  * @param expr
  */
-export function $toBool(obj: object, expr: any): boolean | null {
-  let val = computeValue(obj, expr)
+export function $toBool(obj: object, expr: any, options: Options): boolean | null {
+  let val = computeValue(obj, expr, null, options)
   if (val === null || val === undefined) return null
   return Boolean(val)
 }
 
-export function $toString(obj: object, expr: any): string | null {
-  let val = computeValue(obj, expr)
+export function $toString(obj: object, expr: any, options: Options): string | null {
+  let val = computeValue(obj, expr, null, options)
   if (val === null || val === undefined) return null
   if (val instanceof Date) {
     let dateExpr = {
       date: expr,
       format: "%Y-%m-%dT%H:%M:%S.%LZ"
     }
-    return $dateToString(obj, dateExpr)
+    return $dateToString(obj, dateExpr, options)
   } else {
     return val.toString()
   }
 }
 
-export function toInteger(obj: object, expr: any, max: number, min: number, typename: string): number | null {
-  let val = computeValue(obj, expr)
+export function toInteger(obj: object, expr: any, options: Options, max: number, min: number, typename: string): number | null {
+  let val = computeValue(obj, expr, null, options)
 
   if (val === null || val === undefined) return null
   if (val instanceof Date) return val.getTime()
@@ -81,15 +81,15 @@ export function toInteger(obj: object, expr: any, max: number, min: number, type
  * @param obj
  * @param expr
  */
-export function $toInt(obj: object, expr: any): number | null {
-  return toInteger(obj, expr, MAX_INT, MIN_INT, 'int')
+export function $toInt(obj: object, expr: any, options: Options): number | null {
+  return toInteger(obj, expr, options, MAX_INT, MIN_INT, 'int')
 }
 
 /**
  * Converts a value to a long. If the value cannot be converted to a long, $toLong errors. If the value is null or missing, $toLong returns null.
  */
-export function $toLong(obj: object, expr: any): number | null {
-  return toInteger(obj, expr, MAX_LONG, MIN_LONG, 'long')
+export function $toLong(obj: object, expr: any, options: Options): number | null {
+  return toInteger(obj, expr, options, MAX_LONG, MIN_LONG, 'long')
 }
 
 /**
@@ -98,8 +98,8 @@ export function $toLong(obj: object, expr: any): number | null {
  * @param obj
  * @param expr
  */
-export function $toDouble(obj: object, expr: any): number | null {
-  let val = computeValue(obj, expr)
+export function $toDouble(obj: object, expr: any, options: Options): number | null {
+  let val = computeValue(obj, expr, null, options)
 
   if (val === null || val === undefined) return null
   if (val instanceof Date) return val.getTime()
@@ -120,8 +120,8 @@ export const $toDecimal = $toDouble
  * @param obj
  * @param expr
  */
-export function $toDate(obj: object, expr: any): Date | null {
-  let val = computeValue(obj, expr)
+export function $toDate(obj: object, expr: any, options: Options): Date | null {
+  let val = computeValue(obj, expr, null, options)
 
   if (val instanceof Date) return val
   if (val === null || val === undefined) return null
@@ -141,8 +141,8 @@ const PARAMS__CONVERT = ['input', 'to', 'onError', 'onNull']
  * @param obj
  * @param expr
  */
-export function $convert(obj: object, expr: any): any {
-  let ctx: {
+export function $convert(obj: object, expr: any, options: Options): any {
+  let args: {
     input: any
     to: string | number
     onError?: any
@@ -150,46 +150,46 @@ export function $convert(obj: object, expr: any): any {
   } = Object.create({})
 
   PARAMS__CONVERT.forEach((k: string) => {
-    ctx[k] = computeValue(obj, expr[k])
+    args[k] = computeValue(obj, expr[k], null, options)
   })
 
-  ctx.onNull = ctx.onNull === undefined ? null : ctx.onNull
+  args.onNull = args.onNull === undefined ? null : args.onNull
 
-  if (ctx.input === null || ctx.input === undefined) return ctx.onNull
+  if (args.input === null || args.input === undefined) return args.onNull
 
   try {
-    switch (ctx.to) {
+    switch (args.to) {
       case 2:
       case JsType.STRING:
-        return $toString(obj, ctx.input)
+        return $toString(obj, args.input, options)
 
       case 8:
       case JsType.BOOLEAN:
       case BsonType.BOOL:
-        return $toBool(obj, ctx.input)
+        return $toBool(obj, args.input, options)
 
       case 9:
       case JsType.DATE:
-        return $toDate(obj, ctx.input)
+        return $toDate(obj, args.input, options)
 
       case 1:
       case 19:
       case BsonType.DOUBLE:
       case BsonType.DECIMAL:
       case JsType.NUMBER:
-        return $toDouble(obj, ctx.input)
+        return $toDouble(obj, args.input, options)
 
       case 16:
       case BsonType.INT:
-        return $toInt(obj, ctx.input)
+        return $toInt(obj, args.input, options)
 
       case 18:
       case BsonType.LONG:
-        return $toLong(obj, ctx.input)
+        return $toLong(obj, args.input, options)
     }
   } catch (e) {}
 
-  if (ctx.onError !== undefined) return ctx.onError
+  if (args.onError !== undefined) return args.onError
 
-  throw new TypeConvertError(`failed to convert ${ctx.input} to ${ctx.to}`)
+  throw new TypeConvertError(`failed to convert ${args.input} to ${args.to}`)
 }

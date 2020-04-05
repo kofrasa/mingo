@@ -1,4 +1,4 @@
-import { setup, addOperators, useOperators, OperatorType } from './core'
+import { addOperators, useOperators, OperatorType } from './core'
 import { enableDefaultOperators, enableSystemOperators } from './operators'
 import { Query } from './query'
 import { Aggregator } from './aggregator'
@@ -11,7 +11,7 @@ import { Lazy } from './lazy'
 // Operators may also be selectively imported from the 'operators' module to support tree-shaking.
 enableDefaultOperators()
 
-export { setup, addOperators, useOperators, OperatorType } from './core'
+export { addOperators, useOperators, OperatorType } from './core'
 export { enableDefaultOperators, enableSystemOperators } from './operators'
 export { Query } from './query'
 export { Aggregator } from './aggregator'
@@ -51,8 +51,8 @@ export function remove(collection: object[], criteria: object): object[] {
  * @param {Array} pipeline The pipeline operators to use
  * @returns {Array} New array of results
  */
-export function aggregate(collection: object[], pipeline: object[], options?: object): any[] {
-  return (new Aggregator(pipeline, options)).run(collection)
+export function aggregate(collection: object[], pipeline: object[]): any[] {
+  return (new Aggregator(pipeline)).run(collection)
 }
 
 
@@ -66,7 +66,6 @@ export default {
   aggregate,
   find,
   remove,
-  setup,
 
   // Deprecated. Preserved for backward-compatibility with 2.x.x. Users should prefer OperatorType
   OP_EXPRESSION: OperatorType.EXPRESSION,

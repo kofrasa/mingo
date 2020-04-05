@@ -11,6 +11,26 @@ import {
   resolve
 } from './util'
 
+/**
+ * Config information to use when executing operators
+ */
+export interface Config {
+  idKey: string
+}
+
+/**
+ * Creates a new default config
+ */
+export function createConfig(): Config {
+  return { idKey: '_id' }
+}
+
+/**
+ * Generic options interface passed down to all operators
+ */
+export interface Options {
+  config: Config
+}
 
 export enum OperatorType {
   ACCUMULATOR = 'accumulator',
@@ -54,7 +74,7 @@ export function getOperator(cls: OperatorType, operator: string): Function {
  */
 export function addOperators(cls: OperatorType, operatorFn: Function) {
 
-  const newOperators = operatorFn({ accumulate, computeValue, idKey, resolve })
+  const newOperators = operatorFn({ accumulate, computeValue, resolve })
 
   // check for existing operators
   each(newOperators, (_, op) => {
@@ -69,19 +89,19 @@ export function addOperators(cls: OperatorType, operatorFn: Function) {
     case OperatorType.QUERY:
       each(newOperators, (fn, op) => {
         fn = fn.bind(newOperators)
-        wrapped[op] = (selector: string, value: any) => (obj: object): boolean => {
+        wrapped[op] = (selector: string, value: any, options: Options) => (obj: object): boolean => {
           // value of field must be fully resolved.
           let lhs = resolve(obj, selector, { unwrapArray: true })
-          return fn(selector, lhs, value)
+          return fn(selector, lhs, value, options)
         }
       })
       break
     case OperatorType.PROJECTION:
       each(newOperators, (fn, op) => {
         fn = fn.bind(newOperators)
-        wrapped[op] = (obj: object, expr: any, selector: string) => {
+        wrapped[op] = (obj: object, expr: any, selector: string, options: Options) => {
           let lhs = resolve(obj, selector)
-          return fn(selector, lhs, expr)
+          return fn(selector, lhs, expr, options)
         }
       })
       break
@@ -96,37 +116,17 @@ export function addOperators(cls: OperatorType, operatorFn: Function) {
 }
 
 /**
- * Global internal config for the library
- */
-interface Config {
-  key: string
-}
-
-// Settings used by Mingo internally
-const settings: Config = {
-  key: '_id'
-}
-
-/**
- * Setup default settings for Mingo
- * @param options
- */
-export function setup(options: Config) {
-  Object.assign(settings, options)
-}
-
-/**
  * Implementation of system variables
  * @type {Object}
  */
-const systemVariables = {
-  '$$ROOT'(obj, expr, opt) {
-    return opt.root
+const systemVariables: object = {
+  '$$ROOT'(obj: object, expr: any, options: ComputeOptions) {
+    return options.root
   },
-  '$$CURRENT'(obj, expr, opt) {
+  '$$CURRENT'(obj: object, expr: any, options: ComputeOptions) {
     return obj
   },
-  '$$REMOVE'(obj, expr, opt) {
+  '$$REMOVE'(obj: object, expr: any, options: ComputeOptions) {
     return undefined
   }
 }
@@ -138,14 +138,14 @@ const systemVariables = {
  *
  * @type {Object}
  */
-const redactVariables = {
-  '$$KEEP'(obj: object, expr: object, options?: ComputeOptions): any {
+const redactVariables: object = {
+  '$$KEEP'(obj: object, expr: any, options?: ComputeOptions): any {
     return obj
   },
-  '$$PRUNE'(obj: object, expr: object, options?: ComputeOptions): any {
+  '$$PRUNE' (obj: object, expr: any, options?: ComputeOptions): any {
     return undefined
   },
-  '$$DESCEND'(obj: object, expr: object, options?: ComputeOptions): any {
+  '$$DESCEND'(obj: object, expr: any, options?: ComputeOptions): any {
     // traverse nested documents iff there is a $cond
     if (!has(expr, '$cond')) return obj
 
@@ -177,13 +177,6 @@ const redactVariables = {
 }
 
 /**
- * Returns the key used as the collection's objects ids
- */
-export function idKey(): string {
-  return settings.key
-}
-
-/**
  * Returns the result of evaluating a $group operation over a collection
  *
  * @param collection
@@ -191,14 +184,14 @@ export function idKey(): string {
  * @param expr the expression of the aggregate operator for the field
  * @returns {*}
  */
-export function accumulate(collection: any[], field: string, expr: any): any {
+export function accumulate(collection: any[], field: string, expr: any, options: Options): any {
   let call = getOperator(OperatorType.ACCUMULATOR, field)
-  if (call) return call(collection, expr)
+  if (call) return call(collection, expr, options)
 
   if (isObject(expr)) {
     let result = {}
     each(expr, (val, key) => {
-      result[key] = accumulate(collection, key, expr[key])
+      result[key] = accumulate(collection, key, expr[key], options)
       // must run ONLY one group operator per expression
       // if so, return result of the computed value
       if (getOperator(OperatorType.ACCUMULATOR, key)) {
@@ -212,8 +205,9 @@ export function accumulate(collection: any[], field: string, expr: any): any {
   }
 }
 
-interface ComputeOptions {
-  root: object
+// options to core functions computeValue() and redact()
+interface ComputeOptions extends Options {
+  root?: object
 }
 
 /**
@@ -225,10 +219,10 @@ interface ComputeOptions {
  * @param options {Object} extra options
  * @returns {*}
  */
-export function computeValue(obj: object, expr: any, operator?: string, options?: ComputeOptions): any {
-  if (options === undefined) {
-    options = { root: obj }
-  }
+export function computeValue(obj: object, expr: any, operator: string, options?: ComputeOptions): any {
+  // ensure valid options exist on first invocation
+  options = options || { config: null }
+  options.config = options.config || createConfig()
 
   // if the field of the object is a valid operator
   let call = getOperator(OperatorType.EXPRESSION, operator)
@@ -255,7 +249,9 @@ export function computeValue(obj: object, expr: any, operator?: string, options?
     // handle selectors with explicit prefix
     let arr = expr.split('.')
     if (has(systemVariables, arr[0])) {
-      obj = systemVariables[arr[0]](obj, null, options)
+      // set 'root' only the first time it is required to be used for all subsequent calls
+      // if it already available on the options, it will be used
+      obj = systemVariables[arr[0]](obj, null, Object.assign({ root: obj }, options))
       if (arr.length == 1) return obj
       expr = expr.substr(arr[0].length) // '.' prefix will be sliced off below
     }
@@ -265,7 +261,7 @@ export function computeValue(obj: object, expr: any, operator?: string, options?
 
   // check and return value if already in a resolved state
   if (isArray(expr)) {
-    return expr.map(item => computeValue(obj, item))
+    return expr.map((item: any) => computeValue(obj, item, null, options))
   } else if (isObject(expr)) {
     let result = {}
     each(expr, (val, key) => {
@@ -292,9 +288,9 @@ export function computeValue(obj: object, expr: any, operator?: string, options?
  * @param  {*} opt  Options for value
  * @return {*} Returns the redacted value
  */
-export function redact(obj: object, expr: any, options?: ComputeOptions): object {
+export function redact(obj: object, expr: any, options: ComputeOptions): object {
   let result = computeValue(obj, expr, null, options)
   return has(redactVariables, result)
-    ? redactVariables[result](obj, expr, options)
+    ? redactVariables[result](obj, expr, Object.assign({root: obj}, options))
     : result
 }

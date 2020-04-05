@@ -1,7 +1,7 @@
 // Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
 
 import { assert, isDate, isNil, isNumber, isArray } from '../../util'
-import { computeValue } from '../../core'
+import { computeValue, Options } from '../../core'
 
 type NumberOrNull = number | null
 
@@ -12,8 +12,8 @@ type NumberOrNull = number | null
  * @param expr
  * @return {Number|null|NaN}
  */
-export function $abs(obj: object, expr: any): NumberOrNull {
-  let val = computeValue(obj, expr)
+export function $abs(obj: object, expr: any, options: Options): NumberOrNull {
+  let val = computeValue(obj, expr, null, options)
   return (val === null || val === undefined) ? null : Math.abs(val)
 }
 
@@ -24,8 +24,8 @@ export function $abs(obj: object, expr: any): NumberOrNull {
  * @param expr
  * @returns {Object}
  */
-export function $add(obj: object, expr: any): number | Date {
-  let args = computeValue(obj, expr) as any[]
+export function $add(obj: object, expr: any, options: Options): number | Date {
+  let args = computeValue(obj, expr, null, options) as any[]
   let foundDate = false
   let result = args.reduce((acc: number, val: any) => {
     if (isDate(val)) {
@@ -47,8 +47,8 @@ export function $add(obj: object, expr: any): number | Date {
  * @param expr
  * @returns {number}
  */
-export function $ceil(obj: object, expr: any): NumberOrNull {
-  let arg = computeValue(obj, expr)
+export function $ceil(obj: object, expr: any, options: Options): NumberOrNull {
+  let arg = computeValue(obj, expr, null, options)
   if (isNil(arg)) return null
   assert(isNumber(arg) || isNaN(arg), '$ceil expression must resolve to a number.')
   return Math.ceil(arg)
@@ -61,8 +61,8 @@ export function $ceil(obj: object, expr: any): NumberOrNull {
  * @param expr
  * @returns {number}
  */
-export function $divide(obj: object, expr: any): number {
-  let args = computeValue(obj, expr)
+export function $divide(obj: object, expr: any, options: Options): number {
+  let args = computeValue(obj, expr, null, options)
   return args[0] / args[1]
 }
 
@@ -73,8 +73,8 @@ export function $divide(obj: object, expr: any): number {
  * @param expr
  * @returns {number}
  */
-export function $exp(obj: object, expr: any): NumberOrNull {
-  let arg = computeValue(obj, expr)
+export function $exp(obj: object, expr: any, options: Options): NumberOrNull {
+  let arg = computeValue(obj, expr, null, options)
   if (isNil(arg)) return null
   assert(isNumber(arg) || isNaN(arg), '$exp expression must resolve to a number.')
   return Math.exp(arg)
@@ -87,8 +87,8 @@ export function $exp(obj: object, expr: any): NumberOrNull {
  * @param expr
  * @returns {number}
  */
-export function $floor(obj: object, expr: any): NumberOrNull {
-  let arg = computeValue(obj, expr)
+export function $floor(obj: object, expr: any, options: Options): NumberOrNull {
+  let arg = computeValue(obj, expr, null, options)
   if (isNil(arg)) return null
   assert(isNumber(arg) || isNaN(arg), '$floor expression must resolve to a number.')
   return Math.floor(arg)
@@ -101,8 +101,8 @@ export function $floor(obj: object, expr: any): NumberOrNull {
  * @param expr
  * @returns {number}
  */
-export function $ln(obj: object, expr: any): NumberOrNull {
-  let arg = computeValue(obj, expr)
+export function $ln(obj: object, expr: any, options: Options): NumberOrNull {
+  let arg = computeValue(obj, expr, null, options)
   if (isNil(arg)) return null
   assert(isNumber(arg) || isNaN(arg), '$ln expression must resolve to a number.')
   return Math.log(arg)
@@ -115,8 +115,8 @@ export function $ln(obj: object, expr: any): NumberOrNull {
  * @param expr
  * @returns {number}
  */
-export function $log(obj: object, expr: any): NumberOrNull {
-  let args = computeValue(obj, expr)
+export function $log(obj: object, expr: any, options: Options): NumberOrNull {
+  let args = computeValue(obj, expr, null, options)
   const msg = '$log expression must resolve to array(2) of numbers'
   assert(isArray(args) && args.length === 2, msg)
   if (args.some(isNil)) return null
@@ -131,8 +131,8 @@ export function $log(obj: object, expr: any): NumberOrNull {
  * @param expr
  * @returns {number}
  */
-export function $log10(obj: object, expr: any): NumberOrNull {
-  let arg = computeValue(obj, expr)
+export function $log10(obj: object, expr: any, options: Options): NumberOrNull {
+  let arg = computeValue(obj, expr, null, options)
   if (isNil(arg)) return null
   assert(isNumber(arg) || isNaN(arg), '$log10 expression must resolve to a number.')
   return Math.log10(arg)
@@ -145,8 +145,8 @@ export function $log10(obj: object, expr: any): NumberOrNull {
  * @param expr
  * @returns {number}
  */
-export function $mod(obj: object, expr: any): number {
-  let args = computeValue(obj, expr)
+export function $mod(obj: object, expr: any, options: Options): number {
+  let args = computeValue(obj, expr, null, options)
   return args[0] % args[1]
 }
 
@@ -157,8 +157,8 @@ export function $mod(obj: object, expr: any): number {
  * @param expr
  * @returns {Object}
  */
-export function $multiply(obj: object, expr: any): number {
-  let args = computeValue(obj, expr) as number[]
+export function $multiply(obj: object, expr: any, options: Options): number {
+  let args = computeValue(obj, expr, null, options) as number[]
   return args.reduce((acc, num) => acc * num, 1)
 }
 
@@ -169,8 +169,8 @@ export function $multiply(obj: object, expr: any): number {
  * @param expr
  * @returns {Object}
  */
-export function $pow(obj: object, expr: any): number {
-  let args = computeValue(obj, expr)
+export function $pow(obj: object, expr: any, options: Options): number {
+  let args = computeValue(obj, expr, null, options)
 
   assert(isArray(args) && args.length === 2 && args.every(isNumber), '$pow expression must resolve to array(2) of numbers')
   assert(!(args[0] === 0 && args[1] < 0), '$pow cannot raise 0 to a negative exponent')
@@ -183,8 +183,8 @@ export function $pow(obj: object, expr: any): number {
  * @param {*} obj
  * @param {*} expr
  */
-export function $round(obj: object, expr: any): NumberOrNull {
-  let args = computeValue(obj, expr)
+export function $round(obj: object, expr: any, options: Options): NumberOrNull {
+  let args = computeValue(obj, expr, null, options)
   let num = args[0]
   let place = args[1]
   if (isNil(num) || isNaN(num) || Math.abs(num) === Infinity) return num
@@ -199,8 +199,8 @@ export function $round(obj: object, expr: any): NumberOrNull {
  * @param expr
  * @returns {number}
  */
-export function $sqrt(obj: object, expr: any): NumberOrNull {
-  let n = computeValue(obj, expr)
+export function $sqrt(obj: object, expr: any, options: Options): NumberOrNull {
+  let n = computeValue(obj, expr, null, options)
   if (isNil(n)) return null
   assert(isNumber(n) && n > 0 || isNaN(n), '$sqrt expression must resolve to non-negative number.')
   return Math.sqrt(n)
@@ -213,8 +213,8 @@ export function $sqrt(obj: object, expr: any): NumberOrNull {
  * @param expr
  * @returns {number}
  */
-export function $subtract(obj: object, expr: any): number {
-  let args = computeValue(obj, expr)
+export function $subtract(obj: object, expr: any, options: Options): number {
+  let args = computeValue(obj, expr, null, options)
   return args[0] - args[1]
 }
 
@@ -225,8 +225,8 @@ export function $subtract(obj: object, expr: any): number {
  * @param expr
  * @returns {number}
  */
-export function $trunc(obj: object, expr: any): NumberOrNull {
-  let arr = computeValue(obj, expr)
+export function $trunc(obj: object, expr: any, options: Options): NumberOrNull {
+  let arr = computeValue(obj, expr, null, options)
   let num = arr[0]
   let places = arr[1]
   if (isNil(num) || isNaN(num) || Math.abs(num) === Infinity) return num

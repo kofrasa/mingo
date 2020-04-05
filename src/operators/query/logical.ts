@@ -7,6 +7,7 @@ import {
   Callback,
 } from '../../util'
 import { Query } from '../../query'
+import { Options } from '../../core'
 
 
 /**
@@ -16,11 +17,11 @@ import { Query } from '../../query'
  * @param value
  * @returns {Function}
  */
-export function $and(selector: string, value: any[]): Callback<boolean> {
+export function $and(selector: string, value: any[], options: Options): Callback<boolean> {
   assert(isArray(value), 'Invalid expression: $and expects value to be an Array')
 
   let queries = []
-  value.forEach(expr => queries.push(new Query(expr)))
+  value.forEach(expr => queries.push(new Query(expr, options.config)))
 
   return obj => {
     for (let i = 0; i < queries.length; i++) {
@@ -39,11 +40,10 @@ export function $and(selector: string, value: any[]): Callback<boolean> {
  * @param value
  * @returns {Function}
  */
-export function $or(selector: string, value: any[]): Callback<boolean> {
+export function $or(selector: string, value: any[], options: Options): Callback<boolean> {
   assert(isArray(value), 'Invalid expression. $or expects value to be an Array')
 
-  let queries = []
-  value.forEach(expr => queries.push(new Query(expr)))
+  let queries = value.map(expr => new Query(expr, options.config))
 
   return obj => {
     for (let i = 0; i < queries.length; i++) {
@@ -62,9 +62,9 @@ export function $or(selector: string, value: any[]): Callback<boolean> {
  * @param value
  * @returns {Function}
  */
-export function $nor(selector: string, value: any): Callback<boolean> {
+export function $nor(selector: string, value: any, options: Options): Callback<boolean> {
   assert(isArray(value), 'Invalid expression. $nor expects value to be an Array')
-  let f: Callback<boolean> = $or('$or', value)
+  let f: Callback<boolean> = $or('$or', value, options)
   return (obj: any) => !f(obj)
 }
 
@@ -75,9 +75,9 @@ export function $nor(selector: string, value: any): Callback<boolean> {
  * @param value
  * @returns {Function}
  */
-export function $not(selector: string, value: any): Callback<boolean> {
+export function $not(selector: string, value: any, options: Options): Callback<boolean> {
   let criteria = {}
   criteria[selector] = normalize(value)
-  let query = new Query(criteria)
+  let query = new Query(criteria, options.config)
   return obj => !query.test(obj)
 }

@@ -1,6 +1,7 @@
 import test from 'tape'
 import mingo from '../../lib'
 
+mingo.enableSystemOperators()
 
 /**
  * Tests for $sortByCount operator

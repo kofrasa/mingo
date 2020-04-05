@@ -1,6 +1,6 @@
 // Boolean Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#boolean-expression-operators
 
-import { computeValue } from '../../core'
+import { computeValue, Options } from '../../core'
 import { truthy } from '../../util'
 
 /**
@@ -10,8 +10,8 @@ import { truthy } from '../../util'
  * @param expr
  * @returns {boolean}
  */
-export function $and(obj: object, expr: any): any {
-  let value = computeValue(obj, expr)
+export function $and(obj: object, expr: any, options: Options): any {
+  let value = computeValue(obj, expr, null, options)
   return truthy(value) && value.every(truthy)
 }
 
@@ -22,8 +22,8 @@ export function $and(obj: object, expr: any): any {
  * @param expr
  * @returns {boolean}
  */
-export function $or(obj: object, expr: any): any {
-  let value = computeValue(obj, expr)
+export function $or(obj: object, expr: any, options: Options): any {
+  let value = computeValue(obj, expr, null, options)
   return truthy(value) && value.some(truthy)
 }
 
@@ -34,6 +34,6 @@ export function $or(obj: object, expr: any): any {
  * @param expr
  * @returns {boolean}
  */
-export function $not(obj: object, expr: any): any {
-  return !computeValue(obj, expr[0])
+export function $not(obj: object, expr: any, options: Options): any {
+  return !computeValue(obj, expr[0], null, options)
 }

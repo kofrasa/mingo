@@ -7,6 +7,7 @@ import {
   resolve,
   slice
 } from '../../util'
+import { Options } from '../../core'
 
 /**
  * Limits the number of elements projected from an array. Supports skip and limit slices.
@@ -15,7 +16,7 @@ import {
  * @param field
  * @param expr
  */
-export function $slice(obj: object, expr: any, field: string): any {
+export function $slice(obj: object, expr: any, field: string, options: Options): any {
   let xs = resolve(obj, field)
 
   if (!isArray(xs)) return xs

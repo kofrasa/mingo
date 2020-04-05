@@ -31,7 +31,7 @@ import {
   BsonType
 } from '../../util'
 import { Query } from '../../query'
-import { computeValue } from '../../core'
+import { computeValue, Options } from '../../core'
 
 /**
  * Returns a query operator created from the predicate
@@ -39,10 +39,13 @@ import { computeValue } from '../../core'
  * @param pred Predicate function
  */
 export function createQueryOperator(pred: Predicate<any>): Callback<any> {
-  return (selector: string, value: any) => (obj: object) => {
-    // value of field must be fully resolved.
-    let lhs = resolve(obj, selector, { unwrapArray: true })
-    return pred(lhs, value)
+  return (selector: string, value: any, options: Options) => {
+    let opts = { unwrapArray: true }
+    return (obj: object) => {
+      // value of field must be fully resolved.
+      let lhs = resolve(obj, selector, opts)
+      return pred(lhs, value)
+    }
   }
 }
 
@@ -52,8 +55,8 @@ export function createQueryOperator(pred: Predicate<any>): Callback<any> {
  * @param f Predicate function
  */
 export function createExpressionOperator(f: Predicate<any>) {
-  return (obj: object, expr: any) => {
-    let args = computeValue(obj, expr)
+  return (obj: object, expr: any, options: Options) => {
+    let args = computeValue(obj, expr, null, options)
     return f(...args)
   }
 }

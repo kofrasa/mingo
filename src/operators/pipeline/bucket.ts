@@ -4,7 +4,7 @@ import {
   getType,
   isNil
 } from '../../util'
-import { accumulate, computeValue } from '../../core'
+import { accumulate, computeValue, Options } from '../../core'
 import { Lazy, Iterator } from '../../lazy'
 
 /**
@@ -13,9 +13,9 @@ import { Lazy, Iterator } from '../../lazy'
  *
  * @param {*} collection
  * @param {*} expr
- * @param {Object} opt Pipeline options
+ * @param {Options} opt Pipeline options
  */
-export function $bucket(collection: Iterator, expr: any, opt?: object): Iterator {
+export function $bucket(collection: Iterator, expr: any, options: Options): Iterator {
   let boundaries = expr.boundaries
   let defaultKey = expr['default']
   let lower = boundaries[0] // inclusive
@@ -45,7 +45,7 @@ export function $bucket(collection: Iterator, expr: any, opt?: object): Iterator
   return Lazy(() => {
     if (iterator === null) {
       collection.each((obj: object) => {
-        let key = computeValue(obj, expr.groupBy)
+        let key = computeValue(obj, expr.groupBy, null, options)
 
         if (isNil(key) || key < lower || key >= upper) {
           assert(!isNil(defaultKey), '$bucket require a default for out of range values')
@@ -63,7 +63,7 @@ export function $bucket(collection: Iterator, expr: any, opt?: object): Iterator
       if (!isNil(defaultKey)) boundaries.push(defaultKey)
 
       iterator = Lazy(boundaries).map(key => {
-        let acc = accumulate(grouped[key], null, outputExpr)
+        let acc = accumulate(grouped[key], null, outputExpr, options)
         return Object.assign(acc, { '_id': key })
       })
     }

@@ -1,5 +1,6 @@
 import { assert, isArray } from '../../util'
 import { Iterator } from '../../lazy'
+import { Options } from '../../core'
 
 
 /**
@@ -10,10 +11,10 @@ import { Iterator } from '../../lazy'
  *
  * @param collection
  * @param expr
- * @param opt
+ * @param options
  * @returns {*}
  */
-export function $out(collection: Iterator, expr: any, opt?: object): Iterator {
+export function $out(collection: Iterator, expr: any, options: Options): Iterator {
   assert(isArray(expr), '$out expression must be an array')
   return collection.map(o => {
     expr.push(o)

@@ -1,5 +1,5 @@
 import { assert, isObject } from '../../util'
-import { computeValue } from '../../core'
+import { computeValue, Options } from '../../core'
 import { Iterator } from '../../lazy'
 
 
@@ -9,14 +9,14 @@ import { Iterator } from '../../lazy'
  *
  * https://docs.mongodb.com/manual/reference/operator/aggregation/replaceRoot/
  *
- * @param  {Array} collection
+ * @param  {Iterator} collection
  * @param  {Object} expr
- * @param  {Object} opt
+ * @param  {Object} options
  * @return {*}
  */
-export function $replaceRoot(collection: Iterator, expr: any, opt?: object): Iterator {
+export function $replaceRoot(collection: Iterator, expr: any, options: Options): Iterator {
   return collection.map(obj => {
-    obj = computeValue(obj, expr.newRoot)
+    obj = computeValue(obj, expr.newRoot, null, options)
     assert(isObject(obj), '$replaceRoot expression must return an object')
     return obj
   })

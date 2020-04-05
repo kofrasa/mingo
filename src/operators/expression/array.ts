@@ -12,7 +12,7 @@ import {
   slice,
   truthy
 } from '../../util'
-import { computeValue } from '../../core'
+import { computeValue, Options } from '../../core'
 import { createExpressionOperator, $nin as __nin } from '../.internal/predicates'
 
 /**
@@ -31,8 +31,8 @@ export const $nin = createExpressionOperator(__nin)
  * @param  {*} expr
  * @return {*}
  */
-export function $arrayElemAt(obj: object, expr: any): any {
-  let args = computeValue(obj, expr)
+export function $arrayElemAt(obj: object, expr: any, ctx: Options): any {
+  let args = computeValue(obj, expr, null, ctx)
   assert(isArray(args) && args.length === 2, '$arrayElemAt expression must resolve to array(2)')
 
   if (args.some(isNil)) return null
@@ -50,8 +50,8 @@ export function $arrayElemAt(obj: object, expr: any): any {
 /**
  * Converts an array of key value pairs to a document.
  */
-export function $arrayToObject(obj: object, expr: any): any {
-  let arr = computeValue(obj, expr) as any[]
+export function $arrayToObject(obj: object, expr: any, ctx: Options): any {
+  let arr = computeValue(obj, expr, null, ctx) as any[]
   assert(isArray(arr), '$arrayToObject expression must resolve to an array')
 
   return arr.reduce((newObj, val) => {
@@ -72,8 +72,8 @@ export function $arrayToObject(obj: object, expr: any): any {
  * @param  {*} expr
  * @return {*}
  */
-export function $concatArrays(obj: object, expr: any): any {
-  let arr = computeValue(obj, expr) as any[]
+export function $concatArrays(obj: object, expr: any, ctx: Options): any {
+  let arr = computeValue(obj, expr, null, ctx) as any[]
   assert(isArray(arr), '$concatArrays must resolve to an array')
 
   if (arr.some(isNil)) return null
@@ -87,8 +87,8 @@ export function $concatArrays(obj: object, expr: any): any {
  * @param  {*} expr [description]
  * @return {*}      [description]
  */
-export function $filter(obj: object, expr: any): any {
-  let input = computeValue(obj, expr.input)
+export function $filter(obj: object, expr: any, ctx: Options): any {
+  let input = computeValue(obj, expr.input, null, ctx)
   let asVar = expr['as']
   let condExpr = expr['cond']
 
@@ -98,7 +98,7 @@ export function $filter(obj: object, expr: any): any {
     // inject variable
     let tempObj = {}
     tempObj['$' + asVar] = o
-    return computeValue(tempObj, condExpr) === true
+    return computeValue(tempObj, condExpr, null, ctx) === true
   })
 }
 
@@ -108,8 +108,8 @@ export function $filter(obj: object, expr: any): any {
  * @param {Object} obj
  * @param {Array} expr
  */
-export function $in(obj: object, expr: any): any {
-  let args = computeValue(obj, expr)
+export function $in(obj: object, expr: any, ctx: Options): any {
+  let args = computeValue(obj, expr, null, ctx)
   let item = args[0]
   let arr = args[1]
   assert(isArray(arr), '$in second argument must be an array')
@@ -124,8 +124,8 @@ export function $in(obj: object, expr: any): any {
  * @param  {*} expr
  * @return {*}
  */
-export function $indexOfArray(obj: object, expr: any): any {
-  let args = computeValue(obj, expr)
+export function $indexOfArray(obj: object, expr: any, ctx: Options): any {
+  let args = computeValue(obj, expr, null, ctx)
   if (isNil(args)) return null
 
   let arr = args[0]
@@ -163,8 +163,8 @@ export function $indexOfArray(obj: object, expr: any): any {
  * @param  {*}  expr
  * @return {Boolean}
  */
-export function $isArray(obj: object, expr: any): any {
-  return isArray(computeValue(obj, expr[0]))
+export function $isArray(obj: object, expr: any, ctx: Options): any {
+  return computeValue(obj, expr[0], null, ctx) instanceof Array
 }
 
 /**
@@ -174,8 +174,8 @@ export function $isArray(obj: object, expr: any): any {
  * @param expr
  * @returns {Array|*}
  */
-export function $map(obj: object, expr: any): any {
-  let inputExpr = computeValue(obj, expr.input)
+export function $map(obj: object, expr: any, ctx: Options): any {
+  let inputExpr = computeValue(obj, expr.input, null, ctx)
   assert(isArray(inputExpr), `$map 'input' expression must resolve to an array`)
 
   let asExpr = expr['as']
@@ -187,7 +187,7 @@ export function $map(obj: object, expr: any): any {
   let tempKey = '$' + asExpr
   return inputExpr.map((v: any) => {
     obj[tempKey] = v
-    return computeValue(obj, inExpr)
+    return computeValue(obj, inExpr, null, ctx)
   })
 }
 
@@ -198,8 +198,8 @@ export function $map(obj: object, expr: any): any {
  * @param  {*} expr
  * @return {*}
  */
-export function $range(obj: object, expr: any): any {
-  let arr = computeValue(obj, expr)
+export function $range(obj: object, expr: any, ctx: Options): any {
+  let arr = computeValue(obj, expr, null, ctx)
   let start = arr[0]
   let end = arr[1]
   let step = arr[2] || 1
@@ -220,15 +220,15 @@ export function $range(obj: object, expr: any): any {
  * @param {Object} obj
  * @param {*} expr
  */
-export function $reduce(obj: object, expr: any): any {
-  let input = computeValue(obj, expr.input) as any[]
-  let initialValue = computeValue(obj, expr.initialValue)
+export function $reduce(obj: object, expr: any, ctx: Options): any {
+  let input = computeValue(obj, expr.input, null, ctx) as any[]
+  let initialValue = computeValue(obj, expr.initialValue, null, ctx)
   let inExpr = expr['in']
 
   if (isNil(input)) return null
   assert(isArray(input), "$reduce 'input' expression must resolve to an array")
 
-  return input.reduce((acc, n) => computeValue({ '$value': acc, '$this': n }, inExpr), initialValue)
+  return input.reduce((acc, n) => computeValue({ '$value': acc, '$this': n }, inExpr, null, ctx), initialValue)
 }
 
 /**
@@ -238,8 +238,8 @@ export function $reduce(obj: object, expr: any): any {
  * @param  {*} expr
  * @return {*}
  */
-export function $reverseArray(obj: object, expr: any): any {
-  let arr = computeValue(obj, expr)
+export function $reverseArray(obj: object, expr: any, ctx: Options): any {
+  let arr = computeValue(obj, expr, null, ctx)
 
   if (isNil(arr)) return null
   assert(isArray(arr), '$reverseArray expression must resolve to an array')
@@ -256,8 +256,8 @@ export function $reverseArray(obj: object, expr: any): any {
  * @param obj
  * @param expr
  */
-export function $size(obj: object, expr: any): any {
-  let value = computeValue(obj, expr)
+export function $size(obj: object, expr: any, ctx: Options): any {
+  let value = computeValue(obj, expr, null, ctx)
   return isArray(value) ? value.length : undefined
 }
 
@@ -268,8 +268,8 @@ export function $size(obj: object, expr: any): any {
  * @param  {*} expr
  * @return {*}
  */
-export function $slice(obj: object, expr: any): any {
-  let arr = computeValue(obj, expr)
+export function $slice(obj: object, expr: any, ctx: Options): any {
+  let arr = computeValue(obj, expr, null, ctx)
   return slice(arr[0], arr[1], arr[2])
 }
 
@@ -283,8 +283,8 @@ export function $slice(obj: object, expr: any): any {
  * @param  {*} expr
  * @return {*}
  */
-export function $zip(obj: object, expr: any): any {
-  let inputs = computeValue(obj, expr.inputs)
+export function $zip(obj: object, expr: any, ctx: Options): any {
+  let inputs = computeValue(obj, expr.inputs, null, ctx)
   let useLongestLength = expr.useLongestLength || false
 
   assert(isArray(inputs), "'inputs' expression must resolve to an array")

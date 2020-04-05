@@ -6,9 +6,8 @@ import {
   memoize,
   sortBy
 } from '../../util'
-import { accumulate, computeValue, idKey } from '../../core'
+import { accumulate, computeValue, Options } from '../../core'
 import { Iterator } from '../../lazy'
-
 
 
 /**
@@ -19,14 +18,16 @@ import { Iterator } from '../../lazy'
  *
  * @param {*} collection
  * @param {*} expr
- * @param {*} opt Pipeline options
+ * @param {*} options
  */
-export function $bucketAuto(collection: Iterator, expr: any, opt?: object): Iterator {
+export function $bucketAuto(collection: Iterator, expr: any, options: Options): Iterator {
   let outputExpr = expr.output || { 'count': { '$sum': 1 } }
   let groupByExpr = expr.groupBy
   let bucketCount = expr.buckets
 
   assert(bucketCount > 0, "The $bucketAuto 'buckets' field must be greater than 0, but found: " + bucketCount)
+
+  const ID_KEY = '_id'
 
   return collection.transform(coll => {
     let approxBucketSize = Math.max(1, Math.round(coll.length / bucketCount))
@@ -45,7 +46,6 @@ export function $bucketAuto(collection: Iterator, expr: any, opt?: object): Iter
       return key
     })
 
-    const ID_KEY = idKey()
     let result = []
     let index = 0 // counter for sorted collection
 
@@ -78,7 +78,7 @@ export function $bucketAuto(collection: Iterator, expr: any, opt?: object): Iter
         into(bucketItems, sorted.slice(index))
       }
 
-      result.push(Object.assign(accumulate(bucketItems, null, outputExpr), { '_id': boundaries }))
+      result.push(Object.assign(accumulate(bucketItems, null, outputExpr, options), { '_id': boundaries }))
     }
 
     if (result.length > 0) {

@@ -1,5 +1,6 @@
 import { Query } from '../../query'
 import { Iterator } from '../../lazy'
+import { Options } from '../../core'
 
 
 /**
@@ -8,10 +9,10 @@ import { Iterator } from '../../lazy'
  *
  * @param collection
  * @param expr
- * @param opt
+ * @param options
  * @returns {Array|*}
  */
-export function $match(collection: Iterator, expr: any, opt?: object): Iterator {
-  let q = new Query(expr)
+export function $match(collection: Iterator, expr: any, options: Options): Iterator {
+  let q = new Query(expr, options.config)
   return collection.filter(o => q.test(o))
 }

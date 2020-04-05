@@ -57,11 +57,11 @@ test('Custom Operators', function (t) {
     t.plan(2)
     mingo.addOperators(OperatorType.ACCUMULATOR, function (m) {
       return {
-        '$stddev': function (collection, expr) {
+        '$stddev': function (collection, expr, options) {
           let result = mingo.aggregate(collection, [{$group: {avg: {$avg: expr}}}])
           let avg = result[0].avg
           let diffs = collection.map(function (item) {
-            let v = m.computeValue(item, expr) - avg
+            let v = m.computeValue(item, expr, null, options) - avg
             return v * v
           })
           let variance = diffs.reduce(function (memo, val) {

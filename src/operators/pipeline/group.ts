@@ -3,7 +3,7 @@ import {
   each,
   groupBy
 } from '../../util'
-import { accumulate, computeValue, idKey } from '../../core'
+import { accumulate, computeValue, Options } from '../../core'
 import { Iterator } from '../../lazy'
 
 
@@ -12,16 +12,17 @@ import { Iterator } from '../../lazy'
  *
  * @param collection
  * @param expr
- * @param opt Pipeline options
+ * @param options
  * @returns {Array}
  */
-export function $group(collection: Iterator, expr: any, opt?: object): Iterator {
+export function $group(collection: Iterator, expr: any, options: Options): Iterator {
   // lookup key for grouping
-  const ID_KEY = idKey()
+  const ID_KEY = '_id'
+
   let id = expr[ID_KEY]
 
   return collection.transform(coll => {
-    let partitions = groupBy(coll, obj => computeValue(obj, id, id))
+    let partitions = groupBy(coll, obj => computeValue(obj, id, id, options))
 
     // remove the group key
     expr = clone(expr)
@@ -44,7 +45,7 @@ export function $group(collection: Iterator, expr: any, opt?: object): Iterator 
 
       // compute remaining keys in expression
       each(expr, (val, key) => {
-        obj[key] = accumulate(partitions.groups[i], key, val)
+        obj[key] = accumulate(partitions.groups[i], key, val, options)
       })
 
       return { value: obj, done: false }

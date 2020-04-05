@@ -8,6 +8,7 @@ import {
   resolve
 } from '../../util'
 import { Iterator } from '../../lazy'
+import { Options } from '../../core'
 
 /**
  * Performs a left outer join to another collection in the same database to filter in documents from the “joined” collection for processing.
@@ -16,7 +17,7 @@ import { Iterator } from '../../lazy'
  * @param expr
  * @param opt
  */
-export function $lookup(collection: Iterator, expr: any, opt?: object): Iterator {
+export function $lookup(collection: Iterator, expr: any, options: Options): Iterator {
   let joinColl = expr.from
   let localField = expr.localField
   let foreignField = expr.foreignField

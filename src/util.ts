@@ -48,7 +48,7 @@ export interface Predicate<T> {
 type CompareResult = -1 | 0 | 1
 
 // Generic comparator callback
-interface Comparator<T> {
+export interface Comparator<T> {
   (left: T, right: T): CompareResult
 }
 
@@ -591,9 +591,7 @@ export function resolve(obj: object | any[], selector: string, options?: Resolve
   let depth = 0
 
   // options
-  if (options === undefined) {
-    options = { unwrapArray: false }
-  }
+  options = options || { unwrapArray: false }
 
   function resolve2(o: object | any[], path: string[]): any {
     let value = o
