@@ -1,24 +1,26 @@
 # Changelog
 
-## 3.0.0 / 2020-03-xx
+## 3.0.0 / 2020-04-05
 
 - Convert project to Typescript
-- Remove `VERSION` fields. Information can be sourced from `package.json` directly
+- Build ES6 libraries with support for selective import
+- Enable only Query and Projection operators on default import
+- Expose library via `esm` dependency
+- Fix cyclic references
 - Implement type expression operators `$type`, `$convert`, `$toBool`, `$toDate`, `$toString`, `$toInt`, `$toLong`, `$toDouble`, `$toDecimal`
 - Implement `$dateFromString` operator
 - Implement string operators: `$trim`, `$rtrim`, `$ltrim`, `$regexFind`, `$regexFindAll`, `$regexMatch`
 - Add timezone support for all date operators
 - Return all date operator results in UTC
-- Build ES6 libraries with support for selective import
-- Remove cyclic references
+- Rename `group` module to `accumulator`
+- Removed `dist/` files
+- Remove `VERSION` fields. Information can be sourced from `package.json` directly
 - Remove `_internal()`
 - Remove `assert`, `err`, `includes`, `keys`, `reduce`, `each`, `getType`, and `has` from API to custom operators
-- Rename `resolveObj` to `resolveGraph` and change `option.preserveMissingValues` to `option.preserveMissing`
-- Unexport and rename `Lazy.isIterator` to `Lazy.isGenerator`
 - Replace `OP_XXX` constants with enum `OperatorType.XXX`
 - Removed `CollectionMixin`
-- Expose library via `esm` dependency
-- Enable only Query and Projection operators on default import
+- Unexport and rename `Lazy.isIterator` to `Lazy.isGenerator`
+- Support extra options parameter on all operator functions
 
 ## 2.5.2 / 2020-03-17
 

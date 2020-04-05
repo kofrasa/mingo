@@ -62,10 +62,10 @@ For documentation on using query operators see [mongodb](http://docs.mongodb.org
 import mingo from 'mingo'
 
 // or vanilla nodeJS
-var mingo = require('mingo')
+const mingo = require('mingo')
 ```
 
-Since version `3.0.0` only [Query and Projection](https://docs.mongodb.com/manual/reference/operator/query/) operators are loaded by default via `enableDefaultOperators` in the main module file.
+Since version `3.0.0` only [Query and Projection](https://docs.mongodb.com/manual/reference/operator/query/) operators are loaded when using the default import. This done automatically by executing `enableDefaultOperators` in the main module file.
 
 Other operators may be selectively imported and registered via ES6 module syntax to support tree-shaking in your project.
 To include all available operators import and run `enableSystemOperators` from the main module.
@@ -73,21 +73,12 @@ To include all available operators import and run `enableSystemOperators` from t
 ## Configuration
 
 ```js
+// By default only query and projection operators are loaded in the main entry script
 
-import { setup, enableSystemOperators } from 'mingo'
+// Use this to enable all operators. Note that doing this effectively imports the entire library
+import { enableSystemOperators } from 'mingo'
 
-// setup the key field for your collection
-setup({
-  key: '_id' // default
-});
-
-// enable all available system operators
 enableSystemOperators()
-
-// this includes all operators and will increase the final bundle size significantly for users' project.
-// to avoid bloating your bundle size, select and register operators to use explicitly.
-
-// The query and projection operators are loaded by default on first time import
 ```
 
 ## Using query object to test objects
@@ -148,8 +139,8 @@ cursor.all()
 
 ```js
 import { Aggregator, useOperators, OperatorType } from 'mingo'
-import { $match, $group, $sort } from 'mingo/lib/operators/pipeline'
-import { $min } from 'mingo/lib/operators/accumulator'
+import { $match, $group, $sort } from 'mingo/operators/pipeline'
+import { $min } from 'mingo/operators/accumulator'
 
 // only query and projection operators are loaded by default.
 // ensure the required operators are preloaded prior to using them.
