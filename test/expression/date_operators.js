@@ -1,6 +1,8 @@
 import test from 'tape'
 import mingo from '../../lib'
 
+mingo.enableSystemOperators()
+
 
 test("Date Operators", function (t) {
 
@@ -17,7 +19,11 @@ test("Date Operators", function (t) {
       dayOfWeek: {$dayOfWeek: "$date"},
       week: {$week: "$date"},
       yearMonthDay: {$dateToString: {format: "%Y-%m-%d", date: "$date"}},
-      time: {$dateToString: {format: "%H:%M:%S:%L", date: "$date"}}
+      time: {$dateToString: {format: "%H:%M:%S:%L", date: "$date"}},
+      // timezone
+      yearMonthDayUTC: { $dateToString: { format: "%Y-%m-%d", date: "$date" } },
+      timewithOffset430: { $dateToString: { format: "%H:%M:%S:%L%z", date: "$date", timezone: "+04:30" } },
+      minutesOffset430: { $dateToString: { format: "%Z", date: "$date", timezone: "+04:30" } }
     }
   }
 
@@ -37,6 +43,9 @@ test("Date Operators", function (t) {
   t.equals(result.week, 0, "can apply $week");
   t.equals(result.yearMonthDay, "2014-01-01", "formats date to string");
   t.equals(result.time, "08:15:39:736", "formats time to string");
+  t.equals(result.yearMonthDayUTC, "2014-01-01", "format date with timezone")
+  t.equals(result.timewithOffset430, "12:45:39:736+0430", "format time with timezone")
+  t.equals(result.minutesOffset430, "270", "format minutes with timezone")
 
   // Test date operators with timezone
 

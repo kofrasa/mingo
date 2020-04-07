@@ -1,9 +1,54 @@
 // Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
 
 import { computeValue, Options } from '../../core'
-import { isArray, isObject, isString, isDate, has } from '../../util'
+import { isNil, isArray, isObject, isString, isDate, has } from '../../util'
 
 const ONE_DAY_MILLIS = 1000 * 60 * 60 * 24
+const MINUTES_PER_HOUR = 60
+
+// default format if unspecified
+const DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%LZ"
+
+interface Timezone {
+  hour: number
+  minute: number
+}
+
+/**
+ * Parse and return the timezone string as a number
+ * @param tzstr Timezone string matching '+/-hh[:][mm]'
+ */
+function parseTimezone(tzstr?: string): Timezone {
+  let re = DATE_SYM_TABLE['%z'][3] as RegExp
+  if (tzstr === null || tzstr === undefined) return { hour: 0, minute: 0 }
+
+  let m = tzstr.match(re)
+  if (!m) throw Error(`invalid or location-based timezone ${tzstr} not supported`)
+  // hour, minute
+  return {
+    hour:  parseInt(m[2]) || 0,
+    minute: parseInt(m[3]) || 0
+  }
+}
+
+/**
+ * Formats the timezone for output
+ * @param tz A timezone object
+ */
+function formatTimezone(tz: Timezone): string {
+  return (tz.hour < 0 ? "-" : "+") + padDigits(Math.abs(tz.hour), 2) + padDigits(tz.minute, 2)
+}
+
+/**
+ * Adjust the date by the given timezone
+ * @param d Date object
+ * @param tz Timezone
+ */
+function adjustDate(d: Date, tz: Timezone) {
+  let sign = tz.hour < 0 ? -1 : 1
+  d.setUTCHours(d.getUTCHours() + tz.hour)
+  d.setUTCMinutes(d.getUTCMinutes() + (sign * tz.minute))
+}
 
 /**
  * Computes a date expression
@@ -13,7 +58,7 @@ function computeDate(obj: any, expr: any, options: Options): Date {
   if (isDate(d)) return d
   if (isString(d)) throw Error('cannot take a string as an argument')
 
-  let tz = 0
+  let tz: Timezone = null
   if (isObject(d) && has(d, 'date') && has(d, 'timezone')) {
     tz = parseTimezone(computeValue(obj, d.timezone, null, options))
     d = computeValue(obj, d.date, null, options)
@@ -21,7 +66,8 @@ function computeDate(obj: any, expr: any, options: Options): Date {
 
   d = new Date(d)
   if (isNaN(d.getTime())) throw Error(`cannot convert ${obj} to date`)
-  d.setUTCHours(d.getUTCHours() + tz)
+
+  adjustDate(d, tz)
 
   return d
 }
@@ -152,20 +198,9 @@ const DATE_SYM_TABLE = {
   '%L': ['millisecond', $millisecond, 3, /([0-9]{3})/],
   '%u': ['weekDay', $dayOfWeek, 1, /([1-7])/],
   '%V': ['week', $week, 1, /([1-4][0-9]?|5[0-3]?)/],
-  '%z': ['timezone', null, 0, /([+-]([01][0-9]|2[0-3]):?([0-5][0-9])?)/],
+  '%z': ['timezone', null, 0, /(([+-][01][0-9]|2[0-3]):?([0-5][0-9])?)/],
   '%Z': ['minuteOffset', null, 0, /([+-][0-9]{3})/],
   '%%': '%'
-}
-
-/**
- * Parse and return the timezone string as a number
- * @param tzStr Timezone string matching '+/-hh[:][mm]'
- */
-function parseTimezone(tzStr?: string): number {
-  let re = DATE_SYM_TABLE['%z'][3] as RegExp
-  if (tzStr === null || tzStr === undefined) return 0
-  if (!tzStr.match(re)) throw Error(`invalid or location-based timezone ${tzStr} not supported`)
-  return parseInt(tzStr.substr(0, 3))
 }
 
 /**
@@ -189,20 +224,40 @@ function parseTimezone(tzStr?: string): number {
  * @param expr operator expression
  */
 export function $dateToString(obj: object, expr: any, options: Options): string {
-  let args = computeValue(obj, expr, null, options)
-  let format = args.format
-  let date = args.date
+  let args: {
+    date?: Date
+    format?: string
+    timezone?: any
+    onNull: any
+  } = computeValue(obj, expr, null, options)
+
+  if (isNil(args.onNull)) args.onNull = null
+  if (isNil(args.date)) return args.onNull
+
+  let date = computeDate(obj, args.date, options)
+  let format = args.format || DATE_FORMAT
+  let tz = parseTimezone(args.timezone)
   let matches = format.match(/(%%|%Y|%G|%m|%d|%H|%M|%S|%L|%u|%V|%z|%Z)/g)
+
+  // adjust the date to reflect timezone
+  adjustDate(date, tz)
 
   for (let i = 0, len = matches.length; i < len; i++) {
     let hdlr = DATE_SYM_TABLE[matches[i]]
     let value: string
 
     if (isArray(hdlr)) {
-      // reuse date operators
-      let fn = hdlr[1]
-      let pad = hdlr[2]
-      value = padDigits(fn(obj, date), pad)
+      // reuse date
+      let [name, operatorFn, pad, _] = hdlr
+      if (name === 'timezone') {
+        value = formatTimezone(tz)
+      } else if (name === 'minuteOffset') {
+        value = `${(tz.hour < 0 ? -1 : 1) * Math.abs(tz.hour * MINUTES_PER_HOUR) + tz.minute}`
+      } else if (operatorFn != null) {
+        value = padDigits(operatorFn(obj, date, options), pad)
+      } else {
+        value = hdlr
+      }
     } else {
       value = hdlr
     }
@@ -234,7 +289,7 @@ function regexStrip(s: string): string {
  * @param expr
  */
 export function $dateFromString(obj: object, expr: any, options: Options): any {
-  let ctx: {
+  let args: {
     dateString?: string
     timezone?: string
     format?: string
@@ -242,17 +297,17 @@ export function $dateFromString(obj: object, expr: any, options: Options): any {
     onNull?: any
   } = computeValue(obj, expr, null, options)
 
-  ctx.format = ctx.format || "%Y-%m-%dT%H:%M:%S.%LZ"
-  ctx.onNull = ctx.onNull || null
+  args.format = args.format || DATE_FORMAT
+  args.onNull = args.onNull || null
 
-  let dateString = ctx.dateString
-  if (dateString === null || dateString === undefined) return ctx.onNull
+  let dateString = args.dateString
+  if (dateString === null || dateString === undefined) return args.onNull
 
   // collect all separators of the format string
-  let separators = ctx.format.split(/%[YGmdHMSLuVzZ]/)
+  let separators = args.format.split(/%[YGmdHMSLuVzZ]/)
   separators.reverse()
 
-  let matches = ctx.format.match(/(%%|%Y|%G|%m|%d|%H|%M|%S|%L|%u|%V|%z|%Z)/g)
+  let matches = args.format.match(/(%%|%Y|%G|%m|%d|%H|%M|%S|%L|%u|%V|%z|%Z)/g)
 
   let dateParts: {
     year?: number
@@ -264,7 +319,7 @@ export function $dateFromString(obj: object, expr: any, options: Options): any {
     millisecond?: number
     timezone?: string
     minuteOffset?: string
-  } = Object.create({})
+  } = {}
 
   // holds the valid regex of parts that matches input date string
   let expectedPattern = ''
@@ -300,17 +355,22 @@ export function $dateFromString(obj: object, expr: any, options: Options): any {
   if (dateParts.year === null
     || dateParts.month === null
     || dateParts.day === null
-    || !ctx.dateString.match(new RegExp('^' + expectedPattern + '$'))) return ctx.onError
+    || !args.dateString.match(new RegExp('^' + expectedPattern + '$'))) return args.onError
 
-  let tz = parseTimezone(ctx.timezone)
+  let tz = parseTimezone(args.timezone)
 
   // create the date. month is 0-based in Date
-  let d = new Date(Date.UTC(dateParts.year, dateParts.month - 1, dateParts.day, tz, 0, 0))
+  let d = new Date(Date.UTC(dateParts.year, dateParts.month - 1, dateParts.day, 0, 0, 0))
 
-  if (dateParts.hour !== null) d.setUTCHours(dateParts.hour + tz)
+  if (dateParts.hour !== null) d.setUTCHours(dateParts.hour)
   if (dateParts.minute !== null) d.setUTCMinutes(dateParts.minute)
   if (dateParts.second !== null) d.setUTCSeconds(dateParts.second)
   if (dateParts.millisecond !== null) d.setUTCMilliseconds(dateParts.millisecond)
+
+  // The minute part is unused when converting string.
+  // This was observed in the tests on MongoDB site but not officially stated anywhere
+  tz.minute = 0
+  adjustDate(d, tz)
 
   return d
 }
