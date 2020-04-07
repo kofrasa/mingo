@@ -5,10 +5,13 @@ import { CollationSpec } from './operators/pipeline/sort'
 import { Options, Config } from './core'
 
 /**
- * Cursor to iterate and perform filtering on matched objects
- * @param collection
- * @param query
- * @param projection
+ * Cursor to iterate and perform filtering on matched objects.
+ * This object must not be used directly. A cursor may be obtaine from calling `find()` on an instance of `Query`.
+ *
+ * @param collection The input source of the collection
+ * @param predicate A predicate function to test documents
+ * @param projection A projection criteria
+ * @param config Config to use for cursor
  * @constructor
  */
 export class Cursor {

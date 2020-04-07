@@ -114,6 +114,9 @@ function createCallback(nextFn: Callback<any>, iteratees: Iteratee[], buffer: an
   }
 }
 
+/**
+ * A lazy collection iterator yields a single value at time upon request
+ */
 export class Iterator {
 
   private __iteratees: Iteratee[] // lazy function chain

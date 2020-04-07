@@ -12,9 +12,10 @@ import { getOperator, OperatorType, createConfig, Options, Config } from './core
 import { Source } from './lazy'
 
 /**
- * Query object to test collection elements with
- * @param criteria the pass criteria for the query
- * @param projection optional projection specifiers
+ * An object used to filter input documents
+ *
+ * @param criteria The criteria for constructing predicates
+ * @param config Optional config
  * @constructor
  */
 export class Query {
@@ -66,8 +67,9 @@ export class Query {
 
   /**
    * Checks if the object passes the query criteria. Returns true if so, false otherwise.
-   * @param obj
-   * @returns {boolean}
+   *
+   * @param obj The object to test
+   * @returns {boolean} True or false
    */
   test(obj: any): boolean {
     for (let i = 0, len = this.__compiled.length; i < len; i++) {
@@ -79,10 +81,11 @@ export class Query {
   }
 
   /**
-   * Performs a query on a collection and returns a cursor object.
-   * @param collection
-   * @param projection
-   * @returns {Cursor}
+   * Returns a cursor to select matching documents from the input source.
+   *
+   * @param source A source providing a sequence of documents
+   * @param projection An optional projection criteria
+   * @returns {Cursor} A Cursor for iterating over the results
    */
   find(collection: Source, projection?: object): Cursor {
     return new Cursor(collection, x => this.test(x), projection || {}, this.__config)
@@ -90,8 +93,9 @@ export class Query {
 
   /**
    * Remove matched documents from the collection returning the remainder
-   * @param collection
-   * @returns {Array}
+   *
+   * @param collection An array of documents
+   * @returns {Array} A new array with matching elements removed
    */
   remove(collection: object[]): object[] {
     return collection.reduce<object[]>((acc: object[], obj: object) => {

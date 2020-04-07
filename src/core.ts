@@ -32,6 +32,9 @@ export interface Options {
   config: Config
 }
 
+/**
+ * The different groups of operators
+ */
 export enum OperatorType {
   ACCUMULATOR = 'accumulator',
   EXPRESSION = 'expression',
@@ -285,8 +288,8 @@ export function computeValue(obj: object, expr: any, operator: string, options?:
  * Redact an object
  * @param  {Object} obj The object to redact
  * @param  {*} expr The redact expression
- * @param  {*} opt  Options for value
- * @return {*} Returns the redacted value
+ * @param  {*} options  Options for value
+ * @return {*} returns the result of the redacted object
  */
 export function redact(obj: object, expr: any, options: ComputeOptions): object {
   let result = computeValue(obj, expr, null, options)

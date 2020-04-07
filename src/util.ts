@@ -685,7 +685,8 @@ export function resolveGraph(obj: object, selector: string, options?: ResolveOpt
 
 /**
  * Filter out all MISSING values from the object in-place
- * @param {*} obj The object the filter
+ *
+ * @param obj The object to filter
  */
 export function filterMissing(obj: object): object {
   if (obj instanceof Array) {
@@ -708,6 +709,7 @@ export function filterMissing(obj: object): object {
 
 /**
  * Walk the object graph and execute the given transform function
+ *
  * @param  {Object|Array} obj   The object to traverse
  * @param  {String} selector    The selector
  * @param  {Function} fn Function to execute for value at the end the traversal

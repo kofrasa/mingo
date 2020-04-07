@@ -228,8 +228,6 @@ function regexStrip(s: string): string {
   return s.replace(/^\//, '').replace(/\/$/, '')
 }
 
-const PARAMS__DATE_FROM_STRING = ['dateString', 'format', 'timezone', 'onError', 'onNull']
-
 /**
  * Converts a date/time string to a date object.
  * @param obj
@@ -243,10 +241,6 @@ export function $dateFromString(obj: object, expr: any, options: Options): any {
     onError?: any
     onNull?: any
   } = computeValue(obj, expr, null, options)
-
-  // PARAMS__DATE_FROM_STRING.forEach((k: string) => {
-  //   ctx[k] = computeValue(obj, expr[k], null, options)
-  // })
 
   ctx.format = ctx.format || "%Y-%m-%dT%H:%M:%S.%LZ"
   ctx.onNull = ctx.onNull || null

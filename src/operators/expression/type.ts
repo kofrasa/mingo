@@ -133,8 +133,6 @@ export function $toDate(obj: object, expr: any, options: Options): Date | null {
   throw new TypeConvertError(`cannot convert '${val}' to date`)
 }
 
-const PARAMS__CONVERT = ['input', 'to', 'onError', 'onNull']
-
 /**
  * Converts a value to a specified type.
  *
@@ -147,11 +145,7 @@ export function $convert(obj: object, expr: any, options: Options): any {
     to: string | number
     onError?: any
     onNull?: any
-  } = Object.create({})
-
-  PARAMS__CONVERT.forEach((k: string) => {
-    args[k] = computeValue(obj, expr[k], null, options)
-  })
+  } = computeValue(obj, expr, null, options)
 
   args.onNull = args.onNull === undefined ? null : args.onNull
 
