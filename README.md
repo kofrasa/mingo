@@ -65,10 +65,28 @@ import mingo from 'mingo'
 const mingo = require('mingo')
 ```
 
-Since version `3.0.0` only [Query and Projection](https://docs.mongodb.com/manual/reference/operator/query/) operators are loaded when using the default import. This done automatically by executing `enableDefaultOperators` in the main module file.
+Since version `3.0.0` only [Query and Projection](https://docs.mongodb.com/manual/reference/operator/query/) operators are loaded when using the default import. This happens automatically by executing `enableDefaultOperators` in the main module file.
 
 Other operators may be selectively imported and registered via ES6 module syntax to support tree-shaking in your project.
 To include all available operators import and run `enableSystemOperators` from the main module.
+
+### Nested imports
+
+Full nested import is supported. For libaries using commonJS style `require()` syntax, the [esm](https://www.npmjs.com/package/esm) is used to load the main entry point for compatibility.
+
+The following two examples are equivalent.
+
+#### ES6
+
+```js
+import { $unwind } from 'mingo/operators/pipeline'
+```
+
+#### ES5
+
+```js
+const $unwind = require('mingo/operators/pipeline').$unwind
+```
 
 ## Configuration
 

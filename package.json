@@ -9,9 +9,11 @@
     "build": "tsc",
     "clean": "rm -fr lib",
     "release": "npm run clean && npm test",
-    "postrelease": "npm run coverage",
-    "test": "npm run build && NODE_ENV=test nyc --reporter=lcov --reporter=text ./runtest.sh",
-    "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov"
+    "testall": "NODE_ENV=test nyc --reporter=lcov --reporter=text ./runtest.sh",
+    "test": "npm run build && npm run testall",
+    "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
+    "prepublishOnly": "node -r esm ./prepare.js publish",
+    "install": "node -r esm ./prepare.js install && exit 0"
   },
   "repository": {
     "type": "git",
@@ -47,7 +49,10 @@
     "search",
     "transform"
   ],
-  "author": "Francis Asante <kofrasa@gmail.com>",
+  "author": {
+    "name": "Francis Asante",
+    "email": "kofrasa@gmail.com"
+  },
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/kofrasa/mingo/issues"
