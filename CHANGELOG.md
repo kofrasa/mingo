@@ -13,11 +13,12 @@
 - Add timezone support for all date operators
 - Return all date operator results in UTC
 - Rename `group` module to `accumulator`
-- Removed `dist/` files
+- Removed `dist/` files. Deferring to consumers to bring their own packaging solutions
+- Remove `setup()` function. Replace by passing in config to `Query` or `Aggregator`.
 - Remove `VERSION` fields. Information can be sourced from `package.json` directly
 - Remove `_internal()`
-- Remove `assert`, `err`, `includes`, `keys`, `reduce`, `each`, `getType`, and `has` from API to custom operators
-- Replace `OP_XXX` constants with enum `OperatorType.XXX`
+- Pass only `accumulate`, `computeValue`, and `resolve` functions to custom operator
+- Replace `OP_XXX` constants with enum `OperatorType.XXX`. Former is only available for backward compatibility
 - Removed `CollectionMixin`
 - Unexport and rename `Lazy.isIterator` to `Lazy.isGenerator`
 - Support extra options parameter on all operator functions

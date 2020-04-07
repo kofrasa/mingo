@@ -70,9 +70,9 @@ Since version `3.0.0` only [Query and Projection](https://docs.mongodb.com/manua
 Other operators may be selectively imported and registered via ES6 module syntax to support tree-shaking in your project.
 To include all available operators import and run `enableSystemOperators` from the main module.
 
-### Nested imports
+### Importing from submodules
 
-Full nested import is supported. For libaries using commonJS style `require()` syntax, the [esm](https://www.npmjs.com/package/esm) is used to load the main entry point for compatibility.
+Submodule imports are supported for both ES6 and ES5. For ES5 projects using commonJS style `require()` syntax, the [esm](https://www.npmjs.com/package/esm) is used to load the main entry point for compatibility.
 
 The following two examples are equivalent.
 
@@ -80,20 +80,35 @@ The following two examples are equivalent.
 
 ```js
 import { $unwind } from 'mingo/operators/pipeline'
+
 ```
 
 #### ES5
 
 ```js
 const $unwind = require('mingo/operators/pipeline').$unwind
+
 ```
 
 ## Configuration
 
+To support tree-shaking, you may import and register specific operators that will be used in your application.
+
+```js
+import { useOperators, OperatorType } from 'mingo'
+import { $trunc } from 'mingo/operators/expression'
+import { $bucket } from 'mingo/operators/pipeline'
+
+useOperators(OperatorType.EXPRESSION, { $trunc, $floor })
+useOperators(OperatorType.PIPELINE, { $bucket })
+```
+
+The query and projection operators are loaded by default. This subsequently loads pipeline operators `$project`, `$skip`, `$limit`, and `$sort`.
+If your application uses a most of the available operators or you do not care about bundle size, you can load all defined operators as shown below.
+
 ```js
 // By default only query and projection operators are loaded in the main entry script
-
-// Use this to enable all operators. Note that doing this effectively imports the entire library
+// Note that doing this effectively imports the entire library into your bundle and unused operators cannot be tree shaked
 import { enableSystemOperators } from 'mingo'
 
 enableSystemOperators()
@@ -157,12 +172,11 @@ cursor.all()
 
 ```js
 import { Aggregator, useOperators, OperatorType } from 'mingo'
-import { $match, $group, $sort } from 'mingo/operators/pipeline'
+import { $match, $group } from 'mingo/operators/pipeline'
 import { $min } from 'mingo/operators/accumulator'
 
-// only query and projection operators are loaded by default.
 // ensure the required operators are preloaded prior to using them.
-useOperators(OperatorType.PIPELINE, { $match, $group, $sort })
+useOperators(OperatorType.PIPELINE, { $match, $group })
 useOperators(OperatorType.ACCUMULATOR, { $min })
 
 let agg = new Aggregator([
