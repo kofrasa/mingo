@@ -46,11 +46,11 @@ export function $switch(obj: object, expr: any, options: Options): any {
   // Array.prototype.find not supported in IE, hence the '.some()' proxy
   expr.branches.some((b: { case: any, then: any }) => {
     let found = computeValue(obj, b.case, null, options)
-    if (found) thenExpr = b.then
+    if (found === true) thenExpr = b.then
     return found
   })
 
-  return computeValue(obj, !!thenExpr ? thenExpr : expr.default, null, options)
+  return computeValue(obj, thenExpr !== null ? thenExpr : expr.default, null, options)
 }
 
 /**
