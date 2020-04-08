@@ -1,6 +1,6 @@
 // Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
 
-import { createExpressionOperator, $nin as __nin } from '../../.internal/predicates'
+import { createExpressionOperator, $nin as __nin } from '../../_predicates'
 
 /**
  * Returns a boolean indicating whether a specified value is not an array.

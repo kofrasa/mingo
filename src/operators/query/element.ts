@@ -4,7 +4,7 @@ import {
   createQueryOperator,
   $exists as __exists,
   $type as __type
-} from '../.internal/predicates'
+} from '../_predicates'
 
 export const $exists = createQueryOperator(__exists)
 export const $type = createQueryOperator(__type)

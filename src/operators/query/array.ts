@@ -5,7 +5,7 @@ import {
   $all as __all,
   $elemMatch as __elemMatch,
   $size as __size
-} from '../.internal/predicates'
+} from '../_predicates'
 
 export const $all = createQueryOperator(__all)
 export const $elemMatch = createQueryOperator(__elemMatch)

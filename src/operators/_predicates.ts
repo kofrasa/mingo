@@ -29,9 +29,9 @@ import {
   MIN_LONG,
   JsType,
   BsonType
-} from '../../util'
-import { Query } from '../../query'
-import { computeValue, Options } from '../../core'
+} from '../util'
+import { Query } from '../query'
+import { computeValue, Options } from '../core'
 
 /**
  * Returns a query operator created from the predicate

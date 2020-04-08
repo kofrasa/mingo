@@ -1,15 +1,15 @@
 # Changelog
 
-## 3.0.0 / 2020-04-05
+## 3.0.0 / 2020-04-10
 
 - Convert project to Typescript
 - Build ES6 libraries with support for selective import
-- Enable only Query and Projection operators on default import
-- Expose library via `esm` dependency
+- Enable only Query and Projection operators by default
+- Expose library via `esm` dependency to support module imports for ES5
 - Fix cyclic references
-- Implement type expression operators `$type`, `$convert`, `$toBool`, `$toDate`, `$toString`, `$toInt`, `$toLong`, `$toDouble`, `$toDecimal`
-- Implement `$dateFromString` operator
-- Implement string operators: `$trim`, `$rtrim`, `$ltrim`, `$regexFind`, `$regexFindAll`, `$regexMatch`
+- Implement type operators `$type`, `$convert`, `$toBool`, `$toDate`, `$toString`, `$toInt`, `$toLong`, `$toDouble`, `$toDecimal`
+- Implement date operators `$dateFromString`, `$dateFromParts`, `dateToParts`.
+- Implement string operators `$trim`, `$rtrim`, `$ltrim`, `$regexFind`, `$regexFindAll`, `$regexMatch`
 - Add timezone support for all date operators
 - Return all date operator results in UTC
 - Rename `group` module to `accumulator`
