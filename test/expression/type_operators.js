@@ -1,6 +1,73 @@
 import test from 'tape'
 import mingo from '../../lib'
 
+mingo.enableSystemOperators()
+
+test('Type Conversion: $toBool', function (t) {
+  let data = [
+    { _id: 1, item: "apple",  qty: 5, shipped: true },
+    { _id: 2, item: "pie",  qty: 10, shipped: 0  },
+    { _id: 3, item: "ice cream", shipped: 1 },
+    { _id: 4, item: "almonds", qty: 2, shipped: "true" },
+    { _id: 5, item: "pecans", shipped: "false" },  // Note: All strings convert to true
+    { _id: 6, item: "nougat", shipped: ""  }       // Note: All strings convert to true
+  ]
+
+  // Define stage to add convertedShippedFlag field with the converted shipped value
+  // Because all strings convert to true, include specific handling for "false" and ""
+  let shippedConversionStage = {
+    $addFields: {
+      convertedShippedFlag: {
+          $switch: {
+            branches: [
+              { case: { $eq: [ "$shipped", "false" ] }, then: false } ,
+              { case: { $eq: [ "$shipped", "" ] }, then: false }
+            ],
+            default: { $toBool: "$shipped" }
+        }
+      }
+    }
+  };
+
+  // Define stage to filter documents and pass only the unshipped orders
+  let unshippedMatchStage = { $match: { "convertedShippedFlag": false } }
+
+  let result = mingo.aggregate(data, [
+    shippedConversionStage,
+    unshippedMatchStage
+  ])
+
+  t.deepEqual(result, [
+    { "_id" : 2, "item" : "pie", "qty" : 10, "shipped" : 0, "convertedShippedFlag" : false },
+    { "_id" : 5, "item" : "pecans", "shipped" : "false", "convertedShippedFlag" : false },
+    { "_id" : 6, "item" : "nougat", "shipped" : "", "convertedShippedFlag" : false }
+  ], 'can apply $toBool')
+
+  t.end()
+})
+
+test('Type Conversion: $toLong', function (t) {
+  let data = [
+    { _id: 1, item: "apple", qty: 5 },
+    { _id: 2, item: "pie", qty: "100" },
+    { _id: 3, item: "ice cream", qty: 500 },
+    { _id: 4, item: "almonds", qty: "50" }
+  ]
+
+  let result = mingo.aggregate(data, [
+    { $addFields: { convertedQty: { $toLong: "$qty" } } }
+  ])
+
+  t.deepEqual(result, [
+    { "_id" : 1, "item" : "apple", "qty" : 5, "convertedQty" : 5 },
+    { "_id" : 2, "item" : "pie", "qty" : "100", "convertedQty" : 100 },
+    { "_id" : 3, "item" : "ice cream", "qty" : 500, "convertedQty" : 500 },
+    { "_id" : 4, "item" : "almonds", "qty" : "50", "convertedQty" : 50 }
+  ], 'can apply $toLong')
+
+  t.end()
+})
+
 test('Type Conversion Operators', function (t) {
 
   let result = mingo.aggregate([
