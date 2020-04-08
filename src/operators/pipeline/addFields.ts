@@ -28,8 +28,3 @@ export function $addFields(collection: Iterator, expr: any, options: Options): I
     return newObj
   })
 }
-
-/**
- * Alias for $addFields.
- */
-export const $set = $addFields
