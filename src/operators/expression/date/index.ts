@@ -1,5 +1,6 @@
 export * from './dateFromParts'
 export * from './dateFromString'
+export * from './dateToParts'
 export * from './dateToString'
 export * from './dayOfMonth'
 export * from './dayOfWeek'
