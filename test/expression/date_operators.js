@@ -109,3 +109,42 @@ test("Date Operators", function (t) {
   t.end();
 
 });
+
+
+test("Date Operators: $dateFromParts", function (t) {
+  let data = [
+    {
+      "_id" : 1,
+      "item" : "abc",
+      "price" : 20,
+      "quantity" : 5,
+      "date" : new Date("2017-05-20T10:24:51.303Z")
+    }
+  ]
+  let result = mingo.aggregate(data, [
+    {
+      $project: {
+        date: {
+          $dateFromParts: {
+            'year' : 2017, 'month' : 2, 'day': 8, 'hour' : 12
+          }
+        },
+        date_timezone: {
+          $dateFromParts: {
+            'year' : 2016, 'month' : 12, 'day' : 31, 'hour' : 23,
+            'minute' : 46, 'second' : 12, 'timezone' : '-0500'
+          }
+        },
+        date_range_greater: { $dateFromParts: { 'year' : 2017, 'month' : 14, 'day': 1, 'hour' : 12  } },
+        date_range_lesser: { $dateFromParts: { 'year' : 2017, 'month' : 0, 'day': 1, 'hour' : 12  } }
+      }
+    }]
+  )[0]
+
+  t.deepEqual(result.date, new Date("2017-02-08T12:00:00Z"), 'can apply $dateFromParts without all parts')
+  t.deepEqual(result.date_range_greater, new Date("2018-02-01T12:00:00Z"), 'can apply $dateFromParts with date parts above range of values')
+  t.deepEqual(result.date_range_lesser, new Date("2016-12-01T12:00:00Z"), 'can apply $dateFromParts with date parts below range of values')
+  t.deepEqual(result.date_timezone, new Date("2017-01-01T04:46:12Z"), 'can apply $dateFromParts with timezone')
+
+  t.end()
+})

@@ -19,12 +19,12 @@ interface Timezone {
  * @param tzstr Timezone string matching '+/-hh[:][mm]'
  */
 function parseTimezone(tzstr?: string): Timezone {
-  let re = DATE_SYM_TABLE['%z'][3] as RegExp
-  if (tzstr === null || tzstr === undefined) return { hour: 0, minute: 0 }
+  if (isNil(tzstr)) return { hour: 0, minute: 0 }
 
+  let re = DATE_SYM_TABLE['%z'][3] as RegExp
   let m = tzstr.match(re)
-  if (!m) throw Error(`invalid or location-based timezone ${tzstr} not supported`)
-  // hour, minute
+  if (!m) throw Error(`invalid or location-based timezone '${tzstr}' not supported`)
+
   return {
     hour:  parseInt(m[2]) || 0,
     minute: parseInt(m[3]) || 0
@@ -136,12 +136,12 @@ export function $week(obj: object, expr: any, options: Options): number {
 
   // Copy date so don't modify original
   d = new Date(+d)
-  d.setHours(0, 0, 0)
+  d.setUTCHours(0, 0, 0)
   // Set to nearest Thursday: current date + 4 - current day number
   // Make Sunday's day number 7
   d.setDate(d.getDate() + 4 - (d.getDay() || 7))
   // Get first day of year
-  let yearStart = new Date(d.getFullYear(), 0, 1)
+  let yearStart = new Date(d.getUTCFullYear(), 0, 1)
   // Calculate full weeks to nearest Thursday
   return Math.floor((((d.getTime() - yearStart.getTime()) / 8.64e7) + 1) / 7)
 }
@@ -301,7 +301,7 @@ export function $dateFromString(obj: object, expr: any, options: Options): any {
   args.onNull = args.onNull || null
 
   let dateString = args.dateString
-  if (dateString === null || dateString === undefined) return args.onNull
+  if (isNil(dateString)) return args.onNull
 
   // collect all separators of the format string
   let separators = args.format.split(/%[YGmdHMSLuVzZ]/)
@@ -373,4 +373,74 @@ export function $dateFromString(obj: object, expr: any, options: Options): any {
   adjustDate(d, tz)
 
   return d
+}
+
+// Inclusive interval of date parts
+const DATE_PART_INTERVAL = [
+  ['year', 0, 9999],
+  ['month', 1, 12],
+  ['day', 1, 31],
+  ['hour', 0, 23],
+  ['minute', 0, 59],
+  ['second', 0, 59],
+  ['millisecond', 0, 999]
+]
+
+/**
+ * Constructs and returns a Date object given the date’s constituent properties.
+ *
+ * @param obj The document
+ * @param expr The date expression
+ * @param options Options
+ */
+export function $dateFromParts(obj: object, expr: any, options: Options): any {
+  let args: {
+    year: number
+    month?: number
+    day?: number
+    hour?: number
+    minute?: number
+    second?: number
+    millisecond?: number
+    timezone?: string
+  } = computeValue(obj, expr, null, options)
+
+  let tz = parseTimezone(args.timezone)
+
+  // assign default and adjust value ranges of the different parts
+
+  for (let i = DATE_PART_INTERVAL.length-1, remainder = 0; i >= 0; i--) {
+    let [k, min, max] = DATE_PART_INTERVAL[i]
+    min = min as number
+    max = max as number
+
+    // add remainder from previous part. units should already be correct
+    let part = (args[k] || 0) + remainder
+
+    // 1. compute the remainder for the next part
+    // 2. adjust the current part to a valid range
+    // 3. assign back to 'args'
+    let limit = max + 1
+
+    // invert timezone to adjust the hours to UTC
+    if (k == 'hour') part += (tz.hour * -1)
+    if (k == 'minute') part += (tz.minute * -1)
+
+    // smaller than lower bound
+    if (part < min) {
+      let delta = min - part
+      remainder = -1 * Math.ceil(delta / limit)
+      part = limit - (delta % limit)
+    } else if (part > max) {
+      // offset with the 'min' value to adjust non-zero date parts correctly
+      part += min
+      remainder = Math.trunc(part / limit)
+      part %= limit
+    }
+
+    // reassign
+    args[k] = part
+  }
+
+  return new Date(Date.UTC(args.year, args.month-1, args.day, args.hour, args.minute, args.second, args.millisecond))
 }
