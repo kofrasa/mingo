@@ -178,7 +178,10 @@ test('Projection $elemMatch operator', function (t) {
   ], 'can project multiple fields with $elemMatch')
 
   result = mingo.find(data, { }, { students: {$slice: 1 } } ).all()[0]
-  t.equal(result.students.length, 1, 'can project with $slice')
+  t.equal(result.students.length, 1, 'can project $slice with limit')
+
+  result = mingo.find(data, { }, { students: {$slice: [1, 2] } } ).all()[0]
+  t.equal(result.students.length, 2, 'can project $slice with skip and limit')
 
   t.end()
 

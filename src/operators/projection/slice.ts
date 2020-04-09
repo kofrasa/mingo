@@ -1,13 +1,8 @@
 // $slice operator. https://docs.mongodb.com/manual/reference/operator/projection/slice/#proj._S_slice
 
-import {
-  assert,
-  isArray,
-  isNumber,
-  resolve,
-  slice
-} from '../../util'
+import { isArray, resolve } from '../../util'
 import { Options } from '../../core'
+import { $slice as __slice } from '../expression/array'
 
 /**
  * Limits the number of elements projected from an array. Supports skip and limit slices.
@@ -21,10 +16,5 @@ export function $slice(obj: object, expr: any, field: string, options: Options):
 
   if (!isArray(xs)) return xs
 
-  if (isArray(expr)) {
-    return slice(xs, expr[0], expr[1])
-  } else {
-    assert(isNumber(expr), '$slice: invalid arguments for projection')
-    return slice(xs, expr)
-  }
+  return __slice(obj, isArray(expr) ? [xs, ...expr] : [xs , expr], options)
 }

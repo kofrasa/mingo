@@ -1,7 +1,7 @@
 // Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
 
 import { computeValue, Options } from '../../../core'
-import { slice } from '../../../util'
+import { assert, isNil } from '../../../util'
 
 
 /**
@@ -12,6 +12,26 @@ import { slice } from '../../../util'
  * @return {*}
  */
 export function $slice(obj: object, expr: any, options: Options): any {
-  let arr = computeValue(obj, expr, null, options)
-  return slice(arr[0], arr[1], arr[2])
+  let args = computeValue(obj, expr, null, options)
+  let [arr, skip, limit] = args
+
+  // MongoDB $slice works a bit differently from Array.slice
+  // Uses single argument for 'limit' and array argument [skip, limit]
+  if (isNil(limit)) {
+    if (skip < 0) {
+      skip = Math.max(0, arr.length + skip)
+      limit = arr.length - skip + 1
+    } else {
+      limit = skip
+      skip = 0
+    }
+  } else {
+    if (skip < 0) {
+      skip = Math.max(0, arr.length + skip)
+    }
+    assert(limit > 0, 'Invalid argument value for $slice operator. Limit must be a positive number')
+    limit += skip
+  }
+
+  return arr.slice(skip, limit)
 }
