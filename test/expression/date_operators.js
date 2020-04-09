@@ -1,6 +1,47 @@
 import test from 'tape'
 import mingo from '../../lib'
+import * as support from '../support'
 
+support.runTest('Date operators:', {
+  $dateFromString: [
+    [
+      { dateString: "2017-02-08T12:10:40.787" },
+      new Date("2017-02-08T12:10:40.787Z")
+    ],
+
+    [
+      { dateString: "2017-02-08T12:10:40.787", timezone: "America/New_York" },
+      'timezone error',
+      { err: true }
+    ],
+
+    [
+      { dateString: "2017-02-08T12:10:40.787", timezone: "+0500" },
+      new Date("2017-02-08T17:10:40.787Z")
+    ],
+
+    [
+      { dateString: "2017-02-08" },
+      new Date("2017-02-08T00:00:00Z")
+    ],
+
+    [
+      {
+        dateString: "06-15-2018",
+        format: "%m-%d-%Y"
+      },
+      new Date("2018-06-15T00:00:00Z")
+    ],
+
+    [
+      {
+        dateString: "15-06-2018",
+        format: "%d-%m-%Y"
+      },
+      new Date("2018-06-15T00:00:00Z")
+    ]
+  ]
+})
 
 test("Date Operators", function (t) {
 

@@ -71,9 +71,9 @@ export function $dateFromString(obj: object, expr: any, options: Options): any {
 
   // 1. validate all required date parts exists
   // 2. validate original dateString against expected pattern.
-  if (dateParts.year === null
-    || dateParts.month === null
-    || dateParts.day === null
+  if (isNil(dateParts.year)
+    || isNil(dateParts.month)
+    || isNil(dateParts.day)
     || !args.dateString.match(new RegExp('^' + expectedPattern + '$'))) return args.onError
 
   let tz = parseTimezone(args.timezone)
@@ -81,10 +81,10 @@ export function $dateFromString(obj: object, expr: any, options: Options): any {
   // create the date. month is 0-based in Date
   let d = new Date(Date.UTC(dateParts.year, dateParts.month - 1, dateParts.day, 0, 0, 0))
 
-  if (dateParts.hour !== null) d.setUTCHours(dateParts.hour)
-  if (dateParts.minute !== null) d.setUTCMinutes(dateParts.minute)
-  if (dateParts.second !== null) d.setUTCSeconds(dateParts.second)
-  if (dateParts.millisecond !== null) d.setUTCMilliseconds(dateParts.millisecond)
+  if (!isNil(dateParts.hour)) d.setUTCHours(dateParts.hour)
+  if (!isNil(dateParts.minute)) d.setUTCMinutes(dateParts.minute)
+  if (!isNil(dateParts.second)) d.setUTCSeconds(dateParts.second)
+  if (!isNil(dateParts.millisecond)) d.setUTCMilliseconds(dateParts.millisecond)
 
   // The minute part is unused when converting string.
   // This was observed in the tests on MongoDB site but not officially stated anywhere
