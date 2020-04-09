@@ -10,8 +10,8 @@ import { computeValue, Options } from '../../../core'
  * @param  {*} expr [description]
  * @return {*}      [description]
  */
-export function $filter(obj: object, expr: any, ctx: Options): any {
-  let input = computeValue(obj, expr.input, null, ctx)
+export function $filter(obj: object, expr: any, options: Options): any {
+  let input = computeValue(obj, expr.input, null, options)
   let asVar = expr['as']
   let condExpr = expr['cond']
 
@@ -21,6 +21,6 @@ export function $filter(obj: object, expr: any, ctx: Options): any {
     // inject variable
     let tempObj = {}
     tempObj['$' + asVar] = o
-    return computeValue(tempObj, condExpr, null, ctx) === true
+    return computeValue(tempObj, condExpr, null, options) === true
   })
 }

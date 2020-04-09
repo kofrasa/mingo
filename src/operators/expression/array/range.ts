@@ -10,8 +10,8 @@ import { computeValue, Options } from '../../../core'
  * @param  {*} expr
  * @return {*}
  */
-export function $range(obj: object, expr: any, ctx: Options): any {
-  let arr = computeValue(obj, expr, null, ctx)
+export function $range(obj: object, expr: any, options: Options): any {
+  let arr = computeValue(obj, expr, null, options)
   let start = arr[0]
   let end = arr[1]
   let step = arr[2] || 1

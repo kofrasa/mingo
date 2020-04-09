@@ -10,8 +10,8 @@ import { computeValue, Options } from '../../../core'
  * @param expr
  * @returns {Array|*}
  */
-export function $map(obj: object, expr: any, ctx: Options): any {
-  let inputExpr = computeValue(obj, expr.input, null, ctx)
+export function $map(obj: object, expr: any, options: Options): any {
+  let inputExpr = computeValue(obj, expr.input, null, options)
   assert(isArray(inputExpr), `$map 'input' expression must resolve to an array`)
 
   let asExpr = expr['as']
@@ -23,6 +23,6 @@ export function $map(obj: object, expr: any, ctx: Options): any {
   let tempKey = '$' + asExpr
   return inputExpr.map((v: any) => {
     obj[tempKey] = v
-    return computeValue(obj, inExpr, null, ctx)
+    return computeValue(obj, inExpr, null, options)
   })
 }

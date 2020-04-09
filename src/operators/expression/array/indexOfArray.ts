@@ -11,8 +11,8 @@ import { computeValue, Options } from '../../../core'
  * @param  {*} expr
  * @return {*}
  */
-export function $indexOfArray(obj: object, expr: any, ctx: Options): any {
-  let args = computeValue(obj, expr, null, ctx)
+export function $indexOfArray(obj: object, expr: any, options: Options): any {
+  let args = computeValue(obj, expr, null, options)
   if (isNil(args)) return null
 
   let arr = args[0]

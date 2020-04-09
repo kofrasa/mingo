@@ -9,6 +9,6 @@ import { computeValue, Options } from '../../../core'
  * @param  {*}  expr
  * @return {Boolean}
  */
-export function $isArray(obj: object, expr: any, ctx: Options): any {
-  return computeValue(obj, expr[0], null, ctx) instanceof Array
+export function $isArray(obj: object, expr: any, options: Options): any {
+  return computeValue(obj, expr[0], null, options) instanceof Array
 }

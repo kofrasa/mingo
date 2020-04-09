@@ -13,8 +13,8 @@ import { computeValue, Options } from '../../../core'
  * @param  {*} expr
  * @return {*}
  */
-export function $zip(obj: object, expr: any, ctx: Options): any {
-  let inputs = computeValue(obj, expr.inputs, null, ctx)
+export function $zip(obj: object, expr: any, options: Options): any {
+  let inputs = computeValue(obj, expr.inputs, null, options)
   let useLongestLength = expr.useLongestLength || false
 
   assert(isArray(inputs), "'inputs' expression must resolve to an array")

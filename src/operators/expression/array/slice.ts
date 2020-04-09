@@ -11,7 +11,7 @@ import { slice } from '../../../util'
  * @param  {*} expr
  * @return {*}
  */
-export function $slice(obj: object, expr: any, ctx: Options): any {
-  let arr = computeValue(obj, expr, null, ctx)
+export function $slice(obj: object, expr: any, options: Options): any {
+  let arr = computeValue(obj, expr, null, options)
   return slice(arr[0], arr[1], arr[2])
 }

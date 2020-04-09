@@ -9,8 +9,8 @@ import { computeValue, Options } from '../../../core'
  * @param {Object} obj
  * @param {Array} expr
  */
-export function $in(obj: object, expr: any, ctx: Options): any {
-  let args = computeValue(obj, expr, null, ctx)
+export function $in(obj: object, expr: any, options: Options): any {
+  let args = computeValue(obj, expr, null, options)
   let item = args[0]
   let arr = args[1]
   assert(isArray(arr), '$in second argument must be an array')

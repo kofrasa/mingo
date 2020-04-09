@@ -6,8 +6,8 @@ import { computeValue, Options } from '../../../core'
 /**
  * Converts an array of key value pairs to a document.
  */
-export function $arrayToObject(obj: object, expr: any, ctx: Options): any {
-  let arr = computeValue(obj, expr, null, ctx) as any[]
+export function $arrayToObject(obj: object, expr: any, options: Options): any {
+  let arr = computeValue(obj, expr, null, options) as any[]
   assert(isArray(arr), '$arrayToObject expression must resolve to an array')
 
   return arr.reduce((newObj, val) => {

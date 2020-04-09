@@ -11,8 +11,8 @@ import { assert, isArray, isNil } from '../../../util'
  * @param  {*} expr
  * @return {*}
  */
-export function $arrayElemAt(obj: object, expr: any, ctx: Options): any {
-  let args = computeValue(obj, expr, null, ctx)
+export function $arrayElemAt(obj: object, expr: any, options: Options): any {
+  let args = computeValue(obj, expr, null, options)
   assert(isArray(args) && args.length === 2, '$arrayElemAt expression must resolve to array(2)')
 
   if (args.some(isNil)) return null

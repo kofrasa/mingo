@@ -10,7 +10,7 @@ import { isArray } from '../../../util'
  * @param obj
  * @param expr
  */
-export function $size(obj: object, expr: any, ctx: Options): any {
-  let value = computeValue(obj, expr, null, ctx)
+export function $size(obj: object, expr: any, options: Options): any {
+  let value = computeValue(obj, expr, null, options)
   return isArray(value) ? value.length : undefined
 }

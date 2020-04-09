@@ -11,8 +11,8 @@ import { computeValue, Options } from '../../../core'
  * @param  {*} expr
  * @return {*}
  */
-export function $concatArrays(obj: object, expr: any, ctx: Options): any {
-  let arr = computeValue(obj, expr, null, ctx) as any[]
+export function $concatArrays(obj: object, expr: any, options: Options): any {
+  let arr = computeValue(obj, expr, null, options) as any[]
   assert(isArray(arr), '$concatArrays must resolve to an array')
 
   if (arr.some(isNil)) return null
