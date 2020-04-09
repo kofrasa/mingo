@@ -9,7 +9,8 @@ import {
   isString,
   keys,
   resolve,
-  Callback
+  Callback,
+  isOperator
 } from './util'
 
 /**
@@ -60,10 +61,7 @@ interface Operators {
  */
 function validateOperators(operators: Operators): void {
   each(operators, (v: Function, k: string) => {
-    assert(
-      v instanceof Function && /^\$[a-zA-Z0-9_]+$/.test(k),
-      "operator must be a function with name prefix '$'"
-    )
+    assert(v instanceof Function && isOperator(k), "invalid operator specified")
   })
 }
 
@@ -95,7 +93,7 @@ export function getOperator(cls: OperatorType, operator: string): Function {
  */
 export function addOperators(cls: OperatorType, operatorFn: Callback<Operators>) {
 
-  const newOperators = operatorFn({ accumulate, computeValue, resolve })
+  const newOperators = operatorFn({ computeValue, resolve })
 
   validateOperators(newOperators)
 
@@ -198,42 +196,13 @@ const redactVariables: object = {
   }
 }
 
-/**
- * Returns the result of evaluating a $group operation over a collection
- *
- * @param collection
- * @param field the name of the aggregate operator or field
- * @param expr the expression of the aggregate operator for the field
- * @returns {*}
- */
-export function accumulate(collection: any[], field: string, expr: any, options: Options): any {
-  let call = getOperator(OperatorType.ACCUMULATOR, field)
-  if (call) return call(collection, expr, options)
-
-  if (isObject(expr)) {
-    let result = {}
-    each(expr, (val, key) => {
-      result[key] = accumulate(collection, key, expr[key], options)
-      // must run ONLY one group operator per expression
-      // if so, return result of the computed value
-      if (getOperator(OperatorType.ACCUMULATOR, key)) {
-        result = result[key]
-        // if there are more keys in expression this is bad
-        assert(keys(expr).length === 1, "Invalid $group expression '" + JSON.stringify(expr) + "'")
-        return false // break
-      }
-    })
-    return result
-  }
-}
-
 // options to core functions computeValue() and redact()
 interface ComputeOptions extends Options {
   root?: object
 }
 
 /**
- * Computes the actual value of the expression using the given object as context
+ * Computes the value of the expression on the object for the given operator
  *
  * @param obj the current object from the collection
  * @param expr the expression for the given field
@@ -241,7 +210,7 @@ interface ComputeOptions extends Options {
  * @param options {Object} extra options
  * @returns {*}
  */
-export function computeValue(obj: object, expr: any, operator: string, options?: ComputeOptions): any {
+export function computeValue(obj: object | any[], expr: any, operator: string, options?: ComputeOptions): any {
   // ensure valid options exist on first invocation
   options = options || { config: null }
   options.config = options.config || createConfig()
@@ -253,11 +222,18 @@ export function computeValue(obj: object, expr: any, operator: string, options?:
   // we also handle $group accumulator operators
   call = getOperator(OperatorType.ACCUMULATOR, operator)
   if (call) {
-    // we first fully resolve the expression
-    obj = computeValue(obj, expr, null, options)
-    assert(isArray(obj), operator + ' expression must resolve to an array')
+
+    // if object is not an array, first try to compute using the expression
+    if (!isArray(obj)) {
+      obj = computeValue(obj, expr, null, options)
+      expr = null
+    }
+
+    // validate that we have an array
+    assert(isArray(obj), `${operator} target must be an array.`)
+
     // we pass a null expression because all values have been resolved
-    return call(obj, null, options)
+    return call(obj, expr, options)
   }
 
   // if expr is a variable for an object field

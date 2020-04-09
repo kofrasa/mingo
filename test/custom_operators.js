@@ -1,8 +1,7 @@
 import test from 'tape'
 import * as support from './support'
 import mingo from '../lib'
-import { OperatorType } from '../lib'
-import { addOperators } from '../lib/core'
+import { addOperators, OperatorType } from '../lib/core'
 
 
 test('Custom Operators', function (t) {

@@ -65,12 +65,52 @@ import mingo from 'mingo'
 const mingo = require('mingo')
 ```
 
-Since version `3.0.0` only [Query and Projection](https://docs.mongodb.com/manual/reference/operator/query/) operators are loaded when using the default import. This happens automatically by executing `enableDefaultOperators` in the main module file.
+### Changes in 3.0.0
 
-Other operators may be selectively imported and registered via ES6 module syntax to support tree-shaking in your project.
-To include all available operators import and run `enableSystemOperators` from the main module.
+#### Default exports and operators
 
-### Importing from submodules
+The default export of the main module only includes `Aggregator`, `Query`, `aggregate()`, `find()`, and `remove()`.
+
+Only [Query and Projection](https://docs.mongodb.com/manual/reference/operator/query/) operators are loaded by default when using the main module.
+This is done using the side-effect module `mingo/init`, and automatically includes pipeline operators `$project`, `$skip`, `$limit`, and `$sort`.
+
+If your application uses a most of the available operators or you do not care about bundle size, you can load all operators as shown below.
+
+```js
+// Note that doing this effectively imports the entire library into your bundle and unused operators cannot be tree shaked
+import 'mingo/init/system'
+```
+
+By using a side-effect module you can also load operators at startup in a `NodeJS` environment such as;
+
+```sh
+# loads only the default operators
+node -r `mingo/init` myscript.js
+
+# load all defined operators
+node -r 'mingo/init/system' myscript.js
+```
+
+#### Custom Operators
+
+The `addOperators` function for registering custom operators and helper constants have been moved to `mingo/core`.
+The constants `OP_XXX` have been deprecated and replace with an enum type `OperatorType` also in `mingo/core`.
+The values defined include;
+
+- `ACCUMULATOR`
+- `EXPRESSION`
+- `PIPELINE`
+- `PROJECTION`
+- `QUERY`
+
+Lastly, the function argument to `addOperators(operatorType, fn)` now accepts an object with the these two internal functions;
+
+- `computeValue(obj: object | any[], expr: any, operator: string, options?: ComputeOptions): any`
+- `resolve(obj: object | any[], selector: string, options?: ResolveOptions): any`
+
+Any extra utility may be imported directly from the specific module.
+
+### Importing submodules
 
 Submodule imports are supported for both ES6 and ES5. For ES5 projects using commonJS style `require()` syntax, the [esm](https://www.npmjs.com/package/esm) is used to load the main entry point for compatibility.
 
@@ -95,23 +135,12 @@ const $unwind = require('mingo/operators/pipeline').$unwind
 To support tree-shaking, you may import and register specific operators that will be used in your application.
 
 ```js
-import { useOperators, OperatorType } from 'mingo'
+import { useOperators, OperatorType } from 'mingo/core'
 import { $trunc } from 'mingo/operators/expression'
 import { $bucket } from 'mingo/operators/pipeline'
 
 useOperators(OperatorType.EXPRESSION, { $trunc, $floor })
 useOperators(OperatorType.PIPELINE, { $bucket })
-```
-
-The query and projection operators are loaded by default. This subsequently loads pipeline operators `$project`, `$skip`, `$limit`, and `$sort`.
-If your application uses a most of the available operators or you do not care about bundle size, you can load all defined operators as shown below.
-
-```js
-// By default only query and projection operators are loaded in the main entry script
-// Note that doing this effectively imports the entire library into your bundle and unused operators cannot be tree shaked
-import { enableSystemOperators } from 'mingo'
-
-enableSystemOperators()
 ```
 
 ## Using query object to test objects
@@ -171,7 +200,8 @@ cursor.all()
 ## Aggregation Pipeline
 
 ```js
-import { Aggregator, useOperators, OperatorType } from 'mingo'
+import { Aggregator } from 'mingo/aggregator'
+import { useOperators, OperatorType } from 'mingo/core'
 import { $match, $group } from 'mingo/operators/pipeline'
 import { $min } from 'mingo/operators/accumulator'
 

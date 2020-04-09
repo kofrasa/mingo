@@ -6,7 +6,7 @@ import {
   memoize,
   sortBy
 } from '../../util'
-import { accumulate, computeValue, Options } from '../../core'
+import { computeValue, Options } from '../../core'
 import { Iterator } from '../../lazy'
 
 
@@ -78,7 +78,7 @@ export function $bucketAuto(collection: Iterator, expr: any, options: Options): 
         into(bucketItems, sorted.slice(index))
       }
 
-      result.push(Object.assign(accumulate(bucketItems, null, outputExpr, options), { '_id': boundaries }))
+      result.push(Object.assign(computeValue(bucketItems, outputExpr, null, options), { '_id': boundaries }))
     }
 
     if (result.length > 0) {

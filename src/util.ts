@@ -754,13 +754,14 @@ export function removeValue(obj: any, selector: any): void {
   })
 }
 
+const OPERATOR_NAME_PATTERN = /^\$[a-zA-Z0-9_]+$/
 /**
- * Check whether the given name is an operator. We assume any field name starting with '$' is an operator.
+ * Check whether the given name passes for an operator. We assume any field name starting with '$' is an operator.
  * This is cheap and safe to do since keys beginning with '$' should be reserved for internal use.
  * @param {String} name
  */
 export function isOperator(name: string): boolean {
-  return !!name && name[0] === '$'
+  return OPERATOR_NAME_PATTERN.test(name)
 }
 
 /**

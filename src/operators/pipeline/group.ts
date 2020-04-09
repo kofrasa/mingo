@@ -3,7 +3,7 @@ import {
   each,
   groupBy
 } from '../../util'
-import { accumulate, computeValue, Options } from '../../core'
+import { computeValue, Options } from '../../core'
 import { Iterator } from '../../lazy'
 
 
@@ -45,7 +45,7 @@ export function $group(collection: Iterator, expr: any, options: Options): Itera
 
       // compute remaining keys in expression
       each(expr, (val, key) => {
-        obj[key] = accumulate(partitions.groups[i], key, val, options)
+        obj[key] = computeValue(partitions.groups[i], val, key, options)
       })
 
       return { value: obj, done: false }

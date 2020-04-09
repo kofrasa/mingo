@@ -1,17 +1,12 @@
-import { useOperators, OperatorType } from './core'
 import { Query } from './query'
 import { Aggregator } from './aggregator'
 import { Cursor } from './cursor'
-import { Lazy } from './lazy'
 
 // loads all default operators
 import './init'
 
-export { useOperators, OperatorType } from './core'
 export { Query } from './query'
 export { Aggregator } from './aggregator'
-export { Cursor } from './cursor'
-export { Lazy } from './lazy'
 
 /**
  * Performs a query on a collection and returns a cursor object.
@@ -54,20 +49,7 @@ export function aggregate(collection: object[], pipeline: object[]): any[] {
 export default {
   Aggregator,
   Query,
-  Cursor,
-  Lazy,
   aggregate,
   find,
-  remove,
-
-  // Deprecated. Preserved for backward-compatibility with 2.x.x. Users should prefer OperatorType
-  OP_EXPRESSION: OperatorType.EXPRESSION,
-  OP_GROUP: OperatorType.ACCUMULATOR,
-  OP_PIPELINE: OperatorType.PIPELINE,
-  OP_PROJECTION: OperatorType.PROJECTION,
-  OP_QUERY: OperatorType.QUERY,
-
-  // Since 3.0.0
-  OperatorType,
-  useOperators
+  remove
 }
