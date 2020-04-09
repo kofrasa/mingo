@@ -1,4 +1,4 @@
-import { isObject, Callback, Predicate } from './util'
+import { isObject, Callback, Predicate, into } from './util'
 import { Aggregator } from './aggregator'
 import { Lazy, Iterator, Source } from './lazy'
 import { CollationSpec } from './operators/pipeline/sort'
@@ -102,7 +102,7 @@ export class Cursor {
    * @param {*} spec
    */
   collation(spec: CollationSpec): Cursor {
-    Object.assign(this.__options, { collation: spec })
+    into(this.__options, { collation: spec })
     return this
   }
 

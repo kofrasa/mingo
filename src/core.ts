@@ -10,7 +10,8 @@ import {
   keys,
   resolve,
   Callback,
-  isOperator
+  isOperator,
+  into
 } from './util'
 
 /**
@@ -73,7 +74,7 @@ function validateOperators(operators: Operators): void {
  */
 export function useOperators(cls: OperatorType, operators: Operators): void {
   validateOperators(operators)
-  Object.assign(OPERATORS[cls], operators)
+  into(OPERATORS[cls], operators)
 }
 
 /**
@@ -249,7 +250,7 @@ export function computeValue(obj: object | any[], expr: any, operator: string, o
     if (has(systemVariables, arr[0])) {
       // set 'root' only the first time it is required to be used for all subsequent calls
       // if it already available on the options, it will be used
-      obj = systemVariables[arr[0]](obj, null, Object.assign({ root: obj }, options))
+      obj = systemVariables[arr[0]](obj, null, into({ root: obj }, options))
       if (arr.length == 1) return obj
       expr = expr.substr(arr[0].length) // '.' prefix will be sliced off below
     }
@@ -289,6 +290,6 @@ export function computeValue(obj: object | any[], expr: any, operator: string, o
 export function redact(obj: object, expr: any, options: ComputeOptions): object {
   let result = computeValue(obj, expr, null, options)
   return has(redactVariables, result)
-    ? redactVariables[result](obj, expr, Object.assign({root: obj}, options))
+    ? redactVariables[result](obj, expr, into({root: obj}, options))
     : result
 }

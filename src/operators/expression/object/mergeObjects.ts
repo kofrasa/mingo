@@ -1,6 +1,7 @@
 // Object Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#object-expression-operators
 
 import { computeValue, Options } from '../../../core'
+import { into } from '../../../util'
 
 /**
  * Combines multiple documents into a single document.
@@ -11,5 +12,5 @@ import { computeValue, Options } from '../../../core'
  */
 export function $mergeObjects(obj: object, expr: any, options: Options): any {
   let docs = computeValue(obj, expr, null, options)
-  return docs instanceof Array ? docs.reduce((memo, o) => Object.assign(memo, o), {}): {}
+  return docs instanceof Array ? docs.reduce((memo, o) => into(memo, o), {}): {}
 }

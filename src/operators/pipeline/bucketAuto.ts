@@ -78,7 +78,7 @@ export function $bucketAuto(collection: Iterator, expr: any, options: Options): 
         into(bucketItems, sorted.slice(index))
       }
 
-      result.push(Object.assign(computeValue(bucketItems, outputExpr, null, options), { '_id': boundaries }))
+      result.push(into(computeValue(bucketItems, outputExpr, null, options), { '_id': boundaries }))
     }
 
     if (result.length > 0) {

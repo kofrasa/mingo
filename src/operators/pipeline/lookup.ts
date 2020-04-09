@@ -4,7 +4,8 @@ import {
   hashCode,
   isArray,
   isString,
-  resolve
+  resolve,
+  into
 } from '../../util'
 import { Iterator } from '../../lazy'
 import { Options } from '../../core'
@@ -34,7 +35,7 @@ export function $lookup(collection: Iterator, expr: any, options: Options): Iter
 
   return collection.map(obj => {
     let k = hashCode(resolve(obj, localField))
-    let newObj = Object.assign({}, obj)
+    let newObj = into({}, obj)
     newObj[asField] = hash[k] || []
     return newObj
   })

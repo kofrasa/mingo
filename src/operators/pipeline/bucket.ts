@@ -2,7 +2,8 @@ import {
   assert,
   each,
   getType,
-  isNil
+  isNil,
+  into
 } from '../../util'
 import { computeValue, Options } from '../../core'
 import { Lazy, Iterator } from '../../lazy'
@@ -64,7 +65,7 @@ export function $bucket(collection: Iterator, expr: any, options: Options): Iter
 
       iterator = Lazy(boundaries).map(key => {
         let acc = computeValue(grouped[key], outputExpr, null, options)
-        return Object.assign(acc, { '_id': key })
+        return into(acc, { '_id': key })
       })
     }
 

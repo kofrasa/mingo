@@ -168,7 +168,7 @@ interface MergeOptions {
  * @param target {Object|Array} the target to merge into
  * @param obj {Object|Array} the source object
  */
-export function merge(target: object, obj: object, options: MergeOptions): object {
+export function merge(target: object, obj: object, options?: MergeOptions): object {
   // take care of missing inputs
   if (target === MISSING) return obj
   if (obj === MISSING) return target
@@ -180,7 +180,7 @@ export function merge(target: object, obj: object, options: MergeOptions): objec
   }
 
   // default options
-  options.flatten = options.flatten || false
+  options = options || { flatten: false }
 
   if (isArray(target)) {
     let result = target as any[]
@@ -510,20 +510,32 @@ export function groupBy(collection: any[], keyFn: Callback<any>): { keys: any[],
 const MAX_ARRAY_PUSH = 50000
 
 /**
- * Push elements in given array into target array
+ * Merge elements into the dest
  *
- * @param {*} dest The array to push into
- * @param {*} src The array of elements to push
+ * @param {*} target The target object
+ * @param {*} rest The array of elements to merge into dest
  */
-export function into(dest: any[], src: any[]): any[] {
-  // push arrary in batches to handle large inputs
-  let i = Math.ceil(src.length / MAX_ARRAY_PUSH)
-  let begin = 0
-  while (i-- > 0) {
-    Array.prototype.push.apply(dest, src.slice(begin, begin + MAX_ARRAY_PUSH))
-    begin += MAX_ARRAY_PUSH
+export function into(target: any, ...rest: any[]): any {
+  if (target instanceof Array) {
+    return rest.reduce((acc, arr) => {
+      // push arrary in batches to handle large inputs
+      let i = Math.ceil(arr.length / MAX_ARRAY_PUSH)
+      let begin = 0
+      while (i-- > 0) {
+        Array.prototype.push.apply(acc, arr.slice(begin, begin + MAX_ARRAY_PUSH))
+        begin += MAX_ARRAY_PUSH
+      }
+      return acc
+    }, target)
+  } else if (isObject(target)) {
+    // merge objects. same behaviour as Object.assign
+    return rest.filter(isObjectLike).reduce((acc, item) => {
+      each(item, (v, k) => acc[k] = v)
+      return acc
+    }, target)
   }
-  return dest
+
+  return null
 }
 
 /**

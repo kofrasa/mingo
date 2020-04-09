@@ -17,7 +17,8 @@ import {
   removeValue,
   resolveGraph,
   setValue,
-  isOperator
+  isOperator,
+  into
 } from '../../util'
 import { computeValue, getOperator, OperatorType, Options } from '../../core'
 import { Iterator } from '../../lazy'
@@ -177,7 +178,7 @@ function processObject(obj: object, expr: any, options: Options, expressionKeys:
   // 2. some fields were explicitly excluded
   // 3. only the id field was excluded
   if (foundSlice || foundExclusion || idOnlyExcluded) {
-    newObj = Object.assign({}, obj, newObj)
+    newObj = into({}, obj, newObj)
     if (dropKeys.length > 0) {
       newObj = cloneDeep(newObj)
       each(dropKeys, k => removeValue(newObj, k))

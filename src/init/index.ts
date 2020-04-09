@@ -11,15 +11,16 @@ import * as projectionOperators from '../operators/projection'
 
 // helpers
 import { useOperators, OperatorType } from '../core'
+import { into } from '../util'
 
 /**
  * Enable default operators. This includes only query and projection operators
  */
 function enableDefaultOperators() {
-  useOperators(OperatorType.EXPRESSION, Object.assign({}, booleanOperators, comparsonOperators))
+  useOperators(OperatorType.EXPRESSION, into({}, booleanOperators, comparsonOperators))
   useOperators(OperatorType.PIPELINE, { $project, $skip, $limit, $sort })
   useOperators(OperatorType.PROJECTION, projectionOperators)
-  useOperators(OperatorType.QUERY, Object.assign({}, queryArray, queryComparison, queryElement, queryEvaluation, queryLogical))
+  useOperators(OperatorType.QUERY, into({}, queryArray, queryComparison, queryElement, queryEvaluation, queryLogical))
 }
 
 enableDefaultOperators()
