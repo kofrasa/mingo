@@ -1,6 +1,7 @@
-import { isNumber, stddev } from '../../util'
+import { isNumber } from '../../util'
 import { $push } from './push'
 import { Options } from '../../core'
+import { stddev } from './_internal'
 
 /**
  * Returns the population standard deviation of the input values.
