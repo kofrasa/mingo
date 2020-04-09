@@ -8,7 +8,8 @@ import {
   isObjectLike,
   isString,
   keys,
-  resolve
+  resolve,
+  Callback
 } from './util'
 
 /**
@@ -50,13 +51,30 @@ each(OperatorType, (cls: OperatorType) => {
   OPERATORS[cls] = {}
 })
 
+interface Operators {
+  [key: string]: Function
+}
+
+/**
+ * Validates the object collection of operators
+ */
+function validateOperators(operators: Operators): void {
+  each(operators, (v: Function, k: string) => {
+    assert(
+      v instanceof Function && /^\$[a-zA-Z0-9_]+$/.test(k),
+      "operator must be a function with name prefix '$'"
+    )
+  })
+}
+
 /**
  * Register fully specified operators for the given operator class.
  *
  * @param cls Category of the operator
  * @param operators Name of operator
  */
-export function useOperators(cls: OperatorType, operators: object): void {
+export function useOperators(cls: OperatorType, operators: Operators): void {
+  validateOperators(operators)
   Object.assign(OPERATORS[cls], operators)
 }
 
@@ -75,13 +93,14 @@ export function getOperator(cls: OperatorType, operator: string): Function {
  * @param cls the operator class to extend
  * @param operatorFn a callback that accepts internal object state and returns an object of new operators.
  */
-export function addOperators(cls: OperatorType, operatorFn: Function) {
+export function addOperators(cls: OperatorType, operatorFn: Callback<Operators>) {
 
   const newOperators = operatorFn({ accumulate, computeValue, resolve })
 
+  validateOperators(newOperators)
+
   // check for existing operators
   each(newOperators, (_, op) => {
-    assert(/^\$[a-zA-Z0-9_]*$/.test(op), `Invalid operator name ${op}`)
     let call = getOperator(cls, op)
     assert(!call, `${op} already exists for '${cls}' operators`)
   })

@@ -141,10 +141,9 @@ export function each(obj: object, fn: Callback<any>): void {
       if (fn(arr[i], i) === false) break
     }
   } else {
-    for (let k in obj) {
-      if (has(obj, k)) {
-        if (fn(obj[k], k) === false) break
-      }
+    let arr = keys(obj)
+    for (let i = 0, len = arr.length; i < len; i++) {
+      fn(obj[arr[i]], arr[i])
     }
   }
 }
