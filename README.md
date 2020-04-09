@@ -85,7 +85,7 @@ By using a side-effect module you can also load operators at startup in a `NodeJ
 
 ```sh
 # loads only the default operators
-node -r `mingo/init` myscript.js
+node -r 'mingo/init' myscript.js
 
 # load all defined operators
 node -r 'mingo/init/system' myscript.js
