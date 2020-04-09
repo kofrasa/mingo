@@ -1,6 +1,5 @@
 import {
   assert,
-  clone,
   each,
   hashCode,
   isArray,
@@ -35,7 +34,7 @@ export function $lookup(collection: Iterator, expr: any, options: Options): Iter
 
   return collection.map(obj => {
     let k = hashCode(resolve(obj, localField))
-    let newObj = clone(obj)
+    let newObj = Object.assign({}, obj)
     newObj[asField] = hash[k] || []
     return newObj
   })

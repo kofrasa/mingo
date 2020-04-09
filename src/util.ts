@@ -76,16 +76,6 @@ export function cloneDeep(obj: any): any {
 }
 
 /**
- * Shallow clone an object
- */
-export function clone(obj: any): any {
-  if (isArray(obj)) return into([], obj)
-  if (isDate(obj)) return new Date(obj)
-  if (isObject(obj)) return Object.assign({}, obj)
-  return obj
-}
-
-/**
  * Returns the name of type of value given by its constructor.
  * If missing returns "null" or "undefined" their respective values.
  * @param v A value

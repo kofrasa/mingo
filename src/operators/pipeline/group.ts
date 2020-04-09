@@ -1,8 +1,4 @@
-import {
-  clone,
-  each,
-  groupBy
-} from '../../util'
+import { each, groupBy } from '../../util'
 import { computeValue, Options } from '../../core'
 import { Iterator } from '../../lazy'
 
@@ -25,7 +21,7 @@ export function $group(collection: Iterator, expr: any, options: Options): Itera
     let partitions = groupBy(coll, obj => computeValue(obj, id, id, options))
 
     // remove the group key
-    expr = clone(expr)
+    expr = Object.assign({}, expr)
     delete expr[ID_KEY]
 
     let i = -1
