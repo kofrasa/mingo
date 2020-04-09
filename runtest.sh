@@ -26,4 +26,4 @@ process.argv.slice(2).forEach(function (file) {
 eof
 
 # execute test with esm
-node -r esm ${FILE} ${TESTS}
+node -r esm -r './lib/init/system' ${FILE} ${TESTS}

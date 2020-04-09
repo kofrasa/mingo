@@ -1,23 +1,17 @@
-import { addOperators, useOperators, OperatorType } from './core'
-import { enableDefaultOperators, enableSystemOperators } from './operators'
+import { useOperators, OperatorType } from './core'
 import { Query } from './query'
 import { Aggregator } from './aggregator'
 import { Cursor } from './cursor'
 import { Lazy } from './lazy'
 
-// Starting in 3.0.0 only Query and Projection operators are enabled by default.
-// If the default import is not used, the operators must be manually enabled.
-// All system operators can be enabled via `enableSystemOperators`.
-// Operators may also be selectively imported from the 'operators' module to support tree-shaking.
-enableDefaultOperators()
+// loads all default operators
+import './init'
 
-export { addOperators, useOperators, OperatorType } from './core'
-export { enableDefaultOperators, enableSystemOperators } from './operators'
+export { useOperators, OperatorType } from './core'
 export { Query } from './query'
 export { Aggregator } from './aggregator'
 export { Cursor } from './cursor'
 export { Lazy } from './lazy'
-
 
 /**
  * Performs a query on a collection and returns a cursor object.
@@ -62,7 +56,6 @@ export default {
   Query,
   Cursor,
   Lazy,
-  addOperators,
   aggregate,
   find,
   remove,
@@ -76,7 +69,5 @@ export default {
 
   // Since 3.0.0
   OperatorType,
-  useOperators,
-  enableDefaultOperators,
-  enableSystemOperators,
+  useOperators
 }

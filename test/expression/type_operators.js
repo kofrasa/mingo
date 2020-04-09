@@ -1,7 +1,6 @@
 import test from 'tape'
 import mingo from '../../lib'
 
-mingo.enableSystemOperators()
 
 test('Type Conversion: $toBool', function (t) {
   let data = [

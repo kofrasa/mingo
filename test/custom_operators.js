@@ -2,13 +2,14 @@ import test from 'tape'
 import * as support from './support'
 import mingo from '../lib'
 import { OperatorType } from '../lib'
+import { addOperators } from '../lib/core'
 
 
 test('Custom Operators', function (t) {
   t.test('custom pipeline operator', function (t) {
     t.plan(1)
 
-    mingo.addOperators(OperatorType.PIPELINE, function (m) {
+    addOperators(OperatorType.PIPELINE, function (m) {
       return {
         '$pluck': function (collection, expr) {
           let agg = new mingo.Aggregator([ { '$project': { '__temp__': expr } } ])
@@ -26,7 +27,7 @@ test('Custom Operators', function (t) {
   t.test('custom query operator', function (t) {
     t.plan(2)
 
-    mingo.addOperators(OperatorType.QUERY, function () {
+    addOperators(OperatorType.QUERY, function () {
       return {
         '$between': function (selector, value, args) {
           return value >= args[0] && value <= args[1]
@@ -39,7 +40,7 @@ test('Custom Operators', function (t) {
     t.equal(2, result.length, 'can add new query operator')
 
     try {
-      mingo.addOperators(OperatorType.QUERY, function () {
+      addOperators(OperatorType.QUERY, function () {
         return {
           '$between': function (selector, value, args) {
             let query = {}
@@ -55,7 +56,7 @@ test('Custom Operators', function (t) {
 
   t.test('custom accumulator operator', function (t) {
     t.plan(2)
-    mingo.addOperators(OperatorType.ACCUMULATOR, function (m) {
+    addOperators(OperatorType.ACCUMULATOR, function (m) {
       return {
         '$stddev': function (collection, expr, options) {
           let result = mingo.aggregate(collection, [{$group: {avg: {$avg: expr}}}])

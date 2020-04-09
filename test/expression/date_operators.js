@@ -1,8 +1,6 @@
 import test from 'tape'
 import mingo from '../../lib'
 
-mingo.enableSystemOperators()
-
 
 test("Date Operators", function (t) {
 
