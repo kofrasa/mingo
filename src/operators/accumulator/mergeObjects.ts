@@ -1,4 +1,4 @@
-import { computeValue, Options } from '../../core'
+import { $mergeObjects as __mergeObjects } from '../expression'
 
 /**
  * Combines multiple documents into a single document.
@@ -8,6 +8,4 @@ import { computeValue, Options } from '../../core'
  * @param {Options} options The options to use for this operation
  * @returns {Array|*}
  */
-export function $mergeObjects(collection: any[], expr: any, options: Options): any {
-  return collection.reduce((memo, o) => Object.assign(memo, computeValue(o, expr, null, options)), {})
-}
+export const $mergeObjects = __mergeObjects
