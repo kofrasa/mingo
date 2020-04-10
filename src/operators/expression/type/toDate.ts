@@ -4,6 +4,7 @@
 
 import { computeValue, Options } from '../../../core'
 import { TypeConvertError } from './_internal'
+import { isNil } from '../../../util'
 
 
 /**
@@ -16,7 +17,7 @@ export function $toDate(obj: object, expr: any, options: Options): Date | null {
   let val = computeValue(obj, expr, null, options)
 
   if (val instanceof Date) return val
-  if (val === null || val === undefined) return null
+  if (isNil(val)) return null
 
   let d = new Date(val)
   let n = d.getTime()

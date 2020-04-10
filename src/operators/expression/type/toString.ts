@@ -4,10 +4,12 @@
 
 import { computeValue, Options } from '../../../core'
 import { $dateToString } from '../date'
+import { isNil } from '../../../util'
 
 export function $toString(obj: object, expr: any, options: Options): string | null {
   let val = computeValue(obj, expr, null, options)
-  if (val === null || val === undefined) return null
+  if (isNil(val)) return null
+
   if (val instanceof Date) {
     let dateExpr = {
       date: expr,

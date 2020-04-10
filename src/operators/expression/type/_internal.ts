@@ -1,5 +1,5 @@
 import { computeValue, Options } from "../../../core"
-import { isString } from "../../../util"
+import { isString, isNil, isNumber } from "../../../util"
 
 
 export class TypeConvertError extends Error {
@@ -11,11 +11,21 @@ export class TypeConvertError extends Error {
 export function toInteger(obj: object, expr: any, options: Options, max: number, min: number, typename: string): number | null {
   let val = computeValue(obj, expr, null, options)
 
-  if (val === null || val === undefined) return null
+  if (isNil(val)) return null
   if (val instanceof Date) return val.getTime()
+  if (val === true) return 1
+  if (val === false) return 0
 
-  let n = Math.trunc(Number(val))
-  if (!isNaN(n) && n >= min && n <= max && (!isString(val) || /^\d+$/.test(val))) return n
+  let n = Number(val)
+
+  if (isNumber(n) && n >= min && n <= max) {
+    // weirdly a decimal in string format cannot be converted to int.
+    // so we must check input if not string or if it is, not in decimal format
+    if (!isString(val) || n.toString().indexOf('.') === -1) {
+      return Math.trunc(n)
+    }
+  }
+
 
   throw new TypeConvertError(`cannot convert '${val}' to ${typename}`)
 }

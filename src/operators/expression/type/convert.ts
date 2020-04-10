@@ -2,7 +2,7 @@
  * Type Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#type-expression-operators
  */
 
-import { JsType, BsonType } from '../../../util'
+import { JsType, BsonType, isNil } from '../../../util'
 import { computeValue, Options } from '../../../core'
 import { $toString } from './toString'
 import { $toBool } from './toBool'
@@ -28,7 +28,7 @@ export function $convert(obj: object, expr: any, options: Options): any {
 
   args.onNull = args.onNull === undefined ? null : args.onNull
 
-  if (args.input === null || args.input === undefined) return args.onNull
+  if (isNil(args.input)) return args.onNull
 
   try {
     switch (args.to) {
@@ -64,5 +64,5 @@ export function $convert(obj: object, expr: any, options: Options): any {
 
   if (args.onError !== undefined) return args.onError
 
-  throw new TypeConvertError(`failed to convert ${args.input} to ${args.to}`)
+  throw new TypeConvertError(`could not convert to type ${args.to}.`)
 }

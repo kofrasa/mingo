@@ -4,7 +4,7 @@
 
 import { computeValue, Options } from '../../../core'
 import { TypeConvertError } from './_internal'
-import { isNil } from '../../../util'
+import { isNil, isNumber } from '../../../util'
 
 /**
  * Converts a value to a double. If the value cannot be converted to an double, $toDouble errors. If the value is null or missing, $toDouble returns null.
@@ -17,9 +17,12 @@ export function $toDouble(obj: object, expr: any, options: Options): number | nu
 
   if (isNil(val)) return null
   if (val instanceof Date) return val.getTime()
+  if (val === true) return 1
+  if (val === false) return 0
 
   let n = Number(val)
 
-  if (!isNaN(n) && n.toString() === val.toString()) return n
+  if (isNumber(n)) return n
+
   throw new TypeConvertError(`cannot convert '${val}' to double/decimal`)
 }
