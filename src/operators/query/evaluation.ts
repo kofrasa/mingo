@@ -12,16 +12,6 @@ export const $mod = createQueryOperator(__mod)
 export const $regex = createQueryOperator(__regex)
 
 /**
- * Matches documents that satisfy the specified JSON Schema.
- *
- * @param selector
- * @param value
- */
-export function $jsonSchema(selector: string, value: any, options: Options): Callback<boolean> {
-  throw new Error('$jsonSchema not implemented')
-}
-
-/**
  * Matches documents that satisfy a JavaScript expression.
  *
  * @param selector

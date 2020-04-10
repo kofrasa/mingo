@@ -439,7 +439,7 @@ export function compare(a: any, b: any): CompareResult {
 export function sortBy(collection: any[], keyFn: Callback<any>, comparator?: Comparator<any>): any[] {
   let sorted = []
   let result = []
-  let hash = new Object
+  let hash = {}
   comparator = comparator || compare
 
   if (isEmpty(collection)) return collection
@@ -793,33 +793,4 @@ export function normalize(expr: any): any {
   }
 
   return expr
-}
-
-/**
- * Returns a slice of the array
- *
- * @param  {Array} xs
- * @param  {Number} skip
- * @param  {Number} limit
- * @return {Array}
- */
-export function slice(xs: any[], skip: number, limit?: number): any[] {
-  // MongoDB $slice works a bit differently from Array.slice
-  // Uses single argument for 'limit' and array argument [skip, limit]
-  if (isNil(limit)) {
-    if (skip < 0) {
-      skip = Math.max(0, xs.length + skip)
-      limit = xs.length - skip + 1
-    } else {
-      limit = skip
-      skip = 0
-    }
-  } else {
-    if (skip < 0) {
-      skip = Math.max(0, xs.length + skip)
-    }
-    assert(limit > 0, 'Invalid argument value for $slice operator. Limit must be a positive number')
-    limit += skip
-  }
-  return xs.slice(skip, limit)
 }
