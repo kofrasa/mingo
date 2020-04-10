@@ -4,27 +4,25 @@
 
 - Convert project to Typescript
 - Build ES6 libraries with support for selective import
-- Enable only Query and Projection operators by default via `mingo/init`
-- Provide side-effects module `mingo/init/system` to auto load all operators
+- Default export only `Aggregator`, `Query`, `aggregate()`, `find()`, and `remove()`
+- Auto load only Query and Projection operators in main module via `mingo/init`
+- Provide module `mingo/init/system` to auto load all operators
 - Expose library via `esm` dependency to support module imports for ES5
 - Implement type operators `$type`, `$convert`, `$toBool`, `$toDate`, `$toString`, `$toInt`, `$toLong`, `$toDouble`, `$toDecimal`
 - Implement date operators `$dateFromString`, `$dateFromParts`, `dateToParts`.
 - Implement string operators `$trim`, `$rtrim`, `$ltrim`, `$regexFind`, `$regexFindAll`, `$regexMatch`
 - Add timezone support for all date operators
 - Return all date operator results in UTC
-- Minimize default export to `Aggregator`, `Query`, `aggregate()`, `find()`, and `remove()`
 - Split large expression operator groups to file per operator
 - Rename `group` module to `accumulator`
-- Removed `dist/` files. Deferring to consumers to bring their own packaging solutions
-- Removed `setup()` function. Replace by passing in config to `Query` or `Aggregator`.
+- Removed `dist/` files. Deferring to consumers to use their own packaging solutions
+- Removed `setup()` function. Replaced by passing in config to `Query` or `Aggregator`.
 - Removed `VERSION` fields
 - Removed `_internal()`
-- Pass only `computeValue`, and `resolve` functions to custom operator
+- Pass only `computeValue` and `resolve` functions to custom operator
 - Deprecate and replace `OP_XXX` constants with enum `OperatorType.XXX`.
 - Removed `CollectionMixin`
-- Removed `Lazy` from default export
-- Removed `Cursor` from default export
-- Removed `addOperators` from default export
+- Removed `Lazy`, `Cursor`, and `addOperators` from default export
 - Support extra options parameter on all operator functions
 
 ## 2.5.2 / 2020-03-17
