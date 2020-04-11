@@ -1,6 +1,6 @@
 # Changelog
 
-## 3.0.0 / 2020-04-10
+## 3.0.0 / 2020-04-11
 
 - Convert project to Typescript
 - Build ES6 libraries with support for selective import

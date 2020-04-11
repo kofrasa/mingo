@@ -36,7 +36,7 @@ export function $bucketAuto(collection: Iterator, expr: any, options: Options): 
     let remaining = []
 
     let sorted = sortBy(coll, o => {
-      let key = computeValueOptimized(o, groupByExpr)
+      let key = computeValueOptimized(o, groupByExpr, null, options)
       if (isNil(key)) {
         remaining.push(o)
       } else {
@@ -50,11 +50,11 @@ export function $bucketAuto(collection: Iterator, expr: any, options: Options): 
     let index = 0 // counter for sorted collection
 
     for (let i = 0, len = sorted.length; i < bucketCount && index < len; i++) {
-      let boundaries: { min: number, max: number } = Object.create({ min: 0, max: 0 })
-      let bucketItems: any[] = new Array()
+      let boundaries = Object.create({ min: 0, max: 0 })
+      let bucketItems = []
 
       for (let j = 0; j < approxBucketSize && index < len; j++) {
-        let key = computeValueOptimized(sorted[index], groupByExpr)
+        let key = computeValueOptimized(sorted[index], groupByExpr, null, options)
 
         if (isNil(key)) key = null
 
@@ -82,7 +82,7 @@ export function $bucketAuto(collection: Iterator, expr: any, options: Options): 
     }
 
     if (result.length > 0) {
-      result[result.length - 1][ID_KEY].max = computeValueOptimized(sorted[sorted.length - 1], groupByExpr)
+      result[result.length - 1][ID_KEY].max = computeValueOptimized(sorted[sorted.length - 1], groupByExpr, null, options)
     }
 
     return result
