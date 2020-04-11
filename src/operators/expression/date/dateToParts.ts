@@ -1,8 +1,7 @@
 // Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
 
 import { computeValue, Options } from '../../../core'
-import { isNil, isObject } from '../../../util'
-import { DATE_FORMAT, DATE_SYM_TABLE, regexQuote, regexStrip, parseTimezone, adjustDate } from './_internal'
+import { parseTimezone, adjustDate } from './_internal'
 
 /**
  * Returns a document that contains the constituent parts of a given Date value as individual properties.

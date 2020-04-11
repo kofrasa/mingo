@@ -100,7 +100,7 @@ export function isUndefined(v: any): boolean { return v === undefined }
 export const inArray = (() => {
   // if Array.includes is not supported
   if (!Array.prototype.includes) {
-    return (arr: any[], item: any): boolean => (item === NaN) ? arr.some(v => v === NaN) : arr.indexOf(item) >= 0
+    return (arr: any[], item: any): boolean => isNaN(item) && !isString(item) ? arr.some(v => isNaN(v) && !isString(v)) : arr.indexOf(item) > -1
   }
   // default
   return (arr: Array<any>, item: any): boolean => arr.includes(item)

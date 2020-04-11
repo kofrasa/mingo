@@ -103,7 +103,7 @@ export function padDigits(n: number, digits: number): string {
 }
 
 export function regexQuote(s: string): string {
-  "^.\-*?$".split('').forEach((c: string) => {
+  "^.-*?$".split('').forEach((c: string) => {
     s = s.replace(c, `\\${c}`)
   })
   return s

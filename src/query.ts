@@ -8,7 +8,7 @@ import {
   Callback
 } from './util'
 import { Cursor } from './cursor'
-import { getOperator, OperatorType, createConfig, Options, Config } from './core'
+import { getOperator, OperatorType, createConfig, Config } from './core'
 import { Source } from './lazy'
 
 /**
