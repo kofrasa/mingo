@@ -1,6 +1,7 @@
 let fs = require('fs')
 let path = require('path')
 let execSync = require('child_process').execSync
+let rimraf = require('rimraf')
 let packageJson = require('./package.json')
 
 const LIB_DIR = path.resolve('lib')
@@ -28,7 +29,7 @@ const NPM_IGNORE = [
 ]
 
 function cleanup() {
-  CLEANUP_FILES.forEach(f => fs.rmdirSync(path.join(LIB_DIR, f), { recursive: true }))
+  CLEANUP_FILES.forEach(f => rimraf.sync(path.join(LIB_DIR, f)))
 }
 
 /**
