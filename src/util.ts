@@ -446,9 +446,7 @@ export function sortBy(collection: any[], keyFn: Callback<any>, comparator?: Com
 
   for (let i = 0; i < collection.length; i++) {
     let obj = collection[i]
-
-    // null prefix to ensure uniqueness of keys from native object properties
-    let key = '\0' + keyFn(obj, i)
+    let key = keyFn(obj, i)
 
     // objects with nil keys will go in first
     if (isNil(key)) {

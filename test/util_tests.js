@@ -1,5 +1,5 @@
 import test from 'tape'
-import { isEqual, sortBy } from '../lib/util'
+import { isEqual } from '../lib/util'
 
 test('Test isEqual', function (t) {
   let sample = [
@@ -25,15 +25,5 @@ test('Test isEqual', function (t) {
     if (!b) t.ok(false, "failed test: " + JSON.stringify(arr[0]) + " = " + JSON.stringify(arr[1]))
   })
   t.ok(true, "all pass")
-  t.end()
-})
-
-
-test('sortBy util', function (t) {
-  t.deepEqual(
-    sortBy(['c', 'a', 'function', 'constructor'], k => k),
-    ['a', 'c', 'constructor', 'function'],
-    "can sort by 'constructor' key"
-  )
   t.end()
 })
