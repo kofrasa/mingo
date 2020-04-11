@@ -12,8 +12,9 @@
     "testall": "NODE_ENV=test nyc --reporter=lcov --reporter=text ./runtest.sh",
     "test": "npm run build && npm run testall",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
-    "prepublishOnly": "node -r esm ./prepare.js publish",
-    "install": "node -r esm ./prepare.js install && exit 0"
+    "postpack": "node ./prepare.js pack",
+    "prepublishOnly": "npm run release && node ./prepare.js publish",
+    "postinstall": "node ./prepare.js install"
   },
   "repository": {
     "type": "git",
