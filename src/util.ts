@@ -446,12 +446,17 @@ export function sortBy(collection: any[], keyFn: Callback<any>, comparator?: Com
 
   for (let i = 0; i < collection.length; i++) {
     let obj = collection[i]
+
     let key = keyFn(obj, i)
 
     // objects with nil keys will go in first
     if (isNil(key)) {
       result.push(obj)
     } else {
+
+      // null suffix to differentiate string keys from native object properties
+      if (isString(key)) key += '\0'
+
       if (hash[key]) {
         hash[key].push(obj)
       } else {
