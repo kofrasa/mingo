@@ -1,4 +1,6 @@
-// default operators
+/**
+ * Loads all Query and Projection operators
+ */
 import * as booleanOperators from '../operators/expression/boolean'
 import * as comparsonOperators from '../operators/expression/comparison'
 import { $project, $skip, $limit, $sort } from '../operators/pipeline'
