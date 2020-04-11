@@ -37,10 +37,7 @@ function cleanup() {
 function prepare() {
 
   // ensure directory exists
-  if (!fs.existsSync(LIB_DIR)) {
-    console.error("Directory", LIB_DIR, "does not exist")
-    process.exit(1)
-  }
+  if (!fs.existsSync(LIB_DIR)) fs.mkdirSync(LIB_DIR)
 
   console.log("Preparing", LIB_DIR)
 
