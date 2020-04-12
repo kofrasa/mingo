@@ -6,6 +6,7 @@
   "module": "./lib/index.js",
   "typings": "./lib/index.d.ts",
   "scripts": {
+    "docs": "typedoc && touch docs/.nojekyll",
     "build": "tsc",
     "clean": "rm -fr lib",
     "release": "npm run clean && npm test",
