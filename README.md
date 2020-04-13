@@ -51,11 +51,7 @@ For documentation on using query operators see [mongodb](http://docs.mongodb.org
 
 ## Documentation
 
-[Package documentation](http://kofrasa.net/mingo/)
-
-### Wikis
-
-- [API](https://github.com/kofrasa/mingo/wiki/API)
+- [Package docs](http://kofrasa.net/mingo/)
 - [Custom Operators](https://github.com/kofrasa/mingo/wiki/Custom-Operators)
 
 ## Usage
