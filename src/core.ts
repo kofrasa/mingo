@@ -216,25 +216,30 @@ export function computeValue(obj: object | any[], expr: any, operator: string, o
   options = options || { config: null }
   options.config = options.config || createConfig()
 
-  // if the field of the object is a valid operator
-  let call = getOperator(OperatorType.EXPRESSION, operator)
-  if (call) return call(obj, expr, options)
+  if (isOperator(operator)) {
+    // if the field of the object is a valid operator
+    let call = getOperator(OperatorType.EXPRESSION, operator)
+    if (call) return call(obj, expr, options)
 
-  // we also handle $group accumulator operators
-  call = getOperator(OperatorType.ACCUMULATOR, operator)
-  if (call) {
+    // we also handle $group accumulator operators
+    call = getOperator(OperatorType.ACCUMULATOR, operator)
+    if (call) {
 
-    // if object is not an array, first try to compute using the expression
-    if (!isArray(obj)) {
-      obj = computeValue(obj, expr, null, options)
-      expr = null
+      // if object is not an array, first try to compute using the expression
+      if (!isArray(obj)) {
+        obj = computeValue(obj, expr, null, options)
+        expr = null
+      }
+
+      // validate that we have an array
+      assert(isArray(obj), `'${operator}' target must be an array.`)
+
+      // we pass a null expression because all values have been resolved
+      return call(obj, expr, options)
     }
 
-    // validate that we have an array
-    assert(isArray(obj), `${operator} target must be an array.`)
-
-    // we pass a null expression because all values have been resolved
-    return call(obj, expr, options)
+    // operator was not found
+    throw new Error(`operator '${operator}' is not registered`)
   }
 
   // if expr is a variable for an object field

@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.0.1 / 2020-04-xx
+
+- Throw exception for specifying unregistered operators
+
 ## 3.0.0 / 2020-04-12
 
 - Convert project to Typescript

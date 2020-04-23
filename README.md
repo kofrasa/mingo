@@ -119,14 +119,14 @@ The following two examples are equivalent.
 
 ```js
 import { $unwind } from 'mingo/operators/pipeline'
-
 ```
 
 #### ES5
 
-```js
-const $unwind = require('mingo/operators/pipeline').$unwind
+Unlike the ES6 version, it is necessary to specify the operator module in the path to avoid loading any extras
 
+```js
+const $unwind = require('mingo/operators/pipeline/unwind').$unwind
 ```
 
 ## Configuration
