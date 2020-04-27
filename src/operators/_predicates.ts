@@ -11,6 +11,7 @@ import {
   isArray,
   isBoolean,
   isDate,
+  isEmpty,
   isEqual,
   isNil,
   isNull,
@@ -239,7 +240,8 @@ export function $size(a: any[], b: number): boolean {
  * @param b {Object} subquery
  */
 export function $elemMatch(a: any[], b: object): boolean {
-  if (a.length > 0) {
+  // should return false for non-matching input
+  if (isArray(a) && !isEmpty(a)) {
     let format = (x: any) => x
     let criteria = b
 
