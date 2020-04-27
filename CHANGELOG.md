@@ -1,8 +1,9 @@
 # Changelog
 
-## 3.0.1 / 2020-04-xx
+## 3.0.1 / 2020-04-27
 
 - Throw exception for specifying unregistered operators
+- Fix regression bug in `$elemMatch`. Closes [#139](https://github.com/kofrasa/mingo/issues/139)
 
 ## 3.0.0 / 2020-04-12
 
