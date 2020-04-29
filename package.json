@@ -36,7 +36,7 @@
     "lodash": "4.17.15",
     "nyc": "15.0.1",
     "perf_hooks": "0.0.1",
-    "tape": "4.13.2",
+    "tape": "5.0.0",
     "typescript": "3.8.3",
     "typedoc": "0.17.6",
     "rimraf": "3.0.2"
