@@ -80,7 +80,7 @@ test("$facet pipeline operator", function (t) {
     }
   ])
 
-  t.deepEqual(result[0], {
+  t.deepLooseEqual(result[0], {
     "categorizedByYears(Auto)": [
       // First bucket includes the document without a year, e.g., _id: 4
       { "_id": { "min": null, "max": 1902 }, "count": 2 },
