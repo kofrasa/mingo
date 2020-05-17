@@ -38,7 +38,7 @@
     "perf_hooks": "0.0.1",
     "tape": "5.0.0",
     "typescript": "3.9.2",
-    "typedoc": "0.17.6",
+    "typedoc": "0.17.7",
     "rimraf": "3.0.2"
   },
   "keywords": [
