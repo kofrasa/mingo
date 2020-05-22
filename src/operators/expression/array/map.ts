@@ -14,7 +14,7 @@ export function $map(obj: object, expr: any, options: Options): any {
   let inputExpr = computeValue(obj, expr.input, null, options)
   assert(isArray(inputExpr), `$map 'input' expression must resolve to an array`)
 
-  let asExpr = expr['as']
+  let asExpr = expr['as'] || 'this'
   let inExpr = expr['in']
 
   // HACK: add the "as" expression as a value on the object to take advantage of "resolve()"
