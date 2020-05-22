@@ -192,6 +192,33 @@ test('Array Operators: $map', function (t) {
   t.end()
 })
 
+test('Array Operators: $map without "as"', function (t) {
+  // $map
+  let result = mingo.aggregate([
+    {_id: 1, quizzes: [5, 6, 7]},
+    {_id: 2, quizzes: []},
+    {_id: 3, quizzes: [3, 8, 9]}
+  ], [
+    {
+      $project: {
+        adjustedGrades: {
+          $map: {
+            input: '$quizzes',
+            in: {$add: ['$$this', 2]}
+          }
+        }
+      }
+    }
+  ])
+
+  t.deepEqual([
+    {'_id': 1, 'adjustedGrades': [7, 8, 9]},
+    {'_id': 2, 'adjustedGrades': []},
+    {'_id': 3, 'adjustedGrades': [5, 10, 11]}
+  ], result, 'can apply $map operator')
+  t.end()
+})
+
 test('more $slice examples', function (t) {
   let data = [
     { "_id" : 1, "name" : "dave123", favorites: [ "chocolate", "cake", "butter", "apples" ] },
