@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.0.2 / 2020-05-22
+
+- `$map` operator operand 'as', should default to `this` if missing. Fixes [#143](https://github.com/kofrasa/mingo/pull/143)
+
 ## 3.0.1 / 2020-04-27
 
 - Throw exception for specifying unregistered operators
