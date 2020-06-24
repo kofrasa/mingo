@@ -1,12 +1,12 @@
-import fs from 'fs'
 import test from 'tape'
 import mingo from '../lib'
 import { computeValue } from '../lib/core'
+import '../lib/init/system'
 
-export const personData = JSON.parse(fs.readFileSync(__dirname + '/data/person.json'))
-export const simpleGradesData = JSON.parse(fs.readFileSync(__dirname + '/data/grades_simple.json'))
-export const complexGradesData = JSON.parse(fs.readFileSync(__dirname + '/data/grades_complex.json'))
-export const studentsData = JSON.parse(fs.readFileSync(__dirname + '/data/students.json'))
+export const personData = require('./data/person.json')
+export const simpleGradesData = require('./data/grades_simple.json')
+export const complexGradesData = require('./data/grades_complex.json')
+export const studentsData = require('./data/students.json')
 
 export const groupByObjectsData = [
   {'date_buckets': {'date': '2015-04-29T00:17:03.107Z', 'day': 28, 'hour': 18, 'minute': 17, 'sec': 3, 'hour_minute': '18:17'}, 'Keyword ID': 'sr3_4VzRD3sp', 'Creative ID': '5184986203', 'Keyword': 'Bathroom Cleaning Tips', 'Match Type': 'be', 'Device': 'm', 'Conversions': [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0], 'Revenues': [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0], 'account_id': 'baron'},

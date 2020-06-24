@@ -1,24 +1,10 @@
-let fs = require('fs')
-let path = require('path')
-let execSync = require('child_process').execSync
-let rimraf = require('rimraf')
-let packageJson = require('./package.json')
+const fs = require('fs')
+const path = require('path')
+const cp = require('child_process')
+const packageJson = require('./package.json')
 
 const LIB_DIR = path.resolve('lib')
-
 const CMD = process.argv.slice(2).join(' ')
-
-const MAIN_JS_FILE = 'main.js'
-const MAIN_JS_DATA = [
-  'require = require("esm")(module/*, options*/)',
-  'module.exports = require("./index.js")'
-].join('\n')
-
-// files to cleanup to avoid packing
-const CLEANUP_FILES = [
-  'node_modules',
-  'package-lock.json'
-]
 
 // .npmignore
 const NPM_IGNORE = [
@@ -28,43 +14,32 @@ const NPM_IGNORE = [
   'package-lock.json'
 ]
 
-function cleanup() {
-  CLEANUP_FILES.forEach(f => rimraf.sync(path.join(LIB_DIR, f)))
-}
-
 /**
- * Prepares the lib directory for distributting
+ * Create module in LIB_DIR
  */
-function prepare() {
+function createModule() {
+
+  console.log("Creating module at " + LIB_DIR)
 
   // ensure directory exists
   if (!fs.existsSync(LIB_DIR)) fs.mkdirSync(LIB_DIR)
-
-  console.log("Preparing", LIB_DIR)
-
-  cleanup()
 
   // write ignore file
   fs.writeFileSync(path.join(LIB_DIR, '.npmignore'), NPM_IGNORE.join('\n'))
 
   // copy all the allowed files to the lib directory
-  packageJson.files = packageJson.files.reduce((files, p) => {
-    if (!p.match(/(lib|index\.js)/)) {
-      fs.copyFileSync(path.resolve(p), path.join(LIB_DIR, p))
-      files.push(p)
-    }
+  packageJson.files = ["LICENSE", "README.md", "CHANGELOG.md"].reduce((files, p) => {
+    fs.copyFileSync(path.resolve(p), path.join(LIB_DIR, p))
+    files.push(p)
     return files
   }, [
     '**/*.js',
     '**/*.ts'
   ])
 
-  // write main entry files using esm
-  fs.writeFileSync(path.join(LIB_DIR, MAIN_JS_FILE), MAIN_JS_DATA)
-
   // override entry files
-  packageJson.main = MAIN_JS_FILE
-  packageJson.module = 'index.js'
+  packageJson.main = 'index.js'
+  packageJson.module = packageJson.main
   packageJson.typings = 'index.d.ts'
 
   // clear all scripts
@@ -75,12 +50,10 @@ function prepare() {
 
   // write new package.json for lib
   fs.writeFileSync(path.join(LIB_DIR, 'package.json'), data)
-
-  console.log("Prepared", LIB_DIR)
 }
 
 function main() {
-  prepare()
+  createModule()
 
   if (CMD) {
     // execute within lib dir
@@ -89,7 +62,7 @@ function main() {
     console.log("\nExecuting command:", npm_cmd, "\n")
 
     // execute command
-    execSync(npm_cmd, { cwd: LIB_DIR, env: process.env, stdio: 'inherit' })
+    cp.execSync(npm_cmd, { cwd: LIB_DIR, env: process.env, stdio: 'inherit' })
 
     console.log("\nCompleted command\n")
 
@@ -101,8 +74,6 @@ function main() {
       fs.renameSync(tarballPath, path.join(path.dirname(LIB_DIR), tarball))
     }
   }
-
-  cleanup()
 }
 
 main()

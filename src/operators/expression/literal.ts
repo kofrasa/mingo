@@ -1,6 +1,6 @@
 // Literal Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#literal-expression-operator
 
-import { Options } from "../../core";
+import { Options } from "../../core"
 
 /**
  * Return a value without parsing.

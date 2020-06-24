@@ -1,4 +1,4 @@
-import { $mergeObjects as __mergeObjects } from '../expression'
+import { $mergeObjects as __mergeObjects } from '../expression/object/mergeObjects'
 
 /**
  * Combines multiple documents into a single document.

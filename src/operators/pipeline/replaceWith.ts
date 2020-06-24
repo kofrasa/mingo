@@ -1,4 +1,4 @@
-import { $replaceRoot } from "./replaceRoot";
+import { $replaceRoot } from "./replaceRoot"
 
 /**
  * Alias for $replaceRoot

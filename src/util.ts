@@ -613,9 +613,10 @@ export function resolve(obj: object | any[], selector: string, options?: Resolve
         if (i === 0 && depth > 0) break
 
         depth += 1
-        path = path.slice(i)
+        // only look at the rest of the path
+        let subpath = path.slice(i)
         value = value.reduce<any[]>((acc: any[], item: any) => {
-          let v = resolve2(item, path)
+          let v = resolve2(item, subpath)
           if (v !== undefined) acc.push(v)
           return acc
         }, [])

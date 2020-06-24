@@ -111,11 +111,14 @@ Any extra utility may be imported directly from the specific module.
 
 ### Importing submodules
 
-Submodule imports are supported for both ES6 and ES5. For ES5 projects using commonJS style `require()` syntax, the [esm](https://www.npmjs.com/package/esm) is used to load the main entry point for compatibility.
+Submodule imports are supported for both ES6 and ES5.
 
 The following two examples are equivalent.
 
 #### ES6
+
+This work natively in typescript since it knows how to load commonJS modules as ES6.
+You may optionally install the [esm](https://www.npmjs.com/package/esm) module to use this syntax.
 
 ```js
 import { $unwind } from 'mingo/operators/pipeline'
@@ -230,7 +233,7 @@ let result = agg.run(collection)
 ## Contributing
 
 - Squash changes into one commit
-- Run `make test` to build and execute unit tests
+- Run `npm test` to build and execute unit tests
 - Submit pull request
 
 ## License

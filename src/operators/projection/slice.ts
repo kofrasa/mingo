@@ -2,7 +2,7 @@
 
 import { isArray, resolve } from '../../util'
 import { Options } from '../../core'
-import { $slice as __slice } from '../expression/array'
+import { $slice as __slice } from '../expression/array/slice'
 
 /**
  * Limits the number of elements projected from an array. Supports skip and limit slices.
