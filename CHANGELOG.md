@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.0.3 / 2020-07-16
+
+- Remove `esm` module dependency. Fixes [#145](https://github.com/kofrasa/mingo/issues/145)
+
 ## 3.0.2 / 2020-05-22
 
 - `$map` operator operand 'as', should default to `this` if missing. Fixes [#143](https://github.com/kofrasa/mingo/pull/143)
