@@ -1,7 +1,7 @@
 {
   "name": "mingo",
   "version": "3.0.3",
-  "description": "JavaScript implementation of MongoDB query language",
+  "description": "MongoDB query language for in-memory objects",
   "main": "./lib/index.js",
   "module": "./lib/index.js",
   "typings": "./lib/index.d.ts",

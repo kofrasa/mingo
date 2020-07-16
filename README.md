@@ -1,6 +1,6 @@
 # mingo
 
-JavaScript implementation of MongoDB query language
+MongoDB query language for in-memory objects
 
 [![version](https://img.shields.io/npm/v/mingo.svg)](https://www.npmjs.org/package/mingo)
 [![build status](https://img.shields.io/travis/kofrasa/mingo.svg)](http://travis-ci.org/kofrasa/mingo)
