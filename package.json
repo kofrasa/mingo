@@ -25,7 +25,7 @@
     "CHANGELOG.md"
   ],
   "devDependencies": {
-    "codecov": "3.7.0",
+    "codecov": "3.7.1",
     "esm": "3.2.25",
     "lodash": "4.17.19",
     "nyc": "15.1.0",
