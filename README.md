@@ -71,22 +71,18 @@ const mingo = require('mingo')
 The default export of the main module only includes `Aggregator`, `Query`, `aggregate()`, `find()`, and `remove()`.
 
 Only [Query and Projection](https://docs.mongodb.com/manual/reference/operator/query/) operators are loaded by default when using the main module.
-This is done using the side-effect module `mingo/init`, and automatically includes pipeline operators `$project`, `$skip`, `$limit`, and `$sort`.
+This is done using the side-effect module `mingo/init/basic`, and also automatically includes pipeline operators `$project`, `$skip`, `$limit`, and `$sort`.
 
-If your application uses a most of the available operators or you do not care about bundle size, you can load all operators as shown below.
+If your application uses most of the available operators or you do not care about bundle size, you can load all operators as shown below.
 
 ```js
 // Note that doing this effectively imports the entire library into your bundle and unused operators cannot be tree shaked
 import 'mingo/init/system'
 ```
 
-By using a side-effect module you can also load operators at startup in a `NodeJS` environment such as;
+Or from the node CLI
 
 ```sh
-# loads only the default operators
-node -r 'mingo/init' myscript.js
-
-# load all defined operators
 node -r 'mingo/init/system' myscript.js
 ```
 

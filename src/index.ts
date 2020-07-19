@@ -2,8 +2,8 @@ import { Query } from './query'
 import { Aggregator } from './aggregator'
 import { Cursor } from './cursor'
 
-// loads all default operators
-import './init'
+// loads basic operators
+import './init/basic'
 
 export { Query } from './query'
 export { Aggregator } from './aggregator'

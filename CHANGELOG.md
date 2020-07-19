@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.0.4 / 2020-07-19
+
+- Deprecate `mingo/init` in favour of explicit `mingo/init/basic`.
+
 ## 3.0.3 / 2020-07-16
 
 - Remove `esm` module dependency. Fixes [#145](https://github.com/kofrasa/mingo/issues/145)
