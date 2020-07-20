@@ -1,8 +1,19 @@
 import test from 'tape'
 import mingo from '../../lib'
+import { runTest } from '../support'
+
+runTest('Boolean Expression Operators', {
+  $not: [
+    [ { $not: [ true ] }, false ],
+    [ { $not: [ [ false ] ] }, false ],
+    [ { $not: [ false ] }, true ],
+    [ { $not: [ null ] }, true ],
+    [ { $not: [ 0 ] }, true ],
+    [ { $not: [ 0, 1 ] }, "should throw error", { err: true } ]
+  ]
+})
 
 test('Boolean Operators', function (t) {
-  t.plan(5)
   let inventory = [
     {'_id': 1, 'item': 'abc1', description: 'product 1', qty: 300},
     {'_id': 2, 'item': 'abc2', description: 'product 2', qty: 200},
