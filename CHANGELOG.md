@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.0.5 / 2020-07-20
+
+- Handle non-array values to `$not` expression operator. Fixes [#146](https://github.com/kofrasa/mingo/issues/146)
+
 ## 3.0.4 / 2020-07-19
 
 - Deprecate `mingo/init` in favour of explicit `mingo/init/basic`.
