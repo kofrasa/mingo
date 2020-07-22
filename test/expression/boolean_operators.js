@@ -3,17 +3,35 @@ import mingo from '../../lib'
 import { runTest } from '../support'
 
 runTest('Boolean Expression Operators', {
+  $and: [
+    [ { $and: [ 1, "green" ] }, true ],
+    [ { $and: [ ] }, true ],
+    [ { $and: [ [ null ], [ false ], [ 0 ] ] }, true ],
+    [ { $and: [ null, true ] }, false ],
+    [ { $and: [ 0, true ] }, false ]
+  ],
   $not: [
     [ { $not: [ true ] }, false ],
     [ { $not: [ [ false ] ] }, false ],
     [ { $not: [ false ] }, true ],
     [ { $not: [ null ] }, true ],
     [ { $not: [ 0 ] }, true ],
-    [ { $not: [ 0, 1 ] }, "should throw error", { err: true } ]
+    [ { $not: [ 0, 1 ] }, "should throw error", { err: true } ],
+    // single values
+    [ { $not: true }, false ],
+    [ { $not: 0 }, true ],
+    [ { $not: "string" }, false ],
+    [ { $not: [] }, false ],
+  ],
+  $or: [
+    [ { $or: [ true, false ] }, true ],
+    [ { $or: [ [ false ], false ] }, true ],
+    [ { $or: [ null, 0, undefined ] }, false ],
+    [ { $or: [ ] }, false ],
   ]
 })
 
-test('Boolean Operators', function (t) {
+test('Boolean Operators: More Examples', function (t) {
   let inventory = [
     {'_id': 1, 'item': 'abc1', description: 'product 1', qty: 300},
     {'_id': 2, 'item': 'abc2', description: 'product 2', qty: 200},
