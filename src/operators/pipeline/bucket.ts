@@ -17,7 +17,7 @@ import { Lazy, Iterator } from '../../lazy'
  * @param {Options} opt Pipeline options
  */
 export function $bucket(collection: Iterator, expr: any, options: Options): Iterator {
-  let boundaries = expr.boundaries
+  let boundaries = [...expr.boundaries]
   let defaultKey = expr['default']
   let lower = boundaries[0] // inclusive
   let upper = boundaries[boundaries.length - 1] // exclusive
@@ -33,7 +33,7 @@ export function $bucket(collection: Iterator, expr: any, options: Options): Iter
 
   !isNil(defaultKey)
     && (getType(expr.default) === getType(lower))
-    && assert(lower > expr.default || upper < expr.default, "$bucket 'default' expression must be out of boundaries range")
+    && assert(expr.default >= upper || expr.default < lower, "$bucket 'default' expression must be out of boundaries range")
 
   let grouped = {}
   each(boundaries, (k) => grouped[k] = [])
