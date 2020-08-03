@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.0.6 / 2020-08-05
+
+- Fix $bucket default and boundaries mutation. Fixes [#147](https://github.com/kofrasa/mingo/issues/147)
+- Handle empty array values to `$not` expression operator.
+
 ## 3.0.5 / 2020-07-20
 
 - Handle non-array values to `$not` expression operator. Fixes [#146](https://github.com/kofrasa/mingo/issues/146)
