@@ -58,8 +58,6 @@ interface ResolveOptions {
   preserveMissing?: boolean
 }
 
-const OBJECT_PROTOTYPE = Object.getPrototypeOf({})
-
 // no array, object, or function types
 const JS_SIMPLE_TYPES = [JsType.NULL, JsType.UNDEFINED, JsType.BOOLEAN, JsType.NUMBER, JsType.STRING, JsType.DATE, JsType.REGEXP]
 
@@ -91,7 +89,7 @@ export function isBoolean(v: any): v is boolean { return typeof v === JsType.BOO
 export function isString(v: any): v is string { return typeof v === JsType.STRING }
 export function isNumber(v: any): v is number { return !isNaN(v) && typeof v === JsType.NUMBER }
 export const isArray = Array.isArray || (v => v instanceof Array)
-export function isObject(v: any): boolean { return !!v && Object.getPrototypeOf(v) === OBJECT_PROTOTYPE }
+export function isObject(v: any): boolean { return !!v && v.constructor === Object }
 export function isObjectLike(v: any): boolean { return v === Object(v) } // objects, arrays, functions, date, custom object
 export function isDate(v: any): boolean { return v instanceof Date }
 export function isRegExp(v: any): boolean { return v instanceof RegExp }
