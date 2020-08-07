@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.0.7 / 2020-08-07
+
+- Switch to using `Object.getPrototypeOf` to validate object literals which is more reliable than the default constructor object. Fixes [#149](https://github.com/kofrasa/mingo/issues/149)
+
 ## 3.0.6 / 2020-08-05
 
 - Fix $bucket default and boundaries mutation. Fixes [#147](https://github.com/kofrasa/mingo/issues/147)
