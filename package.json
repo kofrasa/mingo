@@ -32,7 +32,7 @@
     "perf_hooks": "0.0.1",
     "tape": "5.0.1",
     "typescript": "3.9.7",
-    "typedoc": "0.17.8"
+    "typedoc": "0.18.0"
   },
   "keywords": [
     "util",
