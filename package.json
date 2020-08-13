@@ -27,7 +27,7 @@
   "devDependencies": {
     "codecov": "3.7.2",
     "esm": "3.2.25",
-    "lodash": "4.17.19",
+    "lodash": "4.17.20",
     "nyc": "15.1.0",
     "perf_hooks": "0.0.1",
     "tape": "5.0.1",
