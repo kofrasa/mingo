@@ -1,5 +1,5 @@
 import test from 'tape'
-import { isEqual, sortBy } from '../lib/util'
+import { isEqual, sortBy, isObject } from '../lib/util'
 
 test('Test isEqual', function (t) {
   let sample = [
@@ -34,5 +34,45 @@ test('sortBy util', function (t) {
     ['a', 'c', 'constructor', 'function'],
     "can sort by 'constructor' key"
   )
+  t.end()
+})
+
+test('Test isObject', (t) => {
+  function Foo() {
+    this.a = 'foo'
+  }
+
+  const OBJECT_PROTO = Object.getPrototypeOf({})
+
+  let arrayWithNullProto = new Array('a', 'b')
+  Object.setPrototypeOf(arrayWithNullProto, null)
+
+  let arrayWithObjectProto = new Array('a', 'b')
+  Object.setPrototypeOf(arrayWithObjectProto, OBJECT_PROTO)
+
+  let fooWithNullProto = new Foo()
+  Object.setPrototypeOf(fooWithNullProto, null)
+
+  let fooWithObjectProto = new Foo()
+  Object.setPrototypeOf(fooWithObjectProto, OBJECT_PROTO)
+
+  let fixtures = [
+    [{}, true, 'empty object literal'],
+    [{a: 1}, true, 'object literal with value'],
+    [Object.create(null), true, 'object from null proto'],
+    [Object.create(OBJECT_PROTO), true, 'object from object proto'],
+    [fooWithNullProto, true, 'custom type with null proto'],
+    [fooWithObjectProto, true, 'custom type with object proto'],
+    [arrayWithObjectProto, false, 'array with object proto'],
+    [arrayWithNullProto, false, 'array with null proto'],
+    [Object.create({}), false, 'object with object literal as proto'],
+    [new Array(3,2,1), false, 'array instance'],
+    [new Foo(), false, 'custom object instance'],
+  ]
+
+  fixtures.forEach((arr) => {
+    t.equal(isObject(arr[0]), arr[1], arr[2])
+  })
+
   t.end()
 })

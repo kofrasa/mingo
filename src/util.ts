@@ -61,6 +61,11 @@ interface ResolveOptions {
 // no array, object, or function types
 const JS_SIMPLE_TYPES = [JsType.NULL, JsType.UNDEFINED, JsType.BOOLEAN, JsType.NUMBER, JsType.STRING, JsType.DATE, JsType.REGEXP]
 
+const OBJECT_PROTOTYPE = Object.getPrototypeOf({})
+const OBJECT_TO_STRING = Object.prototype.toString
+const OBJECT_TAG = '[object Object]'
+const OBJECT_TYPE_RE = /^\[object ([a-zA-Z]+)\]$/
+
 export function assert(condition: boolean, message: string): void {
   if (!condition) throw new Error(message)
 }
@@ -76,20 +81,19 @@ export function cloneDeep(obj: any): any {
 }
 
 /**
- * Returns the name of type of value given by its constructor.
- * If missing returns "null" or "undefined" their respective values.
+ * Returns the name of type as specified in the tag returned by a call to Object.prototype.toString
  * @param v A value
  */
-export function getType(v: any): string {
-  if (v === null) return 'null'
-  if (v === undefined) return 'undefined'
-  return v.constructor.name
-}
+export function getType(v: any): string { return OBJECT_TO_STRING.call(v).match(OBJECT_TYPE_RE)[1] }
 export function isBoolean(v: any): v is boolean { return typeof v === JsType.BOOLEAN }
 export function isString(v: any): v is string { return typeof v === JsType.STRING }
 export function isNumber(v: any): v is number { return !isNaN(v) && typeof v === JsType.NUMBER }
 export const isArray = Array.isArray || (v => v instanceof Array)
-export function isObject(v: any): boolean { return !!v && v.constructor === Object }
+export function isObject(v: any): boolean {
+  if (!v) return false
+  let proto = Object.getPrototypeOf(v)
+  return (proto === OBJECT_PROTOTYPE || proto === null) && OBJECT_TAG === OBJECT_TO_STRING.call(v)
+}
 export function isObjectLike(v: any): boolean { return v === Object(v) } // objects, arrays, functions, date, custom object
 export function isDate(v: any): boolean { return v instanceof Date }
 export function isRegExp(v: any): boolean { return v instanceof RegExp }
