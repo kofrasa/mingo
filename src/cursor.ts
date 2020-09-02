@@ -101,7 +101,7 @@ export class Cursor {
    * @param {*} spec
    */
   collation(spec: CollationSpec): Cursor {
-    into(this.__options, { collation: spec })
+    into(this.__options.config, { collation: spec })
     return this
   }
 
