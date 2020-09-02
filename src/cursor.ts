@@ -1,8 +1,7 @@
 import { isObject, Callback, Predicate, into } from './util'
 import { Aggregator } from './aggregator'
 import { Lazy, Iterator, Source } from './lazy'
-import { CollationSpec } from './operators/pipeline/sort'
-import { Options, Config } from './core'
+import {Options, Config, CollationSpec} from './core'
 
 /**
  * Cursor to iterate and perform filtering on matched objects.
