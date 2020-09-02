@@ -1,24 +1,36 @@
 import {
   assert,
-  has,
+  Callback,
   each,
+  has,
+  into,
   isArray,
   isNil,
   isObject,
   isObjectLike,
+  isOperator,
   isString,
   keys,
-  resolve,
-  Callback,
-  isOperator,
-  into
+  resolve
 } from './util'
 
 /**
  * Config information to use when executing operators
  */
 export interface Config {
-  idKey: string
+  idKey: string;
+  collation?: CollationSpec;
+}
+
+export interface CollationSpec {
+  locale: string,
+  caseLevel?: boolean,
+  caseFirst?: string,
+  strength?: number,
+  numericOrdering?: boolean,
+  alternate?: string,
+  maxVariable?: string, // unsupported
+  backwards?: boolean // unsupported
 }
 
 /**
@@ -33,18 +45,6 @@ export function createConfig(): Config {
  */
 export interface Options {
   config: Config
-  collation?: CollationSpec
-}
-
-export interface CollationSpec {
-  locale: string,
-  caseLevel?: boolean,
-  caseFirst?: string,
-  strength?: number,
-  numericOrdering?: boolean,
-  alternate?: string,
-  maxVariable?: string, // unsupported
-  backwards?: boolean // unsupported
 }
 
 /**

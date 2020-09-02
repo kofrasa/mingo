@@ -27,7 +27,7 @@ export function $sort(collection: Iterator, sortKeys: object, options: Options):
   if (isEmpty(sortKeys) || !isObject(sortKeys)) return collection
 
   let cmp = compare
-  let collationSpec = options.collation
+  let collationSpec = options.config.collation
 
   // use collation comparator if provided
   if (isObject(collationSpec) && isString(collationSpec.locale)) {
