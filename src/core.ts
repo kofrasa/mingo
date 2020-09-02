@@ -33,6 +33,18 @@ export function createConfig(): Config {
  */
 export interface Options {
   config: Config
+  collation?: CollationSpec
+}
+
+export interface CollationSpec {
+  locale: string,
+  caseLevel?: boolean,
+  caseFirst?: string,
+  strength?: number,
+  numericOrdering?: boolean,
+  alternate?: string,
+  maxVariable?: string, // unsupported
+  backwards?: boolean // unsupported
 }
 
 /**
