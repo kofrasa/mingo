@@ -12,25 +12,8 @@ import {
   Comparator
 } from '../../util'
 import { Iterator } from '../../lazy'
-import { Options } from '../../core'
+import {CollationSpec, Options} from '../../core'
 
-/**
- * Options to sort operator
- */
-export interface SortOptions extends Options {
-  collation?: CollationSpec
-}
-
-export interface CollationSpec {
-  locale: string,
-  caseLevel?: boolean,
-  caseFirst?: string,
-  strength?: number,
-  numericOrdering?: boolean,
-  alternate?: string,
-  maxVariable?: string, // unsupported
-  backwards?: boolean // unsupported
-}
 
 /**
  * Takes all input documents and returns them in a stream of sorted documents.
@@ -40,11 +23,11 @@ export interface CollationSpec {
  * @param  {Object} options
  * @returns {*}
  */
-export function $sort(collection: Iterator, sortKeys: object, options: SortOptions): Iterator {
+export function $sort(collection: Iterator, sortKeys: object, options: Options): Iterator {
   if (isEmpty(sortKeys) || !isObject(sortKeys)) return collection
 
   let cmp = compare
-  let collationSpec = options['collation']
+  let collationSpec = options.config.collation
 
   // use collation comparator if provided
   if (isObject(collationSpec) && isString(collationSpec.locale)) {

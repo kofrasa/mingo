@@ -24,6 +24,61 @@ test("$sort pipeline operator", function (t) {
   t.end()
 });
 
+test("$sort pipeline operator with collation", function (t) {
+  const aggregator = new mingo.Aggregator(
+    [
+      { '$sort': { 'name': 1 } }
+    ],
+    {
+      idKey: '_id',
+      collation: {
+        locale: 'en',
+        strength: 1
+      }
+    }
+  );
+
+  let data = [
+    { _id: 1, name: "A" },
+    { _id: 2, name: "B" },
+    { _id: 3, name: "c" },
+    { _id: 4, name: "a" }
+
+  ];
+  let expected = [
+    { _id: 1, name: "A" },
+    { _id: 4, name: "a" },
+    { _id: 2, name: "B" },
+    { _id: 3, name: "c" }
+  ]
+
+  const result = aggregator.run(data);
+  t.deepEqual(result, expected, "can sort with collation");
+  t.end()
+});
+
+test("$sort pipeline operator", function (t) {
+  let result = mingo.aggregate(samples.studentsData, [
+    { '$sort': { '_id': -1 } }
+  ]);
+  t.ok(result[0]['_id'] === 199, "can sort collection with $sort");
+
+  let data = [
+    { _id: 'c', date: new Date(2018, 1, 1) },
+    { _id: 'a', date: new Date(2017, 1, 1) },
+    { _id: 'b', date: new Date(2017, 1, 1) }
+  ];
+  let expected = [
+    { _id: 'a', date: new Date(2017, 1, 1) },
+    { _id: 'b', date: new Date(2017, 1, 1) },
+    { _id: 'c', date: new Date(2018, 1, 1) },
+  ]
+
+  result = mingo.aggregate(data, [{ "$sort": { "date": 1 } }]);
+  t.deepEqual(result, expected, "can sort on complex fields");
+  t.end()
+});
+
 test('sort with collation', function (t) {
 
   // english

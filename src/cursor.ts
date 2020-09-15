@@ -1,8 +1,7 @@
 import { isObject, Callback, Predicate, into } from './util'
 import { Aggregator } from './aggregator'
 import { Lazy, Iterator, Source } from './lazy'
-import { CollationSpec } from './operators/pipeline/sort'
-import { Options, Config } from './core'
+import {Options, Config, CollationSpec} from './core'
 
 /**
  * Cursor to iterate and perform filtering on matched objects.
@@ -102,7 +101,7 @@ export class Cursor {
    * @param {*} spec
    */
   collation(spec: CollationSpec): Cursor {
-    into(this.__options, { collation: spec })
+    into(this.__options.config, { collation: spec })
     return this
   }
 
