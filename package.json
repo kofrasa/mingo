@@ -31,8 +31,8 @@
     "nyc": "15.1.0",
     "perf_hooks": "0.0.1",
     "tape": "5.0.1",
-    "typescript": "4.0.2",
-    "typedoc": "0.19.1"
+    "typescript": "4.0.3",
+    "typedoc": "0.19.2"
   },
   "keywords": [
     "util",
