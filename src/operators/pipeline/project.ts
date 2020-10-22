@@ -43,7 +43,7 @@ export function $project(collection: Iterator, expr: any, options: Options): Ite
   // validate inclusion and exclusion
   validateExpression(expr, options)
 
-  const ID_KEY = options.config.idKey
+  const ID_KEY = options.idKey
 
   if (inArray(expressionKeys, ID_KEY)) {
     let id = expr[ID_KEY]
@@ -74,10 +74,8 @@ function processObject(obj: object, expr: any, options: Options, expressionKeys:
   let foundExclusion = false
   let dropKeys: string[] = []
 
-  const ID_KEY = options.config.idKey
-
   if (idOnlyExcluded) {
-    dropKeys.push(ID_KEY)
+    dropKeys.push(options.idKey)
   }
 
   expressionKeys.forEach((key: string) => {
@@ -87,11 +85,11 @@ function processObject(obj: object, expr: any, options: Options, expressionKeys:
     // expression to associate with key
     let subExpr = expr[key]
 
-    if (key !== ID_KEY && inArray([0, false], subExpr)) {
+    if (key !== options.idKey && inArray([0, false], subExpr)) {
       foundExclusion = true
     }
 
-    if (key === ID_KEY && isEmpty(subExpr)) {
+    if (key === options.idKey && isEmpty(subExpr)) {
       // tiny optimization here to skip over id
       value = obj[key]
     } else if (isString(subExpr)) {
@@ -196,7 +194,7 @@ function processObject(obj: object, expr: any, options: Options, expressionKeys:
 function validateExpression(expr: object, options: Options): void {
   let check = [false, false]
   each(expr, (v, k) => {
-    if (k === options.config.idKey) return
+    if (k === options.idKey) return
     if (v === 0 || v === false) {
       check[0] = true
     } else if (v === 1 || v === true) {

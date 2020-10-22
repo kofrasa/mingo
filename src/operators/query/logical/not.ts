@@ -15,6 +15,6 @@ import { Options } from '../../../core'
 export function $not(selector: string, value: any, options: Options): Callback<boolean> {
   let criteria = {}
   criteria[selector] = normalize(value)
-  let query = new Query(criteria, options.config)
+  let query = new Query(criteria, options)
   return obj => !query.test(obj)
 }

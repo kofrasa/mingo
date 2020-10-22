@@ -14,7 +14,7 @@ import { Options } from '../../core'
  */
 export function $elemMatch(obj: object, expr: any, field: string, options: Options): any {
   let arr = resolve(obj, field)
-  let query = new Query(expr, options.config)
+  let query = new Query(expr, options)
 
   assert(isArray(arr), '$elemMatch: argument must resolve to array')
 

@@ -8,25 +8,25 @@ import {
   Callback
 } from './util'
 import { Cursor } from './cursor'
-import { getOperator, OperatorType, createConfig, Config } from './core'
+import { getOperator, makeOptions, OperatorType, Options } from './core'
 import { Source } from './lazy'
 
 /**
  * An object used to filter input documents
  *
- * @param criteria The criteria for constructing predicates
- * @param config Optional config
+ * @param {Object} criteria The criteria for constructing predicates
+ * @param {Options} options Options for use by operators
  * @constructor
  */
 export class Query {
 
   private __criteria: object
   private __compiled: Callback<any>[]
-  private __config: Config
+  private __options: Options
 
-  constructor(criteria: object, config?: Config) {
+  constructor(criteria: object, options?: Options) {
     this.__criteria = criteria
-    this.__config = createConfig(config)
+    this.__options = makeOptions(options)
     this.__compiled = []
     this._compile()
   }
@@ -62,7 +62,7 @@ export class Query {
   _processOperator(field: string, operator: string, value: any) {
     let call = getOperator(OperatorType.QUERY, operator)
     assert(!!call, `unknown operator ${operator}`)
-    this.__compiled.push(call(field, value, this.__config))
+    this.__compiled.push(call(field, value, this.__options))
   }
 
   /**
@@ -88,7 +88,7 @@ export class Query {
    * @returns {Cursor} A Cursor for iterating over the results
    */
   find(collection: Source, projection?: object): Cursor {
-    return new Cursor(collection, x => this.test(x), projection || {}, this.__config)
+    return new Cursor(collection, x => this.test(x), projection || {}, this.__options)
   }
 
   /**

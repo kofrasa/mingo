@@ -1,7 +1,7 @@
 import { isObject, Callback, Predicate, into } from './util'
 import { Aggregator } from './aggregator'
 import { Lazy, Iterator, Source } from './lazy'
-import {Options, Config, CollationSpec} from './core'
+import {Options, CollationSpec} from './core'
 
 /**
  * Cursor to iterate and perform filtering on matched objects.
@@ -10,7 +10,7 @@ import {Options, Config, CollationSpec} from './core'
  * @param collection The input source of the collection
  * @param predicate A predicate function to test documents
  * @param projection A projection criteria
- * @param config Config to use for cursor
+ * @param options Options
  * @constructor
  */
 export class Cursor {
@@ -23,14 +23,14 @@ export class Cursor {
   private __stack: any[]
   private __options: Options
 
-  constructor(source: Source, predicate: Predicate<any>, projection: object, config: Config) {
+  constructor(source: Source, predicate: Predicate<any>, projection: object, options: Options) {
     this.__predicateFn = predicate
     this.__source = source
     this.__projection = projection
     this.__operators = []
     this.__result = null
     this.__stack = []
-    this.__options = { config }
+    this.__options = options
   }
 
   _fetch() {

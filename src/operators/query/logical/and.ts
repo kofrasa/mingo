@@ -16,7 +16,7 @@ export function $and(selector: string, value: any[], options: Options): Callback
   assert(isArray(value), 'Invalid expression: $and expects value to be an Array')
 
   let queries = []
-  value.forEach(expr => queries.push(new Query(expr, options.config)))
+  value.forEach(expr => queries.push(new Query(expr, options)))
 
   return obj => {
     for (let i = 0; i < queries.length; i++) {

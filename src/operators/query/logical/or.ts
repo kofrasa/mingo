@@ -14,7 +14,7 @@ import { Options } from '../../../core'
 export function $or(selector: string, value: any[], options: Options): Callback<boolean> {
   assert(isArray(value), 'Invalid expression. $or expects value to be an Array')
 
-  let queries = value.map(expr => new Query(expr, options.config))
+  let queries = value.map(expr => new Query(expr, options))
 
   return obj => {
     for (let i = 0; i < queries.length; i++) {

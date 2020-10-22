@@ -13,6 +13,6 @@ import { Options } from '../../core'
  * @returns {Array|*}
  */
 export function $match(collection: Iterator, expr: any, options: Options): Iterator {
-  let q = new Query(expr, options.config)
+  let q = new Query(expr, options)
   return collection.filter(o => q.test(o))
 }

@@ -14,13 +14,6 @@ import {
   resolve
 } from './util'
 
-/**
- * Config information to use when executing operators
- */
-export interface Config {
-  readonly idKey: string;
-}
-
 export interface CollationSpec {
   readonly locale: string,
   readonly caseLevel?: boolean,
@@ -33,18 +26,19 @@ export interface CollationSpec {
 }
 
 /**
- * Creates a new configuration from an optional one ensuring default fields exists
- */
-export function createConfig(config?: Config): Config {
-  return Object.assign({ idKey: '_id' }, config || {})
-}
-
-/**
  * Generic options interface passed down to all operators
  */
 export interface Options {
-  readonly config: Config
+  readonly idKey: string;
   readonly collation?: CollationSpec
+}
+
+/**
+ * Creates an Option from another required keys are initialized
+ * @param options Options
+ */
+export function makeOptions(options?: Options): Options {
+  return Object.assign({ idKey: '_id' }, options || {})
 }
 
 /**
@@ -225,7 +219,7 @@ interface ComputeOptions extends Options {
  */
 export function computeValue(obj: object | any[], expr: any, operator: string, options?: ComputeOptions): any {
   // ensure valid options exist on first invocation
-  options = options || { config: createConfig() }
+  options = options || makeOptions()
 
   if (isOperator(operator)) {
     // if the field of the object is a valid operator
