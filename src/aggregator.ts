@@ -1,12 +1,12 @@
 import { assert, each, isEmpty, keys } from './util'
-import { getOperator, OperatorType, Options, createConfig, Config } from './core'
+import { getOperator, OperatorType, Options, createConfig } from './core'
 import { Lazy, Iterator, Source } from './lazy'
 
 /**
  * Provides functionality for the mongoDB aggregation pipeline
  *
  * @param pipeline an Array of pipeline operators
- * @param config An optional configuration or options passed from an earlier operator
+ * @param options An optional Options to pass the aggregator
  * @constructor
  */
 export class Aggregator {
@@ -14,11 +14,9 @@ export class Aggregator {
   private __pipeline: object[]
   private __options: Options
 
-  constructor(pipeline: object[], config?: Config | Options) {
+  constructor(pipeline: object[], options?: Options) {
     this.__pipeline =  pipeline
-    let o = config as object
-    this.__options = o && o['config'] ? o as Options : { config: config as Config }
-    this.__options.config = this.__options.config || createConfig()
+    this.__options = options || { config: createConfig() }
   }
 
   /**

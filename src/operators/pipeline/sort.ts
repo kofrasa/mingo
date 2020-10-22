@@ -12,7 +12,7 @@ import {
   Comparator
 } from '../../util'
 import { Iterator } from '../../lazy'
-import {CollationSpec, Options} from '../../core'
+import { CollationSpec, Options } from '../../core'
 
 
 /**
@@ -27,7 +27,8 @@ export function $sort(collection: Iterator, sortKeys: object, options: Options):
   if (isEmpty(sortKeys) || !isObject(sortKeys)) return collection
 
   let cmp = compare
-  let collationSpec = options.config.collation
+  // check for collation spec on the options
+  let collationSpec = options.collation
 
   // use collation comparator if provided
   if (isObject(collationSpec) && isString(collationSpec.locale)) {

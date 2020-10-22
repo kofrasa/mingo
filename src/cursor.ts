@@ -91,7 +91,7 @@ export class Cursor {
    * @param {Object} modifier an object of key and values specifying the sort order. 1 for ascending and -1 for descending
    * @return {Cursor} Returns the cursor, so you can chain this call.
    */
-  sort(modifier: any): Cursor {
+  sort(modifier: object): Cursor {
     this.__operators.push({ '$sort': modifier })
     return this
   }
@@ -101,7 +101,7 @@ export class Cursor {
    * @param {*} spec
    */
   collation(spec: CollationSpec): Cursor {
-    into(this.__options.config, { collation: spec })
+    into(this.__options, { collation: spec })
     return this
   }
 

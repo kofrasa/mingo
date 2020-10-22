@@ -26,7 +26,7 @@ export class Query {
 
   constructor(criteria: object, config?: Config) {
     this.__criteria = criteria
-    this.__config = config || createConfig()
+    this.__config = createConfig(config)
     this.__compiled = []
     this._compile()
   }

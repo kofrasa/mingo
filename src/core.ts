@@ -18,33 +18,33 @@ import {
  * Config information to use when executing operators
  */
 export interface Config {
-  idKey: string;
-  collation?: CollationSpec;
+  readonly idKey: string;
 }
 
 export interface CollationSpec {
-  locale: string,
-  caseLevel?: boolean,
-  caseFirst?: string,
-  strength?: number,
-  numericOrdering?: boolean,
-  alternate?: string,
-  maxVariable?: string, // unsupported
-  backwards?: boolean // unsupported
+  readonly locale: string,
+  readonly caseLevel?: boolean,
+  readonly caseFirst?: string,
+  readonly strength?: number,
+  readonly numericOrdering?: boolean,
+  readonly alternate?: string,
+  readonly maxVariable?: string, // unsupported
+  readonly backwards?: boolean // unsupported
 }
 
 /**
- * Creates a new default config
+ * Creates a new configuration from an optional one ensuring default fields exists
  */
-export function createConfig(): Config {
-  return { idKey: '_id' }
+export function createConfig(config?: Config): Config {
+  return Object.assign({ idKey: '_id' }, config || {})
 }
 
 /**
  * Generic options interface passed down to all operators
  */
 export interface Options {
-  config: Config
+  readonly config: Config
+  readonly collation?: CollationSpec
 }
 
 /**
@@ -225,8 +225,7 @@ interface ComputeOptions extends Options {
  */
 export function computeValue(obj: object | any[], expr: any, operator: string, options?: ComputeOptions): any {
   // ensure valid options exist on first invocation
-  options = options || { config: null }
-  options.config = options.config || createConfig()
+  options = options || { config: createConfig() }
 
   if (isOperator(operator)) {
     // if the field of the object is a valid operator

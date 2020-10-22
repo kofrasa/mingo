@@ -30,7 +30,6 @@ test("$sort pipeline operator with collation", function (t) {
       { '$sort': { 'name': 1 } }
     ],
     {
-      idKey: '_id',
       collation: {
         locale: 'en',
         strength: 1
