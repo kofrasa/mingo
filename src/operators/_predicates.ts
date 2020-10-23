@@ -45,7 +45,7 @@ export function createQueryOperator(pred: Predicate<any>): Callback<any> {
     return (obj: object) => {
       // value of field must be fully resolved.
       let lhs = resolve(obj, selector, opts)
-      return pred(lhs, value)
+      return pred(lhs, value, options)
     }
   }
 }
@@ -69,7 +69,7 @@ export function createExpressionOperator(f: Predicate<any>) {
  * @param b         The rhs operand provided by the user
  * @returns {*}
  */
-export function $eq(a: any, b: any): boolean {
+export function $eq(a: any, b: any, options?: Options): boolean {
   // start with simple equality check
   if (isEqual(a, b)) return true
 
@@ -92,8 +92,8 @@ export function $eq(a: any, b: any): boolean {
  * @param b
  * @returns {boolean}
  */
-export function $ne(a: any, b: any): boolean {
-  return !$eq(a, b)
+export function $ne(a: any, b: any, options?: Options): boolean {
+  return !$eq(a, b, options)
 }
 
 /**
@@ -103,7 +103,7 @@ export function $ne(a: any, b: any): boolean {
  * @param b
  * @returns {*}
  */
-export function $in(a: any, b: any): boolean {
+export function $in(a: any, b: any, options?: Options): boolean {
   // queries for null should be able to find undefined fields
   if (isNil(a)) return b.some(isNull)
 
@@ -117,8 +117,8 @@ export function $in(a: any, b: any): boolean {
  * @param b
  * @returns {*|boolean}
  */
-export function $nin(a: any, b: any): boolean {
-  return !$in(a, b)
+export function $nin(a: any, b: any, options?: Options): boolean {
+  return !$in(a, b, options)
 }
 
 /**
@@ -128,7 +128,7 @@ export function $nin(a: any, b: any): boolean {
  * @param b
  * @returns {boolean}
  */
-export function $lt(a: any, b: any): boolean {
+export function $lt(a: any, b: any, options?: Options): boolean {
   return compare(a, b, (x: any, y: any) => x < y)
 }
 
@@ -139,7 +139,7 @@ export function $lt(a: any, b: any): boolean {
  * @param b
  * @returns {boolean}
  */
-export function $lte(a: any, b: any): boolean {
+export function $lte(a: any, b: any, options?: Options): boolean {
   return compare(a, b, (x: any, y: any) => x <= y)
 }
 
@@ -150,7 +150,7 @@ export function $lte(a: any, b: any): boolean {
  * @param b
  * @returns {boolean}
  */
-export function $gt(a: any, b: any): boolean {
+export function $gt(a: any, b: any, options?: Options): boolean {
   return compare(a, b, (x: any, y: any) => x > y)
 }
 
@@ -161,7 +161,7 @@ export function $gt(a: any, b: any): boolean {
  * @param b
  * @returns {boolean}
  */
-export function $gte(a: any, b: any): boolean {
+export function $gte(a: any, b: any, options?: Options): boolean {
   return compare(a, b, (x: any, y: any) => x >= y)
 }
 
@@ -172,7 +172,7 @@ export function $gte(a: any, b: any): boolean {
  * @param b
  * @returns {boolean}
  */
-export function $mod(a: any, b: number[]): boolean {
+export function $mod(a: any, b: number[], options?: Options): boolean {
   return ensureArray(a).some((x: number) => b.length === 2 && (x % b[0]) === b[1])
 }
 
@@ -183,7 +183,7 @@ export function $mod(a: any, b: number[]): boolean {
  * @param b
  * @returns {boolean}
  */
-export function $regex(a: any, b: any): boolean {
+export function $regex(a: any, b: any, options?: Options): boolean {
   a = ensureArray(a)
   let match = ((x: string) => isString(x) && !!x.match(b))
   return a.some(match) || flatten(a, 1).some(match)
@@ -196,7 +196,7 @@ export function $regex(a: any, b: any): boolean {
  * @param b
  * @returns {boolean}
  */
-export function $exists(a: any, b: any): boolean {
+export function $exists(a: any, b: any, options?: Options): boolean {
   return ((b === false || b === 0) && a === undefined) || ((b === true || b === 1) && a !== undefined)
 }
 
@@ -207,12 +207,12 @@ export function $exists(a: any, b: any): boolean {
  * @param b
  * @returns boolean
  */
-export function $all(a: any, b: any): boolean {
+export function $all(a: any, b: any, options?: Options): boolean {
   let matched = false
   if (isArray(a) && isArray(b)) {
     for (let i = 0, len = b.length; i < len; i++) {
       if (isObject(b[i]) && inArray(keys(b[i]), '$elemMatch')) {
-        matched = matched || $elemMatch(a, b[i].$elemMatch)
+        matched = matched || $elemMatch(a, b[i].$elemMatch, options)
       } else {
         // order of arguments matter
         return intersection(b, a).length === len
@@ -229,7 +229,7 @@ export function $all(a: any, b: any): boolean {
  * @param b
  * @returns {*|boolean}
  */
-export function $size(a: any[], b: number): boolean {
+export function $size(a: any[], b: number, options?: Options): boolean {
   return a.length === b
 }
 
@@ -239,7 +239,7 @@ export function $size(a: any[], b: number): boolean {
  * @param a {Array} element to match against
  * @param b {Object} subquery
  */
-export function $elemMatch(a: any[], b: object): boolean {
+export function $elemMatch(a: any[], b: object, options?: Options): boolean {
   // should return false for non-matching input
   if (isArray(a) && !isEmpty(a)) {
     let format = (x: any) => x
@@ -251,7 +251,7 @@ export function $elemMatch(a: any[], b: object): boolean {
       criteria = { temp: b }
       format = x => ({ temp: x })
     }
-    let query = new Query(criteria)
+    let query = new Query(criteria, options)
     for (let i = 0, len = a.length; i < len; i++) {
       if (query.test(format(a[i]))) {
         return true
@@ -268,7 +268,7 @@ export function $elemMatch(a: any[], b: object): boolean {
  * @param b
  * @returns {boolean}
  */
-export function $type(a: any, b: number | string): boolean {
+export function $type(a: any, b: number | string, options?: Options): boolean {
   switch (b) {
     case 1:
     case 19:
