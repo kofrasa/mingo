@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.1.0 / 2020-10-23
+
+- Fix `isObject` to enforce plain Javascript objects.
+- Fix `collation` options of `$sort` operator
+- Merge `Config` into `Options` type
+- Pass `Options` to predicate function for comparison operators
+- Replace `createConfig` with `makeOptions`
+
 ## 3.0.6 / 2020-08-05
 
 - Fix $bucket default and boundaries mutation. Fixes [#147](https://github.com/kofrasa/mingo/issues/147)
