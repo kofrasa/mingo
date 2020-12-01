@@ -26,11 +26,17 @@ export interface CollationSpec {
 }
 
 /**
+ * Custom function to hash values to improve faster comparaisons
+ */
+export type HashFunction =  (v: any) => string | number
+
+/**
  * Generic options interface passed down to all operators
  */
 export interface Options {
   readonly idKey: string;
-  readonly collation?: CollationSpec
+  readonly collation?: CollationSpec;
+  readonly hashFunction?:HashFunction
 }
 
 /**

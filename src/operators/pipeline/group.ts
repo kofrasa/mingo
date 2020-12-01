@@ -18,7 +18,7 @@ export function $group(collection: Iterator, expr: any, options: Options): Itera
   let id = expr[ID_KEY]
 
   return collection.transform(coll => {
-    let partitions = groupBy(coll, obj => computeValue(obj, id, null, options))
+    let partitions = groupBy(coll, obj => computeValue(obj, id, null, options), options?.hashFunction)
 
     // remove the group key
     expr = into({}, expr)
