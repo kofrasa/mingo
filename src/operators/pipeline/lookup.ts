@@ -28,13 +28,13 @@ export function $lookup(collection: Iterator, expr: any, options: Options): Iter
   let hash = {}
 
   each(joinColl, obj => {
-    let k = hashCode(resolve(obj, foreignField))
+    let k = hashCode(resolve(obj, foreignField), options?.hashFunction)
     hash[k] = hash[k] || []
     hash[k].push(obj)
   })
 
   return collection.map(obj => {
-    let k = hashCode(resolve(obj, localField))
+    let k = hashCode(resolve(obj, localField), options?.hashFunction)
     let newObj = into({}, obj)
     newObj[asField] = hash[k] || []
     return newObj

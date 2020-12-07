@@ -31,7 +31,7 @@ export function $bucketAuto(collection: Iterator, expr: any, options: Options): 
 
   return collection.transform(coll => {
     let approxBucketSize = Math.max(1, Math.round(coll.length / bucketCount))
-    let computeValueOptimized = memoize(computeValue)
+    let computeValueOptimized = memoize(computeValue, options?.hashFunction)
     let grouped = {}
     let remaining = []
 

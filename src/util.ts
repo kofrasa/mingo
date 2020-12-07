@@ -1,6 +1,7 @@
 /**
  * Utility constants and functions
  */
+import { HashFunction } from './core';
 
 export const MAX_INT = 2147483647
 export const MIN_INT = -2147483648
@@ -9,6 +10,14 @@ export const MIN_LONG = Number.MIN_SAFE_INTEGER
 
 // special value to identify missing items. treated differently from undefined
 const MISSING = () => { }
+
+const DEFAULT_HASH_FUNC: HashFunction = (value: any): number => {
+	let s = encode(value)
+	let hash = 0
+	let i = s.length
+	while (i) hash = ((hash << 5) - hash) ^ s.charCodeAt(--i)
+	return hash >>> 0
+};
 
 // Javascript native types
 export enum JsType {
@@ -218,11 +227,12 @@ export function merge(target: object, obj: object, options?: MergeOptions): obje
 /**
  * Returns the intersection between two arrays
  *
- * @param  {Array} xs The first array
- * @param  {Array} ys The second array
+ * @param  {Array} a The first array
+ * @param  {Array} b The second array
+ * @param  {Function} hashFunction Custom function to hash values, default the hashCode method
  * @return {Array}    Result array
  */
-export function intersection(a: any[], b: any[]): any[] {
+export function intersection(a: any[], b: any[], hashFunction?: HashFunction): any[] {
   let flipped = false
 
   // we ensure the left array is always smallest
@@ -237,14 +247,14 @@ export function intersection(a: any[], b: any[]): any[] {
   let maxResult = Math.min(a.length, b.length)
 
   let lookup = a.reduce((memo, v, i) => {
-    memo[hashCode(v)] = i
+    memo[hashCode(v, hashFunction)] = i
     return memo
   }, {})
 
   let indexes = []
 
   for (let i = 0, j = 0; i < maxSize && j < maxResult; i++) {
-    let k = lookup[hashCode(b[i])]
+    let k = lookup[hashCode(b[i], hashFunction)]
     if (k !== undefined) {
       indexes.push(k)
       j++
@@ -358,11 +368,11 @@ export function isEqual(a: any, b: any): boolean {
  * @param  {Array} xs The input collection
  * @return {Array}    A new collection with unique values
  */
-export function unique(xs: any[]): any[] {
+export function unique(xs: any[], customHashFunction: HashFunction): any[] {
   let h = {}
   let arr = []
   each(xs, item => {
-    let k = hashCode(item)
+    let k = hashCode(item, customHashFunction)
     if (!has(h, k)) {
       arr.push(item)
       h[k] = 0
@@ -409,14 +419,10 @@ function encode(value: any): string {
  * @param value
  * @returns {number|null}
  */
-export function hashCode(value: any): number | null {
+export function hashCode(value: any, hashFunction: HashFunction = DEFAULT_HASH_FUNC): number | string | null {
   if (isNil(value)) return null
 
-  let hash = 0
-  let s = encode(value)
-  let i = s.length
-  while (i) hash = ((hash << 5) - hash) ^ s.charCodeAt(--i)
-  return hash >>> 0
+	return hashFunction(value)
 }
 
 /**
@@ -487,7 +493,7 @@ export function sortBy(collection: any[], keyFn: Callback<any>, comparator?: Com
  * @param keyFn {Function} to compute the group key of an item in the collection
  * @returns {{keys: Array, groups: Array}}
  */
-export function groupBy(collection: any[], keyFn: Callback<any>): { keys: any[], groups: any[] } {
+export function groupBy(collection: any[], keyFn: Callback<any>, customHashFunction: HashFunction): { keys: any[], groups: any[] } {
   let result = {
     keys: [],
     groups: []
@@ -497,7 +503,7 @@ export function groupBy(collection: any[], keyFn: Callback<any>): { keys: any[],
 
   each(collection, obj => {
     let key = keyFn(obj)
-    let hash = hashCode(key)
+    let hash = hashCode(key, customHashFunction)
     let index = -1
 
     if (lookup[hash] === undefined) {
@@ -555,10 +561,10 @@ export function into(target: any, ...rest: any[]): any {
  *
  * @param {*} fn The function object to memoize
  */
-export function memoize(fn: Callback<any>): Callback<any> {
+export function memoize(fn: Callback<any>, customHashFunction: HashFunction): Callback<any> {
   return ((memo) => {
     return (...args: any): any => {
-      let key = hashCode(args)
+      let key = hashCode(args, customHashFunction)
       if (!has(memo, key)) {
         memo[key] = fn.apply(this, args)
       }

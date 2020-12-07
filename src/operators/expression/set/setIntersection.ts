@@ -13,5 +13,5 @@ import { computeValue, Options } from '../../../core'
  */
 export function $setIntersection(obj: object, expr: any, options: Options): any {
   let args = computeValue(obj, expr, null, options)
-  return intersection(args[0], args[1])
+  return intersection(args[0], args[1], options?.hashFunction)
 }

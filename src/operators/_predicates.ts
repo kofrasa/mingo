@@ -107,7 +107,7 @@ export function $in(a: any, b: any, options?: Options): boolean {
   // queries for null should be able to find undefined fields
   if (isNil(a)) return b.some(isNull)
 
-  return intersection(ensureArray(a), b).length > 0
+  return intersection(ensureArray(a), b, options?.hashFunction).length > 0
 }
 
 /**
@@ -215,7 +215,7 @@ export function $all(a: any, b: any, options?: Options): boolean {
         matched = matched || $elemMatch(a, b[i].$elemMatch, options)
       } else {
         // order of arguments matter
-        return intersection(b, a).length === len
+        return intersection(b, a, options?.hashFunction).length === len
       }
     }
   }

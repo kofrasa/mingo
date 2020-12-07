@@ -39,7 +39,7 @@ export function $sort(collection: Iterator, sortKeys: object, options: Options):
     let modifiers = keys(sortKeys)
 
     each(modifiers.reverse(), key => {
-      let grouped = groupBy(coll, obj => resolve(obj, key))
+      let grouped = groupBy(coll, obj => resolve(obj, key), options?.hashFunction)
       let sortedIndex = {}
 
       let indexKeys = sortBy(grouped.keys, (k, i) => {

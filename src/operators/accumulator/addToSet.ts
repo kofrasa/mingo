@@ -11,5 +11,5 @@ import { Options } from '../../core'
  * @returns {*}
  */
 export function $addToSet(collection: any[], expr: any, options: Options): any {
-  return unique($push(collection, expr, options))
+  return unique($push(collection, expr, options), options?.hashFunction)
 }

@@ -572,3 +572,31 @@ test('null or missing fields', function (t) {
   }
   t.end()
 })
+
+
+test('hash function collision', function (t) {
+	let data = [{ "codes": ["KNE_OC42-midas"]	}, { "codes": ["KNE_OCS3-midas"] }];
+	let fixtures = [
+		{
+			query: { codes: { $in: ["KNE_OCS3-midas"] } },
+			result: [ { codes: [ 'KNE_OC42-midas' ] }, { codes: [ 'KNE_OCS3-midas' ] } ],
+			options: {},
+			message: 'should return both documents due to hash collision with default hash function'
+		},
+		{
+			query: { codes: { $in: ["KNE_OCS3-midas"] } },
+			result: [{ codes: [ 'KNE_OCS3-midas' ] } ],
+			options: {
+				hashFunction: (v) => JSON.stringify(v) // basic hash function, but has low performances
+			},
+			message: 'should return the good document due to no hash collision with custom hash function'
+		}
+	]
+	for (let i = 0; i < fixtures.length; i++) {
+		let line = fixtures[i]
+		let query = new mingo.Query(line.query, line.options)
+		let res = query.find(data).all()
+		t.deepEqual(res, line.result, line.message)
+	}
+	t.end()
+})
