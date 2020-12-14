@@ -73,7 +73,7 @@ const JS_SIMPLE_TYPES = [JsType.NULL, JsType.UNDEFINED, JsType.BOOLEAN, JsType.N
 const OBJECT_PROTOTYPE = Object.getPrototypeOf({})
 const OBJECT_TO_STRING = Object.prototype.toString
 const OBJECT_TAG = '[object Object]'
-const OBJECT_TYPE_RE = /^\[object ([a-zA-Z]+)\]$/
+const OBJECT_TYPE_RE = /^\[object ([a-zA-Z0-9]+)\]$/
 
 export function assert(condition: boolean, message: string): void {
   if (!condition) throw new Error(message)
