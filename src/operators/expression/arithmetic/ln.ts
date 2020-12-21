@@ -1,8 +1,7 @@
 // Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
 
-import { assert, isNil, isNumber } from '../../../util'
-import { computeValue, Options } from '../../../core'
-
+import { computeValue, Options } from "../../../core";
+import { AnyVal, assert, isNil, isNumber, RawObject } from "../../../util";
 
 /**
  * Calculates the natural logarithm ln (i.e loge) of a number and returns the result as a double.
@@ -11,9 +10,13 @@ import { computeValue, Options } from '../../../core'
  * @param expr
  * @returns {number}
  */
-export function $ln(obj: object, expr: any, options: Options): number | null {
-  let arg = computeValue(obj, expr, null, options)
-  if (isNil(arg)) return null
-  assert(isNumber(arg) || isNaN(arg), '$ln expression must resolve to a number.')
-  return Math.log(arg)
+export function $ln(
+  obj: RawObject,
+  expr: AnyVal,
+  options?: Options
+): number | null {
+  const n = computeValue(obj, expr, null, options) as number;
+  if (isNil(n)) return null;
+  assert(isNumber(n) || isNaN(n), "$ln expression must resolve to a number.");
+  return Math.log(n);
 }

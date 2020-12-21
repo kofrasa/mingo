@@ -1,44 +1,51 @@
 // Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
 
-import { computeValue, Options } from '../../../core'
-import { isNil, isObject } from '../../../util'
+import { computeValue, Options } from "../../../core";
+import { AnyVal, Callback, isNil, isObject, RawObject } from "../../../util";
 import {
-  MINUTES_PER_HOUR,
+  adjustDate,
+  computeDate,
   DATE_FORMAT,
   DATE_SYM_TABLE,
+  DatePartFormatter,
   formatTimezone,
-  computeDate,
+  MINUTES_PER_HOUR,
+  padDigits,
   parseTimezone,
-  adjustDate,
-  padDigits
-} from './_internal'
-import { $year } from './year'
-import { $month } from './month'
-import { $dayOfMonth } from './dayOfMonth'
-import { $dayOfWeek } from './dayOfWeek'
-import { $hour } from './hour'
-import { $minute } from './minute'
-import { $second } from './second'
-import { $millisecond } from './millisecond'
-import { $week } from './week'
+} from "./_internal";
+import { $dayOfMonth } from "./dayOfMonth";
+import { $dayOfWeek } from "./dayOfWeek";
+import { $hour } from "./hour";
+import { $millisecond } from "./millisecond";
+import { $minute } from "./minute";
+import { $month } from "./month";
+import { $second } from "./second";
+import { $week } from "./week";
+import { $year } from "./year";
 
+interface DateOptions {
+  date?: Date;
+  format?: string;
+  timezone?: string;
+  onNull: string;
+}
 
 // date functions for format specifiers
-const DATE_FUNCTIONS = {
-  '%Y': $year,
-  '%G': $year,
-  '%m': $month,
-  '%d': $dayOfMonth,
-  '%H': $hour,
-  '%M': $minute,
-  '%S': $second,
-  '%L': $millisecond,
-  '%u': $dayOfWeek,
-  '%V': $week,
-  '%z': null,
-  '%Z': null,
-  '%%': '%'
-}
+const DATE_FUNCTIONS: Record<string, Callback<number>> = {
+  "%Y": $year,
+  "%G": $year,
+  "%m": $month,
+  "%d": $dayOfMonth,
+  "%H": $hour,
+  "%M": $minute,
+  "%S": $second,
+  "%L": $millisecond,
+  "%u": $dayOfWeek,
+  "%V": $week,
+  // "%z": null,
+  // "%Z": null,
+  // "%%": "%",
+};
 
 /**
  * Returns the date as a formatted string.
@@ -60,48 +67,50 @@ const DATE_FUNCTIONS = {
  * @param obj current object
  * @param expr operator expression
  */
-export function $dateToString(obj: object, expr: any, options: Options): string {
-  let args: {
-    date?: Date
-    format?: string
-    timezone?: any
-    onNull: any
-  } = computeValue(obj, expr, null, options)
+export function $dateToString(
+  obj: RawObject,
+  expr: AnyVal,
+  options?: Options
+): string {
+  const args = computeValue(obj, expr, null, options) as DateOptions;
 
-  if (isNil(args.onNull)) args.onNull = null
-  if (isNil(args.date)) return args.onNull
+  if (isNil(args.onNull)) args.onNull = null;
+  if (isNil(args.date)) return args.onNull;
 
-  let date = computeDate(obj, args.date, options)
-  let format = args.format || DATE_FORMAT
-  let tz = parseTimezone(args.timezone)
-  let matches = format.match(/(%%|%Y|%G|%m|%d|%H|%M|%S|%L|%u|%V|%z|%Z)/g)
+  const date = computeDate(obj, args.date, options);
+  let format = args.format || DATE_FORMAT;
+  const tz = parseTimezone(args.timezone);
+  const matches = format.match(/(%%|%Y|%G|%m|%d|%H|%M|%S|%L|%u|%V|%z|%Z)/g);
 
   // adjust the date to reflect timezone
-  adjustDate(date, tz)
+  adjustDate(date, tz);
 
   for (let i = 0, len = matches.length; i < len; i++) {
-    let formatSpecifier = matches[i]
-    let props = DATE_SYM_TABLE[formatSpecifier]
-    let operatorFn = DATE_FUNCTIONS[formatSpecifier]
-    let value: string
+    const formatSpecifier = matches[i];
+    const props = DATE_SYM_TABLE[formatSpecifier];
+    const operatorFn = DATE_FUNCTIONS[formatSpecifier];
+    let value: string | DatePartFormatter;
 
     if (isObject(props)) {
       // reuse date
-      if (props.name === 'timezone') {
-        value = formatTimezone(tz)
-      } else if (props.name === 'minuteOffset') {
-        value = `${(tz.hour < 0 ? -1 : 1) * Math.abs(tz.hour * MINUTES_PER_HOUR) + tz.minute}`
+      if (props.name === "timezone") {
+        value = formatTimezone(tz);
+      } else if (props.name === "minuteOffset") {
+        value = `${
+          (tz.hour < 0 ? -1 : 1) * Math.abs(tz.hour * MINUTES_PER_HOUR) +
+          tz.minute
+        }`;
       } else if (operatorFn != null) {
-        value = padDigits(operatorFn(obj, date, options), props.padding)
+        value = padDigits(operatorFn(obj, date, options), props.padding);
       } else {
-        value = props
+        value = props;
       }
     } else {
-      value = props
+      value = props;
     }
     // replace the match with resolved value
-    format = format.replace(formatSpecifier, value)
+    format = format.replace(formatSpecifier, value as string);
   }
 
-  return format
+  return format;
 }

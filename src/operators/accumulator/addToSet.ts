@@ -1,6 +1,6 @@
-import { unique } from '../../util'
-import { $push } from './push'
-import { Options } from '../../core'
+import { Options } from "../../core";
+import { AnyVal, Collection, unique } from "../../util";
+import { $push } from "./push";
 
 /**
  * Returns an array of all the unique values for the selected field among for each document in that group.
@@ -10,6 +10,13 @@ import { Options } from '../../core'
  * @param {Options} options The options to use for this operation
  * @returns {*}
  */
-export function $addToSet(collection: any[], expr: any, options: Options): any {
-  return unique($push(collection, expr, options), options?.hashFunction)
+export function $addToSet(
+  collection: Collection,
+  expr: AnyVal,
+  options?: Options
+): Collection {
+  return unique(
+    $push(collection, expr, options),
+    options?.hashFunction
+  ) as Collection;
 }

@@ -1,7 +1,6 @@
-import { $addFields } from "./addFields"
-
+import { $addFields } from "./addFields";
 
 /**
  * Alias for $addFields.
  */
-export const $set = $addFields
+export const $set = $addFields;

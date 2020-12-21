@@ -1,7 +1,7 @@
-import { Query } from '../../query'
-import { Iterator } from '../../lazy'
-import { Options } from '../../core'
-
+import { Options } from "../../core";
+import { Iterator } from "../../lazy";
+import { Query } from "../../query";
+import { RawObject } from "../../util";
 
 /**
  * Filters the document stream, and only allows matching documents to pass into the next pipeline stage.
@@ -12,7 +12,11 @@ import { Options } from '../../core'
  * @param options
  * @returns {Array|*}
  */
-export function $match(collection: Iterator, expr: any, options: Options): Iterator {
-  let q = new Query(expr, options)
-  return collection.filter(o => q.test(o))
+export function $match(
+  collection: Iterator,
+  expr: RawObject,
+  options?: Options
+): Iterator {
+  const q = new Query(expr, options);
+  return collection.filter((o: RawObject) => q.test(o));
 }

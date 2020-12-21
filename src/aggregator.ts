@@ -1,6 +1,6 @@
-import { assert, each, isEmpty, keys } from './util'
-import { getOperator, makeOptions, OperatorType, Options } from './core'
-import { Lazy, Iterator, Source } from './lazy'
+import { getOperator, makeOptions, OperatorType, Options } from "./core";
+import { Iterator, Lazy, Source } from "./lazy";
+import { assert, Collection, each, isEmpty, keys, RawArray } from "./util";
 
 /**
  * Provides functionality for the mongoDB aggregation pipeline
@@ -10,13 +10,12 @@ import { Lazy, Iterator, Source } from './lazy'
  * @constructor
  */
 export class Aggregator {
+  private __pipeline: RawArray;
+  private __options: Options;
 
-  private __pipeline: object[]
-  private __options: Options
-
-  constructor(pipeline: object[], options?: Options) {
-    this.__pipeline =  pipeline
-    this.__options = makeOptions(options)
+  constructor(pipeline: Collection, options?: Options) {
+    this.__pipeline = pipeline;
+    this.__options = makeOptions(options);
   }
 
   /**
@@ -27,19 +26,22 @@ export class Aggregator {
    * @returns {Iterator} an iterator object
    */
   stream(collection: Source): Iterator {
-    let iterator: Iterator = Lazy(collection)
+    let iterator: Iterator = Lazy(collection);
 
     if (!isEmpty(this.__pipeline)) {
       // run aggregation pipeline
       each(this.__pipeline, (operator) => {
-        let operatorKeys = keys(operator)
-        let op = operatorKeys[0]
-        let call = getOperator(OperatorType.PIPELINE, op)
-        assert(operatorKeys.length === 1 && !!call, `invalid aggregation operator ${op}`)
-        iterator = call(iterator, operator[op], this.__options)
-      })
+        const operatorKeys = keys(operator);
+        const op = operatorKeys[0];
+        const call = getOperator(OperatorType.PIPELINE, op);
+        assert(
+          operatorKeys.length === 1 && !!call,
+          `invalid aggregation operator ${op}`
+        );
+        iterator = call(iterator, operator[op], this.__options) as Iterator;
+      });
     }
-    return iterator
+    return iterator;
   }
 
   /**
@@ -48,7 +50,7 @@ export class Aggregator {
    * @param {*} collection
    * @param {*} query
    */
-  run(collection: Source): any[] {
-    return this.stream(collection).value()
+  run(collection: Source): Collection {
+    return this.stream(collection).value() as Collection;
   }
 }

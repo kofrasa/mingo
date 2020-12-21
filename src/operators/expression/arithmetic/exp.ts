@@ -1,7 +1,7 @@
 // Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
 
-import { assert, isNil, isNumber } from '../../../util'
-import { computeValue, Options } from '../../../core'
+import { computeValue, Options } from "../../../core";
+import { AnyVal, assert, isNil, isNumber, RawObject } from "../../../util";
 
 /**
  * Raises Euler’s number (i.e. e ) to the specified exponent and returns the result.
@@ -10,9 +10,13 @@ import { computeValue, Options } from '../../../core'
  * @param expr
  * @returns {number}
  */
-export function $exp(obj: object, expr: any, options: Options): number | null {
-  let arg = computeValue(obj, expr, null, options)
-  if (isNil(arg)) return null
-  assert(isNumber(arg) || isNaN(arg), '$exp expression must resolve to a number.')
-  return Math.exp(arg)
+export function $exp(
+  obj: RawObject,
+  expr: AnyVal,
+  options?: Options
+): number | null {
+  const n = computeValue(obj, expr, null, options) as number;
+  if (isNil(n)) return null;
+  assert(isNumber(n) || isNaN(n), "$exp expression must resolve to a number.");
+  return Math.exp(n);
 }

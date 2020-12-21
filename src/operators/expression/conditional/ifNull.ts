@@ -2,9 +2,15 @@
  * Conditional Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#conditional-expression-operators
  */
 
-import { assert, isArray, isNil } from '../../../util'
-import { computeValue, Options } from '../../../core'
-
+import { computeValue, Options } from "../../../core";
+import {
+  AnyVal,
+  assert,
+  isArray,
+  isNil,
+  RawArray,
+  RawObject,
+} from "../../../util";
 
 /**
  * Evaluates an expression and returns the first expression if it evaluates to a non-null value.
@@ -14,8 +20,15 @@ import { computeValue, Options } from '../../../core'
  * @param expr
  * @returns {*}
  */
-export function $ifNull(obj: object, expr: any, options: Options): any {
-  assert(isArray(expr) && expr.length === 2, '$ifNull expression must resolve to array(2)')
-  let args = computeValue(obj, expr, null, options)
-  return isNil(args[0]) ? args[1] : args[0]
+export function $ifNull(
+  obj: RawObject,
+  expr: RawArray,
+  options?: Options
+): AnyVal {
+  assert(
+    isArray(expr) && expr.length === 2,
+    "$ifNull expression must resolve to array(2)"
+  );
+  const args = computeValue(obj, expr, null, options);
+  return isNil(args[0]) ? args[1] : args[0];
 }

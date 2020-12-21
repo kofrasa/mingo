@@ -1,7 +1,6 @@
-import { assert, isString } from '../../util'
-import { Lazy, Iterator } from '../../lazy'
-import { Options } from '../../core'
-
+import { Options } from "../../core";
+import { Iterator, Lazy } from "../../lazy";
+import { assert, isString } from "../../util";
 
 /**
  * Returns a document that contains a count of the number of documents input to the stage.
@@ -11,15 +10,22 @@ import { Options } from '../../core'
  * @param {Options} options
  * @return {Object}
  */
-export function $count(collection: Iterator, expr: any, options: Options): Iterator {
+export function $count(
+  collection: Iterator,
+  expr: string,
+  options?: Options
+): Iterator {
   assert(
-    isString(expr) && expr.trim() !== '' && expr.indexOf('.') === -1 && expr.trim()[0] !== '$',
-    'Invalid expression value for $count'
-  )
+    isString(expr) &&
+      expr.trim() !== "" &&
+      expr.indexOf(".") === -1 &&
+      expr.trim()[0] !== "$",
+    "Invalid expression value for $count"
+  );
 
   return Lazy(() => {
-    let o = {}
-    o[expr] = collection.size()
-    return { value: o, done: false }
-  }).first()
+    const o = {};
+    o[expr] = collection.size();
+    return { value: o, done: false };
+  }).first();
 }

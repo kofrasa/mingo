@@ -1,15 +1,18 @@
+import { getOperator, makeOptions, OperatorType, Options } from "./core";
+import { Cursor } from "./cursor";
+import { Source } from "./lazy";
 import {
+  AnyVal,
   assert,
+  Callback,
+  Collection,
   each,
   inArray,
   isObject,
   isOperator,
   normalize,
-  Callback
-} from './util'
-import { Cursor } from './cursor'
-import { getOperator, makeOptions, OperatorType, Options } from './core'
-import { Source } from './lazy'
+  RawObject,
+} from "./util";
 
 /**
  * An object used to filter input documents
@@ -19,50 +22,53 @@ import { Source } from './lazy'
  * @constructor
  */
 export class Query {
+  private __criteria: RawObject;
+  private __compiled: Callback<AnyVal>[];
+  private __options: Options;
 
-  private __criteria: object
-  private __compiled: Callback<any>[]
-  private __options: Options
-
-  constructor(criteria: object, options?: Options) {
-    this.__criteria = criteria
-    this.__options = makeOptions(options)
-    this.__compiled = []
-    this._compile()
+  constructor(criteria: RawObject, options?: Options) {
+    this.__criteria = criteria;
+    this.__options = makeOptions(options);
+    this.__compiled = [];
+    this._compile();
   }
 
   _compile() {
-    assert(isObject(this.__criteria), 'query criteria must be an object')
+    assert(isObject(this.__criteria), "query criteria must be an object");
 
-    let whereOperator: { field: string, expr: object }
+    let whereOperator: { field: string; expr: AnyVal };
 
-    each(this.__criteria, (expr, field) => {
-      // save $where operators to be executed after other operators
-      if ('$where' === field) {
+    each(this.__criteria, (expr, field: string) => {
+      if ("$where" === field) {
         whereOperator = { field: field, expr: expr };
-      } else if ('$expr' === field) {
-        this._processOperator(field, field, expr)
-      } else if (inArray(['$and', '$or', '$nor'], field)) {
-        this._processOperator(field, field, expr)
+      } else if ("$expr" === field) {
+        this._processOperator(field, field, expr);
+      } else if (inArray(["$and", "$or", "$nor"], field)) {
+        this._processOperator(field, field, expr);
       } else {
         // normalize expression
-        assert(!isOperator(field), `unknown top level operator: ${field}`)
-        expr = normalize(expr)
-        each(expr, (val, op) => {
-          this._processOperator(field, op, val)
-        })
+        assert(!isOperator(field), `unknown top level operator: ${field}`);
+        expr = normalize(expr);
+        each(expr as RawObject, (val: AnyVal, operator: string) => {
+          this._processOperator(field, operator, val);
+        });
       }
 
       if (isObject(whereOperator)) {
-        this._processOperator(whereOperator.field, whereOperator.field, whereOperator.expr);
+        this._processOperator(
+          whereOperator.field,
+          whereOperator.field,
+          whereOperator.expr
+        );
       }
-    })
+    });
   }
 
-  _processOperator(field: string, operator: string, value: any) {
-    let call = getOperator(OperatorType.QUERY, operator)
-    assert(!!call, `unknown operator ${operator}`)
-    this.__compiled.push(call(field, value, this.__options))
+  _processOperator(field: string, operator: string, value: AnyVal) {
+    const call = getOperator(OperatorType.QUERY, operator);
+    assert(!!call, `unknown operator ${operator}`);
+    const fn = call(field as AnyVal, value, this.__options) as Callback<AnyVal>;
+    this.__compiled.push(fn);
   }
 
   /**
@@ -71,13 +77,13 @@ export class Query {
    * @param obj The object to test
    * @returns {boolean} True or false
    */
-  test(obj: any): boolean {
+  test(obj: RawObject): boolean {
     for (let i = 0, len = this.__compiled.length; i < len; i++) {
       if (!this.__compiled[i](obj)) {
-        return false
+        return false;
       }
     }
-    return true
+    return true;
   }
 
   /**
@@ -87,8 +93,13 @@ export class Query {
    * @param projection An optional projection criteria
    * @returns {Cursor} A Cursor for iterating over the results
    */
-  find(collection: Source, projection?: object): Cursor {
-    return new Cursor(collection, x => this.test(x), projection || {}, this.__options)
+  find(collection: Source, projection?: RawObject): Cursor {
+    return new Cursor(
+      collection,
+      (x: RawObject) => this.test(x),
+      projection || {},
+      this.__options
+    );
   }
 
   /**
@@ -97,10 +108,10 @@ export class Query {
    * @param collection An array of documents
    * @returns {Array} A new array with matching elements removed
    */
-  remove(collection: object[]): object[] {
-    return collection.reduce<object[]>((acc: object[], obj: object) => {
-      if (!this.test(obj)) acc.push(obj)
-      return acc
-    }, [])
+  remove(collection: Collection): Collection {
+    return collection.reduce<Collection>((acc: Collection, obj: RawObject) => {
+      if (!this.test(obj)) acc.push(obj);
+      return acc;
+    }, []);
   }
 }

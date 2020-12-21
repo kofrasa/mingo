@@ -2,8 +2,9 @@
  * String Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators
  */
 
-import { Options } from '../../../core'
-import { trimString } from './_internal'
+import { Options } from "../../../core";
+import { AnyVal, RawObject } from "../../../util";
+import { trimString } from "./_internal";
 
 /**
  * Removes whitespace characters, including null, or the specified characters from the end of a string.
@@ -11,6 +12,10 @@ import { trimString } from './_internal'
  * @param obj
  * @param expr
  */
-export function $rtrim(obj: object, expr: any, options: Options): any {
-  return trimString(obj, expr, options, { left: false, right: true })
+export function $rtrim(
+  obj: RawObject,
+  expr: AnyVal,
+  options?: Options
+): AnyVal {
+  return trimString(obj, expr, options, { left: false, right: true });
 }

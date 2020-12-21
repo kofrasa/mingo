@@ -1,6 +1,7 @@
 // Literal Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#literal-expression-operator
 
-import { Options } from "../../core"
+import { Options } from "../../core";
+import { AnyVal, RawObject } from "../../util";
 
 /**
  * Return a value without parsing.
@@ -8,6 +9,10 @@ import { Options } from "../../core"
  * @param expr
  * @param options
  */
-export function $literal(obj: object, expr: any, options: Options): any {
-  return expr
+export function $literal(
+  obj: RawObject,
+  expr: AnyVal,
+  options?: Options
+): AnyVal {
+  return expr;
 }

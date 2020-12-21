@@ -1,4 +1,5 @@
-import { computeValue, Options } from '../../core'
+import { computeValue, Options } from "../../core";
+import { AnyVal, Collection } from "../../util";
 
 /**
  * Returns the last value in the collection.
@@ -8,6 +9,12 @@ import { computeValue, Options } from '../../core'
  * @param {Options} options The options to use for this operation
  * @returns {*}
  */
-export function $last(collection: any[], expr: any, options: Options): any {
-  return collection.length > 0 ? computeValue(collection[collection.length - 1], expr, null, options) : undefined
+export function $last(
+  collection: Collection,
+  expr: AnyVal,
+  options?: Options
+): AnyVal {
+  return collection.length > 0
+    ? computeValue(collection[collection.length - 1], expr, null, options)
+    : undefined;
 }

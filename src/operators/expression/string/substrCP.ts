@@ -2,9 +2,14 @@
  * String Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators
  */
 
-import { Options } from '../../../core'
-import { $substr } from './substr'
+import { Options } from "../../../core";
+import { AnyVal, RawObject } from "../../../util";
+import { $substr } from "./substr";
 
-export function $substrCP(obj: object, expr: any, options: Options): any {
-  return $substr(obj, expr, options)
+export function $substrCP(
+  obj: RawObject,
+  expr: AnyVal,
+  options?: Options
+): AnyVal {
+  return $substr(obj, expr, options);
 }

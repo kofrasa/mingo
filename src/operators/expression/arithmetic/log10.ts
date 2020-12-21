@@ -1,7 +1,7 @@
 // Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
 
-import { assert, isNil, isNumber } from '../../../util'
-import { computeValue, Options } from '../../../core'
+import { computeValue, Options } from "../../../core";
+import { AnyVal, assert, isNil, isNumber, RawObject } from "../../../util";
 
 /**
  * Calculates the log base 10 of a number and returns the result as a double.
@@ -10,11 +10,18 @@ import { computeValue, Options } from '../../../core'
  * @param expr
  * @returns {number}
  */
-export function $log10(obj: object, expr: any, options: Options): number | null {
-  let arg = computeValue(obj, expr, null, options)
-  if (isNil(arg)) return null
+export function $log10(
+  obj: RawObject,
+  expr: AnyVal,
+  options?: Options
+): number | null {
+  const n = computeValue(obj, expr, null, options) as number;
+  if (isNil(n)) return null;
 
-  assert(isNumber(arg) || isNaN(arg), '$log10 expression must resolve to a number.')
+  assert(
+    isNumber(n) || isNaN(n),
+    "$log10 expression must resolve to a number."
+  );
 
-  return Math.log10(arg)
+  return Math.log10(n);
 }

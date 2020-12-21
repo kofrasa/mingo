@@ -2,22 +2,29 @@
  * Type Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#type-expression-operators
  */
 
-import { getType, MIN_INT, MAX_INT, JsType, BsonType } from '../../../util'
-import { computeValue, Options } from '../../../core'
+import { computeValue, Options } from "../../../core";
+import {
+  AnyVal,
+  BsonType,
+  getType,
+  JsType,
+  MAX_INT,
+  MIN_INT,
+  RawObject,
+} from "../../../util";
 
-
-export function $type(obj: object, expr: any, options: Options): string {
-  let val = computeValue(obj, expr, null, options)
-  let typename = getType(val)
-  let nativeType = typename.toLowerCase()
+export function $type(obj: RawObject, expr: AnyVal, options?: Options): string {
+  const val = computeValue(obj, expr, null, options);
+  const typename = getType(val);
+  const nativeType = typename.toLowerCase();
   switch (nativeType) {
     case JsType.BOOLEAN:
-      return BsonType.BOOL
+      return BsonType.BOOL;
     case JsType.NUMBER:
-      if (val.toString().indexOf('.') >= 0) return BsonType.DOUBLE
-      return val >= MIN_INT && val <= MAX_INT ? BsonType.INT : BsonType.LONG
+      if (val.toString().indexOf(".") >= 0) return BsonType.DOUBLE;
+      return val >= MIN_INT && val <= MAX_INT ? BsonType.INT : BsonType.LONG;
     case JsType.REGEXP:
-      return BsonType.REGEX
+      return BsonType.REGEX;
     case JsType.STRING:
     case JsType.DATE:
     case JsType.ARRAY:
@@ -25,9 +32,9 @@ export function $type(obj: object, expr: any, options: Options): string {
     case JsType.FUNCTION:
     case JsType.NULL:
     case JsType.UNDEFINED:
-      return nativeType
+      return nativeType;
     default:
       // unrecognized custom type
-      return typename
+      return typename;
   }
 }

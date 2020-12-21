@@ -1,2 +1,2 @@
-export { $mergeObjects } from './mergeObjects'
-export { $objectToArray } from './objectToArray'
+export { $mergeObjects } from "./mergeObjects";
+export { $objectToArray } from "./objectToArray";

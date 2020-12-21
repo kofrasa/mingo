@@ -1,7 +1,16 @@
-import { isObject, Callback, Predicate, into } from './util'
-import { Aggregator } from './aggregator'
-import { Lazy, Iterator, Source } from './lazy'
-import {Options, CollationSpec} from './core'
+import { Aggregator } from "./aggregator";
+import { CollationSpec, Options } from "./core";
+import { Iterator, Lazy, Source } from "./lazy";
+import {
+  AnyVal,
+  Callback,
+  Collection,
+  into,
+  isObject,
+  Predicate,
+  RawArray,
+  RawObject,
+} from "./util";
 
 /**
  * Cursor to iterate and perform filtering on matched objects.
@@ -14,48 +23,54 @@ import {Options, CollationSpec} from './core'
  * @constructor
  */
 export class Cursor {
+  private __predicateFn: Predicate<AnyVal>;
+  private __source: Source;
+  private __projection: RawObject;
+  private __operators: Array<RawObject>;
+  private __result: Iterator;
+  private __stack: RawArray;
+  private __options: Options;
 
-  private __predicateFn: Predicate<any>
-  private __source: Source
-  private __projection: object
-  private __operators: object[]
-  private __result: Iterator
-  private __stack: any[]
-  private __options: Options
-
-  constructor(source: Source, predicate: Predicate<any>, projection: object, options: Options) {
-    this.__predicateFn = predicate
-    this.__source = source
-    this.__projection = projection
-    this.__operators = []
-    this.__result = null
-    this.__stack = []
-    this.__options = options
+  constructor(
+    source: Source,
+    predicate: Predicate<AnyVal>,
+    projection: RawObject,
+    options: Options
+  ) {
+    this.__predicateFn = predicate;
+    this.__source = source;
+    this.__projection = projection;
+    this.__operators = [];
+    this.__result = null;
+    this.__stack = [];
+    this.__options = options;
   }
 
-  _fetch() {
-
-    if (!!this.__result) return this.__result
+  _fetch(): Iterator {
+    if (this.__result) return this.__result;
 
     // add projection operator
-    if (isObject(this.__projection)) this.__operators.push({ '$project': this.__projection })
+    if (isObject(this.__projection))
+      this.__operators.push({ $project: this.__projection });
 
     // filter collection
-    this.__result = Lazy(this.__source).filter(this.__predicateFn)
+    this.__result = Lazy(this.__source).filter(this.__predicateFn);
 
     if (this.__operators.length > 0) {
-      this.__result = (new Aggregator(this.__operators, this.__options)).stream(this.__result)
+      this.__result = new Aggregator(this.__operators, this.__options).stream(
+        this.__result
+      );
     }
 
-    return this.__result
+    return this.__result;
   }
 
   /**
    * Return remaining objects in the cursor as an array. This method exhausts the cursor
    * @returns {Array}
    */
-  all(): any[] {
-    return this._fetch().value()
+  all(): RawArray {
+    return this._fetch().value() as RawArray;
   }
 
   /**
@@ -63,7 +78,7 @@ export class Cursor {
    * @returns {Number}
    */
   count(): number {
-    return this.all().length
+    return this.all().length;
   }
 
   /**
@@ -72,8 +87,8 @@ export class Cursor {
    * @return {Cursor} Returns the cursor, so you can chain this call.
    */
   skip(n: number): Cursor {
-    this.__operators.push({ '$skip': n })
-    return this
+    this.__operators.push({ $skip: n });
+    return this;
   }
 
   /**
@@ -82,8 +97,8 @@ export class Cursor {
    * @return {Cursor} Returns the cursor, so you can chain this call.
    */
   limit(n: number): Cursor {
-    this.__operators.push({ '$limit': n })
-    return this
+    this.__operators.push({ $limit: n });
+    return this;
   }
 
   /**
@@ -91,9 +106,9 @@ export class Cursor {
    * @param {Object} modifier an object of key and values specifying the sort order. 1 for ascending and -1 for descending
    * @return {Cursor} Returns the cursor, so you can chain this call.
    */
-  sort(modifier: object): Cursor {
-    this.__operators.push({ '$sort': modifier })
-    return this
+  sort(modifier: RawObject): Cursor {
+    this.__operators.push({ $sort: modifier });
+    return this;
   }
 
   /**
@@ -101,22 +116,22 @@ export class Cursor {
    * @param {*} spec
    */
   collation(spec: CollationSpec): Cursor {
-    into(this.__options, { collation: spec })
-    return this
+    into(this.__options, { collation: spec });
+    return this;
   }
 
   /**
    * Returns the next document in a cursor.
    * @returns {Object | Boolean}
    */
-  next(): any {
-    if (!this.__stack) return // done
-    if (this.__stack.length > 0) return this.__stack.pop() // yield value obtains in hasNext()
-    let o = this._fetch().next()
+  next(): AnyVal {
+    if (!this.__stack) return; // done
+    if (this.__stack.length > 0) return this.__stack.pop(); // yield value obtains in hasNext()
+    const o = this._fetch().next();
 
-    if (!o.done) return o.value
-    this.__stack = null
-    return
+    if (!o.done) return o.value;
+    this.__stack = null;
+    return;
   }
 
   /**
@@ -124,17 +139,17 @@ export class Cursor {
    * @returns {boolean}
    */
   hasNext(): boolean {
-    if (!this.__stack) return false // done
-    if (this.__stack.length > 0) return true // there is a value on stack
+    if (!this.__stack) return false; // done
+    if (this.__stack.length > 0) return true; // there is a value on stack
 
-    let o = this._fetch().next()
+    const o = this._fetch().next();
     if (!o.done) {
-      this.__stack.push(o.value)
+      this.__stack.push(o.value);
     } else {
-      this.__stack = null
+      this.__stack = null;
     }
 
-    return !!this.__stack
+    return !!this.__stack;
   }
 
   /**
@@ -142,26 +157,26 @@ export class Cursor {
    * @param callback
    * @returns {Array}
    */
-  map(callback: Callback<any>): any[] {
-    return this._fetch().map(callback).value()
+  map(callback: Callback<AnyVal>): Collection {
+    return this._fetch().map(callback).value() as Collection;
   }
 
   /**
    * Applies a JavaScript function for every document in a cursor.
    * @param callback
    */
-  forEach(callback: Callback<any>) {
-    this._fetch().each(callback)
+  forEach(callback: Callback<AnyVal>) {
+    this._fetch().each(callback);
   }
 }
 
-if (typeof Symbol === 'function') {
+if (typeof Symbol === "function") {
   /**
    * Applies an [ES2015 Iteration protocol][] compatible implementation
    * [ES2015 Iteration protocol]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols
    * @returns {Object}
    */
-  Cursor.prototype[Symbol.iterator] = function () {
-    return this._fetch()
-  }
+  Cursor.prototype[Symbol.iterator] = function (): Iterator {
+    return this._fetch() /* eslint-disable-line */
+  };
 }

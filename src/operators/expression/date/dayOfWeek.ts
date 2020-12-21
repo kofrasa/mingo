@@ -1,15 +1,19 @@
 // Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
 
-import { Options } from '../../../core'
-import { computeDate } from './_internal'
-
+import { Options } from "../../../core";
+import { AnyVal, RawObject } from "../../../util";
+import { computeDate } from "./_internal";
 
 /**
  * Returns the day of the week for a date as a number between 1 (Sunday) and 7 (Saturday).
  * @param obj
  * @param expr
  */
-export function $dayOfWeek(obj: object, expr: any, options: Options): number {
-  let d = computeDate(obj, expr, options)
-  return d.getUTCDay() + 1
+export function $dayOfWeek(
+  obj: RawObject,
+  expr: AnyVal,
+  options?: Options
+): number {
+  const d = computeDate(obj, expr, options);
+  return d.getUTCDay() + 1;
 }

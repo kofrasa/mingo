@@ -1,6 +1,17 @@
-import { cloneDeep, isArray, isEmpty, isString, resolve, setValue, removeValue } from '../../util'
-import { Lazy, Iterator } from '../../lazy'
-import { Options } from '../../core'
+import { Options } from "../../core";
+import { Iterator, Lazy } from "../../lazy";
+import {
+  AnyVal,
+  cloneDeep,
+  Container,
+  isArray,
+  isEmpty,
+  isString,
+  RawObject,
+  removeValue,
+  resolve,
+  setValue,
+} from "../../util";
 
 /**
  * Takes an array of documents and returns them as a stream of documents.
@@ -10,57 +21,62 @@ import { Options } from '../../core'
  * @param options
  * @returns {Array}
  */
-export function $unwind(collection: Iterator, expr: any, options: Options): Iterator {
-  if (isString(expr)) expr = { path: expr }
+export function $unwind(
+  collection: Iterator,
+  expr: RawObject,
+  options?: Options
+): Iterator {
+  if (isString(expr)) expr = { path: expr };
 
-  let field = expr.path.substr(1)
-  let includeArrayIndex = expr.includeArrayIndex || false
-  let preserveNullAndEmptyArrays = expr.preserveNullAndEmptyArrays || false
+  const path = expr.path as string;
+  const field = path.substr(1);
+  const includeArrayIndex = (expr?.includeArrayIndex as string) || false;
+  const preserveNullAndEmptyArrays = expr.preserveNullAndEmptyArrays || false;
 
-  let format = (o: object, i: number) => {
-    if (includeArrayIndex !== false) o[includeArrayIndex] = i
-    return o
-  }
+  const format = (o: RawObject, i: number) => {
+    if (includeArrayIndex !== false) o[includeArrayIndex] = i;
+    return o;
+  };
 
-  let value: any
+  let value: AnyVal;
 
   return Lazy(() => {
-    while (true) {
+    for (;;) {
       // take from lazy sequence if available
       if (value instanceof Iterator) {
-        let tmp = value.next()
-        if (!tmp.done) return tmp
+        const tmp = value.next();
+        if (!tmp.done) return tmp;
       }
 
       // fetch next object
-      let obj = collection.next()
-      if (obj.done) return obj
+      const wrapper = collection.next();
+      if (wrapper.done) return wrapper;
 
       // unwrap value
-      obj = obj.value
+      const obj = wrapper.value as RawObject;
 
       // get the value of the field to unwind
-      value = resolve(obj, field)
+      value = resolve(obj, field) as Array<RawObject>;
 
       // throw error if value is not an array???
-      if (isArray(value)) {
+      if (value instanceof Array) {
         if (value.length === 0 && preserveNullAndEmptyArrays === true) {
-          value = null // reset unwind value
-          let tmp = cloneDeep(obj)
-          removeValue(tmp, field)
-          return { value: format(tmp, null), done: false }
+          value = null; // reset unwind value
+          const tmp = cloneDeep(obj) as RawObject;
+          removeValue(tmp, field);
+          return { value: format(tmp, null), done: false };
         } else {
           // construct a lazy sequence for elements per value
-          value = Lazy(value).map((item, i) => {
-            let tmp = cloneDeep(obj)
-            setValue(tmp, field, item)
-            return format(tmp, i)
-          })
+          value = Lazy(value).map((item, i: number) => {
+            const tmp = cloneDeep(obj) as RawObject;
+            setValue(tmp, field, item);
+            return format(tmp, i);
+          });
         }
       } else if (!isEmpty(value) || preserveNullAndEmptyArrays === true) {
-        let tmp = cloneDeep(obj)
-        return { value: format(tmp, null), done: false }
+        const tmp = cloneDeep(obj) as RawObject;
+        return { value: format(tmp, null), done: false };
       }
     }
-  })
+  });
 }

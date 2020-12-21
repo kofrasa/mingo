@@ -2,8 +2,8 @@
  * Conditional Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#conditional-expression-operators
  */
 
-import { computeValue, Options } from '../../../core'
-
+import { computeValue, Options } from "../../../core";
+import { AnyVal, RawArray, RawObject } from "../../../util";
 
 /**
  * An operator that evaluates a series of case expressions. When it finds an expression which
@@ -13,15 +13,23 @@ import { computeValue, Options } from '../../../core'
  * @param obj
  * @param expr
  */
-export function $switch(obj: object, expr: any, options: Options): any {
-  let thenExpr = null
-
+export function $switch(
+  obj: RawObject,
+  expr: { branches: Array<{ case: AnyVal; then: AnyVal }>; default: AnyVal },
+  options?: Options
+): AnyVal {
+  let thenExpr = null;
   // Array.prototype.find not supported in IE, hence the '.some()' proxy
-  expr.branches.some((b: { case: any, then: any }) => {
-    let found = computeValue(obj, b.case, null, options)
-    if (found === true) thenExpr = b.then
-    return found
-  })
+  expr.branches.some((b: { case: AnyVal; then: AnyVal }) => {
+    const found = computeValue(obj, b.case, null, options);
+    if (found === true) thenExpr = b.then;
+    return found;
+  });
 
-  return computeValue(obj, thenExpr !== null ? thenExpr : expr.default, null, options)
+  return computeValue(
+    obj,
+    thenExpr !== null ? thenExpr : expr.default,
+    null,
+    options
+  );
 }

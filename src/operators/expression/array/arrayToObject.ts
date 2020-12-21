@@ -1,22 +1,38 @@
 // Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
 
-import { assert, has, isArray, isObject } from '../../../util'
-import { computeValue, Options } from '../../../core'
+import { computeValue, Options } from "../../../core";
+import {
+  AnyVal,
+  assert,
+  has,
+  isArray,
+  isObject,
+  RawArray,
+  RawObject,
+} from "../../../util";
 
 /**
  * Converts an array of key value pairs to a document.
  */
-export function $arrayToObject(obj: object, expr: any, options: Options): any {
-  let arr = computeValue(obj, expr, null, options) as any[]
-  assert(isArray(arr), '$arrayToObject expression must resolve to an array')
+export function $arrayToObject(
+  obj: RawObject,
+  expr: AnyVal,
+  options?: Options
+): RawObject {
+  const arr = computeValue(obj, expr, null, options) as Array<RawArray>;
+  assert(isArray(arr), "$arrayToObject expression must resolve to an array");
 
-  return arr.reduce((newObj, val) => {
-    if (isArray(val) && val.length == 2) {
-      newObj[val[0]] = val[1]
+  return arr.reduce((newObj: RawObject, val: AnyVal) => {
+    if (val instanceof Array && val.length == 2) {
+      newObj[val[0] as string] = val[1];
     } else {
-      assert(isObject(val) && has(val, 'k') && has(val, 'v'), '$arrayToObject expression is invalid.')
-      newObj[val.k] = val.v
+      const valObj = val as { k: string; v: AnyVal };
+      assert(
+        isObject(valObj) && has(valObj, "k") && has(valObj, "v"),
+        "$arrayToObject expression is invalid."
+      );
+      newObj[valObj.k] = valObj.v;
     }
-    return newObj
-  }, {})
+    return newObj;
+  }, {});
 }

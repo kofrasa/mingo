@@ -1,7 +1,7 @@
-import { isNumber } from '../../util'
-import { $push } from './push'
-import { Options } from '../../core'
-import { stddev } from './_internal'
+import { Options } from "../../core";
+import { AnyVal, Collection, isNumber } from "../../util";
+import { stddev } from "./_internal";
+import { $push } from "./push";
 
 /**
  * Returns the population standard deviation of the input values.
@@ -11,6 +11,10 @@ import { stddev } from './_internal'
  * @param {Options} options The options to use for this operation
  * @return {Number}
  */
-export function $stdDevPop(collection: any[], expr: any, options: Options): number {
-  return stddev($push(collection, expr, options).filter(isNumber), false)
+export function $stdDevPop(
+  collection: Collection,
+  expr: AnyVal,
+  options?: Options
+): number {
+  return stddev($push(collection, expr, options).filter(isNumber), false);
 }

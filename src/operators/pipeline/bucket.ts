@@ -1,12 +1,15 @@
+import { computeValue, Options } from "../../core";
+import { Iterator, Lazy } from "../../lazy";
 import {
+  AnyVal,
   assert,
   each,
   getType,
+  into,
   isNil,
-  into
-} from '../../util'
-import { computeValue, Options } from '../../core'
-import { Lazy, Iterator } from '../../lazy'
+  RawArray,
+  RawObject,
+} from "../../util";
 
 /**
  * Categorizes incoming documents into groups, called buckets, based on a specified expression and bucket boundaries.
@@ -16,61 +19,88 @@ import { Lazy, Iterator } from '../../lazy'
  * @param {*} expr
  * @param {Options} opt Pipeline options
  */
-export function $bucket(collection: Iterator, expr: any, options: Options): Iterator {
-  let boundaries = [...expr.boundaries]
-  let defaultKey = expr['default']
-  let lower = boundaries[0] // inclusive
-  let upper = boundaries[boundaries.length - 1] // exclusive
-  let outputExpr = expr.output || { 'count': { '$sum': 1 } }
+export function $bucket(
+  collection: Iterator,
+  expr: RawObject,
+  options?: Options
+): Iterator {
+  const boundaries = [...(expr.boundaries as RawArray)];
+  const defaultKey = expr["default"] as string;
+  const lower = boundaries[0]; // inclusive
+  const upper = boundaries[boundaries.length - 1]; // exclusive
+  const outputExpr = expr.output || { count: { $sum: 1 } };
 
-  assert(boundaries.length > 2, "$bucket 'boundaries' expression must have at least 3 elements")
-  let boundType = getType(lower)
+  assert(
+    boundaries.length > 2,
+    "$bucket 'boundaries' expression must have at least 3 elements"
+  );
+  const boundType = getType(lower);
 
   for (let i = 0, len = boundaries.length - 1; i < len; i++) {
-    assert(boundType === getType(boundaries[i + 1]), "$bucket 'boundaries' must all be of the same type")
-    assert(boundaries[i] < boundaries[i + 1], "$bucket 'boundaries' must be sorted in ascending order")
+    assert(
+      boundType === getType(boundaries[i + 1]),
+      "$bucket 'boundaries' must all be of the same type"
+    );
+    assert(
+      boundaries[i] < boundaries[i + 1],
+      "$bucket 'boundaries' must be sorted in ascending order"
+    );
   }
 
-  !isNil(defaultKey)
-    && (getType(expr.default) === getType(lower))
-    && assert(expr.default >= upper || expr.default < lower, "$bucket 'default' expression must be out of boundaries range")
+  !isNil(defaultKey) &&
+    getType(expr.default) === getType(lower) &&
+    assert(
+      expr.default >= upper || expr.default < lower,
+      "$bucket 'default' expression must be out of boundaries range"
+    );
 
-  let grouped = {}
-  each(boundaries, (k) => grouped[k] = [])
+  const grouped: Record<string, RawArray> = {};
+  each(boundaries, (k: string) => (grouped[k] = []));
 
   // add default key if provided
-  if (!isNil(defaultKey)) grouped[defaultKey] = []
+  if (!isNil(defaultKey)) grouped[defaultKey] = [];
 
-  let iterator: Iterator = null
+  let iterator: Iterator = null;
 
   return Lazy(() => {
     if (iterator === null) {
-      collection.each((obj: object) => {
-        let key = computeValue(obj, expr.groupBy, null, options)
+      collection.each((obj: RawObject) => {
+        const key = computeValue(obj, expr.groupBy, null, options);
 
         if (isNil(key) || key < lower || key >= upper) {
-          assert(!isNil(defaultKey), '$bucket require a default for out of range values')
-          grouped[defaultKey].push(obj)
+          assert(
+            !isNil(defaultKey),
+            "$bucket require a default for out of range values"
+          );
+          grouped[defaultKey].push(obj);
         } else {
-          assert(key >= lower && key < upper, "$bucket 'groupBy' expression must resolve to a value in range of boundaries")
-          let index = findInsertIndex(boundaries, key)
-          let boundKey = boundaries[Math.max(0, index - 1)]
-          grouped[boundKey].push(obj)
+          assert(
+            key >= lower && key < upper,
+            "$bucket 'groupBy' expression must resolve to a value in range of boundaries"
+          );
+          const index = findInsertIndex(boundaries, key);
+          const boundKey = boundaries[Math.max(0, index - 1)] as string;
+          grouped[boundKey].push(obj);
         }
-      })
+      });
 
       // upper bound is exclusive so we remove it
-      boundaries.pop()
-      if (!isNil(defaultKey)) boundaries.push(defaultKey)
+      boundaries.pop();
+      if (!isNil(defaultKey)) boundaries.push(defaultKey);
 
-      iterator = Lazy(boundaries).map(key => {
-        let acc = computeValue(grouped[key], outputExpr, null, options)
-        return into(acc, { '_id': key })
-      })
+      iterator = Lazy(boundaries).map((key: string) => {
+        const acc = computeValue(
+          grouped[key],
+          outputExpr,
+          null,
+          options
+        ) as RawObject;
+        return into(acc, { _id: key });
+      });
     }
 
-    return iterator.next()
-  })
+    return iterator.next();
+  });
 }
 
 /**
@@ -79,19 +109,19 @@ export function $bucket(collection: Iterator, expr: any, options: Options): Iter
  * @param {*} sorted The sorted array to search
  * @param {*} item The search key
  */
-function findInsertIndex(sorted: any[], item: any): number {
+function findInsertIndex(sorted: RawArray, item: AnyVal): number {
   // uses binary search
-  let lo = 0
-  let hi = sorted.length - 1
+  let lo = 0;
+  let hi = sorted.length - 1;
   while (lo <= hi) {
-    let mid = Math.round(lo + (hi - lo) / 2)
+    const mid = Math.round(lo + (hi - lo) / 2);
     if (item < sorted[mid]) {
-      hi = mid - 1
+      hi = mid - 1;
     } else if (item > sorted[mid]) {
-      lo = mid + 1
+      lo = mid + 1;
     } else {
-      return mid
+      return mid;
     }
   }
-  return lo
+  return lo;
 }

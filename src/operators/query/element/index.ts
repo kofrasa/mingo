@@ -1,2 +1,2 @@
-export * from './exists'
-export * from './type'
+export * from "./exists";
+export * from "./type";

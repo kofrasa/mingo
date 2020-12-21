@@ -1,22 +1,21 @@
 // all system operators
-import * as accumulatorOperators from '../operators/accumulator'
-import * as expressionOperators from '../operators/expression'
-import * as pipelineOperators from '../operators/pipeline'
-import * as queryOperators from '../operators/query'
-import * as projectionOperators from '../operators/projection'
-
 // helpers
-import { useOperators, OperatorType } from '../core'
+import { OperatorType, useOperators } from "../core";
+import * as accumulatorOperators from "../operators/accumulator";
+import * as expressionOperators from "../operators/expression";
+import * as pipelineOperators from "../operators/pipeline";
+import * as projectionOperators from "../operators/projection";
+import * as queryOperators from "../operators/query";
 
 /**
  * Enable all supported MongoDB operators
  */
 function enableSystemOperators() {
-  useOperators(OperatorType.ACCUMULATOR, accumulatorOperators)
-  useOperators(OperatorType.EXPRESSION, expressionOperators)
-  useOperators(OperatorType.PIPELINE, pipelineOperators)
-  useOperators(OperatorType.PROJECTION, projectionOperators)
-  useOperators(OperatorType.QUERY, queryOperators)
+  useOperators(OperatorType.ACCUMULATOR, accumulatorOperators);
+  useOperators(OperatorType.EXPRESSION, expressionOperators);
+  useOperators(OperatorType.PIPELINE, pipelineOperators);
+  useOperators(OperatorType.PROJECTION, projectionOperators);
+  useOperators(OperatorType.QUERY, queryOperators);
 }
 
-enableSystemOperators()
+enableSystemOperators();

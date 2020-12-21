@@ -1,4 +1,9 @@
+import { CollationSpec, Options } from "../../core";
+import { Iterator } from "../../lazy";
 import {
+  AnyVal,
+  Comparator,
+  compare,
   each,
   groupBy,
   into,
@@ -6,14 +11,11 @@ import {
   isObject,
   isString,
   keys,
-  sortBy,
-  compare,
+  RawArray,
+  RawObject,
   resolve,
-  Comparator
-} from '../../util'
-import { Iterator } from '../../lazy'
-import { CollationSpec, Options } from '../../core'
-
+  sortBy,
+} from "../../util";
 
 /**
  * Takes all input documents and returns them in a stream of sorted documents.
@@ -23,52 +25,66 @@ import { CollationSpec, Options } from '../../core'
  * @param  {Object} options
  * @returns {*}
  */
-export function $sort(collection: Iterator, sortKeys: object, options: Options): Iterator {
-  if (isEmpty(sortKeys) || !isObject(sortKeys)) return collection
+export function $sort(
+  collection: Iterator,
+  sortKeys: RawObject,
+  options?: Options
+): Iterator {
+  if (isEmpty(sortKeys) || !isObject(sortKeys)) return collection;
 
-  let cmp = compare
+  let cmp = compare;
   // check for collation spec on the options
-  let collationSpec = options.collation
+  const collationSpec = options.collation;
 
   // use collation comparator if provided
   if (isObject(collationSpec) && isString(collationSpec.locale)) {
-    cmp = collationComparator(collationSpec)
+    cmp = collationComparator(collationSpec);
   }
 
-  return collection.transform(coll => {
-    let modifiers = keys(sortKeys)
+  return collection.transform((coll: RawArray) => {
+    const modifiers = keys(sortKeys);
 
-    each(modifiers.reverse(), key => {
-      let grouped = groupBy(coll, obj => resolve(obj, key), options?.hashFunction)
-      let sortedIndex = {}
+    each(modifiers.reverse(), (key: string) => {
+      const grouped = groupBy(
+        coll,
+        (obj: RawObject) => resolve(obj, key),
+        options?.hashFunction
+      );
+      const sortedIndex: Record<string, number> = {};
 
-      let indexKeys = sortBy(grouped.keys, (k, i) => {
-        sortedIndex[k] = i
-        return k
-      }, cmp)
+      const indexKeys = sortBy(
+        grouped.keys,
+        (k: string, i: number) => {
+          sortedIndex[k] = i;
+          return k;
+        },
+        cmp
+      );
 
-      if (sortKeys[key] === -1) indexKeys.reverse()
-      coll = []
-      each(indexKeys, k => into(coll, grouped.groups[sortedIndex[k]]))
-    })
+      if (sortKeys[key] === -1) indexKeys.reverse();
+      coll = [];
+      each(indexKeys, (k: string) =>
+        into(coll, grouped.groups[sortedIndex[k]] as RawArray)
+      );
+    });
 
-    return coll
-  })
+    return coll;
+  });
 }
 
 // MongoDB collation strength to JS localeCompare sensitivity mapping.
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare
-const COLLATION_STRENGTH = {
+const COLLATION_STRENGTH: Record<number, string> = {
   // Only strings that differ in base letters compare as unequal. Examples: a ≠ b, a = á, a = A.
-  1: 'base',
+  1: "base",
   //  Only strings that differ in base letters or accents and other diacritic marks compare as unequal.
   // Examples: a ≠ b, a ≠ á, a = A.
-  2: 'accent',
+  2: "accent",
   // Strings that differ in base letters, accents and other diacritic marks, or case compare as unequal.
   // Other differences may also be taken into consideration. Examples: a ≠ b, a ≠ á, a ≠ A
-  3: 'variant',
+  3: "variant",
   // case - Only strings that differ in base letters or case compare as unequal. Examples: a ≠ b, a = á, a ≠ A.
-}
+};
 
 /**
  * Creates a comparator function for the given collation spec. See https://docs.mongodb.com/manual/reference/collation/
@@ -85,31 +101,30 @@ const COLLATION_STRENGTH = {
  *   backwards: boolean // unsupported
  * }
  */
-function collationComparator(spec: CollationSpec): Comparator<any> {
-
-  let localeOpt = {
+function collationComparator(spec: CollationSpec): Comparator<AnyVal> {
+  const localeOpt = {
     sensitivity: COLLATION_STRENGTH[spec.strength || 3],
-    caseFirst: spec.caseFirst === 'off' ? 'false' : (spec.caseFirst || 'false'),
+    caseFirst: spec.caseFirst === "off" ? "false" : spec.caseFirst || "false",
     numeric: spec.numericOrdering || false,
-    ignorePunctuation: spec.alternate === 'shifted'
-  }
+    ignorePunctuation: spec.alternate === "shifted",
+  };
 
   // when caseLevel is true for strength  1:base and 2:accent, bump sensitivity to the nearest that supports case comparison
   if ((spec.caseLevel || false) === true) {
-    if (localeOpt.sensitivity === 'base') localeOpt.sensitivity = 'case'
-    if (localeOpt.sensitivity === 'accent') localeOpt.sensitivity = 'variant'
+    if (localeOpt.sensitivity === "base") localeOpt.sensitivity = "case";
+    if (localeOpt.sensitivity === "accent") localeOpt.sensitivity = "variant";
   }
 
-  const collator = new Intl.Collator(spec.locale, localeOpt)
+  const collator = new Intl.Collator(spec.locale, localeOpt);
 
-  return (a: any, b: any) => {
+  return (a: AnyVal, b: AnyVal) => {
     // non strings
-    if (!isString(a) || !isString(b)) return compare(a, b)
+    if (!isString(a) || !isString(b)) return compare(a, b);
 
     // only for strings
-    let i = collator.compare(a, b)
-    if (i < 0) return -1
-    if (i > 0) return 1
-    return 0
-  }
+    const i = collator.compare(a, b);
+    if (i < 0) return -1;
+    if (i > 0) return 1;
+    return 0;
+  };
 }

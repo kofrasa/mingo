@@ -1,4 +1,5 @@
-import { computeValue, Options } from '../../core'
+import { computeValue, Options } from "../../core";
+import { AnyVal, Collection } from "../../util";
 
 /**
  * Returns the first value in a group.
@@ -7,6 +8,12 @@ import { computeValue, Options } from '../../core'
  * @param {Object} expr The right-hand side expression value of the operator
  * @returns {*}
  */
-export function $first(collection: any[], expr: any, options: Options): any {
-  return collection.length > 0 ? computeValue(collection[0], expr, null, options) : undefined
+export function $first(
+  collection: Collection,
+  expr: AnyVal,
+  options?: Options
+): AnyVal {
+  return collection.length > 0
+    ? computeValue(collection[0], expr, null, options)
+    : undefined;
 }

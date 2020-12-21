@@ -2,8 +2,8 @@
  * String Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators
  */
 
-import { isString } from '../../../util'
-import { computeValue, Options } from '../../../core'
+import { computeValue, Options } from "../../../core";
+import { AnyVal, isString, RawArray, RawObject } from "../../../util";
 
 /**
  * Returns a substring of a string, starting at a specified index position and including the specified number of characters.
@@ -13,19 +13,23 @@ import { computeValue, Options } from '../../../core'
  * @param expr
  * @returns {string}
  */
-export function $substr(obj: object, expr: any, options: Options): any {
-  let args = computeValue(obj, expr, null, options)
-  let s = args[0]
-  let index = args[1]
-  let count = args[2]
+export function $substr(
+  obj: RawObject,
+  expr: AnyVal,
+  options?: Options
+): AnyVal {
+  const args = computeValue(obj, expr, null, options) as RawArray;
+  const s = args[0] as string;
+  const index = args[1] as number;
+  const count = args[2] as number;
   if (isString(s)) {
     if (index < 0) {
-      return ''
+      return "";
     } else if (count < 0) {
-      return s.substr(index)
+      return s.substr(index);
     } else {
-      return s.substr(index, count)
+      return s.substr(index, count);
     }
   }
-  return ''
+  return "";
 }

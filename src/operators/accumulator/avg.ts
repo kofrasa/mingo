@@ -1,6 +1,6 @@
-import { isNumber } from '../../util'
-import { $push } from './push'
-import { Options } from '../../core'
+import { Options } from "../../core";
+import { AnyVal, Collection, isNumber } from "../../util";
+import { $push } from "./push";
 
 /**
  * Returns an average of all the values in a group.
@@ -10,8 +10,12 @@ import { Options } from '../../core'
  * @param {Options} options The options to use for this operation
  * @returns {Number}
  */
-export function $avg(collection: any[], expr: any, options: Options): number {
-  let data = $push(collection, expr, options).filter(isNumber) as number[]
-  let sum = data.reduce<number>((acc: number, n: number) => acc + n, 0)
-  return sum / (data.length || 1)
+export function $avg(
+  collection: Collection,
+  expr: AnyVal,
+  options?: Options
+): number {
+  const data = $push(collection, expr, options).filter(isNumber);
+  const sum = data.reduce<number>((acc: number, n: number) => acc + n, 0);
+  return sum / (data.length || 1);
 }

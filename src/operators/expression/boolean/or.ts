@@ -1,8 +1,7 @@
 // Boolean Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#boolean-expression-operators
 
-import { computeValue, Options } from '../../../core'
-import { truthy } from '../../../util'
-
+import { computeValue, Options } from "../../../core";
+import { AnyVal, RawArray, RawObject, truthy } from "../../../util";
 
 /**
  * Returns true when any of its expressions evaluates to true. Accepts any number of argument expressions.
@@ -11,7 +10,7 @@ import { truthy } from '../../../util'
  * @param expr
  * @returns {boolean}
  */
-export function $or(obj: object, expr: any, options: Options): any {
-  let value = computeValue(obj, expr, null, options)
-  return truthy(value) && value.some(truthy)
+export function $or(obj: RawObject, expr: AnyVal, options?: Options): AnyVal {
+  const value = computeValue(obj, expr, null, options) as RawArray;
+  return truthy(value) && value.some(truthy);
 }

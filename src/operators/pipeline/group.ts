@@ -1,7 +1,6 @@
-import { each, groupBy, into } from '../../util'
-import { computeValue, Options } from '../../core'
-import { Iterator } from '../../lazy'
-
+import { computeValue, Options } from "../../core";
+import { Iterator } from "../../lazy";
+import { AnyVal, each, groupBy, into, RawArray, RawObject } from "../../util";
 
 /**
  * Groups documents together for the purpose of calculating aggregate values based on a collection of documents.
@@ -11,40 +10,47 @@ import { Iterator } from '../../lazy'
  * @param options
  * @returns {Array}
  */
-export function $group(collection: Iterator, expr: any, options: Options): Iterator {
+export function $group(
+  collection: Iterator,
+  expr: RawObject,
+  options?: Options
+): Iterator {
   // lookup key for grouping
-  const ID_KEY = '_id'
+  const ID_KEY = "_id";
 
-  let id = expr[ID_KEY]
+  const id = expr[ID_KEY];
 
-  return collection.transform(coll => {
-    let partitions = groupBy(coll, obj => computeValue(obj, id, null, options), options?.hashFunction)
+  return collection.transform((coll: RawArray) => {
+    const partitions = groupBy(
+      coll,
+      (obj) => computeValue(obj, id, null, options),
+      options?.hashFunction
+    );
 
     // remove the group key
-    expr = into({}, expr)
-    delete expr[ID_KEY]
+    expr = into({}, expr) as RawObject;
+    delete expr[ID_KEY];
 
-    let i = -1
-    let size = partitions.keys.length
+    let i = -1;
+    const size = partitions.keys.length;
 
     return () => {
+      if (++i === size) return { done: true };
 
-      if (++i === size) return { done: true }
-
-      let value = partitions.keys[i]
-      let obj = {}
+      const value = partitions.keys[i];
+      const obj: RawObject = {};
 
       // exclude undefined key value
       if (value !== undefined) {
-        obj[ID_KEY] = value
+        obj[ID_KEY] = value;
       }
 
       // compute remaining keys in expression
-      each(expr, (val, key) => {
-        obj[key] = computeValue(partitions.groups[i], val, key, options)
-      })
+      each(expr, (val, key: string) => {
+        obj[key] = computeValue(partitions.groups[i], val, key, options);
+      });
 
-      return { value: obj, done: false }
-    }
-  })
+      return { value: obj, done: false };
+    };
+  });
 }

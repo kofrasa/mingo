@@ -1,6 +1,6 @@
-import { $replaceRoot } from "./replaceRoot"
+import { $replaceRoot } from "./replaceRoot";
 
 /**
  * Alias for $replaceRoot
  */
-export const $replaceWith = $replaceRoot
+export const $replaceWith = $replaceRoot;

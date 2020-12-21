@@ -1,11 +1,14 @@
 // Object Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#object-expression-operators
 
+import { computeValue, Options } from "../../../core";
 import {
+  AnyVal,
   assert,
   each,
-  isObject
-} from '../../../util'
-import { computeValue, Options } from '../../../core'
+  isObject,
+  RawArray,
+  RawObject,
+} from "../../../util";
 
 /**
  * Converts a document to an array of documents representing key-value pairs.
@@ -14,10 +17,14 @@ import { computeValue, Options } from '../../../core'
  * @param {*} expr The right-hand side of the operator
  * @param {Options} options Options to use for operation
  */
-export function $objectToArray(obj: object, expr: any, options: Options): any {
-  let val = computeValue(obj, expr, null, options)
-  assert(isObject(val), '$objectToArray expression must resolve to an object')
-  let arr = []
-  each(val, (v, k) => arr.push({ k, v }))
-  return arr
+export function $objectToArray(
+  obj: RawObject,
+  expr: AnyVal,
+  options?: Options
+): AnyVal {
+  const val = computeValue(obj, expr, null, options) as RawObject;
+  assert(isObject(val), "$objectToArray expression must resolve to an object");
+  const arr: RawArray = [];
+  each(val, (v, k) => arr.push({ k, v }));
+  return arr;
 }

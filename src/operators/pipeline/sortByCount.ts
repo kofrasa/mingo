@@ -1,7 +1,8 @@
-import { $group } from './group'
-import { $sort } from './sort'
-import { Iterator } from '../../lazy'
-import { Options } from '../../core'
+import { Options } from "../../core";
+import { Iterator } from "../../lazy";
+import { AnyVal, RawObject } from "../../util";
+import { $group } from "./group";
+import { $sort } from "./sort";
 
 /**
  * Groups incoming documents based on the value of a specified expression,
@@ -14,14 +15,14 @@ import { Options } from '../../core'
  * @param  {Object} options
  * @return {*}
  */
-export function $sortByCount(collection: Iterator, expr: any, options: Options): Iterator {
-  let newExpr = { count: { $sum: 1 } }
+export function $sortByCount(
+  collection: Iterator,
+  expr: AnyVal,
+  options?: Options
+): Iterator {
+  const newExpr: RawObject = { count: { $sum: 1 } };
 
-  newExpr['_id'] = expr
+  newExpr["_id"] = expr;
 
-  return $sort(
-    $group(collection, newExpr, options),
-    { count: -1 },
-    options
-  )
+  return $sort($group(collection, newExpr, options), { count: -1 }, options);
 }

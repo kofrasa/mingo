@@ -1,7 +1,6 @@
-import { assert, isArray } from '../../util'
-import { Iterator } from '../../lazy'
-import { Options } from '../../core'
-
+import { Options } from "../../core";
+import { Iterator } from "../../lazy";
+import { assert, isArray, RawArray, RawObject } from "../../util";
 
 /**
  * Takes the documents returned by the aggregation pipeline and writes them to a specified collection.
@@ -14,10 +13,14 @@ import { Options } from '../../core'
  * @param options
  * @returns {*}
  */
-export function $out(collection: Iterator, expr: any, options: Options): Iterator {
-  assert(isArray(expr), '$out expression must be an array')
-  return collection.map(o => {
-    expr.push(o)
-    return o // passthrough
-  })
+export function $out(
+  collection: Iterator,
+  expr: RawArray,
+  options?: Options
+): Iterator {
+  assert(isArray(expr), "$out expression must be an array");
+  return collection.map((o: RawObject) => {
+    expr.push(o);
+    return o; // passthrough
+  });
 }

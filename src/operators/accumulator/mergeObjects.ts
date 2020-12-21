@@ -1,4 +1,4 @@
-import { $mergeObjects as __mergeObjects } from '../expression/object/mergeObjects'
+import { $mergeObjects as __mergeObjects } from "../expression/object/mergeObjects";
 
 /**
  * Combines multiple documents into a single document.
@@ -8,4 +8,4 @@ import { $mergeObjects as __mergeObjects } from '../expression/object/mergeObjec
  * @param {Options} options The options to use for this operation
  * @returns {Array|*}
  */
-export const $mergeObjects = __mergeObjects
+export const $mergeObjects = __mergeObjects;

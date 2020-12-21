@@ -1,7 +1,15 @@
 // Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
 
-import { computeValue, Options } from '../../../core'
-import { assert, isArray, isNil, into } from '../../../util'
+import { computeValue, Options } from "../../../core";
+import {
+  AnyVal,
+  assert,
+  into,
+  isArray,
+  isNil,
+  RawArray,
+  RawObject,
+} from "../../../util";
 
 /**
  * Returns an array with the elements in reverse order.
@@ -10,14 +18,19 @@ import { assert, isArray, isNil, into } from '../../../util'
  * @param  {*} expr
  * @return {*}
  */
-export function $reverseArray(obj: object, expr: any, options: Options): any {
-  let arr = computeValue(obj, expr, null, options)
+export function $reverseArray(
+  obj: RawObject,
+  expr: AnyVal,
+  options?: Options
+): AnyVal {
+  const arr = computeValue(obj, expr, null, options) as RawArray;
 
-  if (isNil(arr)) return null
-  assert(isArray(arr), '$reverseArray expression must resolve to an array')
+  if (isNil(arr)) return null;
+  assert(isArray(arr), "$reverseArray expression must resolve to an array");
 
-  let result = []
-  into(result, arr)
-  result.reverse()
-  return result
+  const result: RawArray = [];
+  into(result, arr);
+  result.reverse();
+
+  return result;
 }

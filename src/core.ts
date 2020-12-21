@@ -1,42 +1,50 @@
 import {
+  AnyVal,
   assert,
   Callback,
+  cloneDeep,
+  Container,
   each,
   has,
+  HashFunction,
   into,
-  isArray,
   isNil,
   isObject,
   isObjectLike,
   isOperator,
   isString,
   keys,
-  resolve
-} from './util'
+  RawArray,
+  RawObject,
+  resolve,
+} from "./util";
 
 export interface CollationSpec {
-  readonly locale: string,
-  readonly caseLevel?: boolean,
-  readonly caseFirst?: string,
-  readonly strength?: number,
-  readonly numericOrdering?: boolean,
-  readonly alternate?: string,
-  readonly maxVariable?: string, // unsupported
-  readonly backwards?: boolean // unsupported
+  readonly locale: string;
+  readonly caseLevel?: boolean;
+  readonly caseFirst?: string;
+  readonly strength?: number;
+  readonly numericOrdering?: boolean;
+  readonly alternate?: string;
+  readonly maxVariable?: string; // unsupported
+  readonly backwards?: boolean; // unsupported
 }
-
-/**
- * Custom function to hash values to improve faster comparaisons
- */
-export type HashFunction =  (v: any) => string | number
 
 /**
  * Generic options interface passed down to all operators
  */
-export interface Options {
+export interface Options extends RawObject {
   readonly idKey: string;
   readonly collation?: CollationSpec;
-  readonly hashFunction?:HashFunction
+  readonly hashFunction?: HashFunction;
+}
+
+interface QueryOperator {
+  (selector: string, lhs: AnyVal, value: AnyVal, options?: Options): boolean;
+}
+
+interface ProjectOperator {
+  (selector: string, lhs: AnyVal, value: AnyVal, options?: Options): boolean;
 }
 
 /**
@@ -44,38 +52,41 @@ export interface Options {
  * @param options Options
  */
 export function makeOptions(options?: Options): Options {
-  return Object.assign({ idKey: '_id' }, options || {})
+  return Object.assign({ idKey: "_id" }, options || {});
 }
 
 /**
  * The different groups of operators
  */
 export enum OperatorType {
-  ACCUMULATOR = 'accumulator',
-  EXPRESSION = 'expression',
-  PIPELINE = 'pipeline',
-  PROJECTION = 'projection',
-  QUERY = 'query'
+  ACCUMULATOR = "accumulator",
+  EXPRESSION = "expression",
+  PIPELINE = "pipeline",
+  PROJECTION = "projection",
+  QUERY = "query",
 }
 
 // operator definitions
-const OPERATORS = {}
+const OPERATORS: Record<string, Record<string, Callback<AnyVal>>> = {};
 
 each(OperatorType, (cls: OperatorType) => {
-  OPERATORS[cls] = {}
-})
+  OPERATORS[cls] = {};
+});
 
-interface Operators {
-  [key: string]: Function
+export interface OperatorMap {
+  [key: string]: Callback<AnyVal>;
 }
 
 /**
  * Validates the object collection of operators
  */
-function validateOperators(operators: Operators): void {
-  each(operators, (v: Function, k: string) => {
-    assert(v instanceof Function && isOperator(k), "invalid operator specified")
-  })
+function validateOperators(operators: OperatorMap): void {
+  each(operators, (v: Callback<AnyVal>, k: string) => {
+    assert(
+      v instanceof Function && isOperator(k),
+      "invalid operator specified"
+    );
+  });
 }
 
 /**
@@ -84,9 +95,9 @@ function validateOperators(operators: Operators): void {
  * @param cls Category of the operator
  * @param operators Name of operator
  */
-export function useOperators(cls: OperatorType, operators: Operators): void {
-  validateOperators(operators)
-  into(OPERATORS[cls], operators)
+export function useOperators(cls: OperatorType, operators: OperatorMap): void {
+  validateOperators(operators);
+  into(OPERATORS[cls], operators);
 }
 
 /**
@@ -94,8 +105,11 @@ export function useOperators(cls: OperatorType, operators: Operators): void {
  * @param cls Category of the operator
  * @param operator Name of the operator
  */
-export function getOperator(cls: OperatorType, operator: string): Function {
-  return has(OPERATORS[cls], operator) ? OPERATORS[cls][operator] : null
+export function getOperator(
+  cls: OperatorType,
+  operator: string
+): Callback<AnyVal> | null {
+  return has(OPERATORS[cls], operator) ? OPERATORS[cls][operator] : null;
 }
 
 /**
@@ -104,65 +118,75 @@ export function getOperator(cls: OperatorType, operator: string): Function {
  * @param cls the operator class to extend
  * @param operatorFn a callback that accepts internal object state and returns an object of new operators.
  */
-export function addOperators(cls: OperatorType, operatorFn: Callback<Operators>) {
+export function addOperators(
+  cls: OperatorType,
+  operatorFn: Callback<OperatorMap>
+) {
+  const newOperators = operatorFn({ computeValue, resolve });
 
-  const newOperators = operatorFn({ computeValue, resolve })
-
-  validateOperators(newOperators)
+  validateOperators(newOperators);
 
   // check for existing operators
-  each(newOperators, (_, op) => {
-    let call = getOperator(cls, op)
-    assert(!call, `${op} already exists for '${cls}' operators`)
-  })
+  each(newOperators, (_, op: string) => {
+    const call = getOperator(cls, op);
+    assert(!call, `${op} already exists for '${cls}' operators`);
+  });
 
-  let wrapped = {}
+  const wrapped: Record<string, Callback<AnyVal>> = {};
 
   switch (cls) {
     case OperatorType.QUERY:
-      each(newOperators, (fn, op) => {
-        fn = fn.bind(newOperators)
-        wrapped[op] = (selector: string, value: any, options: Options) => (obj: object): boolean => {
+      each(newOperators, (fn: QueryOperator, op: string) => {
+        fn = fn.bind(newOperators) as QueryOperator;
+        wrapped[op] = (selector: string, value: AnyVal, options: Options) => (
+          obj: RawObject
+        ): boolean => {
           // value of field must be fully resolved.
-          let lhs = resolve(obj, selector, { unwrapArray: true })
-          return fn(selector, lhs, value, options)
-        }
-      })
-      break
+          const lhs = resolve(obj, selector, { unwrapArray: true });
+          return fn(selector, lhs, value, options);
+        };
+      });
+      break;
     case OperatorType.PROJECTION:
-      each(newOperators, (fn, op) => {
-        fn = fn.bind(newOperators)
-        wrapped[op] = (obj: object, expr: any, selector: string, options: Options) => {
-          let lhs = resolve(obj, selector)
-          return fn(selector, lhs, expr, options)
-        }
-      })
-      break
+      each(newOperators, (fn: ProjectOperator, op: string) => {
+        fn = fn.bind(newOperators) as ProjectOperator;
+        wrapped[op] = (
+          obj: RawObject,
+          expr: AnyVal,
+          selector: string,
+          options: Options
+        ) => {
+          const lhs = resolve(obj, selector);
+          return fn(selector, lhs, expr, options);
+        };
+      });
+      break;
     default:
-      each(newOperators, (fn, op) => {
-        wrapped[op] = (...args: any[]) => fn.apply(newOperators, args)
-      })
+      each(newOperators, (fn: Callback<AnyVal>, op: string) => {
+        wrapped[op] = (...args: RawArray) =>
+          fn.apply(newOperators, args) as Callback<AnyVal>;
+      });
   }
 
   // toss the operator salad :)
-  useOperators(cls, wrapped)
+  useOperators(cls, wrapped);
 }
 
 /**
  * Implementation of system variables
  * @type {Object}
  */
-const systemVariables: object = {
-  '$$ROOT'(obj: object, expr: any, options: ComputeOptions) {
-    return options.root
+const systemVariables: Record<string, Callback<AnyVal>> = {
+  $$ROOT(obj: AnyVal, expr: AnyVal, options: ComputeOptions) {
+    return options.root;
   },
-  '$$CURRENT'(obj: object, expr: any, options: ComputeOptions) {
-    return obj
+  $$CURRENT(obj: AnyVal, expr: AnyVal, options: ComputeOptions) {
+    return obj;
   },
-  '$$REMOVE'(obj: object, expr: any, options: ComputeOptions) {
-    return undefined
-  }
-}
+  $$REMOVE(obj: AnyVal, expr: AnyVal, options: ComputeOptions) {
+    return undefined;
+  },
+};
 
 /**
  * Implementation of $redact variables
@@ -171,47 +195,48 @@ const systemVariables: object = {
  *
  * @type {Object}
  */
-const redactVariables: object = {
-  '$$KEEP'(obj: object, expr: any, options?: ComputeOptions): any {
-    return obj
+const redactVariables: Record<string, Callback<AnyVal>> = {
+  $$KEEP(obj: AnyVal, expr: AnyVal, options?: ComputeOptions): AnyVal {
+    return obj;
   },
-  '$$PRUNE' (obj: object, expr: any, options?: ComputeOptions): any {
-    return undefined
+  $$PRUNE(obj: AnyVal, expr: AnyVal, options?: ComputeOptions): AnyVal {
+    return undefined;
   },
-  '$$DESCEND'(obj: object, expr: any, options?: ComputeOptions): any {
+  $$DESCEND(obj: AnyVal, expr: AnyVal, options?: ComputeOptions): AnyVal {
     // traverse nested documents iff there is a $cond
-    if (!has(expr, '$cond')) return obj
+    if (!has(expr as RawObject, "$cond")) return obj;
 
-    let result: any
+    let result: Container;
+    const newObj = cloneDeep(obj) as Container;
 
-    each(obj, (current, key) => {
+    each(newObj, (current: Container, key: string) => {
       if (isObjectLike(current)) {
-        if (isArray(current)) {
-          result = []
+        if (current instanceof Array) {
+          result = [];
           each(current, (elem) => {
             if (isObject(elem)) {
-              elem = redact(elem, expr, options)
+              elem = redact(elem as RawObject, expr, options);
             }
-            if (!isNil(elem)) result.push(elem)
-          })
+            if (!isNil(elem)) (result as RawArray).push(elem as RawObject);
+          });
         } else {
-          result = redact(current, expr, options)
+          result = redact(current, expr, options) as Container;
         }
 
         if (isNil(result)) {
-          delete obj[key] // pruned result
+          delete newObj[key]; // pruned result
         } else {
-          obj[key] = result
+          newObj[key] = result;
         }
       }
-    })
-    return obj
-  }
-}
+    });
+    return newObj;
+  },
+};
 
 // options to core functions computeValue() and redact()
 interface ComputeOptions extends Options {
-  root?: object
+  root?: RawObject;
 }
 
 /**
@@ -223,76 +248,94 @@ interface ComputeOptions extends Options {
  * @param options {Object} extra options
  * @returns {*}
  */
-export function computeValue(obj: object | any[], expr: any, operator: string, options?: ComputeOptions): any {
+export function computeValue(
+  obj: AnyVal,
+  expr: AnyVal,
+  operator: string,
+  options?: ComputeOptions
+): AnyVal {
   // ensure valid options exist on first invocation
-  options = options || makeOptions()
+  options = options || makeOptions();
 
   if (isOperator(operator)) {
     // if the field of the object is a valid operator
-    let call = getOperator(OperatorType.EXPRESSION, operator)
-    if (call) return call(obj, expr, options)
+    let call = getOperator(OperatorType.EXPRESSION, operator);
+    if (call) return call(obj, expr, options);
 
     // we also handle $group accumulator operators
-    call = getOperator(OperatorType.ACCUMULATOR, operator)
+    call = getOperator(OperatorType.ACCUMULATOR, operator);
     if (call) {
-
       // if object is not an array, first try to compute using the expression
-      if (!isArray(obj)) {
-        obj = computeValue(obj, expr, null, options)
-        expr = null
+      if (!(obj instanceof Array)) {
+        obj = computeValue(obj, expr, null, options);
+        expr = null;
       }
 
       // validate that we have an array
-      assert(isArray(obj), `'${operator}' target must be an array.`)
+      assert(obj instanceof Array, `'${operator}' target must be an array.`);
 
       // we pass a null expression because all values have been resolved
-      return call(obj, expr, options)
+      return call(obj, expr, options);
     }
 
     // operator was not found
-    throw new Error(`operator '${operator}' is not registered`)
+    throw new Error(`operator '${operator}' is not registered`);
   }
 
   // if expr is a variable for an object field
   // field not used in this case
-  if (isString(expr) && expr.length > 0 && expr[0] === '$') {
+  if (isString(expr) && expr.length > 0 && expr[0] === "$") {
     // we return redact variables as literals
     if (has(redactVariables, expr)) {
-      return expr
+      return expr;
     }
 
     // handle selectors with explicit prefix
-    let arr = expr.split('.')
+    const arr = expr.split(".");
     if (has(systemVariables, arr[0])) {
       // set 'root' only the first time it is required to be used for all subsequent calls
       // if it already available on the options, it will be used
-      obj = systemVariables[arr[0]](obj, null, into({ root: obj }, options))
-      if (arr.length == 1) return obj
-      expr = expr.substr(arr[0].length) // '.' prefix will be sliced off below
+      obj = systemVariables[arr[0]](
+        obj,
+        null,
+        into({ root: obj }, options) as ComputeOptions
+      );
+      if (arr.length == 1) return obj;
+      expr = expr.substr(arr[0].length); // '.' prefix will be sliced off below
     }
 
-    return resolve(obj, expr.slice(1))
+    return resolve(obj as Container, (expr as string).slice(1));
   }
 
   // check and return value if already in a resolved state
-  if (isArray(expr)) {
-    return expr.map((item: any) => computeValue(obj, item, null, options))
+  if (expr instanceof Array) {
+    return (expr as RawArray).map((item: AnyVal) =>
+      computeValue(obj, item, null, options)
+    );
   } else if (isObject(expr)) {
-    let result = {}
-    each(expr, (val, key) => {
-      result[key] = computeValue(obj, val, key, options)
+    const result: RawObject = {};
+    // each(expr as RawObject, (val, key: string) => {
+    for (const [key, val] of Object.entries(expr as RawObject)) {
+      result[key] = computeValue(obj, val, key, options);
       // must run ONLY one aggregate operator per expression
       // if so, return result of the computed value
-      if ([OperatorType.EXPRESSION, OperatorType.ACCUMULATOR].some(c => has(OPERATORS[c], key))) {
+      if (
+        [OperatorType.EXPRESSION, OperatorType.ACCUMULATOR].some((c) =>
+          has(OPERATORS[c], key)
+        )
+      ) {
         // there should be only one operator
-        assert(keys(expr).length === 1, "Invalid aggregation expression '" + JSON.stringify(expr) + "'")
-        result = result[key]
-        return false // break
+        assert(
+          keys(expr).length === 1,
+          "Invalid aggregation expression '" + JSON.stringify(expr) + "'"
+        );
+
+        return result[key];
       }
-    })
-    return result
+    }
+    return result;
   } else {
-    return expr
+    return expr;
   }
 }
 
@@ -303,9 +346,17 @@ export function computeValue(obj: object | any[], expr: any, operator: string, o
  * @param  {*} options  Options for value
  * @return {*} returns the result of the redacted object
  */
-export function redact(obj: object, expr: any, options: ComputeOptions): object {
-  let result = computeValue(obj, expr, null, options)
-  return has(redactVariables, result)
-    ? redactVariables[result](obj, expr, into({root: obj}, options))
-    : result
+export function redact(
+  obj: RawObject,
+  expr: AnyVal,
+  options: ComputeOptions
+): AnyVal {
+  const result = computeValue(obj, expr, null, options);
+  return has(redactVariables, result as string)
+    ? redactVariables[result as string](
+        obj,
+        expr,
+        into({ root: obj }, options) as ComputeOptions
+      )
+    : result;
 }

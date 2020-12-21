@@ -8,7 +8,8 @@
   "scripts": {
     "docs": "typedoc && touch docs/.nojekyll",
     "build": "tsc && node ./build.js",
-    "test": "npm run build && NODE_ENV=test nyc --reporter=lcov --reporter=text ./runtest.sh",
+    "lint": "eslint --fix --ext .js,.ts src/",
+    "test": "npm run build && NODE_ENV=test nyc --reporter=lcov --reporter=text ./runtest.sh && npm run lint",
     "dist": "npm run test && cd lib && npm publish",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
     "prepublishOnly": "echo \"use 'npm run dist'\" && false",
@@ -25,14 +26,22 @@
     "CHANGELOG.md"
   ],
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.10.0",
+    "@typescript-eslint/parser": "^4.10.0",
     "codecov": "3.8.1",
+    "eslint": "^7.15.0",
+    "eslint-config-prettier": "^7.0.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-prettier": "^3.3.0",
+    "eslint-plugin-simple-import-sort": "^7.0.0",
     "esm": "3.2.25",
     "lodash": "4.17.20",
     "nyc": "15.1.0",
     "perf_hooks": "0.0.1",
-    "tape": "5.1.1",
-    "typescript": "4.1.3",
-    "typedoc": "0.20.13"
+    "prettier": "^2.2.1",
+    "tape": "5.0.1",
+    "typedoc": "0.19.2",
+    "typescript": "4.1.3"
   },
   "keywords": [
     "util",

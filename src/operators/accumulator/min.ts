@@ -1,5 +1,6 @@
-import { $push } from './push'
-import { Options } from '../../core'
+import { Options } from "../../core";
+import { AnyVal, Collection } from "../../util";
+import { $push } from "./push";
 
 /**
  * Returns the lowest value in a group.
@@ -9,8 +10,12 @@ import { Options } from '../../core'
  * @param {Options} The options to use for this operator
  * @returns {*}
  */
-export function $min(collection: any[], expr: any, options: Options): any {
-  let nums = $push(collection, expr, options) as number[]
-  let n = nums.reduce((acc, n) => n < acc ? n : acc, Infinity)
-  return n === Infinity ? undefined : n
+export function $min(
+  collection: Collection,
+  expr: AnyVal,
+  options?: Options
+): AnyVal {
+  const nums = $push(collection, expr, options) as number[];
+  const n = nums.reduce((acc, n) => (n < acc ? n : acc), Infinity);
+  return n === Infinity ? undefined : n;
 }

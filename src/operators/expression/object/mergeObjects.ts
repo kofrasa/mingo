@@ -1,7 +1,7 @@
 // Object Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#object-expression-operators
 
-import { computeValue, Options } from '../../../core'
-import { into } from '../../../util'
+import { computeValue, Options } from "../../../core";
+import { AnyVal, into, RawObject } from "../../../util";
 
 /**
  * Combines multiple documents into a single document.
@@ -10,7 +10,13 @@ import { into } from '../../../util'
  * @param {*} expr The right-hand side of the operator
  * @param {Options} options Options to use for operation
  */
-export function $mergeObjects(obj: object, expr: any, options: Options): any {
-  let docs = computeValue(obj, expr, null, options)
-  return docs instanceof Array ? docs.reduce((memo, o) => into(memo, o), {}): {}
+export function $mergeObjects(
+  obj: RawObject,
+  expr: AnyVal,
+  options?: Options
+): AnyVal {
+  const docs = computeValue(obj, expr, null, options);
+  return docs instanceof Array
+    ? docs.reduce((memo, o) => into(memo, o), {})
+    : {};
 }

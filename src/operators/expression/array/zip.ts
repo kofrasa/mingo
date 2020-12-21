@@ -1,7 +1,16 @@
 // Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
 
-import { assert, isArray, isBoolean, isNil, truthy } from '../../../util'
-import { computeValue, Options } from '../../../core'
+import { computeValue, Options } from "../../../core";
+import {
+  AnyVal,
+  assert,
+  isArray,
+  isBoolean,
+  isNil,
+  RawArray,
+  RawObject,
+  truthy,
+} from "../../../util";
 
 /**
  * Merge two lists together.
@@ -13,40 +22,55 @@ import { computeValue, Options } from '../../../core'
  * @param  {*} expr
  * @return {*}
  */
-export function $zip(obj: object, expr: any, options: Options): any {
-  let inputs = computeValue(obj, expr.inputs, null, options)
-  let useLongestLength = expr.useLongestLength || false
+export function $zip(
+  obj: RawObject,
+  expr: { inputs: RawArray; useLongestLength: boolean; defaults: AnyVal },
+  options?: Options
+): AnyVal {
+  const inputs = computeValue(
+    obj,
+    expr.inputs,
+    null,
+    options
+  ) as Array<RawArray>;
+  const useLongestLength = expr.useLongestLength || false;
 
-  assert(isArray(inputs), "'inputs' expression must resolve to an array")
-  assert(isBoolean(useLongestLength), "'useLongestLength' must be a boolean")
+  assert(isArray(inputs), "'inputs' expression must resolve to an array");
+  assert(isBoolean(useLongestLength), "'useLongestLength' must be a boolean");
 
   if (isArray(expr.defaults)) {
-    assert(truthy(useLongestLength), "'useLongestLength' must be set to true to use 'defaults'")
+    assert(
+      truthy(useLongestLength),
+      "'useLongestLength' must be set to true to use 'defaults'"
+    );
   }
 
-  let zipCount = 0
+  let zipCount = 0;
 
   for (let i = 0, len = inputs.length; i < len; i++) {
-    let arr = inputs[i]
+    const arr = inputs[i];
 
-    if (isNil(arr)) return null
+    if (isNil(arr)) return null;
 
-    assert(isArray(arr), "'inputs' expression values must resolve to an array or null")
+    assert(
+      isArray(arr),
+      "'inputs' expression values must resolve to an array or null"
+    );
 
     zipCount = useLongestLength
       ? Math.max(zipCount, arr.length)
-      : Math.min(zipCount || arr.length, arr.length)
+      : Math.min(zipCount || arr.length, arr.length);
   }
 
-  let result = []
-  let defaults = expr.defaults || []
+  const result: RawArray = [];
+  const defaults = expr.defaults || [];
 
   for (let i = 0; i < zipCount; i++) {
-    let temp = inputs.map((val: any, index: number) => {
-      return isNil(val[i]) ? (defaults[index] || null) : val[i]
-    })
-    result.push(temp)
+    const temp = inputs.map((val: RawArray, index: number) => {
+      return isNil(val[i]) ? (defaults[index] as AnyVal) || null : val[i];
+    });
+    result.push(temp);
   }
 
-  return result
+  return result;
 }

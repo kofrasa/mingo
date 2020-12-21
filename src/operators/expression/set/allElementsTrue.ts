@@ -2,17 +2,20 @@
  * Set Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#set-expression-operators
  */
 
-import { truthy } from '../../../util'
-import { computeValue, Options } from '../../../core'
-
+import { computeValue, Options } from "../../../core";
+import { AnyVal, RawArray, RawObject, truthy } from "../../../util";
 
 /**
  * Returns true if all elements of a set evaluate to true, and false otherwise.
  * @param obj
  * @param expr
  */
-export function $allElementsTrue(obj: object, expr: any, options: Options): any {
+export function $allElementsTrue(
+  obj: RawObject,
+  expr: AnyVal,
+  options?: Options
+): AnyVal {
   // mongodb nests the array expression in another
-  let args = computeValue(obj, expr, null, options)[0]
-  return args.every(truthy)
+  const args = computeValue(obj, expr, null, options)[0] as RawArray;
+  return args.every(truthy);
 }

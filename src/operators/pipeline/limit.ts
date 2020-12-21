@@ -1,6 +1,5 @@
-import { Iterator } from '../../lazy'
-import { Options } from '../../core'
-
+import { Options } from "../../core";
+import { Iterator } from "../../lazy";
 
 /**
  * Restricts the number of documents in an aggregation pipeline.
@@ -10,6 +9,10 @@ import { Options } from '../../core'
  * @param options
  * @returns {Object|*}
  */
-export function $limit(collection: Iterator, expr: number, options: Options): Iterator {
-  return collection.take(expr)
+export function $limit(
+  collection: Iterator,
+  expr: number,
+  options?: Options
+): Iterator {
+  return collection.take(expr);
 }

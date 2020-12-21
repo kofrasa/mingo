@@ -2,7 +2,12 @@
  * Predicates used for Query and Expression operators.
  */
 
+import { computeValue, Options } from "../core";
+import { Query } from "../query";
 import {
+  AnyVal,
+  BsonType,
+  Callback,
   ensureArray,
   flatten,
   getType,
@@ -20,19 +25,17 @@ import {
   isOperator,
   isRegExp,
   isString,
-  keys,
-  Predicate,
-  resolve,
-  Callback,
-  MAX_INT,
-  MIN_INT,
-  MAX_LONG,
-  MIN_LONG,
   JsType,
-  BsonType
-} from '../util'
-import { Query } from '../query'
-import { computeValue, Options } from '../core'
+  keys,
+  MAX_INT,
+  MAX_LONG,
+  MIN_INT,
+  MIN_LONG,
+  Predicate,
+  RawArray,
+  RawObject,
+  resolve,
+} from "../util";
 
 /**
  * Returns a query operator created from the predicate
@@ -40,14 +43,14 @@ import { computeValue, Options } from '../core'
  * @param pred Predicate function
  */
 export function createQueryOperator(pred: Predicate<any>): Callback<any> {
-  return (selector: string, value: any, options: Options) => {
-    let opts = { unwrapArray: true }
-    return (obj: object) => {
+  return (selector: string, value: AnyVal, options?: Options) => {
+    const opts = { unwrapArray: true };
+    return (obj: RawObject) => {
       // value of field must be fully resolved.
-      let lhs = resolve(obj, selector, opts)
-      return pred(lhs, value, options)
-    }
-  }
+      const lhs = resolve(obj, selector, opts);
+      return pred(lhs, value, options);
+    };
+  };
 }
 
 /**
@@ -55,11 +58,11 @@ export function createQueryOperator(pred: Predicate<any>): Callback<any> {
  *
  * @param f Predicate function
  */
-export function createExpressionOperator(f: Predicate<any>) {
-  return (obj: object, expr: any, options: Options) => {
-    let args = computeValue(obj, expr, null, options)
-    return f(...args)
-  }
+export function createExpressionOperator(f: Predicate<AnyVal>) {
+  return (obj: RawObject, expr: AnyVal, options?: Options) => {
+    const args = computeValue(obj, expr, null, options) as RawArray;
+    return f(...args);
+  };
 }
 
 /**
@@ -69,20 +72,20 @@ export function createExpressionOperator(f: Predicate<any>) {
  * @param b         The rhs operand provided by the user
  * @returns {*}
  */
-export function $eq(a: any, b: any, options?: Options): boolean {
+export function $eq(a: AnyVal, b: AnyVal, options?: Options): boolean {
   // start with simple equality check
-  if (isEqual(a, b)) return true
+  if (isEqual(a, b)) return true;
 
   // https://docs.mongodb.com/manual/tutorial/query-for-null-fields/
-  if (isNil(a) && isNil(b)) return true
+  if (isNil(a) && isNil(b)) return true;
 
   // check
-  if (isArray(a)) {
-    let eq = isEqual.bind(null, b)
-    return a.some(eq) || flatten(a, 1).some(eq)
+  if (a instanceof Array) {
+    const eq = isEqual.bind(null, b) as Callback<boolean>;
+    return a.some(eq) || flatten(a, 1).some(eq);
   }
 
-  return false
+  return false;
 }
 
 /**
@@ -92,8 +95,8 @@ export function $eq(a: any, b: any, options?: Options): boolean {
  * @param b
  * @returns {boolean}
  */
-export function $ne(a: any, b: any, options?: Options): boolean {
-  return !$eq(a, b, options)
+export function $ne(a: AnyVal, b: AnyVal, options?: Options): boolean {
+  return !$eq(a, b, options);
 }
 
 /**
@@ -103,11 +106,11 @@ export function $ne(a: any, b: any, options?: Options): boolean {
  * @param b
  * @returns {*}
  */
-export function $in(a: any, b: any, options?: Options): boolean {
+export function $in(a: RawArray, b: RawArray, options?: Options): boolean {
   // queries for null should be able to find undefined fields
-  if (isNil(a)) return b.some(isNull)
+  if (isNil(a)) return b.some(isNull);
 
-  return intersection(ensureArray(a), b, options?.hashFunction).length > 0
+  return intersection(ensureArray(a), b, options?.hashFunction).length > 0;
 }
 
 /**
@@ -117,8 +120,8 @@ export function $in(a: any, b: any, options?: Options): boolean {
  * @param b
  * @returns {*|boolean}
  */
-export function $nin(a: any, b: any, options?: Options): boolean {
-  return !$in(a, b, options)
+export function $nin(a: RawArray, b: RawArray, options?: Options): boolean {
+  return !$in(a, b, options);
 }
 
 /**
@@ -128,8 +131,8 @@ export function $nin(a: any, b: any, options?: Options): boolean {
  * @param b
  * @returns {boolean}
  */
-export function $lt(a: any, b: any, options?: Options): boolean {
-  return compare(a, b, (x: any, y: any) => x < y)
+export function $lt(a: AnyVal, b: AnyVal, options?: Options): boolean {
+  return compare(a, b, (x: AnyVal, y: AnyVal) => x < y);
 }
 
 /**
@@ -139,8 +142,8 @@ export function $lt(a: any, b: any, options?: Options): boolean {
  * @param b
  * @returns {boolean}
  */
-export function $lte(a: any, b: any, options?: Options): boolean {
-  return compare(a, b, (x: any, y: any) => x <= y)
+export function $lte(a: AnyVal, b: AnyVal, options?: Options): boolean {
+  return compare(a, b, (x: AnyVal, y: AnyVal) => x <= y);
 }
 
 /**
@@ -150,8 +153,8 @@ export function $lte(a: any, b: any, options?: Options): boolean {
  * @param b
  * @returns {boolean}
  */
-export function $gt(a: any, b: any, options?: Options): boolean {
-  return compare(a, b, (x: any, y: any) => x > y)
+export function $gt(a: AnyVal, b: AnyVal, options?: Options): boolean {
+  return compare(a, b, (x: AnyVal, y: AnyVal) => x > y);
 }
 
 /**
@@ -161,8 +164,8 @@ export function $gt(a: any, b: any, options?: Options): boolean {
  * @param b
  * @returns {boolean}
  */
-export function $gte(a: any, b: any, options?: Options): boolean {
-  return compare(a, b, (x: any, y: any) => x >= y)
+export function $gte(a: AnyVal, b: AnyVal, options?: Options): boolean {
+  return compare(a, b, (x: AnyVal, y: AnyVal) => x >= y);
 }
 
 /**
@@ -172,8 +175,10 @@ export function $gte(a: any, b: any, options?: Options): boolean {
  * @param b
  * @returns {boolean}
  */
-export function $mod(a: any, b: number[], options?: Options): boolean {
-  return ensureArray(a).some((x: number) => b.length === 2 && (x % b[0]) === b[1])
+export function $mod(a: AnyVal, b: number[], options?: Options): boolean {
+  return ensureArray(a).some(
+    (x: number) => b.length === 2 && x % b[0] === b[1]
+  );
 }
 
 /**
@@ -183,10 +188,10 @@ export function $mod(a: any, b: number[], options?: Options): boolean {
  * @param b
  * @returns {boolean}
  */
-export function $regex(a: any, b: any, options?: Options): boolean {
-  a = ensureArray(a)
-  let match = ((x: string) => isString(x) && !!x.match(b))
-  return a.some(match) || flatten(a, 1).some(match)
+export function $regex(a: AnyVal, b: RegExp, options?: Options): boolean {
+  const lhs = ensureArray(a);
+  const match = (x: string) => isString(x) && !!b.exec(x);
+  return lhs.some(match) || flatten(lhs, 1).some(match);
 }
 
 /**
@@ -196,8 +201,11 @@ export function $regex(a: any, b: any, options?: Options): boolean {
  * @param b
  * @returns {boolean}
  */
-export function $exists(a: any, b: any, options?: Options): boolean {
-  return ((b === false || b === 0) && a === undefined) || ((b === true || b === 1) && a !== undefined)
+export function $exists(a: AnyVal, b: AnyVal, options?: Options): boolean {
+  return (
+    ((b === false || b === 0) && a === undefined) ||
+    ((b === true || b === 1) && a !== undefined)
+  );
 }
 
 /**
@@ -207,19 +215,19 @@ export function $exists(a: any, b: any, options?: Options): boolean {
  * @param b
  * @returns boolean
  */
-export function $all(a: any, b: any, options?: Options): boolean {
-  let matched = false
+export function $all(a: RawArray, b: RawArray, options?: Options): boolean {
+  let matched = false;
   if (isArray(a) && isArray(b)) {
     for (let i = 0, len = b.length; i < len; i++) {
-      if (isObject(b[i]) && inArray(keys(b[i]), '$elemMatch')) {
-        matched = matched || $elemMatch(a, b[i].$elemMatch, options)
+      if (isObject(b[i]) && inArray(keys(b[i]), "$elemMatch")) {
+        matched = matched || $elemMatch(a, b[i]["$elemMatch"], options);
       } else {
         // order of arguments matter
-        return intersection(b, a, options?.hashFunction).length === len
+        return intersection(b, a, options?.hashFunction).length === len;
       }
     }
   }
-  return matched
+  return matched;
 }
 
 /**
@@ -229,8 +237,8 @@ export function $all(a: any, b: any, options?: Options): boolean {
  * @param b
  * @returns {*|boolean}
  */
-export function $size(a: any[], b: number, options?: Options): boolean {
-  return a.length === b
+export function $size(a: RawArray, b: number, options?: Options): boolean {
+  return a.length === b;
 }
 
 /**
@@ -239,26 +247,30 @@ export function $size(a: any[], b: number, options?: Options): boolean {
  * @param a {Array} element to match against
  * @param b {Object} subquery
  */
-export function $elemMatch(a: any[], b: object, options?: Options): boolean {
+export function $elemMatch(
+  a: RawArray,
+  b: RawObject,
+  options?: Options
+): boolean {
   // should return false for non-matching input
   if (isArray(a) && !isEmpty(a)) {
-    let format = (x: any) => x
-    let criteria = b
+    let format = (x: AnyVal) => x;
+    let criteria = b;
 
     // If we find an operator in the subquery, we fake a field to point to it.
     // This is an attempt to ensure that it a valid criteria.
     if (keys(b).every(isOperator)) {
-      criteria = { temp: b }
-      format = x => ({ temp: x })
+      criteria = { temp: b };
+      format = (x) => ({ temp: x });
     }
-    let query = new Query(criteria, options)
+    const query = new Query(criteria, options);
     for (let i = 0, len = a.length; i < len; i++) {
-      if (query.test(format(a[i]))) {
-        return true
+      if (query.test(format(a[i]) as RawObject)) {
+        return true;
       }
     }
   }
-  return false
+  return false;
 }
 
 /**
@@ -268,50 +280,64 @@ export function $elemMatch(a: any[], b: object, options?: Options): boolean {
  * @param b
  * @returns {boolean}
  */
-export function $type(a: any, b: number | string, options?: Options): boolean {
+export function $type(
+  a: AnyVal,
+  b: number | string,
+  options?: Options
+): boolean {
   switch (b) {
     case 1:
     case 19:
     case BsonType.DOUBLE:
     case BsonType.DECIMAL:
-      return isNumber(a)
+      return isNumber(a);
     case 2:
     case JsType.STRING:
-      return isString(a)
+      return isString(a);
     case 3:
     case JsType.OBJECT:
-      return isObject(a)
+      return isObject(a);
     case 4:
     case JsType.ARRAY:
-      return isArray(a)
+      return isArray(a);
     case 6:
     case JsType.UNDEFINED:
-      return isNil(a)
+      return isNil(a);
     case 8:
     case JsType.BOOLEAN:
     case BsonType.BOOL:
-      return isBoolean(a)
+      return isBoolean(a);
     case 9:
     case JsType.DATE:
-      return isDate(a)
+      return isDate(a);
     case 10:
     case JsType.NULL:
-      return isNull(a)
+      return isNull(a);
     case 11:
     case JsType.REGEXP:
     case BsonType.REGEX:
-      return isRegExp(a)
+      return isRegExp(a);
     case 16:
     case BsonType.INT:
-      return isNumber(a) && a >= MIN_INT && a <= MAX_INT && a.toString().indexOf('.') === -1
+      return (
+        isNumber(a) &&
+        a >= MIN_INT &&
+        a <= MAX_INT &&
+        a.toString().indexOf(".") === -1
+      );
     case 18:
     case BsonType.LONG:
-      return isNumber(a) && a >= MIN_LONG && a <= MAX_LONG && a.toString().indexOf('.') === -1
+      return (
+        isNumber(a) &&
+        a >= MIN_LONG &&
+        a <= MAX_LONG &&
+        a.toString().indexOf(".") === -1
+      );
     default:
-      return false
+      return false;
   }
 }
 
-function compare(a: any, b: any, f: Predicate<boolean>): boolean {
-  return ensureArray(a).some(x => getType(x) === getType(b) && f(x, b))
+function compare(a: AnyVal, b: AnyVal, f: Predicate<AnyVal>): boolean {
+  return ensureArray(a).some((x) => getType(x) === getType(b) && f(x, b));
 }

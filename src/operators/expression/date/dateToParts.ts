@@ -1,7 +1,8 @@
 // Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
 
-import { computeValue, Options } from '../../../core'
-import { parseTimezone, adjustDate } from './_internal'
+import { computeValue, Options } from "../../../core";
+import { AnyVal, RawObject } from "../../../util";
+import { adjustDate, parseTimezone } from "./_internal";
 
 /**
  * Returns a document that contains the constituent parts of a given Date value as individual properties.
@@ -11,22 +12,27 @@ import { parseTimezone, adjustDate } from './_internal'
  * @param expr
  * @param options
  */
-export function $dateToParts(obj: object, expr: any, options: Options): any {
-  let args: {
-    date: Date
-    timezone?: string
-    iso8601?: boolean
-  } = computeValue(obj, expr, null, options)
+export function $dateToParts(
+  obj: RawObject,
+  expr: AnyVal,
+  options?: Options
+): AnyVal {
+  const args = computeValue(obj, expr, null, options) as {
+    date: Date;
+    timezone?: string;
+    iso8601?: boolean;
+  };
 
-  if (args.iso8601 === true) throw new Error("$dateToParts: argument 'iso8601' is not supported")
+  if (args.iso8601 === true)
+    throw new Error("$dateToParts: argument 'iso8601' is not supported");
 
-  let d = new Date(args.date)
-  let tz = parseTimezone(args.timezone)
+  const d = new Date(args.date);
+  const tz = parseTimezone(args.timezone);
   // invert timezone to construct value in UTC
-  tz.hour *= -1
-  tz.minute *= -1
+  tz.hour *= -1;
+  tz.minute *= -1;
 
-  adjustDate(d, tz)
+  adjustDate(d, tz);
 
   return {
     year: d.getUTCFullYear(),
@@ -35,6 +41,6 @@ export function $dateToParts(obj: object, expr: any, options: Options): any {
     hour: d.getUTCHours(),
     minute: d.getUTCMinutes(),
     second: d.getUTCSeconds(),
-    millisecond: d.getUTCMilliseconds()
-  }
+    millisecond: d.getUTCMilliseconds(),
+  };
 }

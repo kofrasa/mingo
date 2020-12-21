@@ -1,12 +1,13 @@
-import { Query } from './query'
-import { Aggregator } from './aggregator'
-import { Cursor } from './cursor'
-
 // loads basic operators
-import './init/basic'
+import "./init/basic";
 
-export { Query } from './query'
-export { Aggregator } from './aggregator'
+import { Aggregator } from "./aggregator";
+import { Cursor } from "./cursor";
+import { Query } from "./query";
+import { Collection, RawArray, RawObject } from "./util";
+
+export { Aggregator } from "./aggregator";
+export { Query } from "./query";
 
 /**
  * Performs a query on a collection and returns a cursor object.
@@ -17,8 +18,12 @@ export { Aggregator } from './aggregator'
  * @param projection Projection criteria
  * @returns {Cursor} A cursor of results
  */
-export function find(collection: object[], criteria: object, projection?: object): Cursor {
-  return new Query(criteria).find(collection, projection)
+export function find(
+  collection: Collection,
+  criteria: RawObject,
+  projection?: RawObject
+): Cursor {
+  return new Query(criteria).find(collection, projection);
 }
 
 /**
@@ -28,8 +33,11 @@ export function find(collection: object[], criteria: object, projection?: object
  * @param criteria Query criteria of objects to remove
  * @returns {Array} New filtered array
  */
-export function remove(collection: object[], criteria: object): object[] {
-  return new Query(criteria).remove(collection)
+export function remove(
+  collection: RawObject[],
+  criteria: RawObject
+): RawObject[] {
+  return new Query(criteria).remove(collection);
 }
 
 /**
@@ -40,10 +48,12 @@ export function remove(collection: object[], criteria: object): object[] {
  * @param {Array} pipeline The pipeline operators to use
  * @returns {Array} New array of results
  */
-export function aggregate(collection: object[], pipeline: object[]): any[] {
-  return (new Aggregator(pipeline)).run(collection)
+export function aggregate(
+  collection: Collection,
+  pipeline: Collection
+): RawArray {
+  return new Aggregator(pipeline).run(collection);
 }
-
 
 // default interface
 export default {
@@ -51,5 +61,5 @@ export default {
   Query,
   aggregate,
   find,
-  remove
-}
+  remove,
+};

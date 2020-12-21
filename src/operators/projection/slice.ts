@@ -1,8 +1,8 @@
 // $slice operator. https://docs.mongodb.com/manual/reference/operator/projection/slice/#proj._S_slice
 
-import { isArray, resolve } from '../../util'
-import { Options } from '../../core'
-import { $slice as __slice } from '../expression/array/slice'
+import { Options } from "../../core";
+import { AnyVal, isArray, RawArray, RawObject, resolve } from "../../util";
+import { $slice as __slice } from "../expression/array/slice";
 
 /**
  * Limits the number of elements projected from an array. Supports skip and limit slices.
@@ -11,10 +11,20 @@ import { $slice as __slice } from '../expression/array/slice'
  * @param field
  * @param expr
  */
-export function $slice(obj: object, expr: any, field: string, options: Options): any {
-  let xs = resolve(obj, field)
+export function $slice(
+  obj: RawObject,
+  expr: AnyVal,
+  field: string,
+  options?: Options
+): AnyVal {
+  const xs = resolve(obj, field);
+  const exprAsArray = expr as RawArray;
 
-  if (!isArray(xs)) return xs
+  if (!isArray(xs)) return xs;
 
-  return __slice(obj, isArray(expr) ? [xs, ...expr] : [xs , expr], options)
+  return __slice(
+    obj,
+    expr instanceof Array ? [xs, ...exprAsArray] : [xs, expr],
+    options
+  );
 }

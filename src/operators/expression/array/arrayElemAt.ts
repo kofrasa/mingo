@@ -1,8 +1,7 @@
 // Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
 
-
-import { computeValue, Options } from '../../../core'
-import { assert, isArray, isNil } from '../../../util'
+import { computeValue, Options } from "../../../core";
+import { AnyVal, assert, isNil, RawArray, RawObject } from "../../../util";
 
 /**
  * Returns the element at the specified array index.
@@ -11,18 +10,25 @@ import { assert, isArray, isNil } from '../../../util'
  * @param  {*} expr
  * @return {*}
  */
-export function $arrayElemAt(obj: object, expr: any, options: Options): any {
-  let args = computeValue(obj, expr, null, options)
-  assert(isArray(args) && args.length === 2, '$arrayElemAt expression must resolve to array(2)')
+export function $arrayElemAt(
+  obj: RawObject,
+  expr: AnyVal,
+  options?: Options
+): AnyVal {
+  const args = computeValue(obj, expr, null, options) as RawArray;
+  assert(
+    args instanceof Array && args.length === 2,
+    "$arrayElemAt expression must resolve to array(2)"
+  );
 
-  if (args.some(isNil)) return null
+  if (args.some(isNil)) return null;
 
-  let index = args[1]
-  let arr = args[0]
+  const index = args[1] as number;
+  const arr = args[0] as RawArray;
   if (index < 0 && Math.abs(index) <= arr.length) {
-    return arr[(index + arr.length) % arr.length]
+    return arr[(index + arr.length) % arr.length];
   } else if (index >= 0 && index < arr.length) {
-    return arr[index]
+    return arr[index];
   }
-  return undefined
+  return undefined;
 }

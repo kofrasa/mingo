@@ -1,7 +1,7 @@
-import { isNumber } from '../../util'
-import { $push } from './push'
-import { Options } from '../../core'
-import { stddev } from './_internal'
+import { Options } from "../../core";
+import { AnyVal, Collection, isNumber } from "../../util";
+import { stddev } from "./_internal";
+import { $push } from "./push";
 
 /**
  * Returns the sample standard deviation of the input values.
@@ -9,6 +9,10 @@ import { stddev } from './_internal'
  * @param  {Object} expr
  * @return {Number|null}
  */
-export function $stdDevSamp(collection: any[], expr: any, options: Options): number {
-  return stddev($push(collection, expr, options).filter(isNumber), true)
+export function $stdDevSamp(
+  collection: Collection,
+  expr: AnyVal,
+  options?: Options
+): number {
+  return stddev($push(collection, expr, options).filter(isNumber), true);
 }
