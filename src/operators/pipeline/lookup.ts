@@ -3,7 +3,6 @@ import { Iterator } from "../../lazy";
 import {
   assert,
   Collection,
-  each,
   hashCode,
   into,
   isArray,
@@ -40,11 +39,11 @@ export function $lookup(
 
   const hash: Record<string, RawArray> = {};
 
-  each(joinColl, (obj: RawObject) => {
+  for (const obj of joinColl) {
     const k = hashCode(resolve(obj, foreignField), options?.hashFunction);
     hash[k] = hash[k] || [];
     hash[k].push(obj);
-  });
+  }
 
   return collection.map((obj: RawObject) => {
     const k = hashCode(resolve(obj, localField), options?.hashFunction);

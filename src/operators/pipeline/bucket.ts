@@ -3,7 +3,6 @@ import { Iterator, Lazy } from "../../lazy";
 import {
   AnyVal,
   assert,
-  each,
   getType,
   into,
   isNil,
@@ -55,7 +54,9 @@ export function $bucket(
     );
 
   const grouped: Record<string, RawArray> = {};
-  each(boundaries, (k: string) => (grouped[k] = []));
+  for (const k of boundaries) {
+    grouped[k as string] = [];
+  }
 
   // add default key if provided
   if (!isNil(defaultKey)) grouped[defaultKey] = [];

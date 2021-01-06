@@ -1,6 +1,6 @@
 import { computeValue, Options } from "../../core";
 import { Iterator } from "../../lazy";
-import { AnyVal, each, groupBy, into, RawArray, RawObject } from "../../util";
+import { groupBy, into, RawArray, RawObject } from "../../util";
 
 /**
  * Groups documents together for the purpose of calculating aggregate values based on a collection of documents.
@@ -46,9 +46,9 @@ export function $group(
       }
 
       // compute remaining keys in expression
-      each(expr, (val, key: string) => {
+      for (const [key, val] of Object.entries(expr)) {
         obj[key] = computeValue(partitions.groups[i], val, key, options);
-      });
+      }
 
       return { value: obj, done: false };
     };

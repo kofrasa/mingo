@@ -26,7 +26,6 @@ import {
   isRegExp,
   isString,
   JsType,
-  keys,
   MAX_INT,
   MAX_LONG,
   MIN_INT,
@@ -42,10 +41,12 @@ import {
  *
  * @param pred Predicate function
  */
-export function createQueryOperator(pred: Predicate<any>): Callback<any> {
+export function createQueryOperator(
+  pred: Predicate<AnyVal>
+): Callback<Callback<boolean>> {
   return (selector: string, value: AnyVal, options?: Options) => {
     const opts = { unwrapArray: true };
-    return (obj: RawObject) => {
+    return (obj: RawObject): boolean => {
       // value of field must be fully resolved.
       const lhs = resolve(obj, selector, opts);
       return pred(lhs, value, options);
@@ -219,7 +220,7 @@ export function $all(a: RawArray, b: RawArray, options?: Options): boolean {
   let matched = false;
   if (isArray(a) && isArray(b)) {
     for (let i = 0, len = b.length; i < len; i++) {
-      if (isObject(b[i]) && inArray(keys(b[i]), "$elemMatch")) {
+      if (isObject(b[i]) && inArray(Object.keys(b[i]), "$elemMatch")) {
         matched = matched || $elemMatch(a, b[i]["$elemMatch"], options);
       } else {
         // order of arguments matter
@@ -259,7 +260,7 @@ export function $elemMatch(
 
     // If we find an operator in the subquery, we fake a field to point to it.
     // This is an attempt to ensure that it a valid criteria.
-    if (keys(b).every(isOperator)) {
+    if (Object.keys(b).every(isOperator)) {
       criteria = { temp: b };
       format = (x) => ({ temp: x });
     }

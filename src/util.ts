@@ -56,7 +56,7 @@ export enum BsonType {
 
 // Generic callback
 export interface Callback<T> {
-  (...args: RawArray): T;
+  (...args: AnyVal[]): T;
 }
 
 // Generic predicate
@@ -174,7 +174,7 @@ export function isEmpty(x: AnyVal): boolean {
   return (
     isNil(x) ||
     (x instanceof Array && x.length === 0) ||
-    (isObject(x) && keys(x).length === 0) ||
+    (isObject(x) && Object.keys(x).length === 0) ||
     !x
   );
 }
@@ -184,28 +184,6 @@ export function ensureArray(x: AnyVal): RawArray {
 }
 export function has(obj: RawObject, prop: string): boolean {
   return !!obj && (Object.prototype.hasOwnProperty.call(obj, prop) as boolean);
-}
-export const keys = Object.keys;
-
-/**
- * Iterate over an array or object
- * @param  {Array|Object} obj An object-like value
- * @param  {Function} fn The callback to run per item
- * @param  {*}   ctx  The object to use a context
- * @return {void}
- */
-export function each(obj: RawObject | RawArray, fn: Callback<AnyVal>): void {
-  if (obj instanceof Array) {
-    const arr = obj;
-    for (let i = 0, len = arr.length; i < len; i++) {
-      if (fn(arr[i], i) === false) break;
-    }
-  } else {
-    const arr = keys(obj);
-    for (let i = 0, len = arr.length; i < len; i++) {
-      fn(obj[arr[i]], arr[i]);
-    }
-  }
 }
 
 /**
@@ -217,7 +195,7 @@ export function each(obj: RawObject | RawArray, fn: Callback<AnyVal>): void {
  */
 export function objectMap(obj: RawObject, fn: Callback<AnyVal>): RawObject {
   const o = {};
-  const objKeys = keys(obj);
+  const objKeys = Object.keys(obj);
   for (let i = 0; i < objKeys.length; i++) {
     const k = objKeys[i];
     o[k] = fn(obj[k], k);
@@ -405,8 +383,8 @@ export function isEqual(a: AnyVal, b: AnyVal): boolean {
       into(rhs, ys);
     } else if (nativeType === JsType.OBJECT) {
       // deep compare objects
-      const ka = keys(a);
-      const kb = keys(b);
+      const ka = Object.keys(a);
+      const kb = Object.keys(b);
 
       // check length of keys early
       if (ka.length !== kb.length) return false;
@@ -445,13 +423,13 @@ export function unique(
 ): RawArray {
   const h = {};
   const arr = [];
-  each(xs, (item) => {
+  for (const item of xs) {
     const k = hashCode(item, customHashFunction);
     if (!has(h, k)) {
       arr.push(item);
       h[k] = 0;
     }
-  });
+  }
   return arr;
 }
 
@@ -482,7 +460,7 @@ function encode(value: AnyVal): string {
   }
   // default case
   const prefix = type === JsType.OBJECT ? "" : `${getType(value)}`;
-  const objKeys = keys(value);
+  const objKeys = Object.keys(value);
   objKeys.sort();
   return (
     `${prefix}{` +
@@ -582,7 +560,7 @@ export function sortBy(
 export function groupBy(
   collection: RawArray,
   keyFn: Callback<AnyVal>,
-  customHashFunction: HashFunction
+  hashFunction: HashFunction
 ): { keys: RawArray; groups: RawArray } {
   const result = {
     keys: new Array<AnyVal>(),
@@ -591,9 +569,9 @@ export function groupBy(
 
   const lookup: Record<string, number> = {};
 
-  each(collection, (obj) => {
+  for (const obj of collection) {
     const key = keyFn(obj);
-    const hash = hashCode(key, customHashFunction);
+    const hash = hashCode(key, hashFunction);
     let index = -1;
 
     if (lookup[hash] === undefined) {
@@ -605,7 +583,7 @@ export function groupBy(
 
     index = lookup[hash];
     result.groups[index].push(obj);
-  });
+  }
 
   return result;
 }
@@ -638,7 +616,7 @@ export function into(target: Container, ...rest: Array<Container>): Container {
   } else if (isObject(target)) {
     // merge objects. same behaviour as Object.assign
     return rest.filter(isObjectLike).reduce((acc, item) => {
-      each(item, (v, k) => (acc[k as string] = v));
+      Object.assign(acc, item);
       return acc;
     }, target);
   }
@@ -785,7 +763,7 @@ export function resolveGraph(
       result = [result];
     } else {
       result = [];
-      each(obj, (item) => {
+      for (const item of obj) {
         value = resolveGraph(item as Container, selector, options);
         if (options.preserveMissing) {
           if (value === undefined) {
@@ -795,7 +773,7 @@ export function resolveGraph(
         } else if (value !== undefined) {
           (result as RawArray).push(value);
         }
-      });
+      }
     }
   } else {
     value = getValue(obj, key);
@@ -919,7 +897,7 @@ export function normalize(expr: AnyVal): AnyVal {
   // normalize object expression. using ObjectLike handles custom types
   if (isObjectLike(expr)) {
     // no valid query operator found, so we do simple comparison
-    if (!keys(expr).some(isOperator)) {
+    if (!Object.keys(expr).some(isOperator)) {
       return { $eq: expr };
     }
 

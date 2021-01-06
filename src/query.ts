@@ -6,7 +6,6 @@ import {
   assert,
   Callback,
   Collection,
-  each,
   inArray,
   isObject,
   isOperator,
@@ -38,7 +37,7 @@ export class Query {
 
     let whereOperator: { field: string; expr: AnyVal };
 
-    each(this.__criteria, (expr, field: string) => {
+    for (const [field, expr] of Object.entries(this.__criteria)) {
       if ("$where" === field) {
         whereOperator = { field: field, expr: expr };
       } else if ("$expr" === field) {
@@ -48,10 +47,9 @@ export class Query {
       } else {
         // normalize expression
         assert(!isOperator(field), `unknown top level operator: ${field}`);
-        expr = normalize(expr);
-        each(expr as RawObject, (val: AnyVal, operator: string) => {
+        for (const [operator, val] of Object.entries(normalize(expr))) {
           this._processOperator(field, operator, val);
-        });
+        }
       }
 
       if (isObject(whereOperator)) {
@@ -61,7 +59,7 @@ export class Query {
           whereOperator.expr
         );
       }
-    });
+    }
   }
 
   _processOperator(field: string, operator: string, value: AnyVal) {

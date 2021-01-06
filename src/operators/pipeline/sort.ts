@@ -4,13 +4,11 @@ import {
   AnyVal,
   Comparator,
   compare,
-  each,
   groupBy,
   into,
   isEmpty,
   isObject,
   isString,
-  keys,
   RawArray,
   RawObject,
   resolve,
@@ -42,9 +40,9 @@ export function $sort(
   }
 
   return collection.transform((coll: RawArray) => {
-    const modifiers = keys(sortKeys);
+    const modifiers = Object.keys(sortKeys);
 
-    each(modifiers.reverse(), (key: string) => {
+    for (const key of modifiers.reverse()) {
       const grouped = groupBy(
         coll,
         (obj: RawObject) => resolve(obj, key),
@@ -63,10 +61,10 @@ export function $sort(
 
       if (sortKeys[key] === -1) indexKeys.reverse();
       coll = [];
-      each(indexKeys, (k: string) =>
-        into(coll, grouped.groups[sortedIndex[k]] as RawArray)
-      );
-    });
+      for (const k of indexKeys) {
+        into(coll, grouped.groups[sortedIndex[k as string]] as RawArray);
+      }
+    }
 
     return coll;
   });

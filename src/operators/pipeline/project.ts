@@ -4,7 +4,6 @@ import {
   AnyVal,
   assert,
   cloneDeep,
-  each,
   ensureArray,
   filterMissing,
   has,
@@ -16,7 +15,6 @@ import {
   isObject,
   isOperator,
   isString,
-  keys,
   merge,
   notInArray,
   RawObject,
@@ -42,7 +40,7 @@ export function $project(
   if (isEmpty(expr)) return collection;
 
   // result collection
-  let expressionKeys = keys(expr);
+  let expressionKeys = Object.keys(expr);
   let idOnlyExcluded = false;
 
   // validate inclusion and exclusion
@@ -116,7 +114,7 @@ function processObject(
       });
     } else if (isObject(subExpr)) {
       const subExprObj = subExpr as RawObject;
-      const subExprKeys = keys(subExpr);
+      const subExprKeys = Object.keys(subExpr);
       const operator = subExprKeys.length == 1 ? subExprKeys[0] : null;
 
       // first try a projection operator
@@ -200,7 +198,9 @@ function processObject(
     newObj = into({}, obj, newObj);
     if (dropKeys.length > 0) {
       newObj = cloneDeep(newObj);
-      each(dropKeys, (k: string) => removeValue(newObj, k));
+      for (const k of dropKeys) {
+        removeValue(newObj, k);
+      }
     }
   }
 
@@ -214,7 +214,7 @@ function processObject(
  */
 function validateExpression(expr: RawObject, options?: Options): void {
   const check = [false, false];
-  each(expr, (v, k) => {
+  for (const [k, v] of Object.entries(expr)) {
     if (k === options.idKey) return;
     if (v === 0 || v === false) {
       check[0] = true;
@@ -225,5 +225,5 @@ function validateExpression(expr: RawObject, options?: Options): void {
       !(check[0] && check[1]),
       "Projection cannot have a mix of inclusion and exclusion."
     );
-  });
+  }
 }

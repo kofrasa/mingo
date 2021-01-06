@@ -1,7 +1,7 @@
 // Query Evaluation Operators: https://docs.mongodb.com/manual/reference/operator/query-evaluation/
 
 import { Options } from "../../../core";
-import { Callback, isFunction } from "../../../util";
+import { AnyVal, Callback, isFunction } from "../../../util";
 
 /* eslint-disable */
 
@@ -14,7 +14,7 @@ import { Callback, isFunction } from "../../../util";
  */
 export function $where(
   selector: string,
-  value: any,
+  value: AnyVal,
   options?: Options
 ): Callback<boolean> {
   let f: Function;

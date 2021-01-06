@@ -4,7 +4,6 @@ import {
   Callback,
   cloneDeep,
   Container,
-  each,
   has,
   HashFunction,
   into,
@@ -13,7 +12,6 @@ import {
   isObjectLike,
   isOperator,
   isString,
-  keys,
   RawArray,
   RawObject,
   resolve,
@@ -67,11 +65,13 @@ export enum OperatorType {
 }
 
 // operator definitions
-const OPERATORS: Record<string, Record<string, Callback<AnyVal>>> = {};
-
-each(OperatorType, (cls: OperatorType) => {
-  OPERATORS[cls] = {};
-});
+const OPERATORS: Record<OperatorType, Record<string, Callback<AnyVal>>> = {
+  [OperatorType.ACCUMULATOR]: {},
+  [OperatorType.EXPRESSION]: {},
+  [OperatorType.PIPELINE]: {},
+  [OperatorType.PROJECTION]: {},
+  [OperatorType.QUERY]: {},
+};
 
 export interface OperatorMap {
   [key: string]: Callback<AnyVal>;
@@ -81,12 +81,12 @@ export interface OperatorMap {
  * Validates the object collection of operators
  */
 function validateOperators(operators: OperatorMap): void {
-  each(operators, (v: Callback<AnyVal>, k: string) => {
+  for (const [k, v] of Object.entries(operators)) {
     assert(
       v instanceof Function && isOperator(k),
       "invalid operator specified"
     );
-  });
+  }
 }
 
 /**
@@ -127,17 +127,17 @@ export function addOperators(
   validateOperators(newOperators);
 
   // check for existing operators
-  each(newOperators, (_, op: string) => {
+  for (const [op, _] of Object.entries(newOperators)) {
     const call = getOperator(cls, op);
     assert(!call, `${op} already exists for '${cls}' operators`);
-  });
+  }
 
   const wrapped: Record<string, Callback<AnyVal>> = {};
 
   switch (cls) {
     case OperatorType.QUERY:
-      each(newOperators, (fn: QueryOperator, op: string) => {
-        fn = fn.bind(newOperators) as QueryOperator;
+      for (const [op, f] of Object.entries(newOperators)) {
+        const fn = f.bind(newOperators) as QueryOperator;
         wrapped[op] = (selector: string, value: AnyVal, options: Options) => (
           obj: RawObject
         ): boolean => {
@@ -145,11 +145,11 @@ export function addOperators(
           const lhs = resolve(obj, selector, { unwrapArray: true });
           return fn(selector, lhs, value, options);
         };
-      });
+      }
       break;
     case OperatorType.PROJECTION:
-      each(newOperators, (fn: ProjectOperator, op: string) => {
-        fn = fn.bind(newOperators) as ProjectOperator;
+      for (const [op, f] of Object.entries(newOperators)) {
+        const fn = f.bind(newOperators) as ProjectOperator;
         wrapped[op] = (
           obj: RawObject,
           expr: AnyVal,
@@ -159,13 +159,13 @@ export function addOperators(
           const lhs = resolve(obj, selector);
           return fn(selector, lhs, expr, options);
         };
-      });
+      }
       break;
     default:
-      each(newOperators, (fn: Callback<AnyVal>, op: string) => {
+      for (const [op, fn] of Object.entries(newOperators)) {
         wrapped[op] = (...args: RawArray) =>
           fn.apply(newOperators, args) as Callback<AnyVal>;
-      });
+      }
   }
 
   // toss the operator salad :)
@@ -209,18 +209,21 @@ const redactVariables: Record<string, Callback<AnyVal>> = {
     let result: Container;
     const newObj = cloneDeep(obj) as Container;
 
-    each(newObj, (current: Container, key: string) => {
+    for (const [key, current] of Object.entries(newObj)) {
       if (isObjectLike(current)) {
         if (current instanceof Array) {
-          result = [];
-          each(current, (elem) => {
+          const array: RawArray = [];
+          for (let elem of current) {
             if (isObject(elem)) {
               elem = redact(elem as RawObject, expr, options);
             }
-            if (!isNil(elem)) (result as RawArray).push(elem as RawObject);
-          });
+            if (!isNil(elem)) {
+              array.push(elem);
+            }
+          }
+          result = array;
         } else {
-          result = redact(current, expr, options) as Container;
+          result = redact(current as RawObject, expr, options) as Container;
         }
 
         if (isNil(result)) {
@@ -229,7 +232,7 @@ const redactVariables: Record<string, Callback<AnyVal>> = {
           newObj[key] = result;
         }
       }
-    });
+    }
     return newObj;
   },
 };
@@ -314,7 +317,6 @@ export function computeValue(
     );
   } else if (isObject(expr)) {
     const result: RawObject = {};
-    // each(expr as RawObject, (val, key: string) => {
     for (const [key, val] of Object.entries(expr as RawObject)) {
       result[key] = computeValue(obj, val, key, options);
       // must run ONLY one aggregate operator per expression
@@ -326,7 +328,7 @@ export function computeValue(
       ) {
         // there should be only one operator
         assert(
-          keys(expr).length === 1,
+          Object.keys(expr).length === 1,
           "Invalid aggregation expression '" + JSON.stringify(expr) + "'"
         );
 

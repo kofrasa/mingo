@@ -1,6 +1,6 @@
 import { getOperator, makeOptions, OperatorType, Options } from "./core";
 import { Iterator, Lazy, Source } from "./lazy";
-import { assert, Collection, each, isEmpty, keys, RawArray } from "./util";
+import { assert, Collection, isEmpty, RawArray } from "./util";
 
 /**
  * Provides functionality for the mongoDB aggregation pipeline
@@ -30,8 +30,8 @@ export class Aggregator {
 
     if (!isEmpty(this.__pipeline)) {
       // run aggregation pipeline
-      each(this.__pipeline, (operator) => {
-        const operatorKeys = keys(operator);
+      for (const operator of this.__pipeline) {
+        const operatorKeys = Object.keys(operator);
         const op = operatorKeys[0];
         const call = getOperator(OperatorType.PIPELINE, op);
         assert(
@@ -39,7 +39,7 @@ export class Aggregator {
           `invalid aggregation operator ${op}`
         );
         iterator = call(iterator, operator[op], this.__options) as Iterator;
-      });
+      }
     }
     return iterator;
   }
