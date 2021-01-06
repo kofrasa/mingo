@@ -1,5 +1,7 @@
 import test from 'tape'
 import mingo from '../lib'
+import { useOperators, OperatorType } from '../lib/core'
+import { $where } from '../lib/operators/query/evaluation/where'
 
 import * as samples from './support'
 
@@ -11,6 +13,8 @@ obj['today'] = new Date()
 function ObjectId(id) {
   this._id = id
 }
+
+useOperators(OperatorType.QUERY, { $where })
 
 test('Comparison, Evaluation, and Element Operators', function (t) {
   let queries = [

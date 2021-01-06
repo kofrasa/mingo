@@ -8,7 +8,7 @@ import * as comparisonOperators from "../operators/expression/comparison";
 import { $limit, $project, $skip, $sort } from "../operators/pipeline";
 import * as projectionOperators from "../operators/projection";
 import * as queryOperators from "../operators/query";
-import { into, RawObject } from "../util";
+import { into } from "../util";
 
 /**
  * Enable basic operators. This includes only query and projection operators

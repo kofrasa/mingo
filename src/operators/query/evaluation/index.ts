@@ -1,4 +1,4 @@
 export * from "./expr";
 export * from "./mod";
 export * from "./regex";
-export * from "./where";
+// $where operator is not included by default
