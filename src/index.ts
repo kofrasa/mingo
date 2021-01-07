@@ -2,6 +2,7 @@
 import "./init/basic";
 
 import { Aggregator } from "./aggregator";
+import { Collection, Options } from "./core";
 import { Cursor } from "./cursor";
 import { Source } from "./lazy";
 import { Query } from "./query";
@@ -17,14 +18,16 @@ export { Query } from "./query";
  * @param collection Array of objects
  * @param criteria Query criteria
  * @param projection Projection criteria
+ * @param options
  * @returns {Cursor} A cursor of results
  */
 export function find(
   collection: Source,
   criteria: RawObject,
-  projection?: RawObject
+  projection?: RawObject,
+  options?: Options
 ): Cursor {
-  return new Query(criteria).find(collection, projection);
+  return new Query(criteria, options).find(collection, projection);
 }
 
 /**
@@ -32,28 +35,32 @@ export function find(
  *
  * @param collection Array of objects
  * @param criteria Query criteria of objects to remove
+ * @param options
  * @returns {Array} New filtered array
  */
 export function remove(
-  collection: RawObject[],
-  criteria: RawObject
+  collection: Collection,
+  criteria: RawObject,
+  options?: Options
 ): RawObject[] {
-  return new Query(criteria).remove(collection);
+  return new Query(criteria, options).remove(collection);
 }
 
 /**
  * Return the result collection after running the aggregation pipeline for the given collection.
  * Shorthand for `(new Aggregator(pipeline, options)).run(collection)`
  *
- * @param {Array} collection Collection or stream of objects
- * @param {Array} pipeline The pipeline operators to use
+ * @param collection Collection or stream of objects
+ * @param pipeline The pipeline operators to use
+ * @param options
  * @returns {Array} New array of results
  */
 export function aggregate(
   collection: Source,
-  pipeline: Array<RawObject>
+  pipeline: Array<RawObject>,
+  options?: Options
 ): RawArray {
-  return new Aggregator(pipeline).run(collection);
+  return new Aggregator(pipeline, options).run(collection);
 }
 
 // default interface
