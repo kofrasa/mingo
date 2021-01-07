@@ -1,5 +1,5 @@
 export * from "./convert";
-export * from "./isNumber"
+export * from "./isNumber";
 export * from "./toBool";
 export * from "./toDate";
 export * from "./toDecimal";

@@ -3,7 +3,7 @@
  */
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, isNil, isNumber, isString, RawObject } from "../../../util";
+import { AnyVal, isNumber, RawObject } from "../../../util";
 
 /**
  * Checks if the specified expression resolves to a numeric value
@@ -17,5 +17,5 @@ export function $isNumber(
   options?: Options
 ): boolean | null {
   const n = computeValue(obj, expr, null, options);
-  return isNumber(n)
+  return isNumber(n);
 }
