@@ -4,7 +4,6 @@ interface Iteratee {
   action: Action;
   func?: Callback<AnyVal>;
   count?: number;
-  // value: AnyVal;
 }
 
 /**

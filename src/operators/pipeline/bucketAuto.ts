@@ -1,9 +1,8 @@
-import { computeValue, Options } from "../../core";
+import { Collection, computeValue, Options } from "../../core";
 import { Iterator } from "../../lazy";
 import {
   AnyVal,
   assert,
-  Collection,
   has,
   into,
   isNil,

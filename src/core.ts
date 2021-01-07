@@ -17,6 +17,10 @@ import {
   resolve,
 } from "./util";
 
+/** Represents an array of documents */
+export type Collection = Array<RawObject>;
+
+/** Specification for collation options */
 export interface CollationSpec {
   readonly locale: string;
   readonly caseLevel?: boolean;

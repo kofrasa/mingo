@@ -1,10 +1,9 @@
 import { Aggregator } from "./aggregator";
-import { CollationSpec, Options } from "./core";
+import { CollationSpec, Collection, Options } from "./core";
 import { Iterator, Lazy, Source } from "./lazy";
 import {
   AnyVal,
   Callback,
-  Collection,
   into,
   isObject,
   Predicate,

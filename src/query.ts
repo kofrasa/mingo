@@ -1,11 +1,16 @@
-import { getOperator, makeOptions, OperatorType, Options } from "./core";
+import {
+  Collection,
+  getOperator,
+  makeOptions,
+  OperatorType,
+  Options,
+} from "./core";
 import { Cursor } from "./cursor";
 import { Source } from "./lazy";
 import {
   AnyVal,
   assert,
   Callback,
-  Collection,
   inArray,
   isObject,
   isOperator,

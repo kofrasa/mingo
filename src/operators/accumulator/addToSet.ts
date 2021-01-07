@@ -1,5 +1,5 @@
-import { Options } from "../../core";
-import { AnyVal, Collection, unique } from "../../util";
+import { Collection, Options } from "../../core";
+import { AnyVal, unique } from "../../util";
 import { $push } from "./push";
 
 /**

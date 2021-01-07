@@ -1,5 +1,5 @@
-import { computeValue, Options } from "../../core";
-import { AnyVal, Collection } from "../../util";
+import { Collection, computeValue, Options } from "../../core";
+import { AnyVal } from "../../util";
 
 /**
  * Returns the first value in a group.

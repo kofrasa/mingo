@@ -1,5 +1,5 @@
-import { Options } from "../../core";
-import { AnyVal, Collection, isNumber } from "../../util";
+import { Collection, Options } from "../../core";
+import { AnyVal, isNumber } from "../../util";
 import { stddev } from "./_internal";
 import { $push } from "./push";
 

@@ -3,8 +3,9 @@ import "./init/basic";
 
 import { Aggregator } from "./aggregator";
 import { Cursor } from "./cursor";
+import { Source } from "./lazy";
 import { Query } from "./query";
-import { Collection, RawArray, RawObject } from "./util";
+import { RawArray, RawObject } from "./util";
 
 export { Aggregator } from "./aggregator";
 export { Query } from "./query";
@@ -19,7 +20,7 @@ export { Query } from "./query";
  * @returns {Cursor} A cursor of results
  */
 export function find(
-  collection: Collection,
+  collection: Source,
   criteria: RawObject,
   projection?: RawObject
 ): Cursor {
@@ -49,8 +50,8 @@ export function remove(
  * @returns {Array} New array of results
  */
 export function aggregate(
-  collection: Collection,
-  pipeline: Collection
+  collection: Source,
+  pipeline: Array<RawObject>
 ): RawArray {
   return new Aggregator(pipeline).run(collection);
 }

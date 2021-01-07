@@ -5,7 +5,6 @@
 export type AnyVal = unknown;
 export type RawObject = Record<string, AnyVal>;
 export type RawArray = Array<AnyVal>;
-export type Collection = Array<RawObject>;
 export type Container = RawObject | RawArray;
 
 /**
