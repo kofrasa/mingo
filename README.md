@@ -64,6 +64,10 @@ import mingo from 'mingo'
 const mingo = require('mingo')
 ```
 
+### Change in 4.x.x
+
+The `$where` operator is not loaded by default and must be explicitly registered if required. See [documentation](https://docs.mongodb.com/manual/reference/operator/query/where/index.html) for preferred alternatives.
+
 ### Changes in 3.0.0
 
 #### Default exports and operators
