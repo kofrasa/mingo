@@ -85,13 +85,13 @@
 					<a name="_lookup" class="tsd-anchor"></a>
 					<h3>$lookup</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
-						<li class="tsd-signature tsd-kind-icon">$lookup<span class="tsd-signature-symbol">(</span>collection<span class="tsd-signature-symbol">: </span><a href="../classes/_lazy_.iterator.html" class="tsd-signature-type">Iterator</a>, expr<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">{ </span>as<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>foreignField<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>from<span class="tsd-signature-symbol">: </span><a href="_core_.html#collection" class="tsd-signature-type">Collection</a><span class="tsd-signature-symbol">; </span>localField<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> }</span>, options<span class="tsd-signature-symbol">?: </span><a href="../interfaces/_core_.options.html" class="tsd-signature-type">Options</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/_lazy_.iterator.html" class="tsd-signature-type">Iterator</a></li>
+						<li class="tsd-signature tsd-kind-icon">$lookup<span class="tsd-signature-symbol">(</span>collection<span class="tsd-signature-symbol">: </span><a href="../classes/_lazy_.iterator.html" class="tsd-signature-type">Iterator</a>, expr<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">{ </span>as<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>foreignField<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>from<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><a href="_core_.html#collection" class="tsd-signature-type">Collection</a><span class="tsd-signature-symbol">; </span>localField<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> }</span>, options<span class="tsd-signature-symbol">?: </span><a href="../interfaces/_core_.options.html" class="tsd-signature-type">Options</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/_lazy_.iterator.html" class="tsd-signature-type">Iterator</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/917ea15/src/operators/pipeline/lookup.ts#L12">src/operators/pipeline/lookup.ts:12</a></li>
+									<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/2dbb1d0/src/operators/pipeline/lookup.ts#L20">src/operators/pipeline/lookup.ts:20</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -105,7 +105,7 @@
 									<h5>collection: <a href="../classes/_lazy_.iterator.html" class="tsd-signature-type">Iterator</a></h5>
 								</li>
 								<li>
-									<h5>expr: <span class="tsd-signature-symbol">{ </span>as<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>foreignField<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>from<span class="tsd-signature-symbol">: </span><a href="_core_.html#collection" class="tsd-signature-type">Collection</a><span class="tsd-signature-symbol">; </span>localField<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> }</span></h5>
+									<h5>expr: <span class="tsd-signature-symbol">{ </span>as<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>foreignField<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>from<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><a href="_core_.html#collection" class="tsd-signature-type">Collection</a><span class="tsd-signature-symbol">; </span>localField<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> }</span></h5>
 									<ul class="tsd-parameters">
 										<li class="tsd-parameter">
 											<h5>as<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></h5>
@@ -114,7 +114,7 @@
 											<h5>foreign<wbr>Field<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></h5>
 										</li>
 										<li class="tsd-parameter">
-											<h5>from<span class="tsd-signature-symbol">: </span><a href="_core_.html#collection" class="tsd-signature-type">Collection</a></h5>
+											<h5>from<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><a href="_core_.html#collection" class="tsd-signature-type">Collection</a></h5>
 										</li>
 										<li class="tsd-parameter">
 											<h5>local<wbr>Field<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></h5>

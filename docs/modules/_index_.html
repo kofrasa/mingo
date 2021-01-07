@@ -107,13 +107,13 @@
 					<a name="aggregate" class="tsd-anchor"></a>
 					<h3>aggregate</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
-						<li class="tsd-signature tsd-kind-icon">aggregate<span class="tsd-signature-symbol">(</span>collection<span class="tsd-signature-symbol">: </span><a href="_lazy_.html#source" class="tsd-signature-type">Source</a>, pipeline<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><a href="_util_.html#rawobject" class="tsd-signature-type">RawObject</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_util_.html#rawarray" class="tsd-signature-type">RawArray</a></li>
+						<li class="tsd-signature tsd-kind-icon">aggregate<span class="tsd-signature-symbol">(</span>collection<span class="tsd-signature-symbol">: </span><a href="_lazy_.html#source" class="tsd-signature-type">Source</a>, pipeline<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><a href="_util_.html#rawobject" class="tsd-signature-type">RawObject</a><span class="tsd-signature-symbol">&gt;</span>, options<span class="tsd-signature-symbol">?: </span><a href="../interfaces/_core_.options.html" class="tsd-signature-type">Options</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_util_.html#rawarray" class="tsd-signature-type">RawArray</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/917ea15/src/index.ts#L52">src/index.ts:52</a></li>
+									<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/2dbb1d0/src/index.ts#L58">src/index.ts:58</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -136,6 +136,9 @@
 										<p>The pipeline operators to use</p>
 									</div>
 								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <a href="../interfaces/_core_.options.html" class="tsd-signature-type">Options</a></h5>
+								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="_util_.html#rawarray" class="tsd-signature-type">RawArray</a></h4>
 							<p>New array of results</p>
@@ -146,13 +149,13 @@
 					<a name="find" class="tsd-anchor"></a>
 					<h3>find</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
-						<li class="tsd-signature tsd-kind-icon">find<span class="tsd-signature-symbol">(</span>collection<span class="tsd-signature-symbol">: </span><a href="_lazy_.html#source" class="tsd-signature-type">Source</a>, criteria<span class="tsd-signature-symbol">: </span><a href="_util_.html#rawobject" class="tsd-signature-type">RawObject</a>, projection<span class="tsd-signature-symbol">?: </span><a href="_util_.html#rawobject" class="tsd-signature-type">RawObject</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/_cursor_.cursor.html" class="tsd-signature-type">Cursor</a></li>
+						<li class="tsd-signature tsd-kind-icon">find<span class="tsd-signature-symbol">(</span>collection<span class="tsd-signature-symbol">: </span><a href="_lazy_.html#source" class="tsd-signature-type">Source</a>, criteria<span class="tsd-signature-symbol">: </span><a href="_util_.html#rawobject" class="tsd-signature-type">RawObject</a>, projection<span class="tsd-signature-symbol">?: </span><a href="_util_.html#rawobject" class="tsd-signature-type">RawObject</a>, options<span class="tsd-signature-symbol">?: </span><a href="../interfaces/_core_.options.html" class="tsd-signature-type">Options</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/_cursor_.cursor.html" class="tsd-signature-type">Cursor</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/917ea15/src/index.ts#L22">src/index.ts:22</a></li>
+									<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/2dbb1d0/src/index.ts#L24">src/index.ts:24</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -181,6 +184,9 @@
 										<p>Projection criteria</p>
 									</div>
 								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <a href="../interfaces/_core_.options.html" class="tsd-signature-type">Options</a></h5>
+								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="../classes/_cursor_.cursor.html" class="tsd-signature-type">Cursor</a></h4>
 							<p>A cursor of results</p>
@@ -191,13 +197,13 @@
 					<a name="remove" class="tsd-anchor"></a>
 					<h3>remove</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
-						<li class="tsd-signature tsd-kind-icon">remove<span class="tsd-signature-symbol">(</span>collection<span class="tsd-signature-symbol">: </span><a href="_util_.html#rawobject" class="tsd-signature-type">RawObject</a><span class="tsd-signature-symbol">[]</span>, criteria<span class="tsd-signature-symbol">: </span><a href="_util_.html#rawobject" class="tsd-signature-type">RawObject</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_util_.html#rawobject" class="tsd-signature-type">RawObject</a><span class="tsd-signature-symbol">[]</span></li>
+						<li class="tsd-signature tsd-kind-icon">remove<span class="tsd-signature-symbol">(</span>collection<span class="tsd-signature-symbol">: </span><a href="_core_.html#collection" class="tsd-signature-type">Collection</a>, criteria<span class="tsd-signature-symbol">: </span><a href="_util_.html#rawobject" class="tsd-signature-type">RawObject</a>, options<span class="tsd-signature-symbol">?: </span><a href="../interfaces/_core_.options.html" class="tsd-signature-type">Options</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_util_.html#rawobject" class="tsd-signature-type">RawObject</a><span class="tsd-signature-symbol">[]</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/917ea15/src/index.ts#L37">src/index.ts:37</a></li>
+									<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/2dbb1d0/src/index.ts#L41">src/index.ts:41</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -208,7 +214,7 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>collection: <a href="_util_.html#rawobject" class="tsd-signature-type">RawObject</a><span class="tsd-signature-symbol">[]</span></h5>
+									<h5>collection: <a href="_core_.html#collection" class="tsd-signature-type">Collection</a></h5>
 									<div class="tsd-comment tsd-typography">
 										<p>Array of objects</p>
 									</div>
@@ -218,6 +224,9 @@
 									<div class="tsd-comment tsd-typography">
 										<p>Query criteria of objects to remove</p>
 									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <a href="../interfaces/_core_.options.html" class="tsd-signature-type">Options</a></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="_util_.html#rawobject" class="tsd-signature-type">RawObject</a><span class="tsd-signature-symbol">[]</span></h4>
