@@ -418,12 +418,12 @@ export function isEqual(a: AnyVal, b: AnyVal): boolean {
  */
 export function unique(
   xs: RawArray,
-  customHashFunction: HashFunction
+  hashFunction: HashFunction
 ): RawArray {
   const h = {};
   const arr = [];
   for (const item of xs) {
-    const k = hashCode(item, customHashFunction);
+    const k = hashCode(item, hashFunction);
     if (!has(h, k)) {
       arr.push(item);
       h[k] = 0;
@@ -633,11 +633,11 @@ export function into(target: Container, ...rest: Array<Container>): Container {
  */
 export function memoize(
   fn: Callback<AnyVal>,
-  customHashFunction: HashFunction
+  hashFunction: HashFunction
 ): Callback<AnyVal> {
   return ((memo: RawObject) => {
     return (...args: RawArray): AnyVal => {
-      const key = hashCode(args, customHashFunction);
+      const key = hashCode(args, hashFunction);
       if (!has(memo, key)) {
         memo[key] = fn.apply(this, args) as AnyVal;
       }
