@@ -165,7 +165,7 @@ export class Cursor {
    * Applies a JavaScript function for every document in a cursor.
    * @param callback
    */
-  forEach(callback: Callback<AnyVal>) {
+  forEach(callback: Callback<AnyVal>): void {
     this._fetch().each(callback);
   }
 }

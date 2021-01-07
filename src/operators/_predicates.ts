@@ -59,7 +59,9 @@ export function createQueryOperator(
  *
  * @param f Predicate function
  */
-export function createExpressionOperator(f: Predicate<AnyVal>) {
+export function createExpressionOperator(
+  f: Predicate<AnyVal>
+): Callback<AnyVal> {
   return (obj: RawObject, expr: AnyVal, options?: Options) => {
     const args = computeValue(obj, expr, null, options) as RawArray;
     return f(...args);

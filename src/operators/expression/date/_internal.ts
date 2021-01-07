@@ -92,7 +92,7 @@ export function formatTimezone(tz: Timezone): string {
  * @param d Date object
  * @param tz Timezone
  */
-export function adjustDate(d: Date, tz: Timezone) {
+export function adjustDate(d: Date, tz: Timezone): void {
   const sign = tz.hour < 0 ? -1 : 1;
   d.setUTCHours(d.getUTCHours() + tz.hour);
   d.setUTCMinutes(d.getUTCMinutes() + sign * tz.minute);

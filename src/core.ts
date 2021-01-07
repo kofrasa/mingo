@@ -121,7 +121,7 @@ export function getOperator(
 export function addOperators(
   cls: OperatorType,
   operatorFn: Callback<OperatorMap>
-) {
+): void {
   const newOperators = operatorFn({ computeValue, resolve });
 
   validateOperators(newOperators);
@@ -171,6 +171,8 @@ export function addOperators(
   // toss the operator salad :)
   useOperators(cls, wrapped);
 }
+
+/* eslint-disable unused-imports/no-unused-vars-ts */
 
 /**
  * Implementation of system variables
@@ -236,6 +238,7 @@ const redactVariables: Record<string, Callback<AnyVal>> = {
     return newObj;
   },
 };
+/* eslint-enable unused-imports/no-unused-vars-ts */
 
 // options to core functions computeValue() and redact()
 interface ComputeOptions extends Options {
