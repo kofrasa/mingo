@@ -1,15 +1,16 @@
 # Changelog
 
-## 4.0.0 / 2021-01-xx
+## 4.0.0 / 2021-01-07
 
 * **Features**
-  * Added custom hash function support
+  * Added option `hashFunction` to enable custom hash functions
   * Added `$unset` pipeline operator
   * Added `$isNumber` expression operator
-  * Removed `$where` operator from default query operators. Fixes [#155](https://github.com/kofrasa/mingo/issues/155)
-* **Bug Fixes**
+  * Added option `collectionResolver` to resolve collections from names for use in supported operators. Closes [#150](https://github.com/kofrasa/mingo/issues/150)
+  * Removed `$where` operator from default query operators included at load time. Closes [#155](https://github.com/kofrasa/mingo/issues/155)
+* **Fixes**
   * Support object type names with integer characters
-* **Improvements**
+* **Other**
   * Improved type annotations
   * Added ES lint to ensure code quality
   * Added Prettier to maintain consistent code format
