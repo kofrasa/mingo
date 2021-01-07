@@ -739,7 +739,7 @@ export function resolveGraph(
   obj: Container,
   selector: string,
   options?: ResolveOptions
-): AnyVal {
+): Container {
   // options
   if (options === undefined) {
     options = { preserveMissing: false };
@@ -785,7 +785,7 @@ export function resolveGraph(
     result[key] = value;
   }
 
-  return result;
+  return result as Container;
 }
 
 /**
@@ -863,10 +863,26 @@ export function setValue(
   );
 }
 
+/**
+ * Removes an element from the container.
+ * If the selector resolves to an array and the leaf is a non-numeric key,
+ * the remove operation will be performed on objects of the array.
+ *
+ * @param obj {Container} object or array
+ * @param selector {String} dot separated path to element to remove
+ */
 export function removeValue(obj: Container, selector: string): void {
   traverse(obj, selector, (item: AnyVal, key: string) => {
-    if (item instanceof Array && /^\d+$/.test(key)) {
-      item.splice(parseInt(key), 1);
+    if (item instanceof Array) {
+      if (/^\d+$/.test(key)) {
+        item.splice(parseInt(key), 1);
+      } else {
+        for (const elem of item) {
+          if (isObject(elem)) {
+            delete (elem as RawObject)[key];
+          }
+        }
+      }
     } else if (isObject(item)) {
       delete item[key];
     }

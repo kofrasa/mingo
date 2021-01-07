@@ -88,7 +88,7 @@ function processObject(
     dropKeys.push(options.idKey);
   }
 
-  expressionKeys.forEach((key: string) => {
+  for (const key of expressionKeys) {
     // final computed value of the key
     let value: AnyVal = undefined;
 
@@ -161,7 +161,7 @@ function processObject(
       }
     } else {
       dropKeys.push(key);
-      return;
+      continue;
     }
 
     // get value with object graph
@@ -184,7 +184,7 @@ function processObject(
         setValue(newObj, key, value);
       }
     }
-  });
+  }
 
   // filter out all missing values preserved to support correct merging
   filterMissing(newObj);

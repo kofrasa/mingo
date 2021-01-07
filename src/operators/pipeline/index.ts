@@ -21,4 +21,5 @@ export * from "./set";
 export * from "./skip";
 export * from "./sort";
 export * from "./sortByCount";
+export * from "./unset";
 export * from "./unwind";
