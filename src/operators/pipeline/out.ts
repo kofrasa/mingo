@@ -1,6 +1,6 @@
-import { Options } from "../../core";
+import { Collection, Options } from "../../core";
 import { Iterator } from "../../lazy";
-import { assert, isArray, RawArray, RawObject } from "../../util";
+import { assert, isString, RawObject } from "../../util";
 
 /**
  * Takes the documents returned by the aggregation pipeline and writes them to a specified collection.
@@ -15,12 +15,16 @@ import { assert, isArray, RawArray, RawObject } from "../../util";
  */
 export function $out(
   collection: Iterator,
-  expr: RawArray,
+  expr: string | Collection,
   options?: Options
 ): Iterator {
-  assert(isArray(expr), "$out expression must be an array");
+  const outputColl: Collection = isString(expr)
+    ? options?.collectionResolver(expr)
+    : expr;
+  assert(outputColl instanceof Array, `expression must resolve to an array`);
+
   return collection.map((o: RawObject) => {
-    expr.push(o);
+    outputColl.push(o);
     return o; // passthrough
   });
 }

@@ -11,10 +11,12 @@ test('$out pipeline operator', function (t) {
   ]
 
   let output = []
-  let result = mingo.aggregate(data, [
+  mingo.aggregate(data, [
     { $group : { _id : "$author", books: { $push: "$title" } } },
     { $out : output }
-  ])
+  ], {
+    collectionResolver: (_) => output
+  })
 
   t.deepEqual(output, [
     { "_id" : "Dante", "books" : [ "The Banquet", "Divine Comedy", "Eclogues" ] },

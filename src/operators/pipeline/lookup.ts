@@ -1,6 +1,14 @@
 import { Collection, Options } from "../../core";
 import { Iterator } from "../../lazy";
-import { hashCode, into, RawArray, RawObject, resolve } from "../../util";
+import {
+  assert,
+  hashCode,
+  into,
+  isString,
+  RawArray,
+  RawObject,
+  resolve,
+} from "../../util";
 
 /**
  * Performs a left outer join to another collection in the same database to filter in documents from the “joined” collection for processing.
@@ -12,16 +20,21 @@ import { hashCode, into, RawArray, RawObject, resolve } from "../../util";
 export function $lookup(
   collection: Iterator,
   expr: {
-    from: Collection;
+    from: string | Collection;
     localField: string;
     foreignField: string;
     as: string;
   },
   options?: Options
 ): Iterator {
+  const joinColl = isString(expr.from)
+    ? options?.collectionResolver(expr.from)
+    : expr.from;
+  assert(joinColl instanceof Array, `'from' field must resolve to an array`);
+
   const hash: Record<string, RawArray> = {};
 
-  for (const obj of expr.from) {
+  for (const obj of joinColl) {
     const k = hashCode(resolve(obj, expr.foreignField), options?.hashFunction);
     hash[k] = hash[k] || [];
     hash[k].push(obj);

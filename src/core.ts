@@ -20,6 +20,13 @@ import {
 /** Represents an array of documents */
 export type Collection = Array<RawObject>;
 
+/**
+ * Resolves the given string to a Collection.
+ * This is useful for operators that require a second collection to use such as $lookup and $out.
+ * The collection is not cached and will be resolved each time it is used.
+ */
+export type CollectionResolver = (name: string) => Collection;
+
 /** Specification for collation options */
 export interface CollationSpec {
   readonly locale: string;
@@ -39,6 +46,7 @@ export interface Options extends RawObject {
   readonly idKey: string;
   readonly collation?: CollationSpec;
   readonly hashFunction?: HashFunction;
+  readonly collectionResolver?: CollectionResolver;
 }
 
 /** Map of operator functions */
