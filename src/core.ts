@@ -41,13 +41,8 @@ export interface Options extends RawObject {
   readonly hashFunction?: HashFunction;
 }
 
-interface QueryOperator {
-  (selector: string, lhs: AnyVal, value: AnyVal, options?: Options): boolean;
-}
-
-interface ProjectOperator {
-  (selector: string, lhs: AnyVal, value: AnyVal, options?: Options): boolean;
-}
+/** Map of operator functions */
+export type OperatorMap = Record<string, Callback<AnyVal>>;
 
 /**
  * Creates an Option from another required keys are initialized
@@ -76,10 +71,6 @@ const OPERATORS: Record<OperatorType, Record<string, Callback<AnyVal>>> = {
   [OperatorType.PROJECTION]: {},
   [OperatorType.QUERY]: {},
 };
-
-export interface OperatorMap {
-  [key: string]: Callback<AnyVal>;
-}
 
 /**
  * Validates the object collection of operators
@@ -141,7 +132,7 @@ export function addOperators(
   switch (cls) {
     case OperatorType.QUERY:
       for (const [op, f] of Object.entries(newOperators)) {
-        const fn = f.bind(newOperators) as QueryOperator;
+        const fn = f.bind(newOperators) as Callback<boolean>;
         wrapped[op] = (selector: string, value: AnyVal, options: Options) => (
           obj: RawObject
         ): boolean => {
@@ -153,13 +144,13 @@ export function addOperators(
       break;
     case OperatorType.PROJECTION:
       for (const [op, f] of Object.entries(newOperators)) {
-        const fn = f.bind(newOperators) as ProjectOperator;
+        const fn = f.bind(newOperators) as Callback<AnyVal>;
         wrapped[op] = (
           obj: RawObject,
           expr: AnyVal,
           selector: string,
           options: Options
-        ) => {
+        ): AnyVal => {
           const lhs = resolve(obj, selector);
           return fn(selector, lhs, expr, options);
         };
@@ -168,7 +159,7 @@ export function addOperators(
     default:
       for (const [op, fn] of Object.entries(newOperators)) {
         wrapped[op] = (...args: RawArray) =>
-          fn.apply(newOperators, args) as Callback<AnyVal>;
+          fn.apply(newOperators, args) as AnyVal;
       }
   }
 
