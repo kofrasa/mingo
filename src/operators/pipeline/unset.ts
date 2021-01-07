@@ -6,8 +6,8 @@ import { $project } from "./project";
 /**
  * Removes/excludes fields from documents.
  *
- * @param collection - An iterator
- * @param expr - expression of fields to exclude
+ * @param collection
+ * @param expr
  * @param options
  * @returns {Iterator}
  */

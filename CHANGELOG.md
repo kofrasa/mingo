@@ -1,336 +1,349 @@
 # Changelog
 
+## 4.0.0 / 2021-01-xx
+
+* **Features**
+  * Added custom hash function support
+  * Added `$unset` pipeline operator
+  * Removed `$where` operator from default query operators. Fixes [#155](https://github.com/kofrasa/mingo/issues/155)
+* **Bug Fixes**
+  * Support object type names with integer characters
+* **Improvements**
+  * Improved type annotations
+  * Added ES lint to ensure code quality
+  * Added Prettier to maintain consistent code format
+
 ## 3.1.0 / 2020-10-23
 
-- Fix `isObject` to enforce plain Javascript objects.
-- Fix `collation` options of `$sort` operator
-- Merge `Config` into `Options` type
-- Pass `Options` to predicate function for comparison operators
-- Replace `createConfig` with `makeOptions`
+* Fix `isObject` to enforce plain Javascript objects.
+* Fix `collation` options of `$sort` operator
+* Merge `Config` into `Options` type
+* Pass `Options` to predicate function for comparison operators
+* Replace `createConfig` with `makeOptions`
 
 ## 3.0.6 / 2020-08-05
 
-- Fix $bucket default and boundaries mutation. Fixes [#147](https://github.com/kofrasa/mingo/issues/147)
-- Handle empty array values to `$not` expression operator.
+* Fix $bucket default and boundaries mutation. Fixes [#147](https://github.com/kofrasa/mingo/issues/147)
+* Handle empty array values to `$not` expression operator.
 
 ## 3.0.5 / 2020-07-20
 
-- Handle non-array values to `$not` expression operator. Fixes [#146](https://github.com/kofrasa/mingo/issues/146)
+* Handle non-array values to `$not` expression operator. Fixes [#146](https://github.com/kofrasa/mingo/issues/146)
 
 ## 3.0.4 / 2020-07-19
 
-- Deprecate `mingo/init` in favour of explicit `mingo/init/basic`.
+* Deprecate `mingo/init` in favour of explicit `mingo/init/basic`.
 
 ## 3.0.3 / 2020-07-16
 
-- Remove `esm` module dependency. Fixes [#145](https://github.com/kofrasa/mingo/issues/145)
+* Remove `esm` module dependency. Fixes [#145](https://github.com/kofrasa/mingo/issues/145)
 
 ## 3.0.2 / 2020-05-22
 
-- `$map` operator operand 'as', should default to `this` if missing. Fixes [#143](https://github.com/kofrasa/mingo/pull/143)
+* `$map` operator operand 'as', should default to `this` if missing. Fixes [#143](https://github.com/kofrasa/mingo/pull/143)
 
 ## 3.0.1 / 2020-04-27
 
-- Throw exception for specifying unregistered operators
-- Fix regression bug in `$elemMatch`. Closes [#139](https://github.com/kofrasa/mingo/issues/139)
+* Throw exception for specifying unregistered operators
+* Fix regression bug in `$elemMatch`. Closes [#139](https://github.com/kofrasa/mingo/issues/139)
 
 ## 3.0.0 / 2020-04-12
 
-- Convert project to Typescript
-- Build ES6 libraries with support for selective import
-- Default export only `Aggregator`, `Query`, `aggregate()`, `find()`, and `remove()`
-- Auto load only Query and Projection operators in main module via `mingo/init`
-- Provide module `mingo/init/system` to auto load all operators
-- Expose library via `esm` dependency to support module imports for ES5
-- Implement type operators `$type`, `$convert`, `$toBool`, `$toDate`, `$toString`, `$toInt`, `$toLong`, `$toDouble`, `$toDecimal`
-- Implement date operators `$dateFromString`, `$dateFromParts`, `dateToParts`.
-- Implement string operators `$trim`, `$rtrim`, `$ltrim`, `$regexFind`, `$regexFindAll`, `$regexMatch`
-- Add timezone support for all date operators
-- Return all date operator results in UTC
-- Split large expression operator groups to file per operator
-- Rename `group` module to `accumulator`
-- Removed `dist/` files. Deferring to consumers to use their own packaging solutions
-- Removed `setup()` function. Replaced by passing in config to `Query` or `Aggregator`.
-- Removed `VERSION` fields
-- Removed `_internal()`
-- Pass only `computeValue` and `resolve` functions to custom operator
-- Deprecate and replace `OP_XXX` constants with enum `OperatorType.XXX`.
-- Removed `CollectionMixin`
-- Removed `Lazy`, `Cursor`, and `addOperators` from default export
-- Support extra options parameter on all operator functions
+* Convert project to Typescript
+* Build ES6 libraries with support for selective import
+* Default export only `Aggregator`, `Query`, `aggregate()`, `find()`, and `remove()`
+* Auto load only Query and Projection operators in main module via `mingo/init`
+* Provide module `mingo/init/system` to auto load all operators
+* Expose library via `esm` dependency to support module imports for ES5
+* Implement type operators `$type`, `$convert`, `$toBool`, `$toDate`, `$toString`, `$toInt`, `$toLong`, `$toDouble`, `$toDecimal`
+* Implement date operators `$dateFromString`, `$dateFromParts`, `dateToParts`.
+* Implement string operators `$trim`, `$rtrim`, `$ltrim`, `$regexFind`, `$regexFindAll`, `$regexMatch`
+* Add timezone support for all date operators
+* Return all date operator results in UTC
+* Split large expression operator groups to file per operator
+* Rename `group` module to `accumulator`
+* Removed `dist/` files. Deferring to consumers to use their own packaging solutions
+* Removed `setup()` function. Replaced by passing in config to `Query` or `Aggregator`.
+* Removed `VERSION` fields
+* Removed `_internal()`
+* Pass only `computeValue` and `resolve` functions to custom operator
+* Deprecate and replace `OP_XXX` constants with enum `OperatorType.XXX`.
+* Removed `CollectionMixin`
+* Removed `Lazy`, `Cursor`, and `addOperators` from default export
+* Support extra options parameter on all operator functions
 
 ## 2.5.2 / 2020-03-17
 
-- Revert to using `dist/mingo.js` as main entry point for package. Fixes [#125](https://github.com/kofrasa/mingo/issues/125)
-- Fix build failures from updated dependencies
+* Revert to using `dist/mingo.js` as main entry point for package. Fixes [#125](https://github.com/kofrasa/mingo/issues/125)
+* Fix build failures from updated dependencies
 
 ## 2.5.1 / 2020-03-16
 
-- Create minified files for previous version
-- Refactored to support tree shaking
+* Create minified files for previous version
+* Refactored to support tree shaking
 
 ## 2.5.0 / 2020-03-08
 
-- Optionally add `Symbol.iterator` support if available in runtime environment. Closes [#124](https://github.com/kofrasa/mingo/issues/124)
-- Allow matching with nested fields in $lookup. Fixes [#123](https://github.com/kofrasa/mingo/issues/123)
-- Add $round operator and support 'place' argument for `$trunc`. Fixes [#121](https://github.com/kofrasa/mingo/issues/121)
-- Support new array fields. Fixes [#119](https://github.com/kofrasa/mingo/issues/119)
-- Handle embedded document exclusions
+* Optionally add `Symbol.iterator` support if available in runtime environment. Closes [#124](https://github.com/kofrasa/mingo/issues/124)
+* Allow matching with nested fields in $lookup. Fixes [#123](https://github.com/kofrasa/mingo/issues/123)
+* Add $round operator and support 'place' argument for `$trunc`. Fixes [#121](https://github.com/kofrasa/mingo/issues/121)
+* Support new array fields. Fixes [#119](https://github.com/kofrasa/mingo/issues/119)
+* Handle embedded document exclusions
 
 ## 2.4.0 / 2019-10-25
 
-- Do not enforce single value for `$facet` aggregation pipeline operations. Fixes #110
+* Do not enforce single value for `$facet` aggregation pipeline operations. Fixes #110
 
 ## 2.3.6 / 2019-10-23
 
-- Add $set as $addFields alias. Fixes #113
-- Fix $group operator idempotency issue. #82 (#114)
-- Use renovateapp for dependency version management
+* Add $set as $addFields alias. Fixes #113
+* Fix $group operator idempotency issue. #82 (#114)
+* Use renovateapp for dependency version management
 
 ## 2.3.5 / 2019-05-04
 
-- Correctly project and merge nested objects with missing keys.
+* Correctly project and merge nested objects with missing keys.
 
 ## 2.3.4 / 2019-05-02
 
-- Properly flatten projected nested objects. Fixes #105
+* Properly flatten projected nested objects. Fixes #105
 
 ## 2.3.3 / 2019-03-20
 
-- Improve sort performance
+* Improve sort performance
 
 ## 2.3.2 / 2019-03-18
 
-- Fix sorting non-string values when collation is enabled.
+* Fix sorting non-string values when collation is enabled.
 
 ## 2.3.1 / 2019-03-13
 
-- Correctly handle subqueries for `$elemMatch`. Fixes #103
+* Correctly handle subqueries for `$elemMatch`. Fixes #103
 
 ## 2.3.0 / 2019-03-12
 
-- Add support for collation on `Cursor` objects. Fixes #100
+* Add support for collation on `Cursor` objects. Fixes #100
 
 ## 2.2.12 / 2019-03-09
 
-- Avoid resolving primitive type operands.
+* Avoid resolving primitive type operands.
 
 ## 2.2.11 / 2019-02-18
 
-- Work around iOS 9 Safari compatibility problem (#98)
-- Fixing typing for aggregator.run, make query optional. (#102)
+* Work around iOS 9 Safari compatibility problem (#98)
+* Fixing typing for aggregator.run, make query optional. (#102)
 
 ## 2.2.10 / 2019-01-04
 
-- Minor cleanup and refactoring
-- Correct changelog date
+* Minor cleanup and refactoring
+* Correct changelog date
 
 ## 2.2.9 / 2019-01-03
 
-- Switch `inArray` and `notInArray` to use `Array.prototype.includes` for performance. Fixes #95
+* Switch `inArray` and `notInArray` to use `Array.prototype.includes` for performance. Fixes #95
 
 ## 2.2.8 / 2018-12-01
 
-- Project all matched elements of nested array correctly. Fixes #93
+* Project all matched elements of nested array correctly. Fixes #93
 
 ## 2.2.7 / 2018-11-30
 
-- Match missing fields correctly with `$exists`
+* Match missing fields correctly with `$exists`
 
 ## 2.2.6 / 2018-11-22
 
-- Update `mergeObjects` to handle more use cases.
+* Update `mergeObjects` to handle more use cases.
 
 ## 2.2.5 / 2018-11-21
 
-- Fix merge objects to project subdocuments correctly. Fixes #91
+* Fix merge objects to project subdocuments correctly. Fixes #91
 
 ## 2.2.4 / 2018-09-09
 
-- Add `$$REMOVE` support to conditionally exclude fields
+* Add `$$REMOVE` support to conditionally exclude fields
 
 ## 2.2.3 / 2018-08-21
 
-- Match undefined fields with `$in: [null]` queries (#85)
+* Match undefined fields with `$in: [null]` queries (#85)
 
 ## 2.2.2 / 2018-04-17
 
-- Support `$unwind` for arrays nested in objects. Fixes [#80](https://github.com/kofrasa/mingo/issues/80)
+* Support `$unwind` for arrays nested in objects. Fixes [#80](https://github.com/kofrasa/mingo/issues/80)
 
 ## 2.2.1 / 2018-04-14
 
-- Added `$expr` operator. Fixes [#79](https://github.com/kofrasa/mingo/issues/79)
+* Added `$expr` operator. Fixes [#79](https://github.com/kofrasa/mingo/issues/79)
 
 ## 2.2.0 / 2018-01-25
 
-- More Performance improvements for lazy evaluation
-- Added `$mergeObjects` operator
-- Change `Lazy` to factory
-- Remove `Lazy` static methods except `isIterator`
+* More Performance improvements for lazy evaluation
+* Added `$mergeObjects` operator
+* Change `Lazy` to factory
+* Remove `Lazy` static methods except `isIterator`
 
 ## 2.1.1 / 2017-12-18
 
-- Use iterator input for Query
-- Don't sort cursor modifiers
+* Use iterator input for Query
+* Don't sort cursor modifiers
 
 ## 2.1.0 / 2017-12-17
 
-- Added new `Lazy` iterator to re-implement `Cursor` and pipeline operators
-- Added `Aggregator.stream` to obtain iterator for stream pipeline results
-- Removed `Cursor` methods `first()` and `last()`
+* Added new `Lazy` iterator to re-implement `Cursor` and pipeline operators
+* Added `Aggregator.stream` to obtain iterator for stream pipeline results
+* Removed `Cursor` methods `first()` and `last()`
 
 ## 2.0.5 / 2017-12-11
 
-- Add typescript declaration. Fixes [#75](https://github.com/kofrasa/mingo/pull/75)
+* Add typescript declaration. Fixes [#75](https://github.com/kofrasa/mingo/pull/75)
 
 ## 2.0.4 / 2017-10-19
 
-- Handle date values in `$add` operator. Fixes [#73](https://github.com/kofrasa/mingo/issues/73)
+* Handle date values in `$add` operator. Fixes [#73](https://github.com/kofrasa/mingo/issues/73)
 
 ## 2.0.3 / 2017-09-25
 
-- Fix `map` so it does not break `cloneDeep`
-- Improve hash function
+* Fix `map` so it does not break `cloneDeep`
+* Improve hash function
 
 ## 2.0.2 / 2017-09-14
 
-- Remove array size constraint on `$concatArrays`. [#64](https://github.com/kofrasa/mingo/issues/64)
-- Filter out empty values from collection. [#65](https://github.com/kofrasa/mingo/issues/65)
-- Fix false positive tests and `$substrBytes`. [#66](https://github.com/kofrasa/mingo/issues/66)
-- `$regex` should matched nested one level deep. [#70](https://github.com/kofrasa/mingo/issues/70)
+* Remove array size constraint on `$concatArrays`. [#64](https://github.com/kofrasa/mingo/issues/64)
+* Filter out empty values from collection. [#65](https://github.com/kofrasa/mingo/issues/65)
+* Fix false positive tests and `$substrBytes`. [#66](https://github.com/kofrasa/mingo/issues/66)
+* `$regex` should matched nested one level deep. [#70](https://github.com/kofrasa/mingo/issues/70)
 
 ## 2.0.1 / 2017-09-07
 
-- Minimize cloning in pipeline operators
-- Return new object for `$lookup` without mutating original. Fixes #59 and #60
-- Make `clone` return shallow clone
-- Provide `cloneDeep` for deep cloning
+* Minimize cloning in pipeline operators
+* Return new object for `$lookup` without mutating original. Fixes #59 and #60
+* Make `clone` return shallow clone
+* Provide `cloneDeep` for deep cloning
 
 ## 2.0.0 / 2017-08-12
 
-- Removed custom polyfills
-- Added `$strLenBytes`, `$strLenCP`, `$substrCP`, `$substrBytes`
-- Fix `$indexOfBytes`
-- Fix `$stdDevSamp`
-- Fix `$in` for aggregation operations
-- Removed max and min cursor methods.
-- Restrict custom query operator type `OP_QUERY` to return boolean only
-- Rename `OP_AGGREGATE` to `OP_EXPRESSION`
-- Update `$unwind` to MongoDB 3.2 features
+* Removed custom polyfills
+* Added `$strLenBytes`, `$strLenCP`, `$substrCP`, `$substrBytes`
+* Fix `$indexOfBytes`
+* Fix `$stdDevSamp`
+* Fix `$in` for aggregation operations
+* Removed max and min cursor methods.
+* Restrict custom query operator type `OP_QUERY` to return boolean only
+* Rename `OP_AGGREGATE` to `OP_EXPRESSION`
+* Update `$unwind` to MongoDB 3.2 features
 
 ## 1.3.3 / 2017-08-02
 
-- Fix `computeValue` not overriding group operator keys after resolving expression
-- Added `$in`, `$objectToArray`, and `$arrayToObject` array aggregation operators
+* Fix `computeValue` not overriding group operator keys after resolving expression
+* Added `$in`, `$objectToArray`, and `$arrayToObject` array aggregation operators
 
 ## 1.3.2 / 2017-07-28
 
-- Restore `setup` function. https://github.com/kofrasa/mingo/issues/56
+* Restore `setup` function. https://github.com/kofrasa/mingo/issues/56
 
 ## 1.3.1 / 2017-07-24
 
-- Replaced core-js because it bloats compiled library by 10K i.e. ~24%
-- Fix #55
+* Replaced core-js because it bloats compiled library by 10K i.e. ~24%
+* Fix #55
 
 ## 1.3.0 / 2017-07-23
 
-- Support ES6 modules
-- Fix matching null and missing values. https://github.com/kofrasa/mingo/issues/54
-- Improve comparing user-defined types
+* Support ES6 modules
+* Fix matching null and missing values. https://github.com/kofrasa/mingo/issues/54
+* Improve comparing user-defined types
 
 ## v1.2.0 / 2017-07-17
 
-- Fix `$where` operator not executed last. https://github.com/kofrasa/mingo/pull/50
-- Fix matching nested arrays. https://github.com/kofrasa/mingo/issues/51
-- Added `$facet` and `$bucket` operators
-- Added `$bucketAuto` operator without granularity support
-- Added string keys for `$type` operator
-- Added Cursor support for [ES2015 Iterator Protocol](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols)
-- Sort null/undefined values to front of sorted result
-- Revert to operator names with format `Mingo.OP_<name>`
+* Fix `$where` operator not executed last. https://github.com/kofrasa/mingo/pull/50
+* Fix matching nested arrays. https://github.com/kofrasa/mingo/issues/51
+* Added `$facet` and `$bucket` operators
+* Added `$bucketAuto` operator without granularity support
+* Added string keys for `$type` operator
+* Added Cursor support for [ES2015 Iterator Protocol](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols)
+* Sort null/undefined values to front of sorted result
+* Revert to operator names with format `Mingo.OP_<name>`
 
 ## v1.1.2 / 2017-03-30
 
-- Optimize `$lookup` implementation
-- Avoid reversing original input to `$reverseArray`
+* Optimize `$lookup` implementation
+* Avoid reversing original input to `$reverseArray`
 
 ## v1.1.1 / 2017-03-12
 
-- Fix incorrect method call for ObjectProto
-- Limit exposed util methods to type checking
+* Fix incorrect method call for ObjectProto
+* Limit exposed util methods to type checking
 
 ## v1.1.0 / 2017-03-11
 
-- Renamed `Mingo.OP_<name>` functions to `Mingo.KEY_<name>`
-- Added pipeline stage operator (`$lookup`)
+* Renamed `Mingo.OP_<name>` functions to `Mingo.KEY_<name>`
+* Added pipeline stage operator (`$lookup`)
 
 ## v1.0.1 / 2017-03-01
 
-- Updated polyfills to fix failing build on older node versions
+* Updated polyfills to fix failing build on older node versions
 
 ## v1.0.0 / 2017-02-28
 
-- Added array aggregation operators
+* Added array aggregation operators
   (`$arrayElemAt`,`$concatArrays`,`$filter`,`$indexOfArray`,`$isArray`,`$range`,`$reverseArray`,`$reduce`,`$slice`,`$zip`)
-- Added string aggregation operators (`$indexOfBytes`,`$split`)
-- Added arithmetic aggregation operators (`$ceil`,`$exp`,`$floor`,`$ln`,`$log`,`$log10`,`$pow`,`$sqrt`,`$trunc`)
-- Added .editorconfig
-- Pass utility functions to custom operator implementation
-- Rename function to retrieve collection id to `idKey` in custom operators
-- Moved support for query projection streaming to a new package [mingo-stream](https://github.com/kofrasa/mingo-stream)
+* Added string aggregation operators (`$indexOfBytes`,`$split`)
+* Added arithmetic aggregation operators (`$ceil`,`$exp`,`$floor`,`$ln`,`$log`,`$log10`,`$pow`,`$sqrt`,`$trunc`)
+* Added .editorconfig
+* Pass utility functions to custom operator implementation
+* Rename function to retrieve collection id to `idKey` in custom operators
+* Moved support for query projection streaming to a new package [mingo-stream](https://github.com/kofrasa/mingo-stream)
 
 ## v0.9.1 / 2017-02-08
 
-- Fix resolving system variables with subpaths. See [issue#41](https://github.com/kofrasa/mingo/issues/41)
+* Fix resolving system variables with subpaths. See [#41](https://github.com/kofrasa/mingo/issues/41)
 
 ## v0.9.0 / 2017-02-06
 
-- Added support for system variables (`$$ROOT`,`$$CURRENT`)
-- Implemented more pipeline operators (`$redact`,`$addFields`,`$sample`,`$sortByCount`,`$count`,`$replaceRoot`)
-- Added `$switch` conditional operator
-- Fixed `$ifNull` conditional operator
-- Allow use of `$in` and `$nin` as aggregation comparison operators
+* Added support for system variables (`$$ROOT`,`$$CURRENT`)
+* Implemented more pipeline operators (`$redact`,`$addFields`,`$sample`,`$sortByCount`,`$count`,`$replaceRoot`)
+* Added `$switch` conditional operator
+* Fixed `$ifNull` conditional operator
+* Allow use of `$in` and `$nin` as aggregation comparison operators
 
 ## v0.8.1 / 2016-12-08
 
-- Fix querying deeply nested nested arrays and object equality matching. See [issue#36](https://github.com/kofrasa/mingo/issues/36)
+* Fix querying deeply nested nested arrays and object equality matching. See [#36](https://github.com/kofrasa/mingo/issues/36)
 
 ## v0.8.0 / 2016-09-26
 
-- Make this library zero-dependent
+* Make this library zero-dependent
 
 ## v0.7.0 / 2016-09-10
 
-- Fix nested projections for objects and arrays. See [issue#25](https://github.com/kofrasa/mingo/issues/25)
+* Fix nested projections for objects and arrays. See [#25](https://github.com/kofrasa/mingo/issues/25)
 
 ## v0.6.5 / 2016-07-04
 
-- Fix incorrect de-duping of Date types in $sort aggregate operator. See [issue#23](https://github.com/kofrasa/mingo/pull/23)
+* Fix incorrect de-duping of Date types in $sort aggregate operator. See [#23](https://github.com/kofrasa/mingo/pull/23)
 
 ## v0.6.4 / 2016-05-19
 
-- Support matching against user-defined types. See [issue#22](https://github.com/kofrasa/mingo/issues/22)
+* Support matching against user-defined types. See [#22](https://github.com/kofrasa/mingo/issues/22)
 
 ## v0.6.3 / 2015-12-27
 
-- Fixed numeric aggregation over undefined values. See [issues#21](https://github.com/kofrasa/mingo/issues/21)
+* Fixed numeric aggregation over undefined values. See [issues#21](https://github.com/kofrasa/mingo/issues/21)
 
 ## v0.6.2 / 2015-11-17
 
-- Fixed erroneous cloning of objects. See [issue#20](https://github.com/kofrasa/mingo/pull/20)
+* Fixed erroneous cloning of objects. See [#20](https://github.com/kofrasa/mingo/pull/20)
 
 ## v0.6.1 / 2015-09-20
 
-- Fixed matching nested array fields without specifying index. See [issue#19](https://github.com/kofrasa/mingo/issues/19)
-- Added `VERSION` global field
+* Fixed matching nested array fields without specifying index. See [#19](https://github.com/kofrasa/mingo/issues/19)
+* Added `VERSION` global field
 
 ## v0.6.0 / 2015-05-28
 
-- Added `$dateToString` aggregation operator
+* Added `$dateToString` aggregation operator
 
 ## v0.5.0 / 2015-04-29
 
-- Added support for extending operators via `Mingo.addOperators`
-- Added `bower.json`
-- Fixed grouping documents by an object key
-- Fixed exclusive select projection not returning correct fields
+* Added support for extending operators via `Mingo.addOperators`
+* Added `bower.json`
+* Fixed grouping documents by an object key
+* Fixed exclusive select projection not returning correct fields
