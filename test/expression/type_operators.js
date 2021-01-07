@@ -80,6 +80,17 @@ support.runTest('Type operators', {
     [ { input: 2, to: "string"}, "2" ],
     [ { input: 1000, to: "string"}, "1000" ],
     [ { input: new Date("2018-03-27T16:58:51.538Z"), to: "string" }, "2018-03-27T16:58:51.538Z" ],
+  ],
+
+  $isNumber: [
+    [-0.1, true],
+    [0, true],
+    [1, true],
+    [1.1, true],
+    ["0", false],
+    [NaN, false],
+    [null, false],
+    [undefined, false],
   ]
 })
 

@@ -5,6 +5,7 @@
 * **Features**
   * Added custom hash function support
   * Added `$unset` pipeline operator
+  * Added `$isNumber` expression operator
   * Removed `$where` operator from default query operators. Fixes [#155](https://github.com/kofrasa/mingo/issues/155)
 * **Bug Fixes**
   * Support object type names with integer characters

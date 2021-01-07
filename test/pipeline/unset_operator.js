@@ -1,5 +1,4 @@
 import * as samples from '../support'
-import '../../lib/init/system'
 
 const books = [
   { "_id" : 1, title: "Antelope Antics", isbn: "0001122223334", author: { last:"An", first: "Auntie" }, copies: [ { warehouse: "A", qty: 5 }, { warehouse: "B", qty: 15 } ] },
