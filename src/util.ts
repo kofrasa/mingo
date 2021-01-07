@@ -416,10 +416,7 @@ export function isEqual(a: AnyVal, b: AnyVal): boolean {
  * @param  {Array} xs The input collection
  * @return {Array}    A new collection with unique values
  */
-export function unique(
-  xs: RawArray,
-  hashFunction: HashFunction
-): RawArray {
+export function unique(xs: RawArray, hashFunction: HashFunction): RawArray {
   const h = {};
   const arr = [];
   for (const item of xs) {
