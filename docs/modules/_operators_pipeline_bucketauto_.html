@@ -70,6 +70,12 @@
 				<h2>Index</h2>
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
+						<section class="tsd-index-section tsd-is-not-exported">
+							<h3>Interfaces</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported"><a href="../interfaces/_operators_pipeline_bucketauto_.boundary.html" class="tsd-kind-icon">Boundary</a></li>
+							</ul>
+						</section>
 						<section class="tsd-index-section ">
 							<h3>Functions</h3>
 							<ul class="tsd-index-list">
@@ -85,13 +91,13 @@
 					<a name="_bucketauto" class="tsd-anchor"></a>
 					<h3>$bucket<wbr>Auto</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
-						<li class="tsd-signature tsd-kind-icon">$bucket<wbr>Auto<span class="tsd-signature-symbol">(</span>collection<span class="tsd-signature-symbol">: </span><a href="../classes/_lazy_.iterator.html" class="tsd-signature-type">Iterator</a>, expr<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, options<span class="tsd-signature-symbol">: </span><a href="../interfaces/_core_.options.html" class="tsd-signature-type">Options</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/_lazy_.iterator.html" class="tsd-signature-type">Iterator</a></li>
+						<li class="tsd-signature tsd-kind-icon">$bucket<wbr>Auto<span class="tsd-signature-symbol">(</span>collection<span class="tsd-signature-symbol">: </span><a href="../classes/_lazy_.iterator.html" class="tsd-signature-type">Iterator</a>, expr<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">{ </span>buckets<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>granularity<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>groupBy<span class="tsd-signature-symbol">: </span><a href="_util_.html#anyval" class="tsd-signature-type">AnyVal</a><span class="tsd-signature-symbol">; </span>output<span class="tsd-signature-symbol">?: </span><a href="_util_.html#rawobject" class="tsd-signature-type">RawObject</a><span class="tsd-signature-symbol"> }</span>, options<span class="tsd-signature-symbol">?: </span><a href="../interfaces/_core_.options.html" class="tsd-signature-type">Options</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/_lazy_.iterator.html" class="tsd-signature-type">Iterator</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/670d579/src/operators/pipeline/bucketAuto.ts#L23">src/operators/pipeline/bucketAuto.ts:23</a></li>
+									<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/917ea15/src/operators/pipeline/bucketAuto.ts#L30">src/operators/pipeline/bucketAuto.ts:30</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -108,10 +114,24 @@
 									<h5>collection: <a href="../classes/_lazy_.iterator.html" class="tsd-signature-type">Iterator</a></h5>
 								</li>
 								<li>
-									<h5>expr: <span class="tsd-signature-type">any</span></h5>
+									<h5>expr: <span class="tsd-signature-symbol">{ </span>buckets<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>granularity<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>groupBy<span class="tsd-signature-symbol">: </span><a href="_util_.html#anyval" class="tsd-signature-type">AnyVal</a><span class="tsd-signature-symbol">; </span>output<span class="tsd-signature-symbol">?: </span><a href="_util_.html#rawobject" class="tsd-signature-type">RawObject</a><span class="tsd-signature-symbol"> }</span></h5>
+									<ul class="tsd-parameters">
+										<li class="tsd-parameter">
+											<h5>buckets<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></h5>
+										</li>
+										<li class="tsd-parameter">
+											<h5>granularity<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></h5>
+										</li>
+										<li class="tsd-parameter">
+											<h5>group<wbr>By<span class="tsd-signature-symbol">: </span><a href="_util_.html#anyval" class="tsd-signature-type">AnyVal</a></h5>
+										</li>
+										<li class="tsd-parameter">
+											<h5><span class="tsd-flag ts-flagOptional">Optional</span> output<span class="tsd-signature-symbol">?: </span><a href="_util_.html#rawobject" class="tsd-signature-type">RawObject</a></h5>
+										</li>
+									</ul>
 								</li>
 								<li>
-									<h5>options: <a href="../interfaces/_core_.options.html" class="tsd-signature-type">Options</a></h5>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <a href="../interfaces/_core_.options.html" class="tsd-signature-type">Options</a></h5>
 									<div class="tsd-comment tsd-typography">
 									</div>
 								</li>
@@ -135,6 +155,9 @@
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
+					<li class=" tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported">
+						<a href="../interfaces/_operators_pipeline_bucketauto_.boundary.html" class="tsd-kind-icon">Boundary</a>
+					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-module">
 						<a href="_operators_pipeline_bucketauto_.html#_bucketauto" class="tsd-kind-icon">$bucket<wbr>Auto</a>
 					</li>
@@ -171,6 +194,5 @@
 </div>
 <div class="overlay"></div>
 <script src="../assets/js/main.js"></script>
-<script>if (location.protocol == 'file:') document.write('<script src="../assets/js/search.js"><' + '/script>');</script>
 </body>
 </html>

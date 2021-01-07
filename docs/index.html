@@ -67,7 +67,7 @@
 				<a href="#mingo" id="mingo" style="color: inherit; text-decoration: none;">
 					<h1>mingo</h1>
 				</a>
-				<p>JavaScript implementation of MongoDB query language</p>
+				<p>MongoDB query language for in-memory objects</p>
 				<p><a href="https://www.npmjs.org/package/mingo"><img src="https://img.shields.io/npm/v/mingo.svg" alt="version"></a>
 					<a href="http://travis-ci.org/kofrasa/mingo"><img src="https://img.shields.io/travis/kofrasa/mingo.svg" alt="build status"></a>
 					<a href="https://www.npmjs.org/package/mingo"><img src="https://img.shields.io/npm/dm/mingo.svg" alt="npm"></a>
@@ -134,10 +134,14 @@
 					<h2>Usage</h2>
 				</a>
 				<pre><code class="language-js"><span class="hljs-comment">// Use as es6 module</span>
-<span class="hljs-keyword">import</span> mingo <span class="hljs-keyword">from</span> <span class="hljs-string">'mingo'</span>
+<span class="hljs-keyword">import</span> mingo <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;mingo&#x27;</span>
 
 <span class="hljs-comment">// or vanilla nodeJS</span>
-<span class="hljs-keyword">const</span> mingo = <span class="hljs-built_in">require</span>(<span class="hljs-string">'mingo'</span>)</code></pre>
+<span class="hljs-keyword">const</span> mingo = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;mingo&#x27;</span>)</code></pre>
+				<a href="#change-in-4xx" id="change-in-4xx" style="color: inherit; text-decoration: none;">
+					<h3>Change in 4.x.x</h3>
+				</a>
+				<p>The <code>$where</code> operator is not loaded by default and must be explicitly registered if required. See <a href="https://docs.mongodb.com/manual/reference/operator/query/where/index.html">documentation</a> for preferred alternatives.</p>
 				<a href="#changes-in-300" id="changes-in-300" style="color: inherit; text-decoration: none;">
 					<h3>Changes in 3.0.0</h3>
 				</a>
@@ -146,16 +150,12 @@
 				</a>
 				<p>The default export of the main module only includes <code>Aggregator</code>, <code>Query</code>, <code>aggregate()</code>, <code>find()</code>, and <code>remove()</code>.</p>
 				<p>Only <a href="https://docs.mongodb.com/manual/reference/operator/query/">Query and Projection</a> operators are loaded by default when using the main module.
-				This is done using the side-effect module <code>mingo/init</code>, and automatically includes pipeline operators <code>$project</code>, <code>$skip</code>, <code>$limit</code>, and <code>$sort</code>.</p>
-				<p>If your application uses a most of the available operators or you do not care about bundle size, you can load all operators as shown below.</p>
+				This is done using the side-effect module <code>mingo/init/basic</code>, and also automatically includes pipeline operators <code>$project</code>, <code>$skip</code>, <code>$limit</code>, and <code>$sort</code>.</p>
+				<p>If your application uses most of the available operators or you do not care about bundle size, you can load all operators as shown below.</p>
 				<pre><code class="language-js"><span class="hljs-comment">// Note that doing this effectively imports the entire library into your bundle and unused operators cannot be tree shaked</span>
-<span class="hljs-keyword">import</span> <span class="hljs-string">'mingo/init/system'</span></code></pre>
-				<p>By using a side-effect module you can also load operators at startup in a <code>NodeJS</code> environment such as;</p>
-				<pre><code class="language-sh"><span class="hljs-comment"># loads only the default operators</span>
-node -r <span class="hljs-string">'mingo/init'</span> myscript.js
-
-<span class="hljs-comment"># load all defined operators</span>
-node -r <span class="hljs-string">'mingo/init/system'</span> myscript.js</code></pre>
+<span class="hljs-keyword">import</span> <span class="hljs-string">&#x27;mingo/init/system&#x27;</span></code></pre>
+				<p>Or from the node CLI</p>
+				<pre><code class="language-sh">node -r <span class="hljs-string">&#x27;mingo/init/system&#x27;</span> myscript.js</code></pre>
 				<a href="#custom-operators" id="custom-operators" style="color: inherit; text-decoration: none;">
 					<h4>Custom Operators</h4>
 				</a>
@@ -178,37 +178,38 @@ node -r <span class="hljs-string">'mingo/init/system'</span> myscript.js</code><
 				<a href="#importing-submodules" id="importing-submodules" style="color: inherit; text-decoration: none;">
 					<h3>Importing submodules</h3>
 				</a>
-				<p>Submodule imports are supported for both ES6 and ES5. For ES5 projects using commonJS style <code>require()</code> syntax, the <a href="https://www.npmjs.com/package/esm">esm</a> is used to load the main entry point for compatibility.</p>
+				<p>Submodule imports are supported for both ES6 and ES5.</p>
 				<p>The following two examples are equivalent.</p>
 				<a href="#es6" id="es6" style="color: inherit; text-decoration: none;">
 					<h4>ES6</h4>
 				</a>
-				<pre><code class="language-js"><span class="hljs-keyword">import</span> { $unwind } <span class="hljs-keyword">from</span> <span class="hljs-string">'mingo/operators/pipeline'</span>
-</code></pre>
+				<p>This work natively in typescript since it knows how to load commonJS modules as ES6.
+				You may optionally install the <a href="https://www.npmjs.com/package/esm">esm</a> module to use this syntax.</p>
+				<pre><code class="language-js"><span class="hljs-keyword">import</span> { $unwind } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;mingo/operators/pipeline&#x27;</span></code></pre>
 				<a href="#es5" id="es5" style="color: inherit; text-decoration: none;">
 					<h4>ES5</h4>
 				</a>
-				<pre><code class="language-js"><span class="hljs-keyword">const</span> $unwind = <span class="hljs-built_in">require</span>(<span class="hljs-string">'mingo/operators/pipeline'</span>).$unwind
-</code></pre>
+				<p>Unlike the ES6 version, it is necessary to specify the operator module in the path to avoid loading any extras</p>
+				<pre><code class="language-js"><span class="hljs-keyword">const</span> $unwind = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;mingo/operators/pipeline/unwind&#x27;</span>).$unwind</code></pre>
 				<a href="#configuration" id="configuration" style="color: inherit; text-decoration: none;">
 					<h2>Configuration</h2>
 				</a>
 				<p>To support tree-shaking, you may import and register specific operators that will be used in your application.</p>
-				<pre><code class="language-js"><span class="hljs-keyword">import</span> { useOperators, OperatorType } <span class="hljs-keyword">from</span> <span class="hljs-string">'mingo/core'</span>
-<span class="hljs-keyword">import</span> { $trunc } <span class="hljs-keyword">from</span> <span class="hljs-string">'mingo/operators/expression'</span>
-<span class="hljs-keyword">import</span> { $bucket } <span class="hljs-keyword">from</span> <span class="hljs-string">'mingo/operators/pipeline'</span>
+				<pre><code class="language-js"><span class="hljs-keyword">import</span> { useOperators, OperatorType } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;mingo/core&#x27;</span>
+<span class="hljs-keyword">import</span> { $trunc } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;mingo/operators/expression&#x27;</span>
+<span class="hljs-keyword">import</span> { $bucket } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;mingo/operators/pipeline&#x27;</span>
 
 useOperators(OperatorType.EXPRESSION, { $trunc, $floor })
 useOperators(OperatorType.PIPELINE, { $bucket })</code></pre>
 				<a href="#using-query-object-to-test-objects" id="using-query-object-to-test-objects" style="color: inherit; text-decoration: none;">
 					<h2>Using query object to test objects</h2>
 				</a>
-				<pre><code class="language-js"><span class="hljs-keyword">import</span> mingo <span class="hljs-keyword">from</span> <span class="hljs-string">'mingo'</span>
+				<pre><code class="language-js"><span class="hljs-keyword">import</span> mingo <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;mingo&#x27;</span>
 
 <span class="hljs-comment">// create a query with criteria</span>
 <span class="hljs-comment">// find all grades for homework with score &gt;= 50</span>
 <span class="hljs-keyword">let</span> query = <span class="hljs-keyword">new</span> mingo.Query({
-  <span class="hljs-attr">type</span>: <span class="hljs-string">"homework"</span>,
+  <span class="hljs-attr">type</span>: <span class="hljs-string">&quot;homework&quot;</span>,
   <span class="hljs-attr">score</span>: { <span class="hljs-attr">$gte</span>: <span class="hljs-number">50</span> }
 });
 
@@ -217,7 +218,7 @@ query.test(doc)</code></pre>
 				<a href="#searching-and-filtering" id="searching-and-filtering" style="color: inherit; text-decoration: none;">
 					<h2>Searching and Filtering</h2>
 				</a>
-				<pre><code class="language-js"><span class="hljs-keyword">import</span> mingo <span class="hljs-keyword">from</span> <span class="hljs-string">'mingo'</span>
+				<pre><code class="language-js"><span class="hljs-keyword">import</span> mingo <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;mingo&#x27;</span>
 
 <span class="hljs-comment">// input is either an Array or any iterable source (i.e Object{next:Function}) including ES6 generators.</span>
 <span class="hljs-keyword">let</span> criteria = { <span class="hljs-attr">score</span>: { <span class="hljs-attr">$gt</span>: <span class="hljs-number">10</span> } }
@@ -231,7 +232,7 @@ query.test(doc)</code></pre>
 <span class="hljs-comment">// cursor = mingo.find(collection, criteria)</span>
 
 <span class="hljs-comment">// sort, skip and limit by chaining</span>
-cursor.sort({<span class="hljs-attr">student_id</span>: <span class="hljs-number">1</span>, <span class="hljs-attr">score</span>: <span class="hljs-number">-1</span>})
+cursor.sort({<span class="hljs-attr">student_id</span>: <span class="hljs-number">1</span>, <span class="hljs-attr">score</span>: -<span class="hljs-number">1</span>})
   .skip(<span class="hljs-number">100</span>)
   .limit(<span class="hljs-number">100</span>)
 
@@ -253,19 +254,19 @@ cursor.all()</code></pre>
 				<a href="#aggregation-pipeline" id="aggregation-pipeline" style="color: inherit; text-decoration: none;">
 					<h2>Aggregation Pipeline</h2>
 				</a>
-				<pre><code class="language-js"><span class="hljs-keyword">import</span> { Aggregator } <span class="hljs-keyword">from</span> <span class="hljs-string">'mingo/aggregator'</span>
-<span class="hljs-keyword">import</span> { useOperators, OperatorType } <span class="hljs-keyword">from</span> <span class="hljs-string">'mingo/core'</span>
-<span class="hljs-keyword">import</span> { $match, $group } <span class="hljs-keyword">from</span> <span class="hljs-string">'mingo/operators/pipeline'</span>
-<span class="hljs-keyword">import</span> { $min } <span class="hljs-keyword">from</span> <span class="hljs-string">'mingo/operators/accumulator'</span>
+				<pre><code class="language-js"><span class="hljs-keyword">import</span> { Aggregator } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;mingo/aggregator&#x27;</span>
+<span class="hljs-keyword">import</span> { useOperators, OperatorType } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;mingo/core&#x27;</span>
+<span class="hljs-keyword">import</span> { $match, $group } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;mingo/operators/pipeline&#x27;</span>
+<span class="hljs-keyword">import</span> { $min } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;mingo/operators/accumulator&#x27;</span>
 
 <span class="hljs-comment">// ensure the required operators are preloaded prior to using them.</span>
 useOperators(OperatorType.PIPELINE, { $match, $group })
 useOperators(OperatorType.ACCUMULATOR, { $min })
 
 <span class="hljs-keyword">let</span> agg = <span class="hljs-keyword">new</span> Aggregator([
-  {<span class="hljs-string">'$match'</span>: { <span class="hljs-string">"type"</span>: <span class="hljs-string">"homework"</span>}},
-  {<span class="hljs-string">'$group'</span>: {<span class="hljs-string">'_id'</span>:<span class="hljs-string">'$student_id'</span>, <span class="hljs-string">'score'</span>:{<span class="hljs-attr">$min</span>:<span class="hljs-string">'$score'</span>}}},
-  {<span class="hljs-string">'$sort'</span>: {<span class="hljs-string">'_id'</span>: <span class="hljs-number">1</span>, <span class="hljs-string">'score'</span>: <span class="hljs-number">1</span>}}
+  {<span class="hljs-string">&#x27;$match&#x27;</span>: { <span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;homework&quot;</span>}},
+  {<span class="hljs-string">&#x27;$group&#x27;</span>: {<span class="hljs-string">&#x27;_id&#x27;</span>:<span class="hljs-string">&#x27;$student_id&#x27;</span>, <span class="hljs-string">&#x27;score&#x27;</span>:{<span class="hljs-attr">$min</span>:<span class="hljs-string">&#x27;$score&#x27;</span>}}},
+  {<span class="hljs-string">&#x27;$sort&#x27;</span>: {<span class="hljs-string">&#x27;_id&#x27;</span>: <span class="hljs-number">1</span>, <span class="hljs-string">&#x27;score&#x27;</span>: <span class="hljs-number">1</span>}}
 ])
 
 <span class="hljs-comment">// return an iterator for streaming results</span>
@@ -286,7 +287,7 @@ useOperators(OperatorType.ACCUMULATOR, { $min })
 				</a>
 				<ul>
 					<li>Squash changes into one commit</li>
-					<li>Run <code>make test</code> to build and execute unit tests</li>
+					<li>Run <code>npm test</code> to build and execute unit tests</li>
 					<li>Submit pull request</li>
 				</ul>
 				<a href="#license" id="license" style="color: inherit; text-decoration: none;">
@@ -312,6 +313,9 @@ useOperators(OperatorType.ACCUMULATOR, { $min })
 					</li>
 					<li class=" tsd-kind-module">
 						<a href="modules/_index_.html">&quot;index&quot;</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/_init_basic_.html">&quot;init/basic&quot;</a>
 					</li>
 					<li class=" tsd-kind-module">
 						<a href="modules/_init_index_.html">&quot;init/index&quot;</a>
@@ -647,6 +651,9 @@ useOperators(OperatorType.ACCUMULATOR, { $min })
 						<a href="modules/_operators_expression_type_index_.html">&quot;operators/expression/type/index&quot;</a>
 					</li>
 					<li class=" tsd-kind-module">
+						<a href="modules/_operators_expression_type_isnumber_.html">&quot;operators/expression/type/is<wbr>Number&quot;</a>
+					</li>
+					<li class=" tsd-kind-module">
 						<a href="modules/_operators_expression_type_tobool_.html">&quot;operators/expression/type/to<wbr>Bool&quot;</a>
 					</li>
 					<li class=" tsd-kind-module">
@@ -735,6 +742,9 @@ useOperators(OperatorType.ACCUMULATOR, { $min })
 					</li>
 					<li class=" tsd-kind-module">
 						<a href="modules/_operators_pipeline_sortbycount_.html">&quot;operators/pipeline/sort<wbr>ByCount&quot;</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/_operators_pipeline_unset_.html">&quot;operators/pipeline/unset&quot;</a>
 					</li>
 					<li class=" tsd-kind-module">
 						<a href="modules/_operators_pipeline_unwind_.html">&quot;operators/pipeline/unwind&quot;</a>
@@ -848,6 +858,5 @@ useOperators(OperatorType.ACCUMULATOR, { $min })
 </div>
 <div class="overlay"></div>
 <script src="assets/js/main.js"></script>
-<script>if (location.protocol == 'file:') document.write('<script src="assets/js/search.js"><' + '/script>');</script>
 </body>
 </html>

@@ -79,7 +79,7 @@
 						<dd><p>an Array of pipeline operators</p>
 						</dd>
 						<dt>param</dt>
-						<dd><p>An optional configuration or options passed from an earlier operator</p>
+						<dd><p>An optional Options to pass the aggregator</p>
 						</dd>
 					</dl>
 				</div>
@@ -125,22 +125,22 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Aggregator<span class="tsd-signature-symbol">(</span>pipeline<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol">[]</span>, config<span class="tsd-signature-symbol">?: </span><a href="../interfaces/_core_.config.html" class="tsd-signature-type">Config</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/_core_.options.html" class="tsd-signature-type">Options</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_aggregator_.aggregator.html" class="tsd-signature-type">Aggregator</a></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Aggregator<span class="tsd-signature-symbol">(</span>pipeline<span class="tsd-signature-symbol">: </span><a href="../modules/_core_.html#collection" class="tsd-signature-type">Collection</a>, options<span class="tsd-signature-symbol">?: </span><a href="../interfaces/_core_.options.html" class="tsd-signature-type">Options</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_aggregator_.aggregator.html" class="tsd-signature-type">Aggregator</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/670d579/src/aggregator.ts#L15">src/aggregator.ts:15</a></li>
+									<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/917ea15/src/aggregator.ts#L20">src/aggregator.ts:20</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>pipeline: <span class="tsd-signature-type">object</span><span class="tsd-signature-symbol">[]</span></h5>
+									<h5>pipeline: <a href="../modules/_core_.html#collection" class="tsd-signature-type">Collection</a></h5>
 								</li>
 								<li>
-									<h5><span class="tsd-flag ts-flagOptional">Optional</span> config: <a href="../interfaces/_core_.config.html" class="tsd-signature-type">Config</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/_core_.options.html" class="tsd-signature-type">Options</a></h5>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <a href="../interfaces/_core_.options.html" class="tsd-signature-type">Options</a></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="_aggregator_.aggregator.html" class="tsd-signature-type">Aggregator</a></h4>
@@ -156,17 +156,17 @@
 					<div class="tsd-signature tsd-kind-icon">__options<span class="tsd-signature-symbol">:</span> <a href="../interfaces/_core_.options.html" class="tsd-signature-type">Options</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/670d579/src/aggregator.ts#L15">src/aggregator.ts:15</a></li>
+							<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/917ea15/src/aggregator.ts#L20">src/aggregator.ts:20</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
 					<a name="__pipeline" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagPrivate">Private</span> __pipeline</h3>
-					<div class="tsd-signature tsd-kind-icon">__pipeline<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span><span class="tsd-signature-symbol">[]</span></div>
+					<div class="tsd-signature tsd-kind-icon">__pipeline<span class="tsd-signature-symbol">:</span> <a href="../modules/_util_.html#rawarray" class="tsd-signature-type">RawArray</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/670d579/src/aggregator.ts#L14">src/aggregator.ts:14</a></li>
+							<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/917ea15/src/aggregator.ts#L19">src/aggregator.ts:19</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -177,13 +177,13 @@
 					<a name="run" class="tsd-anchor"></a>
 					<h3>run</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">run<span class="tsd-signature-symbol">(</span>collection<span class="tsd-signature-symbol">: </span><a href="../modules/_lazy_.html#source" class="tsd-signature-type">Source</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></li>
+						<li class="tsd-signature tsd-kind-icon">run<span class="tsd-signature-symbol">(</span>collection<span class="tsd-signature-symbol">: </span><a href="../modules/_lazy_.html#source" class="tsd-signature-type">Source</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../modules/_core_.html#collection" class="tsd-signature-type">Collection</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/670d579/src/aggregator.ts#L53">src/aggregator.ts:53</a></li>
+									<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/917ea15/src/aggregator.ts#L59">src/aggregator.ts:59</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -197,7 +197,7 @@
 									<h5>collection: <a href="../modules/_lazy_.html#source" class="tsd-signature-type">Source</a></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></h4>
+							<h4 class="tsd-returns-title">Returns <a href="../modules/_core_.html#collection" class="tsd-signature-type">Collection</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -211,7 +211,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/670d579/src/aggregator.ts#L31">src/aggregator.ts:31</a></li>
+									<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/917ea15/src/aggregator.ts#L34">src/aggregator.ts:34</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -310,6 +310,5 @@
 </div>
 <div class="overlay"></div>
 <script src="../assets/js/main.js"></script>
-<script>if (location.protocol == 'file:') document.write('<script src="../assets/js/search.js"><' + '/script>');</script>
 </body>
 </html>

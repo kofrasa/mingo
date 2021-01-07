@@ -80,13 +80,15 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">Options</span>
+						<span class="tsd-signature-symbol">{}</span>
 						<ul class="tsd-hierarchy">
 							<li>
-								<a href="_core_.computeoptions.html" class="tsd-signature-type">ComputeOptions</a>
-							</li>
-							<li>
-								<a href="_operators_pipeline_sort_.sortoptions.html" class="tsd-signature-type">SortOptions</a>
+								<span class="target">Options</span>
+								<ul class="tsd-hierarchy">
+									<li>
+										<a href="_core_.computeoptions.html" class="tsd-signature-type">ComputeOptions</a>
+									</li>
+								</ul>
 							</li>
 						</ul>
 					</li>
@@ -99,7 +101,9 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_core_.options.html#config" class="tsd-kind-icon">config</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_core_.options.html#collation" class="tsd-kind-icon">collation</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_core_.options.html#hashfunction" class="tsd-kind-icon">hash<wbr>Function</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_core_.options.html#idkey" class="tsd-kind-icon">id<wbr>Key</a></li>
 							</ul>
 						</section>
 					</div>
@@ -108,12 +112,32 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="config" class="tsd-anchor"></a>
-					<h3>config</h3>
-					<div class="tsd-signature tsd-kind-icon">config<span class="tsd-signature-symbol">:</span> <a href="_core_.config.html" class="tsd-signature-type">Config</a></div>
+					<a name="collation" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> <span class="tsd-flag ts-flagReadonly">Readonly</span> collation</h3>
+					<div class="tsd-signature tsd-kind-icon">collation<span class="tsd-signature-symbol">:</span> <a href="_core_.collationspec.html" class="tsd-signature-type">CollationSpec</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/670d579/src/core.ts#L35">src/core.ts:35</a></li>
+							<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/917ea15/src/core.ts#L40">src/core.ts:40</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="hashfunction" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> <span class="tsd-flag ts-flagReadonly">Readonly</span> hash<wbr>Function</h3>
+					<div class="tsd-signature tsd-kind-icon">hash<wbr>Function<span class="tsd-signature-symbol">:</span> <a href="../modules/_util_.html#hashfunction" class="tsd-signature-type">HashFunction</a></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/917ea15/src/core.ts#L41">src/core.ts:41</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="idkey" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> id<wbr>Key</h3>
+					<div class="tsd-signature tsd-kind-icon">id<wbr>Key<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/917ea15/src/core.ts#L39">src/core.ts:39</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -135,14 +159,14 @@
 					<li class=" tsd-kind-enum tsd-parent-kind-module">
 						<a href="../enums/_core_.operatortype.html" class="tsd-kind-icon">Operator<wbr>Type</a>
 					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
+						<a href="_core_.collationspec.html" class="tsd-kind-icon">Collation<wbr>Spec</a>
+					</li>
 					<li class=" tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported">
 						<a href="_core_.computeoptions.html" class="tsd-kind-icon">Compute<wbr>Options</a>
 					</li>
 					<li class=" tsd-kind-interface tsd-parent-kind-module">
-						<a href="_core_.config.html" class="tsd-kind-icon">Config</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported">
-						<a href="_core_.operators.html" class="tsd-kind-icon">Operators</a>
+						<a href="_core_.operatormap.html" class="tsd-kind-icon">Operator<wbr>Map</a>
 					</li>
 				</ul>
 				<ul class="current">
@@ -150,14 +174,26 @@
 						<a href="_core_.options.html" class="tsd-kind-icon">Options</a>
 						<ul>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="_core_.options.html#config" class="tsd-kind-icon">config</a>
+								<a href="_core_.options.html#collation" class="tsd-kind-icon">collation</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="_core_.options.html#hashfunction" class="tsd-kind-icon">hash<wbr>Function</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="_core_.options.html#idkey" class="tsd-kind-icon">id<wbr>Key</a>
 							</li>
 						</ul>
 					</li>
 				</ul>
 				<ul class="after-current">
-					<li class=" tsd-kind-variable tsd-parent-kind-module tsd-is-not-exported">
-						<a href="../modules/_core_.html#operators-1" class="tsd-kind-icon">OPERATORS</a>
+					<li class=" tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported">
+						<a href="_core_.projectoperator.html" class="tsd-kind-icon">Project<wbr>Operator</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported">
+						<a href="_core_.queryoperator.html" class="tsd-kind-icon">Query<wbr>Operator</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="../modules/_core_.html#collection" class="tsd-kind-icon">Collection</a>
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-module">
 						<a href="../modules/_core_.html#addoperators" class="tsd-kind-icon">add<wbr>Operators</a>
@@ -166,10 +202,10 @@
 						<a href="../modules/_core_.html#computevalue" class="tsd-kind-icon">compute<wbr>Value</a>
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-module">
-						<a href="../modules/_core_.html#createconfig" class="tsd-kind-icon">create<wbr>Config</a>
+						<a href="../modules/_core_.html#getoperator" class="tsd-kind-icon">get<wbr>Operator</a>
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-module">
-						<a href="../modules/_core_.html#getoperator" class="tsd-kind-icon">get<wbr>Operator</a>
+						<a href="../modules/_core_.html#makeoptions" class="tsd-kind-icon">make<wbr>Options</a>
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-module">
 						<a href="../modules/_core_.html#redact" class="tsd-kind-icon">redact</a>
@@ -179,6 +215,9 @@
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-module tsd-is-not-exported">
 						<a href="../modules/_core_.html#validateoperators" class="tsd-kind-icon">validate<wbr>Operators</a>
+					</li>
+					<li class=" tsd-kind-object-literal tsd-parent-kind-module tsd-is-not-exported">
+						<a href="../modules/_core_.html#operators" class="tsd-kind-icon">OPERATORS</a>
 					</li>
 					<li class=" tsd-kind-object-literal tsd-parent-kind-module tsd-is-not-exported">
 						<a href="../modules/_core_.html#redactvariables" class="tsd-kind-icon">redact<wbr>Variables</a>
@@ -220,6 +259,5 @@
 </div>
 <div class="overlay"></div>
 <script src="../assets/js/main.js"></script>
-<script>if (location.protocol == 'file:') document.write('<script src="../assets/js/search.js"><' + '/script>');</script>
 </body>
 </html>
