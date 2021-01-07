@@ -3,8 +3,6 @@ import { Iterator, Lazy } from "../../lazy";
 import {
   AnyVal,
   cloneDeep,
-  Container,
-  isArray,
   isEmpty,
   isString,
   RawObject,
@@ -23,14 +21,20 @@ import {
  */
 export function $unwind(
   collection: Iterator,
-  expr: RawObject,
+  expr:
+    | string
+    | {
+        path: string;
+        includeArrayIndex?: string;
+        preserveNullAndEmptyArrays?: boolean;
+      },
   options?: Options
 ): Iterator {
   if (isString(expr)) expr = { path: expr };
 
-  const path = expr.path as string;
+  const path = expr.path;
   const field = path.substr(1);
-  const includeArrayIndex = (expr?.includeArrayIndex as string) || false;
+  const includeArrayIndex = expr?.includeArrayIndex || false;
   const preserveNullAndEmptyArrays = expr.preserveNullAndEmptyArrays || false;
 
   const format = (o: RawObject, i: number) => {

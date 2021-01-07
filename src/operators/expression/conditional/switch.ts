@@ -3,7 +3,7 @@
  */
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, RawArray, RawObject } from "../../../util";
+import { AnyVal, RawObject } from "../../../util";
 
 /**
  * An operator that evaluates a series of case expressions. When it finds an expression which

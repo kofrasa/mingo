@@ -2,7 +2,7 @@
 
 import { Options } from "../../core";
 import { Iterator } from "../../lazy";
-import { assert, isNumber, RawArray, RawObject } from "../../util";
+import { RawArray } from "../../util";
 
 /**
  * Randomly selects the specified number of documents from its input. The given iterator must have finite values
@@ -14,17 +14,14 @@ import { assert, isNumber, RawArray, RawObject } from "../../util";
  */
 export function $sample(
   collection: Iterator,
-  expr: RawObject,
+  expr: { size: number },
   options?: Options
 ): Iterator {
-  const size = expr.size;
-  assert(isNumber(size), "$sample size must be a positive integer");
-
   return collection.transform((xs: RawArray) => {
     const len = xs.length;
     let i = -1;
     return () => {
-      if (++i === size) return { done: true };
+      if (++i === expr.size) return { done: true };
       const n = Math.floor(Math.random() * len);
       return { value: xs[n], done: false };
     };

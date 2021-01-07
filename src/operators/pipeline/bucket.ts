@@ -20,17 +20,22 @@ import {
  */
 export function $bucket(
   collection: Iterator,
-  expr: RawObject,
+  expr: {
+    groupBy: AnyVal;
+    boundaries: RawArray;
+    default: AnyVal;
+    output?: RawObject;
+  },
   options?: Options
 ): Iterator {
-  const boundaries = [...(expr.boundaries as RawArray)];
-  const defaultKey = expr["default"] as string;
+  const boundaries = [...expr.boundaries];
+  const defaultKey = expr.default as string;
   const lower = boundaries[0]; // inclusive
   const upper = boundaries[boundaries.length - 1]; // exclusive
   const outputExpr = expr.output || { count: { $sum: 1 } };
 
   assert(
-    boundaries.length > 2,
+    expr.boundaries.length > 2,
     "$bucket 'boundaries' expression must have at least 3 elements"
   );
   const boundType = getType(lower);

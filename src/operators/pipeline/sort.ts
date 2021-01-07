@@ -25,7 +25,7 @@ import {
  */
 export function $sort(
   collection: Iterator,
-  sortKeys: RawObject,
+  sortKeys: Record<string, 1 | -1>,
   options?: Options
 ): Iterator {
   if (isEmpty(sortKeys) || !isObject(sortKeys)) return collection;

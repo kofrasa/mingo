@@ -1,12 +1,9 @@
 import { Options } from "../../core";
 import { Iterator } from "../../lazy";
 import {
-  assert,
   Collection,
   hashCode,
   into,
-  isArray,
-  isString,
   RawArray,
   RawObject,
   resolve,
@@ -21,34 +18,26 @@ import {
  */
 export function $lookup(
   collection: Iterator,
-  expr: RawObject,
+  expr: {
+    from: Collection;
+    localField: string;
+    foreignField: string;
+    as: string;
+  },
   options?: Options
 ): Iterator {
-  const joinColl = expr.from as Collection;
-  const localField = expr.localField as string;
-  const foreignField = expr.foreignField as string;
-  const asField = expr.as as string;
-
-  assert(
-    isArray(joinColl) &&
-      isString(foreignField) &&
-      isString(localField) &&
-      isString(asField),
-    "$lookup: invalid argument"
-  );
-
   const hash: Record<string, RawArray> = {};
 
-  for (const obj of joinColl) {
-    const k = hashCode(resolve(obj, foreignField), options?.hashFunction);
+  for (const obj of expr.from) {
+    const k = hashCode(resolve(obj, expr.foreignField), options?.hashFunction);
     hash[k] = hash[k] || [];
     hash[k].push(obj);
   }
 
   return collection.map((obj: RawObject) => {
-    const k = hashCode(resolve(obj, localField), options?.hashFunction);
+    const k = hashCode(resolve(obj, expr.localField), options?.hashFunction);
     const newObj = into({}, obj);
-    newObj[asField] = hash[k] || [];
+    newObj[expr.as] = hash[k] || [];
     return newObj;
   });
 }

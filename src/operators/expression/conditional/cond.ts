@@ -3,14 +3,7 @@
  */
 
 import { computeValue, Options } from "../../../core";
-import {
-  AnyVal,
-  assert,
-  Container,
-  isArray,
-  isObject,
-  RawObject,
-} from "../../../util";
+import { AnyVal, assert, Container, isObject, RawObject } from "../../../util";
 
 /**
  * A ternary operator that evaluates one expression,

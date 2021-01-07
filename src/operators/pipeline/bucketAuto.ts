@@ -1,6 +1,7 @@
 import { computeValue, Options } from "../../core";
 import { Iterator } from "../../lazy";
 import {
+  AnyVal,
   assert,
   Collection,
   has,
@@ -29,12 +30,17 @@ interface Boundary extends RawObject {
  */
 export function $bucketAuto(
   collection: Iterator,
-  expr: RawObject,
+  expr: {
+    groupBy: AnyVal;
+    buckets: number;
+    output?: RawObject;
+    granularity: string;
+  },
   options?: Options
 ): Iterator {
   const outputExpr = expr.output || { count: { $sum: 1 } };
   const groupByExpr = expr.groupBy;
-  const bucketCount = expr.buckets as number;
+  const bucketCount = expr.buckets;
 
   assert(
     bucketCount > 0,

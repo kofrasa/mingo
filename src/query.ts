@@ -32,7 +32,7 @@ export class Query {
     this._compile();
   }
 
-  _compile() {
+  _compile(): void {
     assert(isObject(this.__criteria), "query criteria must be an object");
 
     let whereOperator: { field: string; expr: AnyVal };
@@ -62,7 +62,7 @@ export class Query {
     }
   }
 
-  _processOperator(field: string, operator: string, value: AnyVal) {
+  _processOperator(field: string, operator: string, value: AnyVal): void {
     const call = getOperator(OperatorType.QUERY, operator);
     assert(!!call, `unknown operator ${operator}`);
     const fn = call(field as AnyVal, value, this.__options) as Callback<AnyVal>;
