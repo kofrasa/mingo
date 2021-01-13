@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.0.1 / 2021-01-xx
+
+* **Features**
+  * Added trignometry operators
+
 ## 4.0.0 / 2021-01-07
 
 * **Features**

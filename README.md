@@ -15,44 +15,45 @@ MongoDB query language for in-memory objects
 
 ## Features
 
-- Supports Dot Notation for both _`<array>.<index>`_ and _`<document>.<field>`_ selectors
-- Query and Projection Operators
-  - [Array Operators](https://docs.mongodb.com/manual/reference/operator/query-array/)
-  - [Comparisons Operators](https://docs.mongodb.com/manual/reference/operator/query-comparison/)
-  - [Element Operators](https://docs.mongodb.com/manual/reference/operator/query-element/)
-  - [Evaluation Operators](https://docs.mongodb.com/manual/reference/operator/query-evaluation/)
-  - [Logical Operators](https://docs.mongodb.com/manual/reference/operator/query-logical/)
-  - [Projection Operators](https://docs.mongodb.com/manual/reference/operator/projection/)
-- Aggregation Framework Operators
-  - [Pipeline Operators](https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline/)
-  - [Accumulator Operators](https://docs.mongodb.com/manual/reference/operator/aggregation#accumulators-group/)
-  - [Expression Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#expression-operators)
-    - [Arithmetic Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators)
-    - [Array Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators/)
-    - [Boolean Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#boolean-expression-operators/)
-    - [Comparisons Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#comparison-expression-operators/)
-    - [Conditional Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#conditional-expression-operators/)
-    - [Date Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators/)
-    - [Literal Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#literal-expression-operators/)
-    - [Object Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#object-expression-operators)
-    - [Set Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#set-expression-operators/)
-    - [Type Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#type-expression-operators)
-    - [String Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators)
-    - [Variable Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#variable-expression-operators)
-- Support for adding custom operators using `mingo.addOperators`
-- Match against user-defined types
-- Support for aggregaion variables
-  - [`$$ROOT`,`$$CURRENT`,`$$DESCEND`,`$$PRUNE`,`$$KEEP`,`$$REMOVE`](https://docs.mongodb.com/manual/reference/aggregation-variables/)
-- ES6 module compatible
-- Support integrating with custom collections via mixin
-- Query filtering and aggregation streaming.
+* Supports Dot Notation for both _`<array>.<index>`_ and _`<document>.<field>`_ selectors
+* Query and Projection Operators
+  * [Array Operators](https://docs.mongodb.com/manual/reference/operator/query-array/)
+  * [Comparisons Operators](https://docs.mongodb.com/manual/reference/operator/query-comparison/)
+  * [Element Operators](https://docs.mongodb.com/manual/reference/operator/query-element/)
+  * [Evaluation Operators](https://docs.mongodb.com/manual/reference/operator/query-evaluation/)
+  * [Logical Operators](https://docs.mongodb.com/manual/reference/operator/query-logical/)
+  * [Projection Operators](https://docs.mongodb.com/manual/reference/operator/projection/)
+* Aggregation Framework Operators
+  * [Pipeline Operators](https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline/)
+  * [Accumulator Operators](https://docs.mongodb.com/manual/reference/operator/aggregation#accumulators-group/)
+  * [Expression Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#expression-operators)
+    * [Arithmetic Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators)
+    * [Array Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators/)
+    * [Boolean Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#boolean-expression-operators/)
+    * [Comparisons Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#comparison-expression-operators/)
+    * [Conditional Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#conditional-expression-operators/)
+    * [Date Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators/)
+    * [Literal Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#literal-expression-operators/)
+    * [Object Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#object-expression-operators)
+    * [Set Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#set-expression-operators/)
+    * [Trignometry Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#trigonometry-expression-operators)
+    * [Type Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#type-expression-operators)
+    * [String Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators)
+    * [Variable Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#variable-expression-operators)
+* Support for adding custom operators using `mingo.addOperators`
+* Match against user-defined types
+* Support for aggregaion variables
+  * [`$$ROOT`,`$$CURRENT`,`$$DESCEND`,`$$PRUNE`,`$$KEEP`,`$$REMOVE`](https://docs.mongodb.com/manual/reference/aggregation-variables/)
+* ES6 module compatible
+* Support integrating with custom collections via mixin
+* Query filtering and aggregation streaming.
 
 For documentation on using query operators see [mongodb](http://docs.mongodb.org/manual/reference/operator/query/)
 
 ## Documentation
 
-- [Package docs](http://kofrasa.net/mingo/)
-- [Custom Operators](https://github.com/kofrasa/mingo/wiki/Custom-Operators)
+* [Package docs](http://kofrasa.net/mingo/)
+* [Custom Operators](https://github.com/kofrasa/mingo/wiki/Custom-Operators)
 
 ## Usage
 
@@ -96,16 +97,16 @@ The `addOperators` function for registering custom operators and helper constant
 The constants `OP_XXX` have been deprecated and replace with an enum type `OperatorType` also in `mingo/core`.
 The values defined include;
 
-- `ACCUMULATOR`
-- `EXPRESSION`
-- `PIPELINE`
-- `PROJECTION`
-- `QUERY`
+* `ACCUMULATOR`
+* `EXPRESSION`
+* `PIPELINE`
+* `PROJECTION`
+* `QUERY`
 
 Lastly, the function argument to `addOperators(operatorType, fn)` now accepts an object with the these two internal functions;
 
-- `computeValue(obj: object | any[], expr: any, operator: string, options?: ComputeOptions): any`
-- `resolve(obj: object | any[], selector: string, options?: ResolveOptions): any`
+* `computeValue(obj: AnyVal, expr: AnyVal, operator: string, options?: ComputeOptions): AnyVal`
+* `resolve(obj: AnyVal, selector: string, options?: ResolveOptions): AnyVal`
 
 Any extra utility may be imported directly from the specific module.
 
@@ -226,15 +227,15 @@ let result = agg.run(collection)
 
 ## Benefits
 
-- Better alternative to writing custom code for transforming collection of objects
-- Quick validation of MongoDB queries without the need for a database
-- MongoDB query language is among the best in the market and is well documented
+* Better alternative to writing custom code for transforming collection of objects
+* Quick validation of MongoDB queries without the need for a database
+* MongoDB query language is among the best in the market and is well documented
 
 ## Contributing
 
-- Squash changes into one commit
-- Run `npm test` to build and execute unit tests
-- Submit pull request
+* Squash changes into one commit
+* Run `npm test` to build and execute unit tests
+* Submit pull request
 
 ## License
 
