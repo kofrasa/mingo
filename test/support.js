@@ -1,6 +1,7 @@
 import test from 'tape'
 import mingo from '../lib'
 import { computeValue } from '../lib/core'
+import { isObjectLike } from '../lib/util'
 import '../lib/init/system'
 
 export const personData = require('./data/person.json')
@@ -40,13 +41,14 @@ export function runTest(description, suite) {
         }
 
         if (ctx.err) {
-          t.throws(() => computeValue(obj, input, field), JSON.stringify(input) + '\t=>\t' + expected)
+          t.throws(() => computeValue(obj, input, field), `${operator}(${isObjectLike(input) ? JSON.stringify(input) : input}) => Error("${expected}")`)
         } else {
           let actual = computeValue(obj, input, field)
-          let message =  operator + ':\t' + JSON.stringify(input) + '\t=>\t' + JSON.stringify(expected)
           // NaNs don't compare
           if (actual !== actual && expected !== expected) actual = expected = 0
-          t.deepEqual(actual, expected, message)
+          t.deepEqual(actual, expected,
+            `${operator}(${isObjectLike(input) ? JSON.stringify(input) : input}) => ` +
+            `${isObjectLike(expected) ? JSON.stringify(expected) : expected}`)
         }
       })
       t.end()
