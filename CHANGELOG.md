@@ -1,9 +1,9 @@
 # Changelog
 
-## 4.0.1 / 2021-01-xx
+## 4.1.0 / 2021-01-14
 
 * **Features**
-  * Added trignometry operators
+  * Added trignometry operators. `$sin`,`$cos`,`$tan`,`$asin`,`$acos`,`$atan`,`$atan2`,`$asinh`,`$acosh`,`$atanh`,`$degreesToRadians`,`$radiansToDegrees`.
 
 ## 4.0.0 / 2021-01-07
 
