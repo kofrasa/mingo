@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.1.1 / 2021-01-31
+
+* Fix `$elemMatch` to support top-level boolean operators `$and`,`$or`, and `$nor`
+
 ## 4.1.0 / 2021-01-14
 
 * **Features**
