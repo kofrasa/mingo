@@ -234,6 +234,66 @@ test('Query $elemMatch operator', function (t) {
   t.end()
 })
 
+test('Query $elemMatch operator with non-boolean operators', function (t) {
+  let products = [
+    { _id: 3, results: [ { product: "abc", score: 7 }, { product: "xyz", score: 8 } ] }
+  ]
+
+  let result = mingo.find(products, { results: { $elemMatch: {
+    $and: [
+      { product: "xyz" },
+      { score: 8 }
+    ]
+  } } }).all()[0]
+
+  t.deepEqual(
+    result,
+    { "_id" : 3, "results" : [ { "product" : "abc", "score" : 7 }, { "product" : "xyz", "score" : 8 } ] },
+    '$elemMatch with $and'
+  )
+
+  result = mingo.find(products, { results: { $elemMatch: {
+    $and: [
+      { product: "xyz" },
+      { score: 9 }
+    ]
+  } } }).all()[0]
+
+  t.deepEqual(
+    result,
+    undefined,
+    '$elemMatch with $and that does not match'
+  )
+
+  result = mingo.find(products, { results: { $elemMatch: {
+    $or: [
+      { product: "xyz" },
+      { score: 8 }
+    ]
+  } } }).all()[0]
+
+  t.deepEqual(
+    result,
+    { "_id" : 3, "results" : [ { "product" : "abc", "score" : 7 }, { "product" : "xyz", "score" : 8 } ] },
+    '$elemMatch with $or'
+  )
+
+  result = mingo.find(products, { results: { $elemMatch: {
+    $nor: [
+      { product: "abc" },
+      { score: 7 }
+    ]
+  } } }).all()[0]
+
+  t.deepEqual(
+    result,
+    { "_id" : 3, "results" : [ { "product" : "abc", "score" : 7 }, { "product" : "xyz", "score" : 8 } ] },
+    '$elemMatch with $nor'
+  )
+
+  t.end()
+})
+
 test('Evaluate $where last', function (t) {
   t.plan(2)
 

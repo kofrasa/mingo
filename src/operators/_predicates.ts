@@ -244,6 +244,10 @@ export function $size(a: RawArray, b: number, options?: Options): boolean {
   return a.length === b;
 }
 
+function isNonBooleanOperator(name: string): boolean {
+  return isOperator(name) && ["$and", "$or", "$nor"].indexOf(name) === -1;
+}
+
 /**
  * Selects documents if element in the array field matches all the specified $elemMatch condition.
  *
@@ -260,12 +264,14 @@ export function $elemMatch(
     let format = (x: AnyVal) => x;
     let criteria = b;
 
-    // If we find an operator in the subquery, we fake a field to point to it.
-    // This is an attempt to ensure that it a valid criteria.
-    if (Object.keys(b).every(isOperator)) {
+    // If we find a boolean operator in the subquery, we fake a field to point to it. This is an
+    // attempt to ensure that it is a valid criteria. We cannot make this substitution for operators
+    // like $and/$or/$nor; as otherwise, this faking will break our query.
+    if (Object.keys(b).every(isNonBooleanOperator)) {
       criteria = { temp: b };
       format = (x) => ({ temp: x });
     }
+
     const query = new Query(criteria, options);
     for (let i = 0, len = a.length; i < len; i++) {
       if (query.test(format(a[i]) as RawObject)) {
