@@ -172,9 +172,9 @@ export function truthy(arg: AnyVal): boolean {
 export function isEmpty(x: AnyVal): boolean {
   return (
     isNil(x) ||
+    (isString(x) && !x) ||
     (x instanceof Array && x.length === 0) ||
-    (isObject(x) && Object.keys(x).length === 0) ||
-    !x
+    (isObject(x) && Object.keys(x).length === 0)
   );
 }
 // ensure a value is an array or wrapped within one

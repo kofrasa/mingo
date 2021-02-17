@@ -66,5 +66,16 @@ test("$unwind pipeline operator", function (t) {
       { "_id" : 3, "item" : "IJK", "a" : { "sizes" : "M" } }
     ], '$unwind array nested within object')
 
+    result = mingo.aggregate([
+      { "_id" : 1, "number" : 0},
+      { "_id" : 2, "number" : 1}
+    ], [ { $unwind: "$number" } ] )
+
+    t.deepEqual(result, [
+      { "_id" : 1, "number" : 0},
+      { "_id" : 2, "number" : 1}
+    ], '$unwind has 0 value item')
+
+
   t.end()
 });
