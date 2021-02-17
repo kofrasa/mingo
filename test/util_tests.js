@@ -1,5 +1,5 @@
 import test from 'tape'
-import { isEqual, sortBy, isObject } from '../lib/util'
+import { isEqual, sortBy, isObject,isEmpty } from '../lib/util'
 
 test('Test isEqual', function (t) {
   let sample = [
@@ -74,5 +74,12 @@ test('Test isObject', (t) => {
     t.equal(isObject(arr[0]), arr[1], arr[2])
   })
 
+  t.end()
+})
+
+
+test('isEmpty util', function (t) {
+  let sample = ['0',0,null,{},'',[]]
+  t.deepEqual(sample.map(x=>isEmpty(x)),[false,false,true,true,true,true],"pass test")
   t.end()
 })

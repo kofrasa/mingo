@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.1.2 / 2021-02-17
+
+* Fix `$unwind` incorrectly remove `0` value bug
+
 ## 4.1.1 / 2021-01-31
 
 * Fix `$elemMatch` to support top-level boolean operators `$and`,`$or`, and `$nor`
