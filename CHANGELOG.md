@@ -2,7 +2,7 @@
 
 ## 4.1.2 / 2021-02-17
 
-* Fix `$unwind` incorrectly remove `0` value bug
+* Fix `$unwind` incorrectly removing `0` value, by correcting behaviour of `isEmpty`
 
 ## 4.1.1 / 2021-01-31
 
