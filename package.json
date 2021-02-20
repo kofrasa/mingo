@@ -36,7 +36,7 @@
     "eslint-plugin-simple-import-sort": "7.0.0",
     "eslint-plugin-unused-imports": "1.1.0",
     "esm": "3.2.25",
-    "lodash": "4.17.20",
+    "lodash": "4.17.21",
     "nyc": "15.1.0",
     "perf_hooks": "0.0.1",
     "prettier": "2.2.1",
