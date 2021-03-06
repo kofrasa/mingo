@@ -289,7 +289,7 @@ export function $elemMatch(
  * @param b
  * @returns {boolean}
  */
-export function $type(
+function compareType(
   a: AnyVal,
   b: number | string,
   options?: Options
@@ -345,6 +345,23 @@ export function $type(
     default:
       return false;
   }
+}
+
+/**
+ * Selects documents if a field is of the specified type.
+ *
+ * @param a
+ * @param b
+ * @returns {boolean}
+ */
+export function $type(
+  a: AnyVal,
+  b: number | string | Array<number | string>,
+  options?: Options
+): boolean {
+  return Array.isArray(b)
+    ? b.findIndex((t) => compareType(a, t, options)) >= 0
+    : compareType(a, b, options);
 }
 
 function compare(a: AnyVal, b: AnyVal, f: Predicate<AnyVal>): boolean {
