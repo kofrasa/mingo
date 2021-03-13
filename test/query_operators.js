@@ -87,7 +87,12 @@ test('project $type operator', function (t) {
     [{int: {$type: 16}}, 'can match $type 16 "int"'],
     [{long: {$type: 18}}, 'can match $type 18 "long"'],
     [{decimal: {$type: 19}}, 'can match $type 19 "decimal"'],
-    [{obj: {$not: {$type: 100}}}, 'do not match unknown $type']
+    [{obj: {$not: {$type: 100}}}, 'do not match unknown $type'],
+    // { $type: array }
+    [{double: {$type: [1]}}, 'can match $type [1] "double"'],
+    [{double: {$type: [1, 4]}}, 'can match $type [1, 4] "double"'],
+    [{array: {$type: [1, 4]}}, 'can match $type [1, 4] "array"'],
+    [{double: {$not: {$type: []}}}, 'do not match $type []'],
   ]
 
   queries.forEach(function (q) {
