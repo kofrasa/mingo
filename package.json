@@ -26,8 +26,8 @@
     "CHANGELOG.md"
   ],
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "4.24.0",
-    "@typescript-eslint/parser": "4.24.0",
+    "@typescript-eslint/eslint-plugin": "4.25.0",
+    "@typescript-eslint/parser": "4.25.0",
     "codecov": "3.8.2",
     "eslint": "7.27.0",
     "eslint-config-prettier": "8.3.0",
