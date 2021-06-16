@@ -2,7 +2,7 @@
 
 import { Options } from "../../core";
 import { Iterator } from "../../lazy";
-import { RawArray } from "../../util";
+import { RawArray } from "../../types";
 
 /**
  * Randomly selects the specified number of documents from its input. The given iterator must have finite values

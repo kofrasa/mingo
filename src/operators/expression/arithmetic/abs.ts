@@ -1,7 +1,8 @@
 // Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, isNil, RawObject } from "../../../util";
+import { AnyVal, RawObject } from "../../../types";
+import { isNil } from "../../../util";
 
 /**
  * Returns the absolute value of a number.

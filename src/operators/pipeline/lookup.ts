@@ -1,14 +1,7 @@
-import { Collection, Options } from "../../core";
+import { Options } from "../../core";
 import { Iterator } from "../../lazy";
-import {
-  assert,
-  hashCode,
-  into,
-  isString,
-  RawArray,
-  RawObject,
-  resolve,
-} from "../../util";
+import { Collection, RawArray, RawObject } from "../../types";
+import { assert, hashCode, into, isString, resolve } from "../../util";
 
 /**
  * Performs a left outer join to another collection in the same database to filter in documents from the “joined” collection for processing.

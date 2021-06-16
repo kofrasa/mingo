@@ -1,6 +1,7 @@
 .*
 *.lcov
 *.tgz
+*.code-workspace
 coverage/
 node_modules
 npm-debug.log

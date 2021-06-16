@@ -1,7 +1,8 @@
 // Object Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#object-expression-operators
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, into, RawObject } from "../../../util";
+import { AnyVal, RawObject } from "../../../types";
+import { into } from "../../../util";
 
 /**
  * Combines multiple documents into a single document.

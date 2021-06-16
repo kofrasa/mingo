@@ -3,7 +3,8 @@
  */
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, RawArray, RawObject, truthy } from "../../../util";
+import { AnyVal, RawArray, RawObject } from "../../../types";
+import { truthy } from "../../../util";
 
 /**
  * Returns true if any elements of a set evaluate to true, and false otherwise.

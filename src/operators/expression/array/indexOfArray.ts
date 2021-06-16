@@ -1,15 +1,8 @@
 // Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
 
 import { computeValue, Options } from "../../../core";
-import {
-  AnyVal,
-  assert,
-  isArray,
-  isEqual,
-  isNil,
-  RawArray,
-  RawObject,
-} from "../../../util";
+import { AnyVal, RawArray, RawObject } from "../../../types";
+import { assert, isArray, isEqual, isNil } from "../../../util";
 
 /**
  * Searches an array for an occurrence of a specified value and returns the array index of the first occurrence.

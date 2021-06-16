@@ -1,6 +1,7 @@
 import { computeValue, Options } from "../../core";
 import { Iterator } from "../../lazy";
-import { assert, isObject, RawObject } from "../../util";
+import { RawObject } from "../../types";
+import { assert, isObject } from "../../util";
 
 /**
  * Replaces a document with the specified embedded document or new one.

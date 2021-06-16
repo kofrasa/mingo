@@ -1,5 +1,5 @@
-import { Collection, computeValue, Options } from "../../core";
-import { AnyVal } from "../../util";
+import { computeValue, Options } from "../../core";
+import { AnyVal, Collection } from "../../types";
 
 /**
  * Returns the last value in the collection.

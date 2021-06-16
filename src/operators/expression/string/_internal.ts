@@ -1,12 +1,6 @@
 import { computeValue, Options } from "../../../core";
-import {
-  AnyVal,
-  assert,
-  isNil,
-  isString,
-  RawArray,
-  RawObject,
-} from "../../../util";
+import { AnyVal, RawArray, RawObject } from "../../../types";
+import { assert, isNil, isString } from "../../../util";
 
 const WHITESPACE_CHARS = [
   0x0000, // '\0' Null character

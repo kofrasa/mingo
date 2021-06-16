@@ -3,7 +3,8 @@
  */
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, intersection, RawArray, RawObject } from "../../../util";
+import { AnyVal, RawArray, RawObject } from "../../../types";
+import { intersection } from "../../../util";
 
 /**
  * Returns true if all elements of a set appear in a second set.

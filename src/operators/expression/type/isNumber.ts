@@ -3,7 +3,8 @@
  */
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, isNumber, RawObject } from "../../../util";
+import { AnyVal, RawObject } from "../../../types";
+import { isNumber } from "../../../util";
 
 /**
  * Checks if the specified expression resolves to a numeric value

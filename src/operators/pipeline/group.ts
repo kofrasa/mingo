@@ -1,6 +1,7 @@
 import { computeValue, Options } from "../../core";
 import { Iterator } from "../../lazy";
-import { groupBy, into, RawArray, RawObject } from "../../util";
+import { RawArray, RawObject } from "../../types";
+import { groupBy, into } from "../../util";
 
 /**
  * Groups documents together for the purpose of calculating aggregate values based on a collection of documents.

@@ -1,15 +1,8 @@
 import { Aggregator } from "./aggregator";
-import { CollationSpec, Collection, Options } from "./core";
+import { CollationSpec, Options } from "./core";
 import { Iterator, Lazy, Source } from "./lazy";
-import {
-  AnyVal,
-  Callback,
-  into,
-  isObject,
-  Predicate,
-  RawArray,
-  RawObject,
-} from "./util";
+import { AnyVal, Collection, RawArray, RawObject } from "./types";
+import { Callback, into, isObject, Predicate } from "./util";
 
 /**
  * Cursor to iterate and perform filtering on matched objects.
@@ -49,8 +42,9 @@ export class Cursor {
     if (this.__result) return this.__result;
 
     // add projection operator
-    if (isObject(this.__projection))
+    if (isObject(this.__projection)) {
       this.__operators.push({ $project: this.__projection });
+    }
 
     // filter collection
     this.__result = Lazy(this.__source).filter(this.__predicateFn);
@@ -124,8 +118,13 @@ export class Cursor {
    * @returns {Object | Boolean}
    */
   next(): AnyVal {
-    if (!this.__stack) return; // done
-    if (this.__stack.length > 0) return this.__stack.pop(); // yield value obtains in hasNext()
+    // empty stack means processing is done
+    if (!this.__stack) return;
+
+    // yield value obtains in hasNext()
+    if (this.__stack.length > 0) {
+      return this.__stack.pop();
+    }
     const o = this._fetch().next();
 
     if (!o.done) return o.value;
@@ -139,13 +138,15 @@ export class Cursor {
    */
   hasNext(): boolean {
     if (!this.__stack) return false; // done
-    if (this.__stack.length > 0) return true; // there is a value on stack
+
+    // there is a value on stack
+    if (this.__stack.length > 0) return true;
 
     const o = this._fetch().next();
-    if (!o.done) {
-      this.__stack.push(o.value);
-    } else {
+    if (o.done) {
       this.__stack = null;
+    } else {
+      this.__stack.push(o.value);
     }
 
     return !!this.__stack;
@@ -167,15 +168,8 @@ export class Cursor {
   forEach(callback: Callback<AnyVal>): void {
     this._fetch().each(callback);
   }
-}
 
-if (typeof Symbol === "function") {
-  /**
-   * Applies an [ES2015 Iteration protocol][] compatible implementation
-   * [ES2015 Iteration protocol]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols
-   * @returns {Object}
-   */
-  Cursor.prototype[Symbol.iterator] = function (): Iterator {
-    return this._fetch() /* eslint-disable-line */
-  };
+  [Symbol.iterator](): Iterator {
+    return this._fetch(); /* eslint-disable-line */
+  }
 }

@@ -3,7 +3,7 @@
  */
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../util";
+import { AnyVal, RawObject } from "../../../types";
 
 /**
  * Returns the number of UTF-8 encoded bytes in the specified string.

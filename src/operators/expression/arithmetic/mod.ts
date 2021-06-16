@@ -1,7 +1,7 @@
 // Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../util";
+import { AnyVal, RawObject } from "../../../types";
 
 /**
  * Takes two numbers and calculates the modulo of the first number divided by the second.

@@ -1,9 +1,15 @@
+import { Iterator } from "./lazy";
 import {
   AnyVal,
-  assert,
+  ArrayOrObject,
   Callback,
+  Collection,
+  RawArray,
+  RawObject,
+} from "./types";
+import {
+  assert,
   cloneDeep,
-  Container,
   has,
   HashFunction,
   into,
@@ -12,13 +18,8 @@ import {
   isObjectLike,
   isOperator,
   isString,
-  RawArray,
-  RawObject,
   resolve,
 } from "./util";
-
-/** Represents an array of documents */
-export type Collection = Array<RawObject>;
 
 /**
  * Resolves the given string to a Collection.
@@ -43,14 +44,16 @@ export interface CollationSpec {
  * Generic options interface passed down to all operators
  */
 export interface Options extends RawObject {
-  readonly idKey: string;
+  readonly idKey?: string;
   readonly collation?: CollationSpec;
   readonly hashFunction?: HashFunction;
   readonly collectionResolver?: CollectionResolver;
 }
 
-/** Map of operator functions */
-export type OperatorMap = Record<string, Callback<AnyVal>>;
+// options to core functions computeValue() and redact()
+export interface ComputeOptions extends Options {
+  readonly root?: RawObject;
+}
 
 /**
  * Creates an Option from another required keys are initialized
@@ -72,7 +75,7 @@ export enum OperatorType {
 }
 
 // operator definitions
-const OPERATORS: Record<OperatorType, Record<string, Callback<AnyVal>>> = {
+const OPERATORS: Record<OperatorType, OperatorMap> = {
   [OperatorType.ACCUMULATOR]: {},
   [OperatorType.EXPRESSION]: {},
   [OperatorType.PIPELINE]: {},
@@ -80,10 +83,67 @@ const OPERATORS: Record<OperatorType, Record<string, Callback<AnyVal>>> = {
   [OperatorType.QUERY]: {},
 };
 
+export type AccumulatorOperator = (
+  collection: Collection,
+  expr: AnyVal,
+  options?: Options
+) => AnyVal;
+
+export type ExpressionOperator = (
+  obj: RawObject,
+  expr: AnyVal,
+  options?: Options
+) => AnyVal;
+
+export type PipelineOperator = (
+  collection: Iterator,
+  expr: AnyVal,
+  options?: Options
+) => Iterator;
+
+export type ProjectionOperator = (
+  obj: RawObject,
+  expr: AnyVal,
+  field: string,
+  options?: Options
+) => AnyVal;
+
+export type QueryOperator = (
+  selector: string,
+  value: AnyVal,
+  options?: Options
+) => (obj: RawObject) => boolean;
+
+/** Map of operator functions */
+export type OperatorMap = Record<
+  string,
+  | AccumulatorOperator
+  | ExpressionOperator
+  | PipelineOperator
+  | ProjectionOperator
+  | QueryOperator
+>;
+
+/** Special custom operator type for Query and Projection. */
+type CustomOperator<R> = (
+  selector: string,
+  lhs: AnyVal,
+  rhs: AnyVal,
+  options?: Options
+) => R;
+
+export type CustomOperatorMap = Record<
+  string,
+  | AccumulatorOperator
+  | ExpressionOperator
+  | PipelineOperator
+  | CustomOperator<AnyVal>
+>;
+
 /**
  * Validates the object collection of operators
  */
-function validateOperators(operators: OperatorMap): void {
+function validateOperatorMap(operators: RawObject): void {
   for (const [k, v] of Object.entries(operators)) {
     assert(
       v instanceof Function && isOperator(k),
@@ -99,7 +159,7 @@ function validateOperators(operators: OperatorMap): void {
  * @param operators Name of operator
  */
 export function useOperators(cls: OperatorType, operators: OperatorMap): void {
-  validateOperators(operators);
+  validateOperatorMap(operators);
   into(OPERATORS[cls], operators);
 }
 
@@ -115,6 +175,12 @@ export function getOperator(
   return has(OPERATORS[cls], operator) ? OPERATORS[cls][operator] : null;
 }
 
+/** Context used for creating new operators */
+export interface OperatorContext {
+  readonly computeValue: typeof computeValue;
+  readonly resolve: typeof resolve;
+}
+
 /**
  * Add new operators
  *
@@ -123,37 +189,37 @@ export function getOperator(
  */
 export function addOperators(
   cls: OperatorType,
-  operatorFn: Callback<OperatorMap>
+  operatorFn: (context: OperatorContext) => CustomOperatorMap
 ): void {
-  const newOperators = operatorFn({ computeValue, resolve });
+  const customOperators = operatorFn({ computeValue, resolve });
 
-  validateOperators(newOperators);
+  validateOperatorMap(customOperators);
 
   // check for existing operators
-  for (const [op, _] of Object.entries(newOperators)) {
+  for (const [op, _] of Object.entries(customOperators)) {
     const call = getOperator(cls, op);
     assert(!call, `${op} already exists for '${cls}' operators`);
   }
 
-  const wrapped: Record<string, Callback<AnyVal>> = {};
+  const normalizedOperators: OperatorMap = {};
 
   switch (cls) {
     case OperatorType.QUERY:
-      for (const [op, f] of Object.entries(newOperators)) {
-        const fn = f.bind(newOperators) as Callback<boolean>;
-        wrapped[op] = (selector: string, value: AnyVal, options: Options) => (
-          obj: RawObject
-        ): boolean => {
-          // value of field must be fully resolved.
-          const lhs = resolve(obj, selector, { unwrapArray: true });
-          return fn(selector, lhs, value, options);
-        };
+      for (const [op, f] of Object.entries(customOperators)) {
+        const fn = f as CustomOperator<boolean>;
+        normalizedOperators[op] =
+          (selector: string, value: AnyVal, options: Options) =>
+          (obj: RawObject): boolean => {
+            // value of field must be fully resolved.
+            const lhs = resolve(obj, selector, { unwrapArray: true });
+            return fn(selector, lhs, value, options);
+          };
       }
       break;
     case OperatorType.PROJECTION:
-      for (const [op, f] of Object.entries(newOperators)) {
-        const fn = f.bind(newOperators) as Callback<AnyVal>;
-        wrapped[op] = (
+      for (const [op, f] of Object.entries(customOperators)) {
+        const fn = f as CustomOperator<AnyVal>;
+        normalizedOperators[op] = (
           obj: RawObject,
           expr: AnyVal,
           selector: string,
@@ -165,14 +231,14 @@ export function addOperators(
       }
       break;
     default:
-      for (const [op, fn] of Object.entries(newOperators)) {
-        wrapped[op] = (...args: RawArray) =>
-          fn.apply(newOperators, args) as AnyVal;
+      for (const [op, fn] of Object.entries(customOperators)) {
+        normalizedOperators[op] = (...args: RawArray) =>
+          fn.apply(customOperators, args) as AnyVal;
       }
   }
 
   // toss the operator salad :)
-  useOperators(cls, wrapped);
+  useOperators(cls, normalizedOperators);
 }
 
 /* eslint-disable unused-imports/no-unused-vars-ts */
@@ -211,8 +277,8 @@ const redactVariables: Record<string, Callback<AnyVal>> = {
     // traverse nested documents iff there is a $cond
     if (!has(expr as RawObject, "$cond")) return obj;
 
-    let result: Container;
-    const newObj = cloneDeep(obj) as Container;
+    let result: ArrayOrObject;
+    const newObj = cloneDeep(obj) as ArrayOrObject;
 
     for (const [key, current] of Object.entries(newObj)) {
       if (isObjectLike(current)) {
@@ -228,7 +294,7 @@ const redactVariables: Record<string, Callback<AnyVal>> = {
           }
           result = array;
         } else {
-          result = redact(current as RawObject, expr, options) as Container;
+          result = redact(current as RawObject, expr, options) as ArrayOrObject;
         }
 
         if (isNil(result)) {
@@ -242,11 +308,6 @@ const redactVariables: Record<string, Callback<AnyVal>> = {
   },
 };
 /* eslint-enable unused-imports/no-unused-vars-ts */
-
-// options to core functions computeValue() and redact()
-interface ComputeOptions extends Options {
-  root?: RawObject;
-}
 
 /**
  * Computes the value of the expression on the object for the given operator
@@ -313,7 +374,7 @@ export function computeValue(
       expr = expr.substr(arr[0].length); // '.' prefix will be sliced off below
     }
 
-    return resolve(obj as Container, (expr as string).slice(1));
+    return resolve(obj as ArrayOrObject, (expr as string).slice(1));
   }
 
   // check and return value if already in a resolved state

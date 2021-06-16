@@ -1,12 +1,7 @@
-import {
-  Collection,
-  getOperator,
-  makeOptions,
-  OperatorType,
-  Options,
-} from "./core";
+import { getOperator, makeOptions, OperatorType, Options } from "./core";
 import { Iterator, Lazy, Source } from "./lazy";
-import { assert, isEmpty, RawArray } from "./util";
+import { Collection, RawArray } from "./types";
+import { assert, isEmpty } from "./util";
 
 /**
  * Provides functionality for the mongoDB aggregation pipeline

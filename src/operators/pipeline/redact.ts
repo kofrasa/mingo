@@ -1,6 +1,7 @@
 import { Options, redact } from "../../core";
 import { Iterator } from "../../lazy";
-import { cloneDeep, RawObject } from "../../util";
+import { RawObject } from "../../types";
+import { cloneDeep } from "../../util";
 
 /**
  * Restricts the contents of the documents based on information stored in the documents themselves.

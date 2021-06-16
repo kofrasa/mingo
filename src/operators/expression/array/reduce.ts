@@ -1,7 +1,8 @@
 // Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, assert, isArray, isNil, RawObject } from "../../../util";
+import { AnyVal, RawObject } from "../../../types";
+import { assert, isArray, isNil } from "../../../util";
 
 /**
  * Applies an expression to each element in an array and combines them into a single value.

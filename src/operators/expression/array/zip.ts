@@ -1,16 +1,8 @@
 // Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
 
 import { computeValue, Options } from "../../../core";
-import {
-  AnyVal,
-  assert,
-  isArray,
-  isBoolean,
-  isNil,
-  RawArray,
-  RawObject,
-  truthy,
-} from "../../../util";
+import { AnyVal, RawArray, RawObject } from "../../../types";
+import { assert, isArray, isBoolean, isNil, truthy } from "../../../util";
 
 /**
  * Merge two lists together.

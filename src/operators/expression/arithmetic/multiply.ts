@@ -1,7 +1,7 @@
 // Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../util";
+import { AnyVal, RawObject } from "../../../types";
 
 /**
  * Computes the product of an array of numbers.

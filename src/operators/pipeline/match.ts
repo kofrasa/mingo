@@ -1,7 +1,7 @@
 import { Options } from "../../core";
 import { Iterator } from "../../lazy";
 import { Query } from "../../query";
-import { RawObject } from "../../util";
+import { RawObject } from "../../types";
 
 /**
  * Filters the document stream, and only allows matching documents to pass into the next pipeline stage.

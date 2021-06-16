@@ -1,14 +1,8 @@
 // Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
 
 import { computeValue, Options } from "../../../core";
-import {
-  AnyVal,
-  assert,
-  isNil,
-  isNumber,
-  RawArray,
-  RawObject,
-} from "../../../util";
+import { AnyVal, RawArray, RawObject } from "../../../types";
+import { assert, isNil, isNumber } from "../../../util";
 import { truncate } from "./_internal";
 
 /**

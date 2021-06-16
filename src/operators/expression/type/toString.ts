@@ -3,7 +3,8 @@
  */
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, isNil, RawObject } from "../../../util";
+import { AnyVal, RawObject } from "../../../types";
+import { isNil } from "../../../util";
 import { $dateToString } from "../date";
 
 export function $toString(

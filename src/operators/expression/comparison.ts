@@ -1,7 +1,7 @@
 // Comparison Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#comparison-expression-operators
 
 import { computeValue, Options } from "../../core";
-import { AnyVal, RawObject } from "../../util";
+import { AnyVal, RawObject } from "../../types";
 import {
   $eq as __eq,
   $gt as __gt,

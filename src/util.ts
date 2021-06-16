@@ -2,20 +2,27 @@
  * Utility constants and functions
  */
 
-export type AnyVal = unknown;
-export type RawObject = Record<string, AnyVal>;
-export type RawArray = Array<AnyVal>;
-export type Container = RawObject | RawArray;
+import { AnyVal, ArrayOrObject, Callback, RawArray, RawObject } from "./types";
 
-/**
- * Custom function to hash values to improve faster comparaisons
- */
-export type HashFunction = (v: AnyVal) => string;
+/* backward-compatibility */
+export {
+  AnyVal,
+  ArrayOrObject,
+  Callback,
+  Predicate,
+  RawArray,
+  RawObject,
+} from "./types";
 
 export const MAX_INT = 2147483647;
 export const MIN_INT = -2147483648;
 export const MAX_LONG = Number.MAX_SAFE_INTEGER;
 export const MIN_LONG = Number.MIN_SAFE_INTEGER;
+
+/**
+ * Custom function to hash values to improve faster comparaisons
+ */
+export type HashFunction = Callback<string>;
 
 // special value to identify missing items. treated differently from undefined
 const MISSING = {};
@@ -51,16 +58,6 @@ export enum BsonType {
   DOUBLE = "double",
   DECIMAL = "decimal",
   REGEX = "regex",
-}
-
-// Generic callback
-export interface Callback<T> {
-  (...args: AnyVal[]): T;
-}
-
-// Generic predicate
-export interface Predicate<T> {
-  (...args: T[]): boolean;
 }
 
 // Result of comparator function
@@ -216,10 +213,10 @@ interface MergeOptions {
  * @param obj {Object|Array} the source object
  */
 export function merge(
-  target: Container,
-  obj: Container,
+  target: ArrayOrObject,
+  obj: ArrayOrObject,
   options?: MergeOptions
-): Container {
+): ArrayOrObject {
   // take care of missing inputs
   if (target === MISSING) return obj;
   if (obj === MISSING) return target;
@@ -234,8 +231,8 @@ export function merge(
   options = options || { flatten: false };
 
   if (isArray(target)) {
-    const result = target as Array<Container>;
-    const input = obj as Array<Container>;
+    const result = target as Array<ArrayOrObject>;
+    const input = obj as Array<ArrayOrObject>;
 
     if (options.flatten) {
       let i = 0;
@@ -594,7 +591,10 @@ const MAX_ARRAY_PUSH = 50000;
  * @param {*} target The target object
  * @param {*} rest The array of elements to merge into dest
  */
-export function into(target: Container, ...rest: Array<Container>): Container {
+export function into(
+  target: ArrayOrObject,
+  ...rest: Array<ArrayOrObject>
+): ArrayOrObject {
   if (target instanceof Array) {
     return rest.reduce((acc, arr: RawArray) => {
       // push arrary in batches to handle large inputs
@@ -654,7 +654,7 @@ export function memoize(
  * @returns {*}
  * @private
  */
-function getValue(obj: Container, key: string | number): AnyVal {
+function getValue(obj: ArrayOrObject, key: string | number): AnyVal {
   return isObjectLike(obj) ? obj[key] : undefined;
 }
 
@@ -676,7 +676,7 @@ function unwrap(arr: RawArray, depth: number): RawArray {
  * @returns {*}
  */
 export function resolve(
-  obj: Container,
+  obj: ArrayOrObject,
   selector: string,
   options?: ResolveOptions
 ): AnyVal {
@@ -685,7 +685,7 @@ export function resolve(
   // options
   options = options || { unwrapArray: false };
 
-  function resolve2(o: Container, path: Array<string>): AnyVal {
+  function resolve2(o: ArrayOrObject, path: Array<string>): AnyVal {
     let value: AnyVal = o;
     for (let i = 0; i < path.length; i++) {
       const field = path[i];
@@ -701,14 +701,14 @@ export function resolve(
         depth += 1;
         // only look at the rest of the path
         const subpath = path.slice(i);
-        value = value.reduce<RawArray>((acc: RawArray, item: Container) => {
+        value = value.reduce<RawArray>((acc: RawArray, item: ArrayOrObject) => {
           const v = resolve2(item, subpath);
           if (v !== undefined) acc.push(v);
           return acc;
         }, []);
         break;
       } else {
-        value = getValue(value as Container, field);
+        value = getValue(value as ArrayOrObject, field);
       }
       if (value === undefined) break;
     }
@@ -732,10 +732,10 @@ export function resolve(
  * @param selector {String} dot separated path to field
  */
 export function resolveGraph(
-  obj: Container,
+  obj: ArrayOrObject,
   selector: string,
   options?: ResolveOptions
-): Container {
+): ArrayOrObject {
   // options
   if (options === undefined) {
     options = { preserveMissing: false };
@@ -752,15 +752,15 @@ export function resolveGraph(
 
   if (obj instanceof Array) {
     if (isIndex) {
-      result = getValue(obj, Number(key)) as Container;
+      result = getValue(obj, Number(key)) as ArrayOrObject;
       if (hasNext) {
-        result = resolveGraph(result as Container, next, options);
+        result = resolveGraph(result as ArrayOrObject, next, options);
       }
       result = [result];
     } else {
       result = [];
       for (const item of obj) {
-        value = resolveGraph(item as Container, selector, options);
+        value = resolveGraph(item as ArrayOrObject, selector, options);
         if (options.preserveMissing) {
           if (value === undefined) {
             value = MISSING;
@@ -774,14 +774,14 @@ export function resolveGraph(
   } else {
     value = getValue(obj, key);
     if (hasNext) {
-      value = resolveGraph(value as Container, next, options);
+      value = resolveGraph(value as ArrayOrObject, next, options);
     }
     if (value === undefined) return undefined;
     result = {};
     result[key] = value;
   }
 
-  return result as Container;
+  return result as ArrayOrObject;
 }
 
 /**
@@ -789,19 +789,19 @@ export function resolveGraph(
  *
  * @param obj The object to filter
  */
-export function filterMissing(obj: Container): void {
+export function filterMissing(obj: ArrayOrObject): void {
   if (obj instanceof Array) {
     for (let i = obj.length - 1; i >= 0; i--) {
       if (obj[i] === MISSING) {
         obj.splice(i, 1);
       } else {
-        filterMissing(obj[i] as Container);
+        filterMissing(obj[i] as ArrayOrObject);
       }
     }
   } else if (isObject(obj)) {
     for (const k in obj) {
       if (has(obj, k)) {
-        filterMissing(obj[k] as Container);
+        filterMissing(obj[k] as ArrayOrObject);
       }
     }
   }
@@ -817,7 +817,7 @@ export function filterMissing(obj: Container): void {
  * @return {*}
  */
 export function traverse(
-  obj: Container,
+  obj: ArrayOrObject,
   selector: string,
   fn: Callback<void>,
   force?: boolean
@@ -864,10 +864,10 @@ export function setValue(
  * If the selector resolves to an array and the leaf is a non-numeric key,
  * the remove operation will be performed on objects of the array.
  *
- * @param obj {Container} object or array
+ * @param obj {ArrayOrObject} object or array
  * @param selector {String} dot separated path to element to remove
  */
-export function removeValue(obj: Container, selector: string): void {
+export function removeValue(obj: ArrayOrObject, selector: string): void {
   traverse(obj, selector, (item: AnyVal, key: string) => {
     if (item instanceof Array) {
       if (/^\d+$/.test(key)) {

@@ -3,7 +3,8 @@
  */
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, intersection, RawObject } from "../../../util";
+import { AnyVal, RawObject } from "../../../types";
+import { intersection } from "../../../util";
 
 /**
  * Returns the common elements of the input sets.

@@ -1,6 +1,6 @@
 import { Options } from "../../core";
 import { Iterator } from "../../lazy";
-import { AnyVal, RawObject } from "../../util";
+import { AnyVal, RawObject } from "../../types";
 import { $group } from "./group";
 import { $sort } from "./sort";
 

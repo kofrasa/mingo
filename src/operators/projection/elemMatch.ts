@@ -2,7 +2,8 @@
 
 import { Options } from "../../core";
 import { Query } from "../../query";
-import { AnyVal, assert, RawArray, RawObject, resolve } from "../../util";
+import { AnyVal, RawArray, RawObject } from "../../types";
+import { assert, resolve } from "../../util";
 
 /**
  * Projects only the first element from an array that matches the specified $elemMatch condition.

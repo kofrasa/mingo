@@ -2,11 +2,11 @@
 import "./init/basic";
 
 import { Aggregator } from "./aggregator";
-import { Collection, Options } from "./core";
+import { Options } from "./core";
 import { Cursor } from "./cursor";
 import { Source } from "./lazy";
 import { Query } from "./query";
-import { RawArray, RawObject } from "./util";
+import { Collection, RawArray, RawObject } from "./types";
 
 export { Aggregator } from "./aggregator";
 export { Query } from "./query";

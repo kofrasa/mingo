@@ -1,7 +1,7 @@
 // Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
 
 import { Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../util";
+import { AnyVal, RawObject } from "../../../types";
 import { computeDate } from "./_internal";
 
 /**

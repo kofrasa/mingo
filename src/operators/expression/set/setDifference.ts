@@ -3,7 +3,8 @@
  */
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, notInArray, RawArray, RawObject } from "../../../util";
+import { AnyVal, RawArray, RawObject } from "../../../types";
+import { notInArray } from "../../../util";
 
 /**
  * Returns elements of a set that do not appear in a second set.

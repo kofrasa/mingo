@@ -3,14 +3,8 @@
  */
 
 import { computeValue, Options } from "../../../core";
-import {
-  AnyVal,
-  assert,
-  isNil,
-  isNumber,
-  isString,
-  RawObject,
-} from "../../../util";
+import { AnyVal, RawObject } from "../../../types";
+import { assert, isNil, isNumber, isString } from "../../../util";
 
 /**
  * Searches a string for an occurrence of a substring and returns the UTF-8 code point index of the first occurence.

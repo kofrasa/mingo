@@ -3,7 +3,8 @@
  */
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, inArray, RawArray, RawObject } from "../../../util";
+import { AnyVal, RawArray, RawObject } from "../../../types";
+import { inArray } from "../../../util";
 
 /**
  * Concatenates two strings.

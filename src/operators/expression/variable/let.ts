@@ -3,7 +3,7 @@
  */
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../util";
+import { AnyVal, RawObject } from "../../../types";
 
 /**
  * Defines variables for use within the scope of a sub-expression and returns the result of the sub-expression.

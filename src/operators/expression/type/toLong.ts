@@ -3,7 +3,8 @@
  */
 
 import { Options } from "../../../core";
-import { AnyVal, MAX_LONG, MIN_LONG, RawObject } from "../../../util";
+import { AnyVal, RawObject } from "../../../types";
+import { MAX_LONG, MIN_LONG } from "../../../util";
 import { toInteger } from "./_internal";
 
 /**

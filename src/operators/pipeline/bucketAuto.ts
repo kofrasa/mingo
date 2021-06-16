@@ -1,16 +1,7 @@
-import { Collection, computeValue, Options } from "../../core";
+import { computeValue, Options } from "../../core";
 import { Iterator } from "../../lazy";
-import {
-  AnyVal,
-  assert,
-  has,
-  into,
-  isNil,
-  memoize,
-  RawArray,
-  RawObject,
-  sortBy,
-} from "../../util";
+import { AnyVal, Collection, RawArray, RawObject } from "../../types";
+import { assert, has, into, isNil, memoize, sortBy } from "../../util";
 
 interface Boundary extends RawObject {
   min?: number;
@@ -125,14 +116,13 @@ export function $bucketAuto(
     }
 
     if (result.length > 0) {
-      (result[result.length - 1][
-        ID_KEY
-      ] as Boundary).max = computeValueOptimized(
-        sorted[sorted.length - 1],
-        groupByExpr,
-        null,
-        options
-      ) as number;
+      (result[result.length - 1][ID_KEY] as Boundary).max =
+        computeValueOptimized(
+          sorted[sorted.length - 1],
+          groupByExpr,
+          null,
+          options
+        ) as number;
     }
 
     return result;

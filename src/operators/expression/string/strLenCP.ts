@@ -3,7 +3,7 @@
  */
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, RawArray, RawObject } from "../../../util";
+import { AnyVal, RawArray, RawObject } from "../../../types";
 
 /**
  * Returns the number of UTF-8 code points in the specified string.

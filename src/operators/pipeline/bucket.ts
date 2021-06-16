@@ -1,14 +1,7 @@
 import { computeValue, Options } from "../../core";
 import { Iterator, Lazy } from "../../lazy";
-import {
-  AnyVal,
-  assert,
-  getType,
-  into,
-  isNil,
-  RawArray,
-  RawObject,
-} from "../../util";
+import { AnyVal, RawArray, RawObject } from "../../types";
+import { assert, getType, into, isNil } from "../../util";
 
 /**
  * Categorizes incoming documents into groups, called buckets, based on a specified expression and bucket boundaries.

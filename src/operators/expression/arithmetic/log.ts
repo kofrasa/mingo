@@ -1,14 +1,8 @@
 // Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
 
 import { computeValue, Options } from "../../../core";
-import {
-  AnyVal,
-  assert,
-  isArray,
-  isNil,
-  isNumber,
-  RawObject,
-} from "../../../util";
+import { AnyVal, RawObject } from "../../../types";
+import { assert, isArray, isNil, isNumber } from "../../../util";
 
 /**
  * Calculates the log of a number in the specified base and returns the result as a double.

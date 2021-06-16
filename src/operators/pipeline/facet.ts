@@ -1,7 +1,8 @@
 import { Aggregator } from "../../aggregator";
-import { Collection, Options } from "../../core";
+import { Options } from "../../core";
 import { Iterator } from "../../lazy";
-import { objectMap, RawObject } from "../../util";
+import { Collection, RawObject } from "../../types";
+import { objectMap } from "../../util";
 
 /**
  * Processes multiple aggregation pipelines within a single stage on the same set of input documents.

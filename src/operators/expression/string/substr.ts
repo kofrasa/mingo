@@ -3,7 +3,8 @@
  */
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, isString, RawArray, RawObject } from "../../../util";
+import { AnyVal, RawArray, RawObject } from "../../../types";
+import { isString } from "../../../util";
 
 /**
  * Returns a substring of a string, starting at a specified index position and including the specified number of characters.

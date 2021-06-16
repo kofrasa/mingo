@@ -1,12 +1,8 @@
 {
+  "extends": "./tsconfig.eslint.json",
   "compilerOptions": {
     "outDir": "lib",
-    "target": "es5",
-    "moduleResolution": "node",
-    "lib": ["es6", "es2017", "dom"],
-    "declaration": true,
-    "allowSyntheticDefaultImports": true
+    "noEmit": false
   },
-  "exclude": ["node_modules", "lib", "index.d.ts", "test"],
-  "filesGlob": ["./src/**/*.ts"]
+  "include": ["./src/**/*.ts"]
 }

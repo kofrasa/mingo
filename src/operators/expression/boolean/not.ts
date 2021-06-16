@@ -1,7 +1,8 @@
 // Boolean Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#boolean-expression-operators
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, ensureArray, RawObject } from "../../../util";
+import { AnyVal, RawObject } from "../../../types";
+import { ensureArray } from "../../../util";
 
 /**
  * Returns the boolean value that is the opposite of its argument expression. Accepts a single argument expression.

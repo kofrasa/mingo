@@ -3,7 +3,8 @@
  */
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, isNil, isNumber, RawObject } from "../../../util";
+import { AnyVal, RawObject } from "../../../types";
+import { isNil, isNumber } from "../../../util";
 import { TypeConvertError } from "./_internal";
 
 /**

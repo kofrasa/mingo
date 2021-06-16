@@ -1,5 +1,6 @@
-import { Collection, computeValue, Options } from "../../core";
-import { AnyVal, isNil, RawArray } from "../../util";
+import { computeValue, Options } from "../../core";
+import { AnyVal, Collection, RawArray } from "../../types";
+import { isNil } from "../../util";
 
 /**
  * Returns an array of all values for the selected field among for each document in that group.

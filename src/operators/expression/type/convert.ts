@@ -3,7 +3,8 @@
  */
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, BsonType, isNil, JsType, RawObject } from "../../../util";
+import { AnyVal, RawObject } from "../../../types";
+import { BsonType, isNil, JsType } from "../../../util";
 import { TypeConvertError } from "./_internal";
 import { $toBool } from "./toBool";
 import { $toDate } from "./toDate";

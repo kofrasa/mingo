@@ -3,7 +3,8 @@
  */
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, intersection, RawObject, unique } from "../../../util";
+import { AnyVal, RawObject } from "../../../types";
+import { intersection, unique } from "../../../util";
 
 /**
  * Returns true if two sets have the same elements.

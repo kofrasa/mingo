@@ -1,7 +1,7 @@
 import { CollationSpec, Options } from "../../core";
 import { Iterator } from "../../lazy";
+import { AnyVal, RawArray, RawObject } from "../../types";
 import {
-  AnyVal,
   Comparator,
   compare,
   groupBy,
@@ -9,8 +9,6 @@ import {
   isEmpty,
   isObject,
   isString,
-  RawArray,
-  RawObject,
   resolve,
   sortBy,
 } from "../../util";

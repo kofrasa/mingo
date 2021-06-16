@@ -1,4 +1,4 @@
-import { AnyVal, Callback, Predicate, RawArray, RawObject } from "./util";
+import { AnyVal, Callback, Predicate, RawArray, RawObject } from "./types";
 
 interface Iteratee {
   action: Action;
@@ -7,21 +7,24 @@ interface Iteratee {
 }
 
 /**
- * Simplified generator interface
+ * A value produced by a generator
  */
-interface Generator<T> {
-  next: Callback<T>;
+interface IteratorResult {
+  readonly value?: AnyVal;
+  readonly done: boolean;
 }
 
 /**
- * A value produced by a generator
+ * Simplified generator interface
  */
-interface Value {
-  value?: AnyVal;
-  done: boolean;
+interface Generator<T> {
+  next: () => T;
 }
 
-export type Source = Generator<AnyVal> | Callback<AnyVal> | RawArray;
+export type Source =
+  | Generator<IteratorResult>
+  | Callback<IteratorResult>
+  | RawArray;
 
 /**
  * Returns an iterator
@@ -62,12 +65,12 @@ function createCallback(
   nextFn: Callback<AnyVal>,
   iteratees: Iteratee[],
   buffer: RawArray
-): Callback<Value> {
+): Callback<IteratorResult> {
   let done = false;
   let index = -1;
   let bufferIndex = 0; // index for the buffer
 
-  return function (storeResult?: boolean): Value {
+  return function (storeResult?: boolean): IteratorResult {
     // special hack to collect all values into buffer
     try {
       outer: while (!done) {
@@ -126,7 +129,7 @@ export class Iterator {
   private __first: boolean; // flag whether to return a single value
   private __done: boolean;
   private __buf: AnyVal[];
-  private __next: Callback<Value>;
+  private __next: Callback<IteratorResult>;
 
   /**
    * @param {*} source An iterable object or function.
@@ -165,7 +168,7 @@ export class Iterator {
       };
     } else if (!(source instanceof Function)) {
       throw new Error(
-        "Source is not iterable. Must be Array, Function, or Generator"
+        `Source is of type '${typeof source}'. Must be Array, Function, or Generator`
       );
     }
 
@@ -194,7 +197,7 @@ export class Iterator {
     return this;
   }
 
-  next(): Value {
+  next(): IteratorResult {
     return this.__next();
   }
 

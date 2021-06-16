@@ -1,14 +1,8 @@
 // Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
 
 import { computeValue, Options } from "../../../core";
-import {
-  AnyVal,
-  assert,
-  isArray,
-  isEqual,
-  RawArray,
-  RawObject,
-} from "../../../util";
+import { AnyVal, RawArray, RawObject } from "../../../types";
+import { assert, isArray, isEqual } from "../../../util";
 
 /**
  * Returns a boolean indicating whether a specified value is in an array.

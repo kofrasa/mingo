@@ -2,10 +2,15 @@
  * Predicates used for Query and Expression operators.
  */
 
-import { computeValue, Options } from "../core";
-import { Query } from "../query";
 import {
-  AnyVal,
+  computeValue,
+  ExpressionOperator,
+  Options,
+  QueryOperator,
+} from "../core";
+import { Query } from "../query";
+import { AnyVal, RawArray, RawObject } from "../types";
+import {
   BsonType,
   Callback,
   ensureArray,
@@ -31,25 +36,23 @@ import {
   MIN_INT,
   MIN_LONG,
   Predicate,
-  RawArray,
-  RawObject,
   resolve,
 } from "../util";
 
 /**
  * Returns a query operator created from the predicate
  *
- * @param pred Predicate function
+ * @param predicate Predicate function
  */
 export function createQueryOperator(
-  pred: Predicate<AnyVal>
-): Callback<Callback<boolean>> {
+  predicate: Predicate<AnyVal>
+): QueryOperator {
   return (selector: string, value: AnyVal, options?: Options) => {
     const opts = { unwrapArray: true };
     return (obj: RawObject): boolean => {
       // value of field must be fully resolved.
       const lhs = resolve(obj, selector, opts);
-      return pred(lhs, value, options);
+      return predicate(lhs, value, options);
     };
   };
 }
@@ -57,14 +60,14 @@ export function createQueryOperator(
 /**
  * Returns an expression operator created from the predicate
  *
- * @param f Predicate function
+ * @param predicate Predicate function
  */
 export function createExpressionOperator(
-  f: Predicate<AnyVal>
-): Callback<AnyVal> {
+  predicate: Predicate<AnyVal>
+): ExpressionOperator {
   return (obj: RawObject, expr: AnyVal, options?: Options) => {
     const args = computeValue(obj, expr, null, options) as RawArray;
-    return f(...args);
+    return predicate(...args);
   };
 }
 

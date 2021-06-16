@@ -1,7 +1,8 @@
 // Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, assert, isNil, isNumber, RawObject } from "../../../util";
+import { AnyVal, RawObject } from "../../../types";
+import { assert, isNil, isNumber } from "../../../util";
 
 /**
  * Calculates the natural logarithm ln (i.e loge) of a number and returns the result as a double.

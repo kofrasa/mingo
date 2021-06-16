@@ -3,7 +3,8 @@
  */
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, assert, Container, isObject, RawObject } from "../../../util";
+import { AnyVal, ArrayOrObject, RawObject } from "../../../types";
+import { assert, isObject } from "../../../util";
 
 /**
  * A ternary operator that evaluates one expression,
@@ -14,7 +15,7 @@ import { AnyVal, assert, Container, isObject, RawObject } from "../../../util";
  */
 export function $cond(
   obj: RawObject,
-  expr: Container,
+  expr: ArrayOrObject,
   options?: Options
 ): AnyVal {
   let ifExpr: AnyVal;

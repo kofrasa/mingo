@@ -1,7 +1,7 @@
 import { computeValue, getOperator, OperatorType, Options } from "../../core";
 import { Iterator } from "../../lazy";
+import { AnyVal, RawObject } from "../../types";
 import {
-  AnyVal,
   assert,
   cloneDeep,
   ensureArray,
@@ -17,7 +17,6 @@ import {
   isString,
   merge,
   notInArray,
-  RawObject,
   removeValue,
   resolveGraph,
   setValue,

@@ -1,11 +1,10 @@
 import { Options } from "../../core";
 import { Iterator, Lazy } from "../../lazy";
+import { AnyVal, RawObject } from "../../types";
 import {
-  AnyVal,
   cloneDeep,
   isEmpty,
   isString,
-  RawObject,
   removeValue,
   resolve,
   setValue,

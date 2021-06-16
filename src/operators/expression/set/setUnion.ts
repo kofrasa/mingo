@@ -3,7 +3,8 @@
  */
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, RawObject, union } from "../../../util";
+import { AnyVal, RawObject } from "../../../types";
+import { union } from "../../../util";
 
 /**
  * Returns a set that holds all elements of the input sets.

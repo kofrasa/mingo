@@ -1,7 +1,8 @@
 // $slice operator. https://docs.mongodb.com/manual/reference/operator/projection/slice/#proj._S_slice
 
 import { Options } from "../../core";
-import { AnyVal, isArray, RawArray, RawObject, resolve } from "../../util";
+import { AnyVal, RawArray, RawObject } from "../../types";
+import { isArray, resolve } from "../../util";
 import { $slice as __slice } from "../expression/array/slice";
 
 /**

@@ -1,6 +1,7 @@
 import { computeValue, Options } from "../../core";
 import { Iterator } from "../../lazy";
-import { cloneDeep, RawObject, removeValue, setValue } from "../../util";
+import { RawObject } from "../../types";
+import { cloneDeep, removeValue, setValue } from "../../util";
 
 /**
  * Adds new fields to documents.

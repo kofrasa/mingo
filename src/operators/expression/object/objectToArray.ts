@@ -1,7 +1,8 @@
 // Object Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#object-expression-operators
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, assert, isObject, RawArray, RawObject } from "../../../util";
+import { AnyVal, RawArray, RawObject } from "../../../types";
+import { assert, isObject } from "../../../util";
 
 /**
  * Converts a document to an array of documents representing key-value pairs.

@@ -3,7 +3,7 @@
  */
 
 import { Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../util";
+import { AnyVal, RawObject } from "../../../types";
 import { $substr } from "./substr";
 
 export function $substrCP(

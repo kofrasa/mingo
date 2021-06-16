@@ -1,13 +1,6 @@
 import { computeValue, Options } from "../../../core";
-import {
-  AnyVal,
-  has,
-  isDate,
-  isNil,
-  isObject,
-  isString,
-  RawObject,
-} from "../../../util";
+import { AnyVal, RawObject } from "../../../types";
+import { has, isDate, isNil, isObject, isString } from "../../../util";
 
 export const MILLIS_PER_DAY = 1000 * 60 * 60 * 24;
 export const MINUTES_PER_HOUR = 60;

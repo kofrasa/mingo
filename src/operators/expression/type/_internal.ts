@@ -1,5 +1,6 @@
 import { computeValue, Options } from "../../../core";
-import { AnyVal, isNil, isNumber, isString, RawObject } from "../../../util";
+import { AnyVal, RawObject } from "../../../types";
+import { isNil, isNumber, isString } from "../../../util";
 
 export class TypeConvertError extends Error {
   constructor(message: string) {

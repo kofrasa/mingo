@@ -1,7 +1,8 @@
 // Trignometry Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#trigonometry-expression-operators
 
 import { computeValue, Options } from "../../core";
-import { AnyVal, Callback, isNil, RawObject } from "../../util";
+import { AnyVal, RawObject } from "../../types";
+import { Callback, isNil } from "../../util";
 
 /**
  * Returns an operator for a given trignometric function

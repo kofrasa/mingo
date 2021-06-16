@@ -3,7 +3,8 @@
  */
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, isEmpty, RawObject } from "../../../util";
+import { AnyVal, RawObject } from "../../../types";
+import { isEmpty } from "../../../util";
 
 /**
  * Converts a string to lowercase.

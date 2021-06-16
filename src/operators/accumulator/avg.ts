@@ -1,5 +1,6 @@
-import { Collection, Options } from "../../core";
-import { AnyVal, isNumber } from "../../util";
+import { Options } from "../../core";
+import { AnyVal, Collection } from "../../types";
+import { isNumber } from "../../util";
 import { $push } from "./push";
 
 /**

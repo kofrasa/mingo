@@ -3,14 +3,8 @@
  */
 
 import { computeValue, Options } from "../../../core";
-import {
-  AnyVal,
-  assert,
-  isNumber,
-  isString,
-  RawArray,
-  RawObject,
-} from "../../../util";
+import { AnyVal, RawArray, RawObject } from "../../../types";
+import { assert, isNumber, isString } from "../../../util";
 
 const UTF8_MASK = [0xc0, 0xe0, 0xf0];
 

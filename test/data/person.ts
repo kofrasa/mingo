@@ -1,0 +1,45 @@
+export default {
+  _id: "100",
+  firstName: "Francis",
+  lastName: "Asante",
+  username: "kofrasa",
+  title: "Software Engineer",
+  degree: "Computer Science",
+  jobs: 6,
+  date: {
+    year: 2013,
+    month: 9,
+    day: 25,
+  },
+  languages: {
+    spoken: ["english", "french", "spanish"],
+    programming: ["C", "Python", "Scala", "Java", "Javascript", "Bash", "C#"],
+  },
+  circles: {
+    school: [
+      "Kobby",
+      "Henry",
+      "Kanba",
+      "Nana",
+      "Albert",
+      "Yayra",
+      "Linda",
+      "Sophia",
+    ],
+    work: ["Kobby", "KT", "Evans", "Robert", "Ehi", "Ebo", "KO"],
+    family: ["Richard", "Roseline", "Michael", "Rachel"],
+  },
+  projects: {
+    C: ["word_grid", "student_record", "calendar"],
+    Java: ["Easy Programming Language", "SurveyMobile"],
+    Python: ["Kasade", "Code Jam", "Flaskapp", "FlaskUtils"],
+    Scala: [],
+    Javascript: ["mingo", "Backapp", "BackboneApp", "Google Election Maps"],
+  },
+  grades: [
+    { grade: 92, mean: 88, std: 8 },
+    { grade: 78, mean: 90, std: 5 },
+    { grade: 88, mean: 85, std: 3 },
+  ],
+  today: new Date(),
+};

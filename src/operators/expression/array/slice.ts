@@ -1,7 +1,8 @@
 // Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, assert, isNil, RawArray, RawObject } from "../../../util";
+import { AnyVal, RawArray, RawObject } from "../../../types";
+import { assert, isNil } from "../../../util";
 
 /**
  * Returns a subset of an array.

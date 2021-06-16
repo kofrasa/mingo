@@ -1,7 +1,8 @@
 // Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, assert, isDate, RawObject } from "../../../util";
+import { AnyVal, RawObject } from "../../../types";
+import { assert, isDate } from "../../../util";
 
 /**
  * Computes the sum of an array of numbers.

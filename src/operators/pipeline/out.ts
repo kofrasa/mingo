@@ -1,6 +1,7 @@
-import { Collection, Options } from "../../core";
+import { Options } from "../../core";
 import { Iterator } from "../../lazy";
-import { assert, isString, RawObject } from "../../util";
+import { Collection, RawObject } from "../../types";
+import { assert, isString } from "../../util";
 
 /**
  * Takes the documents returned by the aggregation pipeline and writes them to a specified collection.

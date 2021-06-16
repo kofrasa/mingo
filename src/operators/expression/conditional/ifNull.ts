@@ -3,14 +3,8 @@
  */
 
 import { computeValue, Options } from "../../../core";
-import {
-  AnyVal,
-  assert,
-  isArray,
-  isNil,
-  RawArray,
-  RawObject,
-} from "../../../util";
+import { AnyVal, RawArray, RawObject } from "../../../types";
+import { assert, isArray, isNil } from "../../../util";
 
 /**
  * Evaluates an expression and returns the first expression if it evaluates to a non-null value.

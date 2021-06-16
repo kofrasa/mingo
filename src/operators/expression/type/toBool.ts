@@ -3,7 +3,8 @@
  */
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, isNil, isString, RawObject } from "../../../util";
+import { AnyVal, RawObject } from "../../../types";
+import { isNil, isString } from "../../../util";
 
 /**
  * Converts a value to a boolean.

@@ -3,14 +3,8 @@
  */
 
 import { computeValue, Options } from "../../../core";
-import {
-  AnyVal,
-  assert,
-  isEqual,
-  isNil,
-  isString,
-  RawObject,
-} from "../../../util";
+import { AnyVal, RawObject } from "../../../types";
+import { assert, isEqual, isNil, isString } from "../../../util";
 
 /**
  * Compares two strings and returns an integer that reflects the comparison.

@@ -3,7 +3,8 @@
  */
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, assert, isNil, isString, RawObject } from "../../../util";
+import { AnyVal, RawObject } from "../../../types";
+import { assert, isNil, isString } from "../../../util";
 
 /**
  * Splits a string into substrings based on a delimiter.
