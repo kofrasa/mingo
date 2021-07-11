@@ -5,7 +5,7 @@
   "main": "lib",
   "module": "lib",
   "scripts": {
-    "docs": "typedoc && touch docs/.nojekyll",
+    "docs": "typedoc src/ && touch docs/.nojekyll",
     "build": "tsc && node ./build.js",
     "lint": "eslint --fix --ext .ts src/ test/",
     "test": "npm run build && NODE_ENV=test nyc --reporter=lcov --reporter=text ./runtest.sh && npm run lint",

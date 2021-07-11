@@ -7,6 +7,7 @@
 	<meta name="description" content="Documentation for mingo">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="assets/css/main.css">
+	<script async src="assets/js/search.js" id="search-script"></script>
 </head>
 <body>
 <header>
@@ -40,8 +41,6 @@
 							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
 							<input type="checkbox" id="tsd-filter-externals" checked />
 							<label class="tsd-widget" for="tsd-filter-externals">Externals</label>
-							<input type="checkbox" id="tsd-filter-only-exported" />
-							<label class="tsd-widget" for="tsd-filter-only-exported">Only exported</label>
 						</div>
 					</div>
 					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
@@ -51,11 +50,6 @@
 	</div>
 	<div class="tsd-page-title">
 		<div class="container">
-			<ul class="tsd-breadcrumb">
-				<li>
-					<a href="globals.html">Globals</a>
-				</li>
-			</ul>
 			<h1>mingo</h1>
 		</div>
 	</div>
@@ -105,6 +99,7 @@
 									<li><a href="https://docs.mongodb.com/manual/reference/operator/aggregation/#literal-expression-operators/">Literal Operators</a></li>
 									<li><a href="https://docs.mongodb.com/manual/reference/operator/aggregation/#object-expression-operators">Object Operators</a></li>
 									<li><a href="https://docs.mongodb.com/manual/reference/operator/aggregation/#set-expression-operators/">Set Operators</a></li>
+									<li><a href="https://docs.mongodb.com/manual/reference/operator/aggregation/#trigonometry-expression-operators">Trignometry Operators</a></li>
 									<li><a href="https://docs.mongodb.com/manual/reference/operator/aggregation/#type-expression-operators">Type Operators</a></li>
 									<li><a href="https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators">String Operators</a></li>
 									<li><a href="https://docs.mongodb.com/manual/reference/operator/aggregation/#variable-expression-operators">Variable Operators</a></li>
@@ -133,11 +128,12 @@
 				<a href="#usage" id="usage" style="color: inherit; text-decoration: none;">
 					<h2>Usage</h2>
 				</a>
-				<pre><code class="language-js"><span class="hljs-comment">// Use as es6 module</span>
-<span class="hljs-keyword">import</span> mingo <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;mingo&#x27;</span>
+				<pre><code class="language-js"><span style="color: #008000">// Use as es6 module</span>
+<span style="color: #AF00DB">import</span><span style="color: #000000"> </span><span style="color: #001080">mingo</span><span style="color: #000000"> </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;mingo&#039;</span>
 
-<span class="hljs-comment">// or vanilla nodeJS</span>
-<span class="hljs-keyword">const</span> mingo = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;mingo&#x27;</span>)</code></pre>
+<span style="color: #008000">// or vanilla nodeJS</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">mingo</span><span style="color: #000000"> = </span><span style="color: #795E26">require</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;mingo&#039;</span><span style="color: #000000">)</span>
+</code></pre>
 				<a href="#change-in-4xx" id="change-in-4xx" style="color: inherit; text-decoration: none;">
 					<h3>Change in 4.x.x</h3>
 				</a>
@@ -152,10 +148,12 @@
 				<p>Only <a href="https://docs.mongodb.com/manual/reference/operator/query/">Query and Projection</a> operators are loaded by default when using the main module.
 				This is done using the side-effect module <code>mingo/init/basic</code>, and also automatically includes pipeline operators <code>$project</code>, <code>$skip</code>, <code>$limit</code>, and <code>$sort</code>.</p>
 				<p>If your application uses most of the available operators or you do not care about bundle size, you can load all operators as shown below.</p>
-				<pre><code class="language-js"><span class="hljs-comment">// Note that doing this effectively imports the entire library into your bundle and unused operators cannot be tree shaked</span>
-<span class="hljs-keyword">import</span> <span class="hljs-string">&#x27;mingo/init/system&#x27;</span></code></pre>
+				<pre><code class="language-js"><span style="color: #008000">// Note that doing this effectively imports the entire library into your bundle and unused operators cannot be tree shaked</span>
+<span style="color: #AF00DB">import</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;mingo/init/system&#039;</span>
+</code></pre>
 				<p>Or from the node CLI</p>
-				<pre><code class="language-sh">node -r <span class="hljs-string">&#x27;mingo/init/system&#x27;</span> myscript.js</code></pre>
+				<pre><code class="language-sh"><span style="color: #000000">node -r </span><span style="color: #A31515">&#039;mingo/init/system&#039;</span><span style="color: #000000"> myscript.js</span>
+</code></pre>
 				<a href="#custom-operators" id="custom-operators" style="color: inherit; text-decoration: none;">
 					<h4>Custom Operators</h4>
 				</a>
@@ -171,8 +169,8 @@
 				</ul>
 				<p>Lastly, the function argument to <code>addOperators(operatorType, fn)</code> now accepts an object with the these two internal functions;</p>
 				<ul>
-					<li><code>computeValue(obj: object | any[], expr: any, operator: string, options?: ComputeOptions): any</code></li>
-					<li><code>resolve(obj: object | any[], selector: string, options?: ResolveOptions): any</code></li>
+					<li><code>computeValue(obj: AnyVal, expr: AnyVal, operator: string, options?: ComputeOptions): AnyVal</code></li>
+					<li><code>resolve(obj: AnyVal, selector: string, options?: ResolveOptions): AnyVal</code></li>
 				</ul>
 				<p>Any extra utility may be imported directly from the specific module.</p>
 				<a href="#importing-submodules" id="importing-submodules" style="color: inherit; text-decoration: none;">
@@ -185,95 +183,101 @@
 				</a>
 				<p>This work natively in typescript since it knows how to load commonJS modules as ES6.
 				You may optionally install the <a href="https://www.npmjs.com/package/esm">esm</a> module to use this syntax.</p>
-				<pre><code class="language-js"><span class="hljs-keyword">import</span> { $unwind } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;mingo/operators/pipeline&#x27;</span></code></pre>
+				<pre><code class="language-js"><span style="color: #AF00DB">import</span><span style="color: #000000"> { </span><span style="color: #001080">$unwind</span><span style="color: #000000"> } </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;mingo/operators/pipeline&#039;</span>
+</code></pre>
 				<a href="#es5" id="es5" style="color: inherit; text-decoration: none;">
 					<h4>ES5</h4>
 				</a>
 				<p>Unlike the ES6 version, it is necessary to specify the operator module in the path to avoid loading any extras</p>
-				<pre><code class="language-js"><span class="hljs-keyword">const</span> $unwind = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;mingo/operators/pipeline/unwind&#x27;</span>).$unwind</code></pre>
+				<pre><code class="language-js"><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">$unwind</span><span style="color: #000000"> = </span><span style="color: #795E26">require</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;mingo/operators/pipeline/unwind&#039;</span><span style="color: #000000">).</span><span style="color: #001080">$unwind</span>
+</code></pre>
 				<a href="#configuration" id="configuration" style="color: inherit; text-decoration: none;">
 					<h2>Configuration</h2>
 				</a>
 				<p>To support tree-shaking, you may import and register specific operators that will be used in your application.</p>
-				<pre><code class="language-js"><span class="hljs-keyword">import</span> { useOperators, OperatorType } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;mingo/core&#x27;</span>
-<span class="hljs-keyword">import</span> { $trunc } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;mingo/operators/expression&#x27;</span>
-<span class="hljs-keyword">import</span> { $bucket } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;mingo/operators/pipeline&#x27;</span>
+				<pre><code class="language-js"><span style="color: #AF00DB">import</span><span style="color: #000000"> { </span><span style="color: #001080">useOperators</span><span style="color: #000000">, </span><span style="color: #001080">OperatorType</span><span style="color: #000000"> } </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;mingo/core&#039;</span>
+<span style="color: #AF00DB">import</span><span style="color: #000000"> { </span><span style="color: #001080">$trunc</span><span style="color: #000000"> } </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;mingo/operators/expression&#039;</span>
+<span style="color: #AF00DB">import</span><span style="color: #000000"> { </span><span style="color: #001080">$bucket</span><span style="color: #000000"> } </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;mingo/operators/pipeline&#039;</span>
 
-useOperators(OperatorType.EXPRESSION, { $trunc, $floor })
-useOperators(OperatorType.PIPELINE, { $bucket })</code></pre>
+<span style="color: #795E26">useOperators</span><span style="color: #000000">(</span><span style="color: #001080">OperatorType</span><span style="color: #000000">.</span><span style="color: #0070C1">EXPRESSION</span><span style="color: #000000">, { </span><span style="color: #001080">$trunc</span><span style="color: #000000">, </span><span style="color: #001080">$floor</span><span style="color: #000000"> })</span>
+<span style="color: #795E26">useOperators</span><span style="color: #000000">(</span><span style="color: #001080">OperatorType</span><span style="color: #000000">.</span><span style="color: #0070C1">PIPELINE</span><span style="color: #000000">, { </span><span style="color: #001080">$bucket</span><span style="color: #000000"> })</span>
+</code></pre>
 				<a href="#using-query-object-to-test-objects" id="using-query-object-to-test-objects" style="color: inherit; text-decoration: none;">
 					<h2>Using query object to test objects</h2>
 				</a>
-				<pre><code class="language-js"><span class="hljs-keyword">import</span> mingo <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;mingo&#x27;</span>
+				<pre><code class="language-js"><span style="color: #AF00DB">import</span><span style="color: #000000"> </span><span style="color: #001080">mingo</span><span style="color: #000000"> </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;mingo&#039;</span>
 
-<span class="hljs-comment">// create a query with criteria</span>
-<span class="hljs-comment">// find all grades for homework with score &gt;= 50</span>
-<span class="hljs-keyword">let</span> query = <span class="hljs-keyword">new</span> mingo.Query({
-  <span class="hljs-attr">type</span>: <span class="hljs-string">&quot;homework&quot;</span>,
-  <span class="hljs-attr">score</span>: { <span class="hljs-attr">$gte</span>: <span class="hljs-number">50</span> }
-});
+<span style="color: #008000">// create a query with criteria</span>
+<span style="color: #008000">// find all grades for homework with score &gt;= 50</span>
+<span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080">query</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #001080">mingo</span><span style="color: #000000">.</span><span style="color: #795E26">Query</span><span style="color: #000000">({</span>
+<span style="color: #000000">  </span><span style="color: #001080">type:</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;homework&quot;</span><span style="color: #000000">,</span>
+<span style="color: #000000">  </span><span style="color: #001080">score:</span><span style="color: #000000"> { </span><span style="color: #001080">$gte:</span><span style="color: #000000"> </span><span style="color: #098658">50</span><span style="color: #000000"> }</span>
+<span style="color: #000000">});</span>
 
-<span class="hljs-comment">// test if an object matches query</span>
-query.test(doc)</code></pre>
+<span style="color: #008000">// test if an object matches query</span>
+<span style="color: #001080">query</span><span style="color: #000000">.</span><span style="color: #795E26">test</span><span style="color: #000000">(</span><span style="color: #001080">doc</span><span style="color: #000000">)</span>
+</code></pre>
 				<a href="#searching-and-filtering" id="searching-and-filtering" style="color: inherit; text-decoration: none;">
 					<h2>Searching and Filtering</h2>
 				</a>
-				<pre><code class="language-js"><span class="hljs-keyword">import</span> mingo <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;mingo&#x27;</span>
+				<pre><code class="language-js"><span style="color: #AF00DB">import</span><span style="color: #000000"> </span><span style="color: #001080">mingo</span><span style="color: #000000"> </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;mingo&#039;</span>
 
-<span class="hljs-comment">// input is either an Array or any iterable source (i.e Object{next:Function}) including ES6 generators.</span>
-<span class="hljs-keyword">let</span> criteria = { <span class="hljs-attr">score</span>: { <span class="hljs-attr">$gt</span>: <span class="hljs-number">10</span> } }
+<span style="color: #008000">// input is either an Array or any iterable source (i.e Object{next:Function}) including ES6 generators.</span>
+<span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080">criteria</span><span style="color: #000000"> = { </span><span style="color: #001080">score:</span><span style="color: #000000"> { </span><span style="color: #001080">$gt:</span><span style="color: #000000"> </span><span style="color: #098658">10</span><span style="color: #000000"> } }</span>
 
-<span class="hljs-keyword">let</span> query = <span class="hljs-keyword">new</span> mingo.Query(criteria)
+<span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080">query</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #001080">mingo</span><span style="color: #000000">.</span><span style="color: #795E26">Query</span><span style="color: #000000">(</span><span style="color: #001080">criteria</span><span style="color: #000000">)</span>
 
-<span class="hljs-comment">// filter collection with find()</span>
-<span class="hljs-keyword">let</span> cursor = query.find(collection)
+<span style="color: #008000">// filter collection with find()</span>
+<span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080">cursor</span><span style="color: #000000"> = </span><span style="color: #001080">query</span><span style="color: #000000">.</span><span style="color: #795E26">find</span><span style="color: #000000">(</span><span style="color: #001080">collection</span><span style="color: #000000">)</span>
 
-<span class="hljs-comment">// alternatively use shorthand</span>
-<span class="hljs-comment">// cursor = mingo.find(collection, criteria)</span>
+<span style="color: #008000">// alternatively use shorthand</span>
+<span style="color: #008000">// cursor = mingo.find(collection, criteria)</span>
 
-<span class="hljs-comment">// sort, skip and limit by chaining</span>
-cursor.sort({<span class="hljs-attr">student_id</span>: <span class="hljs-number">1</span>, <span class="hljs-attr">score</span>: -<span class="hljs-number">1</span>})
-  .skip(<span class="hljs-number">100</span>)
-  .limit(<span class="hljs-number">100</span>)
+<span style="color: #008000">// sort, skip and limit by chaining</span>
+<span style="color: #001080">cursor</span><span style="color: #000000">.</span><span style="color: #795E26">sort</span><span style="color: #000000">({</span><span style="color: #001080">student_id:</span><span style="color: #000000"> </span><span style="color: #098658">1</span><span style="color: #000000">, </span><span style="color: #001080">score:</span><span style="color: #000000"> -</span><span style="color: #098658">1</span><span style="color: #000000">})</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">skip</span><span style="color: #000000">(</span><span style="color: #098658">100</span><span style="color: #000000">)</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">limit</span><span style="color: #000000">(</span><span style="color: #098658">100</span><span style="color: #000000">)</span>
 
-<span class="hljs-comment">// count matches. exhausts cursor</span>
-cursor.count()
+<span style="color: #008000">// count matches. exhausts cursor</span>
+<span style="color: #001080">cursor</span><span style="color: #000000">.</span><span style="color: #795E26">count</span><span style="color: #000000">()</span>
 
-<span class="hljs-comment">// classic cursor iterator (old school)</span>
-<span class="hljs-keyword">while</span> (cursor.hasNext()) {
-  <span class="hljs-built_in">console</span>.log(cursor.next())
-}
+<span style="color: #008000">// classic cursor iterator (old school)</span>
+<span style="color: #AF00DB">while</span><span style="color: #000000"> (</span><span style="color: #001080">cursor</span><span style="color: #000000">.</span><span style="color: #795E26">hasNext</span><span style="color: #000000">()) {</span>
+<span style="color: #000000">  </span><span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #001080">cursor</span><span style="color: #000000">.</span><span style="color: #795E26">next</span><span style="color: #000000">())</span>
+<span style="color: #000000">}</span>
 
-<span class="hljs-comment">// ES6 iterators (new cool)</span>
-<span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> value <span class="hljs-keyword">of</span> cursor) {
-  <span class="hljs-built_in">console</span>.log(value)
-}
+<span style="color: #008000">// ES6 iterators (new cool)</span>
+<span style="color: #AF00DB">for</span><span style="color: #000000"> (</span><span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080">value</span><span style="color: #000000"> </span><span style="color: #0000FF">of</span><span style="color: #000000"> </span><span style="color: #001080">cursor</span><span style="color: #000000">) {</span>
+<span style="color: #000000">  </span><span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #001080">value</span><span style="color: #000000">)</span>
+<span style="color: #000000">}</span>
 
-<span class="hljs-comment">// all() to retrieve matched objects. exhausts cursor</span>
-cursor.all()</code></pre>
+<span style="color: #008000">// all() to retrieve matched objects. exhausts cursor</span>
+<span style="color: #001080">cursor</span><span style="color: #000000">.</span><span style="color: #795E26">all</span><span style="color: #000000">()</span>
+</code></pre>
 				<a href="#aggregation-pipeline" id="aggregation-pipeline" style="color: inherit; text-decoration: none;">
 					<h2>Aggregation Pipeline</h2>
 				</a>
-				<pre><code class="language-js"><span class="hljs-keyword">import</span> { Aggregator } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;mingo/aggregator&#x27;</span>
-<span class="hljs-keyword">import</span> { useOperators, OperatorType } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;mingo/core&#x27;</span>
-<span class="hljs-keyword">import</span> { $match, $group } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;mingo/operators/pipeline&#x27;</span>
-<span class="hljs-keyword">import</span> { $min } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;mingo/operators/accumulator&#x27;</span>
+				<pre><code class="language-js"><span style="color: #AF00DB">import</span><span style="color: #000000"> { </span><span style="color: #001080">Aggregator</span><span style="color: #000000"> } </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;mingo/aggregator&#039;</span>
+<span style="color: #AF00DB">import</span><span style="color: #000000"> { </span><span style="color: #001080">useOperators</span><span style="color: #000000">, </span><span style="color: #001080">OperatorType</span><span style="color: #000000"> } </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;mingo/core&#039;</span>
+<span style="color: #AF00DB">import</span><span style="color: #000000"> { </span><span style="color: #001080">$match</span><span style="color: #000000">, </span><span style="color: #001080">$group</span><span style="color: #000000"> } </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;mingo/operators/pipeline&#039;</span>
+<span style="color: #AF00DB">import</span><span style="color: #000000"> { </span><span style="color: #001080">$min</span><span style="color: #000000"> } </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;mingo/operators/accumulator&#039;</span>
 
-<span class="hljs-comment">// ensure the required operators are preloaded prior to using them.</span>
-useOperators(OperatorType.PIPELINE, { $match, $group })
-useOperators(OperatorType.ACCUMULATOR, { $min })
+<span style="color: #008000">// ensure the required operators are preloaded prior to using them.</span>
+<span style="color: #795E26">useOperators</span><span style="color: #000000">(</span><span style="color: #001080">OperatorType</span><span style="color: #000000">.</span><span style="color: #0070C1">PIPELINE</span><span style="color: #000000">, { </span><span style="color: #001080">$match</span><span style="color: #000000">, </span><span style="color: #001080">$group</span><span style="color: #000000"> })</span>
+<span style="color: #795E26">useOperators</span><span style="color: #000000">(</span><span style="color: #001080">OperatorType</span><span style="color: #000000">.</span><span style="color: #0070C1">ACCUMULATOR</span><span style="color: #000000">, { </span><span style="color: #001080">$min</span><span style="color: #000000"> })</span>
 
-<span class="hljs-keyword">let</span> agg = <span class="hljs-keyword">new</span> Aggregator([
-  {<span class="hljs-string">&#x27;$match&#x27;</span>: { <span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;homework&quot;</span>}},
-  {<span class="hljs-string">&#x27;$group&#x27;</span>: {<span class="hljs-string">&#x27;_id&#x27;</span>:<span class="hljs-string">&#x27;$student_id&#x27;</span>, <span class="hljs-string">&#x27;score&#x27;</span>:{<span class="hljs-attr">$min</span>:<span class="hljs-string">&#x27;$score&#x27;</span>}}},
-  {<span class="hljs-string">&#x27;$sort&#x27;</span>: {<span class="hljs-string">&#x27;_id&#x27;</span>: <span class="hljs-number">1</span>, <span class="hljs-string">&#x27;score&#x27;</span>: <span class="hljs-number">1</span>}}
-])
+<span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080">agg</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #795E26">Aggregator</span><span style="color: #000000">([</span>
+<span style="color: #000000">  {</span><span style="color: #A31515">&#039;$match&#039;</span><span style="color: #001080">:</span><span style="color: #000000"> { </span><span style="color: #A31515">&quot;type&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;homework&quot;</span><span style="color: #000000">}},</span>
+<span style="color: #000000">  {</span><span style="color: #A31515">&#039;$group&#039;</span><span style="color: #001080">:</span><span style="color: #000000"> {</span><span style="color: #A31515">&#039;_id&#039;</span><span style="color: #001080">:</span><span style="color: #A31515">&#039;$student_id&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;score&#039;</span><span style="color: #001080">:</span><span style="color: #000000">{</span><span style="color: #001080">$min:</span><span style="color: #A31515">&#039;$score&#039;</span><span style="color: #000000">}}},</span>
+<span style="color: #000000">  {</span><span style="color: #A31515">&#039;$sort&#039;</span><span style="color: #001080">:</span><span style="color: #000000"> {</span><span style="color: #A31515">&#039;_id&#039;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #098658">1</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;score&#039;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #098658">1</span><span style="color: #000000">}}</span>
+<span style="color: #000000">])</span>
 
-<span class="hljs-comment">// return an iterator for streaming results</span>
-<span class="hljs-keyword">let</span> stream = agg.stream(collection)
+<span style="color: #008000">// return an iterator for streaming results</span>
+<span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080">stream</span><span style="color: #000000"> = </span><span style="color: #001080">agg</span><span style="color: #000000">.</span><span style="color: #795E26">stream</span><span style="color: #000000">(</span><span style="color: #001080">collection</span><span style="color: #000000">)</span>
 
-<span class="hljs-comment">// return all results. same as `stream.all()`</span>
-<span class="hljs-keyword">let</span> result = agg.run(collection)</code></pre>
+<span style="color: #008000">// return all results. same as `stream.all()`</span>
+<span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080">result</span><span style="color: #000000"> = </span><span style="color: #001080">agg</span><span style="color: #000000">.</span><span style="color: #795E26">run</span><span style="color: #000000">(</span><span style="color: #001080">collection</span><span style="color: #000000">)</span>
+</code></pre>
 				<a href="#benefits" id="benefits" style="color: inherit; text-decoration: none;">
 					<h2>Benefits</h2>
 				</a>
@@ -299,527 +303,524 @@ useOperators(OperatorType.ACCUMULATOR, { $min })
 		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
 			<nav class="tsd-navigation primary">
 				<ul>
-					<li class="globals  ">
-						<a href="globals.html"><em>Globals</em></a>
+					<li class=" ">
+						<a href="modules.html">Modules</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_aggregator_.html">&quot;aggregator&quot;</a>
+						<a href="modules/aggregator.html">aggregator</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_core_.html">&quot;core&quot;</a>
+						<a href="modules/core.html">core</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_cursor_.html">&quot;cursor&quot;</a>
+						<a href="modules/cursor.html">cursor</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_index_.html">&quot;index&quot;</a>
+						<a href="modules/index.html">index</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_init_basic_.html">&quot;init/basic&quot;</a>
+						<a href="modules/lazy.html">lazy</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_init_index_.html">&quot;init/index&quot;</a>
+						<a href="modules/operators__predicates.html">operators/_<wbr>predicates</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_init_system_.html">&quot;init/system&quot;</a>
+						<a href="modules/operators_accumulator.html">operators/accumulator</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_lazy_.html">&quot;lazy&quot;</a>
+						<a href="modules/operators_accumulator__internal.html">operators/accumulator/_<wbr>internal</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators__predicates_.html">&quot;operators/_<wbr>predicates&quot;</a>
+						<a href="modules/operators_accumulator_addtoset.html">operators/accumulator/add<wbr>ToSet</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_accumulator__internal_.html">&quot;operators/accumulator/_<wbr>internal&quot;</a>
+						<a href="modules/operators_accumulator_avg.html">operators/accumulator/avg</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_accumulator_addtoset_.html">&quot;operators/accumulator/add<wbr>ToSet&quot;</a>
+						<a href="modules/operators_accumulator_first.html">operators/accumulator/first</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_accumulator_avg_.html">&quot;operators/accumulator/avg&quot;</a>
+						<a href="modules/operators_accumulator_last.html">operators/accumulator/last</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_accumulator_first_.html">&quot;operators/accumulator/first&quot;</a>
+						<a href="modules/operators_accumulator_max.html">operators/accumulator/max</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_accumulator_index_.html">&quot;operators/accumulator/index&quot;</a>
+						<a href="modules/operators_accumulator_mergeobjects.html">operators/accumulator/merge<wbr>Objects</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_accumulator_last_.html">&quot;operators/accumulator/last&quot;</a>
+						<a href="modules/operators_accumulator_min.html">operators/accumulator/min</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_accumulator_max_.html">&quot;operators/accumulator/max&quot;</a>
+						<a href="modules/operators_accumulator_push.html">operators/accumulator/push</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_accumulator_mergeobjects_.html">&quot;operators/accumulator/merge<wbr>Objects&quot;</a>
+						<a href="modules/operators_accumulator_stddevpop.html">operators/accumulator/std<wbr>Dev<wbr>Pop</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_accumulator_min_.html">&quot;operators/accumulator/min&quot;</a>
+						<a href="modules/operators_accumulator_stddevsamp.html">operators/accumulator/std<wbr>Dev<wbr>Samp</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_accumulator_push_.html">&quot;operators/accumulator/push&quot;</a>
+						<a href="modules/operators_accumulator_sum.html">operators/accumulator/sum</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_accumulator_stddevpop_.html">&quot;operators/accumulator/std<wbr>Dev<wbr>Pop&quot;</a>
+						<a href="modules/operators_expression.html">operators/expression</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_accumulator_stddevsamp_.html">&quot;operators/accumulator/std<wbr>Dev<wbr>Samp&quot;</a>
+						<a href="modules/operators_expression_arithmetic.html">operators/expression/arithmetic</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_accumulator_sum_.html">&quot;operators/accumulator/sum&quot;</a>
+						<a href="modules/operators_expression_arithmetic__internal.html">operators/expression/arithmetic/_<wbr>internal</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_arithmetic__internal_.html">&quot;operators/expression/arithmetic/_<wbr>internal&quot;</a>
+						<a href="modules/operators_expression_arithmetic_abs.html">operators/expression/arithmetic/abs</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_arithmetic_abs_.html">&quot;operators/expression/arithmetic/abs&quot;</a>
+						<a href="modules/operators_expression_arithmetic_add.html">operators/expression/arithmetic/add</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_arithmetic_add_.html">&quot;operators/expression/arithmetic/add&quot;</a>
+						<a href="modules/operators_expression_arithmetic_ceil.html">operators/expression/arithmetic/ceil</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_arithmetic_ceil_.html">&quot;operators/expression/arithmetic/ceil&quot;</a>
+						<a href="modules/operators_expression_arithmetic_divide.html">operators/expression/arithmetic/divide</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_arithmetic_divide_.html">&quot;operators/expression/arithmetic/divide&quot;</a>
+						<a href="modules/operators_expression_arithmetic_exp.html">operators/expression/arithmetic/exp</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_arithmetic_exp_.html">&quot;operators/expression/arithmetic/exp&quot;</a>
+						<a href="modules/operators_expression_arithmetic_floor.html">operators/expression/arithmetic/floor</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_arithmetic_floor_.html">&quot;operators/expression/arithmetic/floor&quot;</a>
+						<a href="modules/operators_expression_arithmetic_ln.html">operators/expression/arithmetic/ln</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_arithmetic_index_.html">&quot;operators/expression/arithmetic/index&quot;</a>
+						<a href="modules/operators_expression_arithmetic_log.html">operators/expression/arithmetic/log</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_arithmetic_ln_.html">&quot;operators/expression/arithmetic/ln&quot;</a>
+						<a href="modules/operators_expression_arithmetic_log10.html">operators/expression/arithmetic/log10</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_arithmetic_log_.html">&quot;operators/expression/arithmetic/log&quot;</a>
+						<a href="modules/operators_expression_arithmetic_mod.html">operators/expression/arithmetic/mod</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_arithmetic_log10_.html">&quot;operators/expression/arithmetic/log10&quot;</a>
+						<a href="modules/operators_expression_arithmetic_multiply.html">operators/expression/arithmetic/multiply</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_arithmetic_mod_.html">&quot;operators/expression/arithmetic/mod&quot;</a>
+						<a href="modules/operators_expression_arithmetic_pow.html">operators/expression/arithmetic/pow</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_arithmetic_multiply_.html">&quot;operators/expression/arithmetic/multiply&quot;</a>
+						<a href="modules/operators_expression_arithmetic_round.html">operators/expression/arithmetic/round</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_arithmetic_pow_.html">&quot;operators/expression/arithmetic/pow&quot;</a>
+						<a href="modules/operators_expression_arithmetic_sqrt.html">operators/expression/arithmetic/sqrt</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_arithmetic_round_.html">&quot;operators/expression/arithmetic/round&quot;</a>
+						<a href="modules/operators_expression_arithmetic_subtract.html">operators/expression/arithmetic/subtract</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_arithmetic_sqrt_.html">&quot;operators/expression/arithmetic/sqrt&quot;</a>
+						<a href="modules/operators_expression_arithmetic_trunc.html">operators/expression/arithmetic/trunc</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_arithmetic_subtract_.html">&quot;operators/expression/arithmetic/subtract&quot;</a>
+						<a href="modules/operators_expression_array.html">operators/expression/array</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_arithmetic_trunc_.html">&quot;operators/expression/arithmetic/trunc&quot;</a>
+						<a href="modules/operators_expression_array_arrayelemat.html">operators/expression/array/array<wbr>Elem<wbr>At</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_array_arrayelemat_.html">&quot;operators/expression/array/array<wbr>Elem<wbr>At&quot;</a>
+						<a href="modules/operators_expression_array_arraytoobject.html">operators/expression/array/array<wbr>ToObject</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_array_arraytoobject_.html">&quot;operators/expression/array/array<wbr>ToObject&quot;</a>
+						<a href="modules/operators_expression_array_concatarrays.html">operators/expression/array/concat<wbr>Arrays</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_array_concatarrays_.html">&quot;operators/expression/array/concat<wbr>Arrays&quot;</a>
+						<a href="modules/operators_expression_array_filter.html">operators/expression/array/filter</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_array_filter_.html">&quot;operators/expression/array/filter&quot;</a>
+						<a href="modules/operators_expression_array_in.html">operators/expression/array/in</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_array_in_.html">&quot;operators/expression/array/in&quot;</a>
+						<a href="modules/operators_expression_array_indexofarray.html">operators/expression/array/index<wbr>OfArray</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_array_index_.html">&quot;operators/expression/array/index&quot;</a>
+						<a href="modules/operators_expression_array_isarray.html">operators/expression/array/is<wbr>Array</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_array_indexofarray_.html">&quot;operators/expression/array/index<wbr>OfArray&quot;</a>
+						<a href="modules/operators_expression_array_map.html">operators/expression/array/map</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_array_isarray_.html">&quot;operators/expression/array/is<wbr>Array&quot;</a>
+						<a href="modules/operators_expression_array_nin.html">operators/expression/array/nin</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_array_map_.html">&quot;operators/expression/array/map&quot;</a>
+						<a href="modules/operators_expression_array_range.html">operators/expression/array/range</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_array_nin_.html">&quot;operators/expression/array/nin&quot;</a>
+						<a href="modules/operators_expression_array_reduce.html">operators/expression/array/reduce</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_array_range_.html">&quot;operators/expression/array/range&quot;</a>
+						<a href="modules/operators_expression_array_reversearray.html">operators/expression/array/reverse<wbr>Array</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_array_reduce_.html">&quot;operators/expression/array/reduce&quot;</a>
+						<a href="modules/operators_expression_array_size.html">operators/expression/array/size</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_array_reversearray_.html">&quot;operators/expression/array/reverse<wbr>Array&quot;</a>
+						<a href="modules/operators_expression_array_slice.html">operators/expression/array/slice</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_array_size_.html">&quot;operators/expression/array/size&quot;</a>
+						<a href="modules/operators_expression_array_zip.html">operators/expression/array/zip</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_array_slice_.html">&quot;operators/expression/array/slice&quot;</a>
+						<a href="modules/operators_expression_boolean.html">operators/expression/boolean</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_array_zip_.html">&quot;operators/expression/array/zip&quot;</a>
+						<a href="modules/operators_expression_boolean_and.html">operators/expression/boolean/and</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_boolean_and_.html">&quot;operators/expression/boolean/and&quot;</a>
+						<a href="modules/operators_expression_boolean_not.html">operators/expression/boolean/not</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_boolean_index_.html">&quot;operators/expression/boolean/index&quot;</a>
+						<a href="modules/operators_expression_boolean_or.html">operators/expression/boolean/or</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_boolean_not_.html">&quot;operators/expression/boolean/not&quot;</a>
+						<a href="modules/operators_expression_comparison.html">operators/expression/comparison</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_boolean_or_.html">&quot;operators/expression/boolean/or&quot;</a>
+						<a href="modules/operators_expression_conditional.html">operators/expression/conditional</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_comparison_.html">&quot;operators/expression/comparison&quot;</a>
+						<a href="modules/operators_expression_conditional_cond.html">operators/expression/conditional/cond</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_conditional_cond_.html">&quot;operators/expression/conditional/cond&quot;</a>
+						<a href="modules/operators_expression_conditional_ifnull.html">operators/expression/conditional/if<wbr>Null</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_conditional_ifnull_.html">&quot;operators/expression/conditional/if<wbr>Null&quot;</a>
+						<a href="modules/operators_expression_conditional_switch.html">operators/expression/conditional/switch</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_conditional_index_.html">&quot;operators/expression/conditional/index&quot;</a>
+						<a href="modules/operators_expression_date.html">operators/expression/date</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_conditional_switch_.html">&quot;operators/expression/conditional/switch&quot;</a>
+						<a href="modules/operators_expression_date__internal.html">operators/expression/date/_<wbr>internal</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_date__internal_.html">&quot;operators/expression/date/_<wbr>internal&quot;</a>
+						<a href="modules/operators_expression_date_datefromparts.html">operators/expression/date/date<wbr>From<wbr>Parts</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_date_datefromparts_.html">&quot;operators/expression/date/date<wbr>From<wbr>Parts&quot;</a>
+						<a href="modules/operators_expression_date_datefromstring.html">operators/expression/date/date<wbr>From<wbr>String</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_date_datefromstring_.html">&quot;operators/expression/date/date<wbr>From<wbr>String&quot;</a>
+						<a href="modules/operators_expression_date_datetoparts.html">operators/expression/date/date<wbr>ToParts</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_date_datetoparts_.html">&quot;operators/expression/date/date<wbr>ToParts&quot;</a>
+						<a href="modules/operators_expression_date_datetostring.html">operators/expression/date/date<wbr>ToString</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_date_datetostring_.html">&quot;operators/expression/date/date<wbr>ToString&quot;</a>
+						<a href="modules/operators_expression_date_dayofmonth.html">operators/expression/date/day<wbr>OfMonth</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_date_dayofmonth_.html">&quot;operators/expression/date/day<wbr>OfMonth&quot;</a>
+						<a href="modules/operators_expression_date_dayofweek.html">operators/expression/date/day<wbr>OfWeek</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_date_dayofweek_.html">&quot;operators/expression/date/day<wbr>OfWeek&quot;</a>
+						<a href="modules/operators_expression_date_dayofyear.html">operators/expression/date/day<wbr>OfYear</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_date_dayofyear_.html">&quot;operators/expression/date/day<wbr>OfYear&quot;</a>
+						<a href="modules/operators_expression_date_hour.html">operators/expression/date/hour</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_date_hour_.html">&quot;operators/expression/date/hour&quot;</a>
+						<a href="modules/operators_expression_date_millisecond.html">operators/expression/date/millisecond</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_date_index_.html">&quot;operators/expression/date/index&quot;</a>
+						<a href="modules/operators_expression_date_minute.html">operators/expression/date/minute</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_date_millisecond_.html">&quot;operators/expression/date/millisecond&quot;</a>
+						<a href="modules/operators_expression_date_month.html">operators/expression/date/month</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_date_minute_.html">&quot;operators/expression/date/minute&quot;</a>
+						<a href="modules/operators_expression_date_second.html">operators/expression/date/second</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_date_month_.html">&quot;operators/expression/date/month&quot;</a>
+						<a href="modules/operators_expression_date_week.html">operators/expression/date/week</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_date_second_.html">&quot;operators/expression/date/second&quot;</a>
+						<a href="modules/operators_expression_date_year.html">operators/expression/date/year</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_date_week_.html">&quot;operators/expression/date/week&quot;</a>
+						<a href="modules/operators_expression_literal.html">operators/expression/literal</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_date_year_.html">&quot;operators/expression/date/year&quot;</a>
+						<a href="modules/operators_expression_object.html">operators/expression/object</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_index_.html">&quot;operators/expression/index&quot;</a>
+						<a href="modules/operators_expression_object_mergeobjects.html">operators/expression/object/merge<wbr>Objects</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_literal_.html">&quot;operators/expression/literal&quot;</a>
+						<a href="modules/operators_expression_object_objecttoarray.html">operators/expression/object/object<wbr>ToArray</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_object_index_.html">&quot;operators/expression/object/index&quot;</a>
+						<a href="modules/operators_expression_set.html">operators/expression/set</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_object_mergeobjects_.html">&quot;operators/expression/object/merge<wbr>Objects&quot;</a>
+						<a href="modules/operators_expression_set_allelementstrue.html">operators/expression/set/all<wbr>Elements<wbr>True</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_object_objecttoarray_.html">&quot;operators/expression/object/object<wbr>ToArray&quot;</a>
+						<a href="modules/operators_expression_set_anyelementtrue.html">operators/expression/set/any<wbr>Element<wbr>True</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_set_allelementstrue_.html">&quot;operators/expression/set/all<wbr>Elements<wbr>True&quot;</a>
+						<a href="modules/operators_expression_set_setdifference.html">operators/expression/set/set<wbr>Difference</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_set_anyelementtrue_.html">&quot;operators/expression/set/any<wbr>Element<wbr>True&quot;</a>
+						<a href="modules/operators_expression_set_setequals.html">operators/expression/set/set<wbr>Equals</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_set_index_.html">&quot;operators/expression/set/index&quot;</a>
+						<a href="modules/operators_expression_set_setintersection.html">operators/expression/set/set<wbr>Intersection</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_set_setdifference_.html">&quot;operators/expression/set/set<wbr>Difference&quot;</a>
+						<a href="modules/operators_expression_set_setissubset.html">operators/expression/set/set<wbr>IsSubset</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_set_setequals_.html">&quot;operators/expression/set/set<wbr>Equals&quot;</a>
+						<a href="modules/operators_expression_set_setunion.html">operators/expression/set/set<wbr>Union</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_set_setintersection_.html">&quot;operators/expression/set/set<wbr>Intersection&quot;</a>
+						<a href="modules/operators_expression_string.html">operators/expression/string</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_set_setissubset_.html">&quot;operators/expression/set/set<wbr>IsSubset&quot;</a>
+						<a href="modules/operators_expression_string__internal.html">operators/expression/string/_<wbr>internal</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_set_setunion_.html">&quot;operators/expression/set/set<wbr>Union&quot;</a>
+						<a href="modules/operators_expression_string_concat.html">operators/expression/string/concat</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_string__internal_.html">&quot;operators/expression/string/_<wbr>internal&quot;</a>
+						<a href="modules/operators_expression_string_indexofbytes.html">operators/expression/string/index<wbr>OfBytes</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_string_concat_.html">&quot;operators/expression/string/concat&quot;</a>
+						<a href="modules/operators_expression_string_ltrim.html">operators/expression/string/ltrim</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_string_index_.html">&quot;operators/expression/string/index&quot;</a>
+						<a href="modules/operators_expression_string_regexfind.html">operators/expression/string/regex<wbr>Find</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_string_indexofbytes_.html">&quot;operators/expression/string/index<wbr>OfBytes&quot;</a>
+						<a href="modules/operators_expression_string_regexfindall.html">operators/expression/string/regex<wbr>Find<wbr>All</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_string_ltrim_.html">&quot;operators/expression/string/ltrim&quot;</a>
+						<a href="modules/operators_expression_string_regexmatch.html">operators/expression/string/regex<wbr>Match</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_string_regexfind_.html">&quot;operators/expression/string/regex<wbr>Find&quot;</a>
+						<a href="modules/operators_expression_string_rtrim.html">operators/expression/string/rtrim</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_string_regexfindall_.html">&quot;operators/expression/string/regex<wbr>Find<wbr>All&quot;</a>
+						<a href="modules/operators_expression_string_split.html">operators/expression/string/split</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_string_regexmatch_.html">&quot;operators/expression/string/regex<wbr>Match&quot;</a>
+						<a href="modules/operators_expression_string_strlenbytes.html">operators/expression/string/str<wbr>Len<wbr>Bytes</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_string_rtrim_.html">&quot;operators/expression/string/rtrim&quot;</a>
+						<a href="modules/operators_expression_string_strlencp.html">operators/expression/string/str<wbr>LenCP</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_string_split_.html">&quot;operators/expression/string/split&quot;</a>
+						<a href="modules/operators_expression_string_strcasecmp.html">operators/expression/string/strcasecmp</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_string_strlenbytes_.html">&quot;operators/expression/string/str<wbr>Len<wbr>Bytes&quot;</a>
+						<a href="modules/operators_expression_string_substr.html">operators/expression/string/substr</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_string_strlencp_.html">&quot;operators/expression/string/str<wbr>LenCP&quot;</a>
+						<a href="modules/operators_expression_string_substrbytes.html">operators/expression/string/substr<wbr>Bytes</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_string_strcasecmp_.html">&quot;operators/expression/string/strcasecmp&quot;</a>
+						<a href="modules/operators_expression_string_substrcp.html">operators/expression/string/substrCP</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_string_substr_.html">&quot;operators/expression/string/substr&quot;</a>
+						<a href="modules/operators_expression_string_tolower.html">operators/expression/string/to<wbr>Lower</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_string_substrbytes_.html">&quot;operators/expression/string/substr<wbr>Bytes&quot;</a>
+						<a href="modules/operators_expression_string_toupper.html">operators/expression/string/to<wbr>Upper</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_string_substrcp_.html">&quot;operators/expression/string/substrCP&quot;</a>
+						<a href="modules/operators_expression_string_trim.html">operators/expression/string/trim</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_string_tolower_.html">&quot;operators/expression/string/to<wbr>Lower&quot;</a>
+						<a href="modules/operators_expression_trignometry.html">operators/expression/trignometry</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_string_toupper_.html">&quot;operators/expression/string/to<wbr>Upper&quot;</a>
+						<a href="modules/operators_expression_type.html">operators/expression/type</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_string_trim_.html">&quot;operators/expression/string/trim&quot;</a>
+						<a href="modules/operators_expression_type__internal.html">operators/expression/type/_<wbr>internal</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_type__internal_.html">&quot;operators/expression/type/_<wbr>internal&quot;</a>
+						<a href="modules/operators_expression_type_convert.html">operators/expression/type/convert</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_type_convert_.html">&quot;operators/expression/type/convert&quot;</a>
+						<a href="modules/operators_expression_type_isnumber.html">operators/expression/type/is<wbr>Number</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_type_index_.html">&quot;operators/expression/type/index&quot;</a>
+						<a href="modules/operators_expression_type_tobool.html">operators/expression/type/to<wbr>Bool</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_type_isnumber_.html">&quot;operators/expression/type/is<wbr>Number&quot;</a>
+						<a href="modules/operators_expression_type_todate.html">operators/expression/type/to<wbr>Date</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_type_tobool_.html">&quot;operators/expression/type/to<wbr>Bool&quot;</a>
+						<a href="modules/operators_expression_type_todecimal.html">operators/expression/type/to<wbr>Decimal</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_type_todate_.html">&quot;operators/expression/type/to<wbr>Date&quot;</a>
+						<a href="modules/operators_expression_type_todouble.html">operators/expression/type/to<wbr>Double</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_type_todecimal_.html">&quot;operators/expression/type/to<wbr>Decimal&quot;</a>
+						<a href="modules/operators_expression_type_toint.html">operators/expression/type/to<wbr>Int</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_type_todouble_.html">&quot;operators/expression/type/to<wbr>Double&quot;</a>
+						<a href="modules/operators_expression_type_tolong.html">operators/expression/type/to<wbr>Long</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_type_toint_.html">&quot;operators/expression/type/to<wbr>Int&quot;</a>
+						<a href="modules/operators_expression_type_tostring.html">operators/expression/type/to<wbr>String</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_type_tolong_.html">&quot;operators/expression/type/to<wbr>Long&quot;</a>
+						<a href="modules/operators_expression_type_type.html">operators/expression/type/type</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_type_tostring_.html">&quot;operators/expression/type/to<wbr>String&quot;</a>
+						<a href="modules/operators_expression_variable.html">operators/expression/variable</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_type_type_.html">&quot;operators/expression/type/type&quot;</a>
+						<a href="modules/operators_expression_variable_let.html">operators/expression/variable/let</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_variable_index_.html">&quot;operators/expression/variable/index&quot;</a>
+						<a href="modules/operators_pipeline.html">operators/pipeline</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_expression_variable_let_.html">&quot;operators/expression/variable/let&quot;</a>
+						<a href="modules/operators_pipeline_addfields.html">operators/pipeline/add<wbr>Fields</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_pipeline_addfields_.html">&quot;operators/pipeline/add<wbr>Fields&quot;</a>
+						<a href="modules/operators_pipeline_bucket.html">operators/pipeline/bucket</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_pipeline_bucket_.html">&quot;operators/pipeline/bucket&quot;</a>
+						<a href="modules/operators_pipeline_bucketauto.html">operators/pipeline/bucket<wbr>Auto</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_pipeline_bucketauto_.html">&quot;operators/pipeline/bucket<wbr>Auto&quot;</a>
+						<a href="modules/operators_pipeline_count.html">operators/pipeline/count</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_pipeline_count_.html">&quot;operators/pipeline/count&quot;</a>
+						<a href="modules/operators_pipeline_facet.html">operators/pipeline/facet</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_pipeline_facet_.html">&quot;operators/pipeline/facet&quot;</a>
+						<a href="modules/operators_pipeline_group.html">operators/pipeline/group</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_pipeline_group_.html">&quot;operators/pipeline/group&quot;</a>
+						<a href="modules/operators_pipeline_limit.html">operators/pipeline/limit</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_pipeline_index_.html">&quot;operators/pipeline/index&quot;</a>
+						<a href="modules/operators_pipeline_lookup.html">operators/pipeline/lookup</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_pipeline_limit_.html">&quot;operators/pipeline/limit&quot;</a>
+						<a href="modules/operators_pipeline_match.html">operators/pipeline/match</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_pipeline_lookup_.html">&quot;operators/pipeline/lookup&quot;</a>
+						<a href="modules/operators_pipeline_out.html">operators/pipeline/out</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_pipeline_match_.html">&quot;operators/pipeline/match&quot;</a>
+						<a href="modules/operators_pipeline_project.html">operators/pipeline/project</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_pipeline_out_.html">&quot;operators/pipeline/out&quot;</a>
+						<a href="modules/operators_pipeline_redact.html">operators/pipeline/redact</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_pipeline_project_.html">&quot;operators/pipeline/project&quot;</a>
+						<a href="modules/operators_pipeline_replaceroot.html">operators/pipeline/replace<wbr>Root</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_pipeline_redact_.html">&quot;operators/pipeline/redact&quot;</a>
+						<a href="modules/operators_pipeline_replacewith.html">operators/pipeline/replace<wbr>With</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_pipeline_replaceroot_.html">&quot;operators/pipeline/replace<wbr>Root&quot;</a>
+						<a href="modules/operators_pipeline_sample.html">operators/pipeline/sample</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_pipeline_replacewith_.html">&quot;operators/pipeline/replace<wbr>With&quot;</a>
+						<a href="modules/operators_pipeline_set.html">operators/pipeline/set</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_pipeline_sample_.html">&quot;operators/pipeline/sample&quot;</a>
+						<a href="modules/operators_pipeline_skip.html">operators/pipeline/skip</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_pipeline_set_.html">&quot;operators/pipeline/set&quot;</a>
+						<a href="modules/operators_pipeline_sort.html">operators/pipeline/sort</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_pipeline_skip_.html">&quot;operators/pipeline/skip&quot;</a>
+						<a href="modules/operators_pipeline_sortbycount.html">operators/pipeline/sort<wbr>ByCount</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_pipeline_sort_.html">&quot;operators/pipeline/sort&quot;</a>
+						<a href="modules/operators_pipeline_unset.html">operators/pipeline/unset</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_pipeline_sortbycount_.html">&quot;operators/pipeline/sort<wbr>ByCount&quot;</a>
+						<a href="modules/operators_pipeline_unwind.html">operators/pipeline/unwind</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_pipeline_unset_.html">&quot;operators/pipeline/unset&quot;</a>
+						<a href="modules/operators_projection.html">operators/projection</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_pipeline_unwind_.html">&quot;operators/pipeline/unwind&quot;</a>
+						<a href="modules/operators_projection_elemmatch.html">operators/projection/elem<wbr>Match</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_projection_elemmatch_.html">&quot;operators/projection/elem<wbr>Match&quot;</a>
+						<a href="modules/operators_projection_slice.html">operators/projection/slice</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_projection_index_.html">&quot;operators/projection/index&quot;</a>
+						<a href="modules/operators_query.html">operators/query</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_projection_slice_.html">&quot;operators/projection/slice&quot;</a>
+						<a href="modules/operators_query_array.html">operators/query/array</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_query_array_all_.html">&quot;operators/query/array/all&quot;</a>
+						<a href="modules/operators_query_array_all.html">operators/query/array/all</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_query_array_elemmatch_.html">&quot;operators/query/array/elem<wbr>Match&quot;</a>
+						<a href="modules/operators_query_array_elemmatch.html">operators/query/array/elem<wbr>Match</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_query_array_index_.html">&quot;operators/query/array/index&quot;</a>
+						<a href="modules/operators_query_array_size.html">operators/query/array/size</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_query_array_size_.html">&quot;operators/query/array/size&quot;</a>
+						<a href="modules/operators_query_comparison.html">operators/query/comparison</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_query_comparison_.html">&quot;operators/query/comparison&quot;</a>
+						<a href="modules/operators_query_element.html">operators/query/element</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_query_element_exists_.html">&quot;operators/query/element/exists&quot;</a>
+						<a href="modules/operators_query_element_exists.html">operators/query/element/exists</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_query_element_index_.html">&quot;operators/query/element/index&quot;</a>
+						<a href="modules/operators_query_element_type.html">operators/query/element/type</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_query_element_type_.html">&quot;operators/query/element/type&quot;</a>
+						<a href="modules/operators_query_evaluation.html">operators/query/evaluation</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_query_evaluation_expr_.html">&quot;operators/query/evaluation/expr&quot;</a>
+						<a href="modules/operators_query_evaluation_expr.html">operators/query/evaluation/expr</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_query_evaluation_index_.html">&quot;operators/query/evaluation/index&quot;</a>
+						<a href="modules/operators_query_evaluation_mod.html">operators/query/evaluation/mod</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_query_evaluation_mod_.html">&quot;operators/query/evaluation/mod&quot;</a>
+						<a href="modules/operators_query_evaluation_regex.html">operators/query/evaluation/regex</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_query_evaluation_regex_.html">&quot;operators/query/evaluation/regex&quot;</a>
+						<a href="modules/operators_query_evaluation_where.html">operators/query/evaluation/where</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_query_evaluation_where_.html">&quot;operators/query/evaluation/where&quot;</a>
+						<a href="modules/operators_query_logical.html">operators/query/logical</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_query_index_.html">&quot;operators/query/index&quot;</a>
+						<a href="modules/operators_query_logical_and.html">operators/query/logical/and</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_query_logical_and_.html">&quot;operators/query/logical/and&quot;</a>
+						<a href="modules/operators_query_logical_nor.html">operators/query/logical/nor</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_query_logical_index_.html">&quot;operators/query/logical/index&quot;</a>
+						<a href="modules/operators_query_logical_not.html">operators/query/logical/not</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_query_logical_nor_.html">&quot;operators/query/logical/nor&quot;</a>
+						<a href="modules/operators_query_logical_or.html">operators/query/logical/or</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_query_logical_not_.html">&quot;operators/query/logical/not&quot;</a>
+						<a href="modules/query.html">query</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_operators_query_logical_or_.html">&quot;operators/query/logical/or&quot;</a>
+						<a href="modules/types.html">types</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_query_.html">&quot;query&quot;</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_util_.html">&quot;util&quot;</a>
+						<a href="modules/util.html">util</a>
 					</li>
 				</ul>
 			</nav>
@@ -835,7 +836,6 @@ useOperators(OperatorType.ACCUMULATOR, { $min })
 		<h2>Legend</h2>
 		<div class="tsd-legend-group">
 			<ul class="tsd-legend">
-				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
 				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
 				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
 				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
