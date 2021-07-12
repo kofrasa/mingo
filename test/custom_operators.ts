@@ -3,7 +3,7 @@ import test from "tape";
 import { aggregate, Aggregator, find } from "../src";
 import {
   addOperators,
-  CustomOperatorMap,
+  AddOperatorsMap,
   OperatorContext,
   OperatorType,
 } from "../src/core";
@@ -20,7 +20,7 @@ test("Custom Operators", (t) => {
       return agg.stream(array).map((item) => item["__temp__"]);
     }
 
-    addOperators(OperatorType.PIPELINE, (_): CustomOperatorMap => {
+    addOperators(OperatorType.PIPELINE, (_): AddOperatorsMap => {
       return { $pluck };
     });
 
@@ -40,7 +40,7 @@ test("Custom Operators", (t) => {
   t.test("custom query operator", (t) => {
     t.plan(2);
 
-    addOperators(OperatorType.QUERY, (_): CustomOperatorMap => {
+    addOperators(OperatorType.QUERY, (_): AddOperatorsMap => {
       return { $between };
     });
 

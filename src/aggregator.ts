@@ -1,6 +1,6 @@
 import { getOperator, makeOptions, OperatorType, Options } from "./core";
 import { Iterator, Lazy, Source } from "./lazy";
-import { Collection, RawArray } from "./types";
+import { Collection } from "./types";
 import { assert, isEmpty } from "./util";
 
 /**
@@ -11,7 +11,7 @@ import { assert, isEmpty } from "./util";
  * @constructor
  */
 export class Aggregator {
-  private __pipeline: RawArray;
+  private __pipeline: Collection;
   private __options: Options;
 
   constructor(pipeline: Collection, options?: Options) {

@@ -124,20 +124,20 @@ export type OperatorMap = Record<
   | QueryOperator
 >;
 
-/** Special custom operator type for Query and Projection. */
-type CustomOperator<R> = (
+/** Spec for Query and Project operators where the value of the selector is resolved. */
+type SelectorOperator<R> = (
   selector: string,
   lhs: AnyVal,
   rhs: AnyVal,
   options?: Options
 ) => R;
 
-export type CustomOperatorMap = Record<
+export type AddOperatorsMap = Record<
   string,
   | AccumulatorOperator
   | ExpressionOperator
   | PipelineOperator
-  | CustomOperator<AnyVal>
+  | SelectorOperator<AnyVal>
 >;
 
 /**
@@ -184,29 +184,29 @@ export interface OperatorContext {
 /**
  * Add new operators
  *
- * @param cls the operator class to extend
- * @param operatorFn a callback that accepts internal object state and returns an object of new operators.
+ * @param operatorType the operator class to extend
+ * @param operatorFactory a callback that accepts internal object state and returns an object of new operators.
  */
 export function addOperators(
-  cls: OperatorType,
-  operatorFn: (context: OperatorContext) => CustomOperatorMap
+  operatorType: OperatorType,
+  operatorFactory: (context: OperatorContext) => AddOperatorsMap
 ): void {
-  const customOperators = operatorFn({ computeValue, resolve });
+  const customOperators = operatorFactory({ computeValue, resolve });
 
   validateOperatorMap(customOperators);
 
   // check for existing operators
   for (const [op, _] of Object.entries(customOperators)) {
-    const call = getOperator(cls, op);
-    assert(!call, `${op} already exists for '${cls}' operators`);
+    const call = getOperator(operatorType, op);
+    assert(!call, `${op} already exists for '${operatorType}' operators`);
   }
 
   const normalizedOperators: OperatorMap = {};
 
-  switch (cls) {
+  switch (operatorType) {
     case OperatorType.QUERY:
       for (const [op, f] of Object.entries(customOperators)) {
-        const fn = f as CustomOperator<boolean>;
+        const fn = f as SelectorOperator<boolean>;
         normalizedOperators[op] =
           (selector: string, value: AnyVal, options: Options) =>
           (obj: RawObject): boolean => {
@@ -218,7 +218,7 @@ export function addOperators(
       break;
     case OperatorType.PROJECTION:
       for (const [op, f] of Object.entries(customOperators)) {
-        const fn = f as CustomOperator<AnyVal>;
+        const fn = f as SelectorOperator<AnyVal>;
         normalizedOperators[op] = (
           obj: RawObject,
           expr: AnyVal,
@@ -233,12 +233,12 @@ export function addOperators(
     default:
       for (const [op, fn] of Object.entries(customOperators)) {
         normalizedOperators[op] = (...args: RawArray) =>
-          fn.apply(customOperators, args) as AnyVal;
+          fn.call(null, ...args) as AnyVal;
       }
   }
 
   // toss the operator salad :)
-  useOperators(cls, normalizedOperators);
+  useOperators(operatorType, normalizedOperators);
 }
 
 /* eslint-disable unused-imports/no-unused-vars-ts */
