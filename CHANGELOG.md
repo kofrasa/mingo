@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.1.3 / 2021-07-12
+
+* Add stronger type definitions for custom operators.
+* Convert unit tests to Typescript.
+* Update Typedocs.
+
 ## 4.1.2 / 2021-02-17
 
 * Fix `$unwind` incorrectly removing `0` value, by correcting behaviour of `isEmpty`
