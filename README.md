@@ -2,12 +2,14 @@
 
 MongoDB query language for in-memory objects
 
-[![version](https://img.shields.io/npm/v/mingo.svg)](https://www.npmjs.org/package/mingo)
-[![build status](https://img.shields.io/travis/kofrasa/mingo.svg)](http://travis-ci.com/kofrasa/mingo)
-[![npm](https://img.shields.io/npm/dm/mingo.svg)](https://www.npmjs.org/package/mingo)
-[![Codecov](https://img.shields.io/codecov/c/github/kofrasa/mingo.svg)](https://codecov.io/gh/kofrasa/mingo)
-[![Code Quality: Javascript](https://img.shields.io/lgtm/grade/javascript/g/kofrasa/mingo.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/kofrasa/mingo/context:javascript)
-[![Total Alerts](https://img.shields.io/lgtm/alerts/g/kofrasa/mingo.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/kofrasa/mingo/alerts)
+![license](https://img.shields.io/github/license/kofrasa/mingo)
+[![version](https://img.shields.io/npm/v/mingo)](https://www.npmjs.org/package/mingo)
+[![build status](https://img.shields.io/travis/com/kofrasa/mingo)](http://travis-ci.com/kofrasa/mingo)
+![issues](https://img.shields.io/github/issues/kofrasa/mingo)
+[![codecov](https://img.shields.io/codecov/c/github/kofrasa/mingo)](https://codecov.io/gh/kofrasa/mingo)
+[![quality: Javascript](https://img.shields.io/lgtm/grade/javascript/github/kofrasa/mingo)](https://lgtm.com/projects/g/kofrasa/mingo/context:javascript)
+[![alerts](https://img.shields.io/lgtm/alerts/github/kofrasa/mingo)](https://lgtm.com/projects/g/kofrasa/mingo/alerts)
+[![npm downloads](https://img.shields.io/npm/dm/mingo)](https://www.npmjs.org/package/mingo)
 
 ## Install
 
