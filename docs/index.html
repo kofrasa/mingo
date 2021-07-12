@@ -62,12 +62,14 @@
 					<h1>mingo</h1>
 				</a>
 				<p>MongoDB query language for in-memory objects</p>
-				<p><a href="https://www.npmjs.org/package/mingo"><img src="https://img.shields.io/npm/v/mingo.svg" alt="version"></a>
-					<a href="http://travis-ci.org/kofrasa/mingo"><img src="https://img.shields.io/travis/kofrasa/mingo.svg" alt="build status"></a>
-					<a href="https://www.npmjs.org/package/mingo"><img src="https://img.shields.io/npm/dm/mingo.svg" alt="npm"></a>
-					<a href="https://codecov.io/gh/kofrasa/mingo"><img src="https://img.shields.io/codecov/c/github/kofrasa/mingo.svg" alt="Codecov"></a>
-					<a href="https://lgtm.com/projects/g/kofrasa/mingo/context:javascript"><img src="https://img.shields.io/lgtm/grade/javascript/g/kofrasa/mingo.svg?logo=lgtm&logoWidth=18" alt="Code Quality: Javascript"></a>
-				<a href="https://lgtm.com/projects/g/kofrasa/mingo/alerts"><img src="https://img.shields.io/lgtm/alerts/g/kofrasa/mingo.svg?logo=lgtm&logoWidth=18" alt="Total Alerts"></a></p>
+				<p><img src="https://img.shields.io/github/license/kofrasa/mingo" alt="license">
+					<a href="https://www.npmjs.org/package/mingo"><img src="https://img.shields.io/npm/v/mingo" alt="version"></a>
+					<a href="http://travis-ci.com/kofrasa/mingo"><img src="https://img.shields.io/travis/com/kofrasa/mingo" alt="build status"></a>
+					<img src="https://img.shields.io/github/issues/kofrasa/mingo" alt="issues">
+					<a href="https://codecov.io/gh/kofrasa/mingo"><img src="https://img.shields.io/codecov/c/github/kofrasa/mingo" alt="codecov"></a>
+					<a href="https://lgtm.com/projects/g/kofrasa/mingo/context:javascript"><img src="https://img.shields.io/lgtm/grade/javascript/github/kofrasa/mingo" alt="quality: Javascript"></a>
+					<a href="https://lgtm.com/projects/g/kofrasa/mingo/alerts"><img src="https://img.shields.io/lgtm/alerts/github/kofrasa/mingo" alt="alerts"></a>
+				<a href="https://www.npmjs.org/package/mingo"><img src="https://img.shields.io/npm/dm/mingo" alt="npm downloads"></a></p>
 				<a href="#install" id="install" style="color: inherit; text-decoration: none;">
 					<h2>Install</h2>
 				</a>
@@ -205,11 +207,11 @@
 				<a href="#using-query-object-to-test-objects" id="using-query-object-to-test-objects" style="color: inherit; text-decoration: none;">
 					<h2>Using query object to test objects</h2>
 				</a>
-				<pre><code class="language-js"><span style="color: #AF00DB">import</span><span style="color: #000000"> </span><span style="color: #001080">mingo</span><span style="color: #000000"> </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;mingo&#039;</span>
+				<pre><code class="language-js"><span style="color: #AF00DB">import</span><span style="color: #000000"> { </span><span style="color: #001080">Query</span><span style="color: #000000"> } </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;mingo&#039;</span>
 
 <span style="color: #008000">// create a query with criteria</span>
 <span style="color: #008000">// find all grades for homework with score &gt;= 50</span>
-<span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080">query</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #001080">mingo</span><span style="color: #000000">.</span><span style="color: #795E26">Query</span><span style="color: #000000">({</span>
+<span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080">query</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #795E26">Query</span><span style="color: #000000">({</span>
 <span style="color: #000000">  </span><span style="color: #001080">type:</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;homework&quot;</span><span style="color: #000000">,</span>
 <span style="color: #000000">  </span><span style="color: #001080">score:</span><span style="color: #000000"> { </span><span style="color: #001080">$gte:</span><span style="color: #000000"> </span><span style="color: #098658">50</span><span style="color: #000000"> }</span>
 <span style="color: #000000">});</span>
@@ -220,12 +222,12 @@
 				<a href="#searching-and-filtering" id="searching-and-filtering" style="color: inherit; text-decoration: none;">
 					<h2>Searching and Filtering</h2>
 				</a>
-				<pre><code class="language-js"><span style="color: #AF00DB">import</span><span style="color: #000000"> </span><span style="color: #001080">mingo</span><span style="color: #000000"> </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;mingo&#039;</span>
+				<pre><code class="language-js"><span style="color: #AF00DB">import</span><span style="color: #000000"> { </span><span style="color: #001080">Query</span><span style="color: #000000"> } </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;mingo&#039;</span>
 
 <span style="color: #008000">// input is either an Array or any iterable source (i.e Object{next:Function}) including ES6 generators.</span>
 <span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080">criteria</span><span style="color: #000000"> = { </span><span style="color: #001080">score:</span><span style="color: #000000"> { </span><span style="color: #001080">$gt:</span><span style="color: #000000"> </span><span style="color: #098658">10</span><span style="color: #000000"> } }</span>
 
-<span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080">query</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #001080">mingo</span><span style="color: #000000">.</span><span style="color: #795E26">Query</span><span style="color: #000000">(</span><span style="color: #001080">criteria</span><span style="color: #000000">)</span>
+<span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080">query</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #795E26">Query</span><span style="color: #000000">(</span><span style="color: #001080">criteria</span><span style="color: #000000">)</span>
 
 <span style="color: #008000">// filter collection with find()</span>
 <span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080">cursor</span><span style="color: #000000"> = </span><span style="color: #001080">query</span><span style="color: #000000">.</span><span style="color: #795E26">find</span><span style="color: #000000">(</span><span style="color: #001080">collection</span><span style="color: #000000">)</span>
