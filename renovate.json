@@ -1,6 +1,8 @@
 {
   "extends": [
-    "config:base"
+    "config:base",
+    "schedule:monthly",
+    "group:all"
   ],
   "ignoreUnstable": true,
   "automerge": true,
@@ -10,31 +12,31 @@
   },
   "packageRules": [
     {
-      "packageNames": ["esm"],
-      "groupName": "esm"
-    },
-    {
-      "packageNames": ["codecov"],
+      "matchPackagePatterns": ["codecov"],
       "groupName": "codecov"
     },
     {
-      "packageNames": ["lodash"],
+      "matchPackagePatterns": ["eslint"],
+      "groupName": "eslint"
+    },
+    {
+      "matchPackagePatterns": ["lodash"],
       "groupName": "lodash"
     },
     {
-      "packageNames": ["nyc"],
+      "matchPackagePatterns": ["nyc"],
       "groupName": "nyc"
     },
     {
-      "packageNames": ["perf_hooks"],
+      "matchPackagePatterns": ["perf_hooks"],
       "groupName": "perf_hooks"
     },
     {
-      "packageNames": ["tape"],
+      "matchPackagePatterns": ["tape"],
       "groupName": "tape"
     },
     {
-      "packageNames": ["typescript"],
+      "matchPackagePatterns": ["typescript"],
       "groupName": "typescript"
     }
   ]
