@@ -3,7 +3,7 @@
 MongoDB query language for in-memory objects
 
 [![version](https://img.shields.io/npm/v/mingo.svg)](https://www.npmjs.org/package/mingo)
-[![build status](https://img.shields.io/travis/kofrasa/mingo.svg)](http://travis-ci.org/kofrasa/mingo)
+[![build status](https://img.shields.io/travis/kofrasa/mingo.svg)](http://travis-ci.com/kofrasa/mingo)
 [![npm](https://img.shields.io/npm/dm/mingo.svg)](https://www.npmjs.org/package/mingo)
 [![Codecov](https://img.shields.io/codecov/c/github/kofrasa/mingo.svg)](https://codecov.io/gh/kofrasa/mingo)
 [![Code Quality: Javascript](https://img.shields.io/lgtm/grade/javascript/g/kofrasa/mingo.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/kofrasa/mingo/context:javascript)
@@ -149,11 +149,11 @@ useOperators(OperatorType.PIPELINE, { $bucket })
 ## Using query object to test objects
 
 ```js
-import mingo from 'mingo'
+import { Query } from 'mingo'
 
 // create a query with criteria
 // find all grades for homework with score >= 50
-let query = new mingo.Query({
+let query = new Query({
   type: "homework",
   score: { $gte: 50 }
 });
@@ -165,12 +165,12 @@ query.test(doc)
 ## Searching and Filtering
 
 ```js
-import mingo from 'mingo'
+import { Query } from 'mingo'
 
 // input is either an Array or any iterable source (i.e Object{next:Function}) including ES6 generators.
 let criteria = { score: { $gt: 10 } }
 
-let query = new mingo.Query(criteria)
+let query = new Query(criteria)
 
 // filter collection with find()
 let cursor = query.find(collection)
