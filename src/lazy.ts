@@ -323,10 +323,8 @@ export class Iterator {
   size(): number {
     return this.reduce((acc: number, _: number) => ++acc, 0);
   }
-}
 
-if (typeof Symbol === "function") {
-  Iterator.prototype[Symbol.iterator] = function () {
+  [Symbol.iterator]() {
     /* eslint-disable @typescript-eslint/no-unsafe-return */
     return this;
   };
