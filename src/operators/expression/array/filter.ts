@@ -20,10 +20,9 @@ export function $filter(
 
   assert(isArray(input), "$filter 'input' expression must resolve to an array");
 
+  const tempKey = "$" + expr.as;
   return input.filter((o: AnyVal) => {
-    // inject variable
-    const tempObj = {};
-    tempObj["$" + expr.as] = o;
-    return computeValue(tempObj, expr.cond, null, options) === true;
+    obj[tempKey] = o;
+    return computeValue(obj, expr.cond, null, options) === true;
   });
 }
