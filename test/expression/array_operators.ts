@@ -323,6 +323,40 @@ test('Array Operators: $map without "as"', (t) => {
   t.end();
 });
 
+test("Array Operators: $map using object context", (t) => {
+  // $map
+  const result = aggregate(
+    [
+      { _id: 1, quizzes: [5, 6, 7], adjustment: 2 },
+      { _id: 2, quizzes: [], adjustment: 2 },
+      { _id: 3, quizzes: [3, 8, 9], adjustment: 2 },
+    ],
+    [
+      {
+        $project: {
+          adjustedGrades: {
+            $map: {
+              input: "$quizzes",
+              in: { $add: ["$$this", "$adjustment"] },
+            },
+          },
+        },
+      },
+    ]
+  );
+
+  t.deepEqual(
+    [
+      { _id: 1, adjustedGrades: [7, 8, 9] },
+      { _id: 2, adjustedGrades: [] },
+      { _id: 3, adjustedGrades: [5, 10, 11] },
+    ],
+    result,
+    "can apply $map operator"
+  );
+  t.end();
+});
+
 test("Array Operators: $filter", (t) => {
   // $filter
   const result = aggregate(
