@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.1.4 / 2021-08-06
+
+* Use context object in `$filter`.
+
 ## 4.1.3 / 2021-07-12
 
 * Add stronger type definitions for custom operators.

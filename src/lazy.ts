@@ -324,8 +324,8 @@ export class Iterator {
     return this.reduce((acc: number, _: number) => ++acc, 0);
   }
 
-  [Symbol.iterator]() {
+  [Symbol.iterator](): Iterator {
     /* eslint-disable @typescript-eslint/no-unsafe-return */
     return this;
-  };
+  }
 }
