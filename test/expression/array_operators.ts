@@ -323,6 +323,109 @@ test('Array Operators: $map without "as"', (t) => {
   t.end();
 });
 
+test("Array Operators: $filter", (t) => {
+  // $filter
+  const result = aggregate(
+    [
+      { _id: 1, quizzes: [5, 6, 7] },
+      { _id: 2, quizzes: [] },
+      { _id: 3, quizzes: [3, 8, 9] },
+    ],
+    [
+      {
+        $project: {
+          passingGrades: {
+            $filter: {
+              input: "$quizzes",
+              as: "grade",
+              cond: { $gt: ["$$grade", 5] },
+            },
+          },
+        },
+      },
+    ]
+  );
+
+  t.deepEqual(
+    [
+      { _id: 1, passingGrades: [6, 7] },
+      { _id: 2, passingGrades: [] },
+      { _id: 3, passingGrades: [8, 9] },
+    ],
+    result,
+    "can apply $filter operator"
+  );
+  t.end();
+});
+
+test('Array Operators: $filter without "as"', (t) => {
+  // $filter
+  const result = aggregate(
+    [
+      { _id: 1, quizzes: [5, 6, 7] },
+      { _id: 2, quizzes: [] },
+      { _id: 3, quizzes: [3, 8, 9] },
+    ],
+    [
+      {
+        $project: {
+          passingGrades: {
+            $filter: {
+              input: "$quizzes",
+              cond: { $gt: ["$$this", 5] },
+            },
+          },
+        },
+      },
+    ]
+  );
+
+  t.deepEqual(
+    [
+      { _id: 1, passingGrades: [6, 7] },
+      { _id: 2, passingGrades: [] },
+      { _id: 3, passingGrades: [8, 9] },
+    ],
+    result,
+    "can apply $filter operator"
+  );
+  t.end();
+});
+
+test("Array Operators: $filter using object context", (t) => {
+  // $filter
+  const result = aggregate(
+    [
+      { _id: 1, quizzes: [5, 6, 7], minimum: 5 },
+      { _id: 2, quizzes: [], minimum: 5 },
+      { _id: 3, quizzes: [3, 8, 9], minimum: 5 },
+    ],
+    [
+      {
+        $project: {
+          passingGrades: {
+            $filter: {
+              input: "$quizzes",
+              cond: { $gt: ["$$this", 5] },
+            },
+          },
+        },
+      },
+    ]
+  );
+
+  t.deepEqual(
+    [
+      { _id: 1, passingGrades: [6, 7] },
+      { _id: 2, passingGrades: [] },
+      { _id: 3, passingGrades: [8, 9] },
+    ],
+    result,
+    "can apply $filter operator"
+  );
+  t.end();
+});
+
 test("more $slice examples", (t) => {
   const data = [
     {
