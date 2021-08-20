@@ -66,6 +66,10 @@ test("Comparison, Evaluation, and Element Operators", (t) => {
       "can check that all values exists in array with $all",
     ],
     [
+      { "languages.spoken": { $all: [/french/, /english/] } },
+      "can check that all values exists in array with $all using regex",
+    ],
+    [
       { date: { year: 2013, month: 9, day: 25 } },
       "can match field with object values",
     ],
