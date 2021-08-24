@@ -181,6 +181,101 @@ test("Match $all with $elemMatch on nested elements", (t) => {
   t.ok(result === 1, "can match using $all with $elemMatch on nested elements");
 });
 
+test("Match $all with regex", (t) => {
+  t.plan(3);
+
+  const data = [
+    {
+      user: {
+        username: "User1",
+        projects: ["foo", "bar"],
+      },
+    },
+    {
+      user: {
+        username: "User2",
+        projects: ["foo", "baz"],
+      },
+    },
+    {
+      user: {
+        username: "User3",
+        projects: ["fizz", "buzz"],
+      },
+    },
+    {
+      user: {
+        username: "User4",
+        projects: [],
+      },
+    },
+  ];
+  const criteria = {
+    "user.projects": {
+      $all: ["foo", /^ba/],
+    },
+  };
+  // It should return two user objects
+  const found = find(data, criteria);
+  const result = find(data, criteria).count();
+  t.ok(result === 2, "can match using $all with regex mixed with strings");
+  t.ok(
+    (found.next() as UserResult).user.username === "User1",
+    "returns user1 using $all with regex"
+  );
+  t.ok(
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    (found.next() as UserResult).user.username === "User2",
+    "returns user2 using $all with regex"
+  );
+});
+
+test("Match $all with strings, numbers and empty lists", (t) => {
+  t.plan(3);
+
+  const data = [
+    {
+      user: {
+        username: "User1",
+        projects: ["foo", 1],
+      },
+    },
+    {
+      user: {
+        username: "User2",
+        projects: ["foo", 2, "1"],
+      },
+    },
+    {
+      user: {
+        username: "User3",
+        projects: [],
+      },
+    },
+  ];
+  const criteria = {
+    "user.projects": {
+      $all: ["foo", 1],
+    },
+  };
+  // It should return two user objects
+  const found = find(data, criteria);
+  const result = find(data, criteria).count();
+  console.log(result);
+  t.ok(result === 1, "can match using $all with strings and numbers");
+  t.ok(
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    (found.next() as UserResult).user.username === "User1",
+    "returns user1 using $all with strings and numbers"
+  );
+
+  criteria["user.projects"].$all = [];
+  t.ok(
+    find(data, criteria).count() === 3,
+    "match $all with an empty query returns all items"
+  );
+});
+
 test("Projection $elemMatch operator", (t) => {
   const data = [
     {
@@ -1052,3 +1147,7 @@ test("hash function collision", (t) => {
   }
   t.end();
 });
+
+interface UserResult {
+  user: { username: string };
+}
