@@ -357,6 +357,40 @@ test("Array Operators: $map using object context", (t) => {
   t.end();
 });
 
+test("Array Operators: $map using frozen objects", (t) => {
+  // $map
+  const result = aggregate(
+    [
+      Object.freeze({ _id: 1, quizzes: [5, 6, 7], adjustment: 2 }),
+      Object.freeze({ _id: 2, quizzes: [], adjustment: 2 }),
+      Object.freeze({ _id: 3, quizzes: [3, 8, 9], adjustment: 2 }),
+    ],
+    [
+      {
+        $project: {
+          adjustedGrades: {
+            $map: {
+              input: "$quizzes",
+              in: { $add: ["$$this", "$adjustment"] },
+            },
+          },
+        },
+      },
+    ]
+  );
+
+  t.deepEqual(
+    [
+      { _id: 1, adjustedGrades: [7, 8, 9] },
+      { _id: 2, adjustedGrades: [] },
+      { _id: 3, adjustedGrades: [5, 10, 11] },
+    ],
+    result,
+    "can apply $map operator"
+  );
+  t.end();
+});
+
 test("Array Operators: $filter", (t) => {
   // $filter
   const result = aggregate(
@@ -433,6 +467,40 @@ test("Array Operators: $filter using object context", (t) => {
       { _id: 1, quizzes: [5, 6, 7], minimum: 5 },
       { _id: 2, quizzes: [], minimum: 5 },
       { _id: 3, quizzes: [3, 8, 9], minimum: 5 },
+    ],
+    [
+      {
+        $project: {
+          passingGrades: {
+            $filter: {
+              input: "$quizzes",
+              cond: { $gt: ["$$this", 5] },
+            },
+          },
+        },
+      },
+    ]
+  );
+
+  t.deepEqual(
+    [
+      { _id: 1, passingGrades: [6, 7] },
+      { _id: 2, passingGrades: [] },
+      { _id: 3, passingGrades: [8, 9] },
+    ],
+    result,
+    "can apply $filter operator"
+  );
+  t.end();
+});
+
+test("Array Operators: $filter using frozen objects", (t) => {
+  // $filter
+  const result = aggregate(
+    [
+      Object.freeze({ _id: 1, quizzes: [5, 6, 7], minimum: 5 }),
+      Object.freeze({ _id: 2, quizzes: [], minimum: 5 }),
+      Object.freeze({ _id: 3, quizzes: [3, 8, 9], minimum: 5 }),
     ],
     [
       {
