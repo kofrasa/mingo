@@ -16,21 +16,16 @@ export function $map(
   expr: { input: RawArray; as: string; in: AnyVal },
   options?: Options
 ): AnyVal {
-  const inputExpr = computeValue(obj, expr.input, null, options) as RawArray;
-  assert(
-    isArray(inputExpr),
-    `$map 'input' expression must resolve to an array`
+  const input = computeValue(obj, expr.input, null, options) as RawArray;
+  assert(isArray(input), `$map 'input' expression must resolve to an array`);
+
+  const tempKey = "$" + (expr.as || "this");
+  return input.map((o: AnyVal) =>
+    computeValue(
+      Object.assign({}, obj, { [tempKey]: o }),
+      expr.in,
+      null,
+      options
+    )
   );
-
-  const asExpr = expr.as || "this";
-  const inExpr = expr.in;
-
-  // HACK: add the "as" expression as a value on the object to take advantage of "resolve()"
-  // which will reduce to that value when invoked. The reference to the as expression will be prefixed with "$$".
-  // But since a "$" is stripped of before passing the name to "resolve()" we just need to prepend "$" to the key.
-  const tempKey = "$" + asExpr;
-  return inputExpr.map((v: AnyVal) => {
-    obj[tempKey] = v;
-    return computeValue(obj, inExpr, null, options);
-  });
 }

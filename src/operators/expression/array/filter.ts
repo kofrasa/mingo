@@ -17,12 +17,16 @@ export function $filter(
   options?: Options
 ): RawArray {
   const input = computeValue(obj, expr.input, null, options) as RawArray;
-
   assert(isArray(input), "$filter 'input' expression must resolve to an array");
 
   const tempKey = "$" + (expr.as || "this");
-  return input.filter((o: AnyVal) => {
-    obj[tempKey] = o;
-    return computeValue(obj, expr.cond, null, options) === true;
-  });
+  return input.filter(
+    (o: AnyVal) =>
+      computeValue(
+        Object.assign({}, obj, { [tempKey]: o }),
+        expr.cond,
+        null,
+        options
+      ) === true
+  );
 }
