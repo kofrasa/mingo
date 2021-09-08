@@ -226,19 +226,21 @@ export function $all(
   queries: RawArray,
   options?: Options
 ): boolean {
+  if (!isArray(values)) return false;
+  if (!isArray(queries)) return false;
+
+  if (queries.length === 0) return false;
+
   let matched = true;
-  if (isArray(values) && isArray(queries)) {
-    for (let i = 0, len = queries.length; i < len; i++) {
-      const query = queries[i];
-      if (isObject(query) && inArray(Object.keys(query), "$elemMatch")) {
-        matched = matched && $elemMatch(values, query["$elemMatch"], options);
-      } else if (query instanceof RegExp) {
-        matched =
-          matched &&
-          values.some((value) => testValueAgainstRegExp(value, query));
-      } else {
-        matched = matched && values.some((value) => query === value);
-      }
+  for (let i = 0, len = queries.length; i < len; i++) {
+    const query = queries[i];
+    if (isObject(query) && inArray(Object.keys(query), "$elemMatch")) {
+      matched = matched && $elemMatch(values, query["$elemMatch"], options);
+    } else if (query instanceof RegExp) {
+      matched =
+        matched && values.some((value) => testValueAgainstRegExp(value, query));
+    } else {
+      matched = matched && values.some((value) => query === value);
     }
   }
   return matched;

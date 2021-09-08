@@ -271,8 +271,8 @@ test("Match $all with strings, numbers and empty lists", (t) => {
 
   criteria["user.projects"].$all = [];
   t.ok(
-    find(data, criteria).count() === 3,
-    "match $all with an empty query returns all items"
+    find(data, criteria).count() === 0,
+    "match $all with an empty query returns no items"
   );
 });
 
