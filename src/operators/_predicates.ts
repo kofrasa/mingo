@@ -217,20 +217,35 @@ export function $exists(a: AnyVal, b: AnyVal, options?: Options): boolean {
 /**
  * Matches arrays that contain all elements specified in the query.
  *
- * @param a
- * @param b
+ * @param values
+ * @param queries
  * @returns boolean
  */
-export function $all(a: RawArray, b: RawArray, options?: Options): boolean {
-  let matched = false;
-  if (isArray(a) && isArray(b)) {
-    for (let i = 0, len = b.length; i < len; i++) {
-      if (isObject(b[i]) && inArray(Object.keys(b[i]), "$elemMatch")) {
-        matched = matched || $elemMatch(a, b[i]["$elemMatch"], options);
-      } else {
-        // order of arguments matter
-        return intersection(b, a, options?.hashFunction).length === len;
-      }
+export function $all(
+  values: RawArray,
+  queries: RawArray,
+  options?: Options
+): boolean {
+  if (
+    !isArray(values) ||
+    !isArray(queries) ||
+    !values.length ||
+    !queries.length
+  ) {
+    return false;
+  }
+
+  let matched = true;
+  for (const query of queries) {
+    // no need to check all the queries.
+    if (!matched) break;
+    if (isObject(query) && inArray(Object.keys(query), "$elemMatch")) {
+      matched = matched && $elemMatch(values, query["$elemMatch"], options);
+    } else if (query instanceof RegExp) {
+      matched =
+        matched && values.some((s) => typeof s === "string" && query.test(s));
+    } else {
+      matched = matched && values.some((value) => query === value);
     }
   }
   return matched;

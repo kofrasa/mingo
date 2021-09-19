@@ -15,6 +15,10 @@ const obj = Object.assign({}, samples.personData, { _id: new ObjectId(idStr) });
 
 useOperators(OperatorType.QUERY, { $where });
 
+interface UserResult {
+  user: { username: string };
+}
+
 test("Comparison, Evaluation, and Element Operators", (t) => {
   const queries = [
     [{ _id: new ObjectId(idStr) }, "can match against user-defined types"],
@@ -64,6 +68,10 @@ test("Comparison, Evaluation, and Element Operators", (t) => {
     [
       { "languages.spoken": { $all: ["french", "english"] } },
       "can check that all values exists in array with $all",
+    ],
+    [
+      { "languages.spoken": { $all: [/french/, /english/] } },
+      "can check that all values exists in array with $all using regex",
     ],
     [
       { date: { year: 2013, month: 9, day: 25 } },
@@ -175,6 +183,109 @@ test("Match $all with $elemMatch on nested elements", (t) => {
   // It should return one user object
   const result = find(data, criteria).count();
   t.ok(result === 1, "can match using $all with $elemMatch on nested elements");
+});
+
+test("Match $all with regex", (t) => {
+  t.plan(3);
+
+  const data = [
+    {
+      user: {
+        username: "User1",
+        projects: ["foo", "bar"],
+      },
+    },
+    {
+      user: {
+        username: "User2",
+        projects: ["foo", "baz"],
+      },
+    },
+    {
+      user: {
+        username: "User3",
+        projects: ["fizz", "buzz"],
+      },
+    },
+    {
+      user: {
+        username: "User4",
+        projects: [],
+      },
+    },
+  ];
+  const criteria = {
+    "user.projects": {
+      $all: ["foo", /^ba/],
+    },
+  };
+  // It should return two user objects
+  const results = find(data, criteria).all();
+
+  t.equal(
+    results.length,
+    2,
+    "can match using $all with regex mixed with strings"
+  );
+  t.equal(
+    (results[0] as UserResult).user.username,
+    "User1",
+    "returns user1 using $all with regex"
+  );
+  t.equal(
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    (results[1] as UserResult).user.username,
+    "User2",
+    "returns user2 using $all with regex"
+  );
+});
+
+test("Match $all with strings, numbers and empty lists", (t) => {
+  t.plan(3);
+
+  const data = [
+    {
+      user: {
+        username: "User1",
+        projects: ["foo", 1],
+      },
+    },
+    {
+      user: {
+        username: "User2",
+        projects: ["foo", 2, "1"],
+      },
+    },
+    {
+      user: {
+        username: "User3",
+        projects: [],
+      },
+    },
+  ];
+  const criteria = {
+    "user.projects": {
+      $all: ["foo", 1],
+    },
+  };
+  // It should return two user objects
+  const results = find(data, criteria).all();
+
+  t.equal(results.length, 1, "can match using $all with strings and numbers");
+  t.equal(
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    (results[0] as UserResult).user.username,
+    "User1",
+    "returns user1 using $all with strings and numbers"
+  );
+
+  criteria["user.projects"].$all = [];
+
+  t.equal(
+    find(data, criteria).count(),
+    0,
+    "match $all with an empty query returns no items"
+  );
 });
 
 test("Projection $elemMatch operator", (t) => {
