@@ -245,7 +245,7 @@ export function $all(
       matched =
         matched && values.some((s) => typeof s === "string" && query.test(s));
     } else {
-      matched = matched && values.some((value) => query === value);
+      matched = matched && values.some((v) => isEqual(query, v));
     }
   }
   return matched;
