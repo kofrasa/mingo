@@ -1,6 +1,23 @@
 import test from "tape";
 
 import { aggregate } from "../../src";
+import { runTest } from "../support";
+
+runTest("Set Operators", {
+  $setUnion: [
+    [
+      [
+        ["a", "b", "a"],
+        ["b", "a"],
+      ],
+      ["a", "b"],
+    ],
+    [
+      [["a", "b"], [["a", "b"]]],
+      ["a", "b", ["a", "b"]],
+    ],
+  ],
+});
 
 test("Set Operators", (t) => {
   t.plan(7);

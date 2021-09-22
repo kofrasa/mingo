@@ -314,11 +314,7 @@ export function intersection(
  * @return {Array}   The result array
  */
 export function union(xs: RawArray, ys: RawArray): RawArray {
-  const result: RawArray = [];
-  const filtered = ys.filter(notInArray.bind(null, xs));
-  into(result, xs);
-  into(result, filtered);
-  return result;
+  return Array.from(new Set<unknown>(xs.concat(ys)));
 }
 
 /**
