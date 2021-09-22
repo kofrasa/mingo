@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.1.5 / 2021-09-22
+
+* Fix regex not supported in `$all` query operator. [#190](https://github.com/kofrasa/mingo/issues/190)
+* Fix behaviour of `$setUnion`. [#192](https://github.com/kofrasa/mingo/issues/192)
+
 ## 4.1.4 / 2021-08-06
 
 * Use context object in `$filter`.
