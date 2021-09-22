@@ -261,7 +261,6 @@ test("Match $all with strings, numbers and empty lists", (t) => {
   // It should return two user objects
   const found = find(data, criteria);
   const result = find(data, criteria).count();
-  console.log(result);
   t.ok(result === 1, "can match using $all with strings and numbers");
   t.ok(
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -273,6 +272,39 @@ test("Match $all with strings, numbers and empty lists", (t) => {
   t.ok(
     find(data, criteria).count() === 0,
     "match $all with an empty query returns no items"
+  );
+});
+
+test("Match $all with deep objects", (t) => {
+  t.plan(2);
+
+  const data = [
+    {
+      user: {
+        username: "User1",
+        projects: [{ foo: { bar: 1 } }],
+      },
+    },
+    {
+      user: {
+        username: "User2",
+        projects: [{ foo: { bar: 2 } }],
+      },
+    },
+  ];
+  const criteria = {
+    "user.projects": {
+      $all: [{ foo: { bar: 1 } }],
+    },
+  };
+  // It should return two user objects
+  const found = find(data, criteria);
+  const result = find(data, criteria).count();
+  t.ok(result === 1, "can match using $all with deep object");
+  t.ok(
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    (found.next() as UserResult).user.username === "User1",
+    "returns user1 using $all with deep object"
   );
 });
 

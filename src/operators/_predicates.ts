@@ -240,7 +240,7 @@ export function $all(
       matched =
         matched && values.some((value) => testValueAgainstRegExp(value, query));
     } else {
-      matched = matched && values.some((value) => query === value);
+      matched = matched && values.some((value) => isEqual(query, value));
     }
   }
   return matched;
