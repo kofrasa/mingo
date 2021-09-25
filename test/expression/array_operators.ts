@@ -73,6 +73,15 @@ support.runTest("Array Operators", {
       [1, 2, 3.1, 4],
     ],
   ],
+  $first: [
+    [[1, 2, 3], 1],
+    [[[]], []],
+    [[null], null],
+    [[], undefined],
+    [null, null],
+    [undefined, null],
+    [5, null, { err: true }]
+  ],
   $in: [
     [{ $in: [2, [1, 2, 3]] }, true],
     [{ $in: ["abc", ["xyz", "abc"]] }, true],
@@ -114,7 +123,7 @@ support.runTest("Array Operators", {
   ],
   $objectToArray: [
     [
-      { $objectToArray: { item: "foo", qty: 25 } },
+      { item: "foo", qty: 25 },
       [
         { k: "item", v: "foo" },
         { k: "qty", v: 25 },
@@ -122,11 +131,9 @@ support.runTest("Array Operators", {
     ],
     [
       {
-        $objectToArray: {
-          item: "foo",
-          qty: 25,
-          size: { len: 25, w: 10, uom: "cm" },
-        },
+        item: "foo",
+        qty: 25,
+        size: { len: 25, w: 10, uom: "cm" },
       },
       [
         { k: "item", v: "foo" },
@@ -136,65 +143,69 @@ support.runTest("Array Operators", {
     ],
   ],
   $range: [
-    [{ $range: [0, 10, 2] }, [0, 2, 4, 6, 8]],
-    [{ $range: [10, 0, -2] }, [10, 8, 6, 4, 2]],
-    [{ $range: [0, 10, -2] }, []],
-    [{ $range: [0, 5] }, [0, 1, 2, 3, 4]],
+    [
+      [0, 10, 2],
+      [0, 2, 4, 6, 8],
+    ],
+    [
+      [10, 0, -2],
+      [10, 8, 6, 4, 2],
+    ],
+    [[0, 10, -2], []],
+    [
+      [0, 5],
+      [0, 1, 2, 3, 4],
+    ],
   ],
   $reduce: [
-    [{ $reduce: { input: null } }, null],
+    [{ input: null }, null],
     [
       {
-        $reduce: {
-          input: ["a", "b", "c"],
-          initialValue: "",
-          in: { $concat: ["$$value", "$$this"] },
-        },
+        input: ["a", "b", "c"],
+        initialValue: "",
+        in: { $concat: ["$$value", "$$this"] },
       },
       "abc",
     ],
     [
       {
-        $reduce: {
-          input: [1, 2, 3, 4],
-          initialValue: { sum: 5, product: 2 },
-          in: {
-            sum: { $add: ["$$value.sum", "$$this"] },
-            product: { $multiply: ["$$value.product", "$$this"] },
-          },
+        input: [1, 2, 3, 4],
+        initialValue: { sum: 5, product: 2 },
+        in: {
+          sum: { $add: ["$$value.sum", "$$this"] },
+          product: { $multiply: ["$$value.product", "$$this"] },
         },
       },
       { sum: 15, product: 48 },
     ],
     [
       {
-        $reduce: {
-          input: [
-            [3, 4],
-            [5, 6],
-          ],
-          initialValue: [1, 2],
-          in: { $concatArrays: ["$$value", "$$this"] },
-        },
+        input: [
+          [3, 4],
+          [5, 6],
+        ],
+        initialValue: [1, 2],
+        in: { $concatArrays: ["$$value", "$$this"] },
       },
       [1, 2, 3, 4, 5, 6],
     ],
   ],
   $reverseArray: [
-    [{ $reverseArray: [1, 2, 3] }, [3, 2, 1]],
+    [
+      [1, 2, 3],
+      [3, 2, 1],
+    ],
     [
       { $reverseArray: { $slice: [["foo", "bar", "baz", "qux"], 1, 2] } },
       ["baz", "bar"],
     ],
-    [{ $reverseArray: null }, null],
-    [{ $reverseArray: [] }, []],
+    [null, null],
+    [[], []],
     [
-      {
-        $reverseArray: [
-          [1, 2, 3],
-          [4, 5, 6],
-        ],
-      },
+      [
+        [1, 2, 3],
+        [4, 5, 6],
+      ],
       [
         [4, 5, 6],
         [1, 2, 3],
@@ -207,10 +218,16 @@ support.runTest("Array Operators", {
     [[], 0],
   ],
   $slice: [
-    [{ $slice: [[1, 2, 3], 1, 1] }, [2]],
-    [{ $slice: [[1, 2, 3], -2] }, [2, 3]],
-    [{ $slice: [[1, 2, 3], 15, 2] }, []],
-    [{ $slice: [[1, 2, 3], -15, 2] }, [1, 2]],
+    [[[1, 2, 3], 1, 1], [2]],
+    [
+      [[1, 2, 3], -2],
+      [2, 3],
+    ],
+    [[[1, 2, 3], 15, 2], []],
+    [
+      [[1, 2, 3], -15, 2],
+      [1, 2],
+    ],
   ],
   $zip: [
     [{ $zip: { inputs: [["a"], null] } }, null],

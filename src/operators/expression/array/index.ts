@@ -2,6 +2,7 @@ export * from "./arrayElemAt";
 export * from "./arrayToObject";
 export * from "./concatArrays";
 export * from "./filter";
+export * from "./first";
 export * from "./in";
 export * from "./indexOfArray";
 export * from "./isArray";
