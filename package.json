@@ -5,10 +5,10 @@
   "main": "lib",
   "module": "lib",
   "scripts": {
+    "prepare": "husky install",
     "docs": "typedoc src/ && touch docs/.nojekyll",
     "build": "tsc && node ./build.js",
-    "lint": "eslint --fix --ext .ts src/ test/",
-    "test": "npm run build && NODE_ENV=test nyc --reporter=lcov --reporter=text ./runtest.sh && npm run lint",
+    "test": "npm run build && NODE_ENV=test nyc --reporter=lcov --reporter=text ./runtest.sh",
     "dist": "npm run test && cd lib && npm publish",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
     "prepublishOnly": "echo \"use 'npm run dist'\" && false",
@@ -37,6 +37,8 @@
     "eslint-plugin-prettier": "4.0.0",
     "eslint-plugin-simple-import-sort": "7.0.0",
     "eslint-plugin-unused-imports": "1.1.4",
+    "husky": "7.0.2",
+    "lint-staged": "^11.1.2",
     "lodash": "4.17.21",
     "nyc": "15.1.0",
     "perf_hooks": "0.0.1",
@@ -65,5 +67,8 @@
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/kofrasa/mingo/issues"
+  },
+  "lint-staged": {
+    "*.{js,ts}": "eslint --cache --fix"
   }
 }
