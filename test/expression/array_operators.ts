@@ -5,9 +5,9 @@ import * as support from "../support";
 
 support.runTest("Array Operators", {
   $arrayElemAt: [
-    [{ $arrayElemAt: [[1, 2, 3], 0] }, 1],
-    [{ $arrayElemAt: [[1, 2, 3], -2] }, 2],
-    [{ $arrayElemAt: [[1, 2, 3], 15] }, undefined],
+    [[[1, 2, 3], 0], 1],
+    [[[1, 2, 3], -2], 2],
+    [[[1, 2, 3], 15], undefined],
   ],
   $arrayToObject: [
     [
@@ -34,40 +34,37 @@ support.runTest("Array Operators", {
     ],
   ],
   $concatArrays: [
-    [{ $concatArrays: [["hello", " "], null] }, null],
-    [{ $concatArrays: [["hello", " "], ["world"]] }, ["hello", " ", "world"]],
+    [[["hello", " "], null], null],
     [
-      {
-        $concatArrays: [
-          ["hello", " "],
-          [["world"], "again"],
-        ],
-      },
+      [["hello", " "], ["world"]],
+      ["hello", " ", "world"],
+    ],
+    [
+      [
+        ["hello", " "],
+        [["world"], "again"],
+      ],
       ["hello", " ", ["world"], "again"],
     ],
     [
-      {
-        $concatArrays: [
-          ["hello", " "],
-          [["universe"], "again"],
-          ["and", "bye"],
-        ],
-      },
+      [
+        ["hello", " "],
+        [["universe"], "again"],
+        ["and", "bye"],
+      ],
       ["hello", " ", ["universe"], "again", "and", "bye"],
     ],
   ],
   $filter: [
     [
       {
-        $filter: {
-          input: [1, "a", 2, null, 3.1, 4, "5"],
-          as: "num",
-          cond: {
-            $and: [
-              { $gte: ["$$num", -9223372036854775807] },
-              { $lte: ["$$num", 9223372036854775807] },
-            ],
-          },
+        input: [1, "a", 2, null, 3.1, 4, "5"],
+        as: "num",
+        cond: {
+          $and: [
+            { $gte: ["$$num", -9223372036854775807] },
+            { $lte: ["$$num", 9223372036854775807] },
+          ],
         },
       },
       [1, 2, 3.1, 4],
@@ -80,46 +77,44 @@ support.runTest("Array Operators", {
     [[], undefined],
     [null, null],
     [undefined, null],
-    [5, null, { err: true }]
+    [5, null, { err: true }],
   ],
   $in: [
-    [{ $in: [2, [1, 2, 3]] }, true],
-    [{ $in: ["abc", ["xyz", "abc"]] }, true],
-    [{ $in: ["xy", ["xyz", "abc"]] }, false],
-    [{ $in: [["a"], ["a"]] }, false],
-    [{ $in: [["a"], [["a"]]] }, true],
-    [{ $in: [/^a/, ["a"]] }, false],
-    [{ $in: [/^a/, [/^a/]] }, true],
+    [[2, [1, 2, 3]], true],
+    [["abc", ["xyz", "abc"]], true],
+    [["xy", ["xyz", "abc"]], false],
+    [[["a"], ["a"]], false],
+    [[["a"], [["a"]]], true],
+    [[/^a/, ["a"]], false],
+    [[/^a/, [/^a/]], true],
   ],
   $indexOfArray: [
-    [{ $indexOfArray: null }, null],
-    [{ $indexOfArray: [["a", "abc"], "a"] }, 0],
-    [{ $indexOfArray: [["a", "abc", "de", ["de"]], ["de"]] }, 3],
-    [{ $indexOfArray: [[1, 2], 5] }, -1],
+    [null, null],
+    [[["a", "abc"], "a"], 0],
+    [[["a", "abc", "de", ["de"]], ["de"]], 3],
+    [[[1, 2], 5], -1],
     [
-      {
-        $indexOfArray: [
-          [1, 2, 3],
-          [1, 2],
-        ],
-      },
+      [
+        [1, 2, 3],
+        [1, 2],
+      ],
       -1,
     ],
-    [{ $indexOfArray: [[10, 9, 9, 8, 9], 9, 3] }, 4],
-    [{ $indexOfArray: [["a", "abc", "b"], "b", 0, 1] }, -1],
-    [{ $indexOfArray: [["a", "abc", "b"], "b", 1, 0] }, -1],
-    [{ $indexOfArray: [["a", "abc", "b"], "b", 20] }, -1],
-    [{ $indexOfArray: [[null, null, null], null] }, 0],
-    [{ $indexOfArray: [null, "foo"] }, null],
+    [[[10, 9, 9, 8, 9], 9, 3], 4],
+    [[["a", "abc", "b"], "b", 0, 1], -1],
+    [[["a", "abc", "b"], "b", 1, 0], -1],
+    [[["a", "abc", "b"], "b", 20], -1],
+    [[[null, null, null], null], 0],
+    [[null, "foo"], null],
     [
-      { $indexOfArray: ["foo", "foo"] },
+      ["foo", "foo"],
       "$indexOfArray expression must resolve to an array.",
       { err: true },
     ],
   ],
   $isArray: [
-    [{ $isArray: ["hello"] }, false],
-    [{ $isArray: [["hello", "world"]] }, true],
+    [["hello"], false],
+    [[["hello", "world"]], true],
   ],
   $objectToArray: [
     [
@@ -230,15 +225,13 @@ support.runTest("Array Operators", {
     ],
   ],
   $zip: [
-    [{ $zip: { inputs: [["a"], null] } }, null],
-    [{ $zip: { inputs: [["a"], ["b"], ["c"]] } }, [["a", "b", "c"]]],
-    [{ $zip: { inputs: [["a"], ["b", "c"]] } }, [["a", "b"]]],
+    [{ inputs: [["a"], null] }, null],
+    [{ inputs: [["a"], ["b"], ["c"]] }, [["a", "b", "c"]]],
+    [{ inputs: [["a"], ["b", "c"]] }, [["a", "b"]]],
     [
       {
-        $zip: {
-          inputs: [[1], [2, 3]],
-          useLongestLength: true,
-        },
+        inputs: [[1], [2, 3]],
+        useLongestLength: true,
       },
       [
         [1, 2],
@@ -248,11 +241,9 @@ support.runTest("Array Operators", {
     // Because useLongestLength: true, $zip will pad the shorter input arrays with the corresponding defaults elements.
     [
       {
-        $zip: {
-          inputs: [[1], [2, 3], [4]],
-          useLongestLength: true,
-          defaults: ["a", "b", "c"],
-        },
+        inputs: [[1], [2, 3], [4]],
+        useLongestLength: true,
+        defaults: ["a", "b", "c"],
       },
       [
         [1, 2, 4],
