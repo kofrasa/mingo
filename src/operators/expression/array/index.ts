@@ -6,6 +6,7 @@ export * from "./first";
 export * from "./in";
 export * from "./indexOfArray";
 export * from "./isArray";
+export * from "./last";
 export * from "./map";
 export * from "./nin";
 export * from "./range";

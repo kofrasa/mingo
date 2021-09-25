@@ -79,6 +79,15 @@ support.runTest("Array Operators", {
     [undefined, null],
     [5, null, { err: true }],
   ],
+  $last: [
+    [[1, 2, 3], 3],
+    [[[]], []],
+    [[null], null],
+    [[], undefined],
+    [null, null],
+    [undefined, null],
+    [5, null, { err: true }],
+  ],
   $in: [
     [[2, [1, 2, 3]], true],
     [["abc", ["xyz", "abc"]], true],
