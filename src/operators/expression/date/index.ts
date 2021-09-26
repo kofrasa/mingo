@@ -1,5 +1,7 @@
+export * from "./dateAdd";
 export * from "./dateFromParts";
 export * from "./dateFromString";
+export * from "./dateSubtract";
 export * from "./dateToParts";
 export * from "./dateToString";
 export * from "./dayOfMonth";

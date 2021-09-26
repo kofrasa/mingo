@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.2.0
+
+* Add array expression operators `$first` and `$last`.
+
 ## 4.1.5 / 2021-09-22
 
 * Fix regex not supported in `$all` query operator. [#190](https://github.com/kofrasa/mingo/issues/190)

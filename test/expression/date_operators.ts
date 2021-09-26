@@ -4,7 +4,55 @@ import { aggregate } from "../../src";
 import { RawObject } from "../../src/types";
 import * as support from "../support";
 
+const apply3Units = {
+  startDate: "$$this",
+  amount: 3,
+  timezone: "+00",
+};
+
+const testDate = new Date("2021-01-28T13:05:00Z");
+// dates less 3 units
+const yearDate = new Date("2018-01-28T13:05:00Z");
+const quarterDate = new Date("2020-04-28T13:05:00Z");
+const monthDate = new Date("2020-10-28T13:05:00Z");
+const weekDate = new Date("2021-01-07T13:05:00Z");
+const dayDate = new Date("2021-01-25T13:05:00Z");
+const hourDate = new Date("2021-01-28T10:05:00Z");
+const minuteDate = new Date("2021-01-28T13:02:00Z");
+const secondDate = new Date("2021-01-28T13:04:57Z");
+const millisecondDate = new Date("2021-01-28T13:04:59.997Z");
+
 support.runTest("Date operators:", {
+  $dateAdd: [
+    [{ ...apply3Units, unit: "year" }, testDate, { obj: yearDate }],
+    [{ ...apply3Units, unit: "quarter" }, testDate, { obj: quarterDate }],
+    [{ ...apply3Units, unit: "month" }, testDate, { obj: monthDate }],
+    [{ ...apply3Units, unit: "week" }, testDate, { obj: weekDate }],
+    [{ ...apply3Units, unit: "day" }, testDate, { obj: dayDate }],
+    [{ ...apply3Units, unit: "hour" }, testDate, { obj: hourDate }],
+    [{ ...apply3Units, unit: "minute" }, testDate, { obj: minuteDate }],
+    [{ ...apply3Units, unit: "second" }, testDate, { obj: secondDate }],
+    [
+      { ...apply3Units, unit: "millisecond" },
+      testDate,
+      { obj: millisecondDate },
+    ],
+  ],
+  $dateSubtract: [
+    [{ ...apply3Units, unit: "year" }, yearDate, { obj: testDate }],
+    [{ ...apply3Units, unit: "quarter" }, quarterDate, { obj: testDate }],
+    [{ ...apply3Units, unit: "month" }, monthDate, { obj: testDate }],
+    [{ ...apply3Units, unit: "week" }, weekDate, { obj: testDate }],
+    [{ ...apply3Units, unit: "day" }, dayDate, { obj: testDate }],
+    [{ ...apply3Units, unit: "hour" }, hourDate, { obj: testDate }],
+    [{ ...apply3Units, unit: "minute" }, minuteDate, { obj: testDate }],
+    [{ ...apply3Units, unit: "second" }, secondDate, { obj: testDate }],
+    [
+      { ...apply3Units, unit: "millisecond" },
+      millisecondDate,
+      { obj: testDate },
+    ],
+  ],
   $dateFromString: [
     [
       { dateString: "2017-02-08T12:10:40.787" },

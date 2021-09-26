@@ -2,8 +2,20 @@ import { computeValue, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
 import { has, isDate, isNil, isObject, isString } from "../../../util";
 
-export const MILLIS_PER_DAY = 1000 * 60 * 60 * 24;
+export type Duration =
+  | "year"
+  | "quarter"
+  | "month"
+  | "week"
+  | "day"
+  | "hour"
+  | "minute"
+  | "second"
+  | "millisecond";
+
 export const MINUTES_PER_HOUR = 60;
+
+export const MILLIS_PER_DAY = 1000 * 60 * 60 * 24;
 
 // default format if unspecified
 export const DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%LZ";
