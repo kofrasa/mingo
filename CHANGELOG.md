@@ -1,6 +1,6 @@
 # Changelog
 
-## 4.2.0
+## 4.2.0 / 2021-09-26
 
 * Add array operators `$first` and `$last`.
 * Add date operators `$dateAdd` and `$dateSubtract`.
