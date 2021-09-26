@@ -2,7 +2,8 @@
 
 ## 4.2.0
 
-* Add array expression operators `$first` and `$last`.
+* Add array operators `$first` and `$last`.
+* Add date operators `$dateAdd` and `$dateSubtract`.
 
 ## 4.1.5 / 2021-09-22
 
