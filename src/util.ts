@@ -248,10 +248,12 @@ export function merge(
     }
   } else {
     Object.keys(obj).forEach((k) => {
-      if (has(target as RawObject, k)) {
-        target[k] = merge(target[k], obj[k], options);
-      } else {
-        target[k] = obj[k] as AnyVal;
+      if (has(obj as RawObject, k)) {
+        if (has(target as RawObject, k)) {
+          target[k] = merge(target[k], obj[k], options);
+        } else {
+          target[k] = obj[k] as AnyVal;
+        }
       }
     });
   }

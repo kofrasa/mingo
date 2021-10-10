@@ -240,12 +240,11 @@ export function $all(
     // no need to check all the queries.
     if (!matched) break;
     if (isObject(query) && inArray(Object.keys(query), "$elemMatch")) {
-      matched = matched && $elemMatch(values, query["$elemMatch"], options);
+      matched = $elemMatch(values, query["$elemMatch"], options);
     } else if (query instanceof RegExp) {
-      matched =
-        matched && values.some((s) => typeof s === "string" && query.test(s));
+      matched = values.some((s) => typeof s === "string" && query.test(s));
     } else {
-      matched = matched && values.some((v) => isEqual(query, v));
+      matched = values.some((v) => isEqual(query, v));
     }
   }
   return matched;
