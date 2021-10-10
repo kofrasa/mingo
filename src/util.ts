@@ -911,8 +911,7 @@ export function normalize(expr: AnyVal): AnyVal {
 
     // ensure valid regex
     if (has(expr as RawObject, "$regex")) {
-      expr["$regex"] = new RegExp(expr["$regex"], expr["$options"]);
-      delete expr["$options"];
+      return { $regex: new RegExp(expr["$regex"], expr["$options"]) };
     }
   }
 
