@@ -1,6 +1,6 @@
 # Changelog
 
-## 4.3.0 / 2021-11-xx
+## 4.3.0 / 2021-11-07
 
 **Features**
 * Add `$rand` aggregation and query operator
