@@ -315,8 +315,20 @@ export function intersection(
  * @param  {Array} ys The second array
  * @return {Array}   The result array
  */
-export function union(xs: RawArray, ys: RawArray): RawArray {
-  return Array.from(new Set<unknown>(xs.concat(ys)));
+export function union(
+  xs: RawArray,
+  ys: RawArray,
+  hashFunction?: HashFunction
+): RawArray {
+  const hash: Record<string, RawArray> = {};
+  xs.concat(ys).forEach((e, i) => {
+    const k = hashCode(e, hashFunction);
+    if (!hash[k]) hash[k] = [e, i];
+  });
+  const result = Object.values(hash)
+    .sort((a, b) => (a[1] < b[1] ? -1 : a[1] > b[1] ? 1 : 0))
+    .map((e) => e[0]);
+  return result;
 }
 
 /**

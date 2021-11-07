@@ -2,8 +2,12 @@
 
 ## 4.3.0 / 2021-11-xx
 
+**Features**
 * Add `$rand` aggregation and query operator
+
+**Fixes**
 * Support arbitrary input expressions for date operators
+* Use hash function for deep-equality check in `union` function
 
 ## 4.2.0 / 2021-09-26
 

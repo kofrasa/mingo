@@ -17,5 +17,5 @@ export function $setUnion(
   options?: Options
 ): AnyVal {
   const args = computeValue(obj, expr, null, options);
-  return union(args[0], args[1]);
+  return union(args[0], args[1], options?.hashFunction);
 }
