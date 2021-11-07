@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.3.0 / 2021-11-xx
+
+* Add `$rand` aggregation and query operator
+
 ## 4.2.0 / 2021-09-26
 
 * Add array operators `$first` and `$last`.
