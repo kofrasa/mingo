@@ -3,6 +3,7 @@
 ## 4.3.0 / 2021-11-xx
 
 * Add `$rand` aggregation and query operator
+* Support arbitrary input expressions for date operators
 
 ## 4.2.0 / 2021-09-26
 

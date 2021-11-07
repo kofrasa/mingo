@@ -4,6 +4,7 @@ import { computeValue, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
 import {
   adjustDate,
+  computeDate,
   Duration,
   MILLIS_PER_DAY,
   parseTimezone,
@@ -25,22 +26,17 @@ const DURATION_IN_MILLIS: Record<string, number> = {
  */
 export function $dateAdd(
   obj: RawObject,
-  expr: {
-    startDate: Date | number; // timestamp in seconds.
+  expr: RawObject,
+  options?: Options
+): AnyVal {
+  const args = computeValue(obj, expr, null, options) as {
+    startDate: AnyVal;
     unit: Duration;
     amount: number;
     timezone?: string;
-  },
-  options?: Options
-): AnyVal {
-  const args = computeValue(obj, expr, null, options) as typeof expr;
-  const timzone = parseTimezone(args.timezone);
-  const startDate =
-    args.startDate instanceof Date
-      ? args.startDate
-      : new Date(args.startDate * 1000);
+  };
 
-  const d = new Date(startDate);
+  const d = computeDate(obj, expr.startDate, options);
 
   switch (args.unit) {
     case "year":
@@ -53,13 +49,12 @@ export function $dateAdd(
       addMonth(d, args.amount);
       break;
     default:
-      d.setTime(
-        startDate.getTime() + DURATION_IN_MILLIS[args.unit] * args.amount
-      );
+      d.setTime(d.getTime() + DURATION_IN_MILLIS[args.unit] * args.amount);
   }
 
   if (args.timezone) {
-    adjustDate(d, timzone);
+    const tz = parseTimezone(args.timezone);
+    adjustDate(d, tz);
   }
 
   return d;

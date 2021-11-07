@@ -1,6 +1,8 @@
+import { isNumber } from "lodash";
+
 import { computeValue, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
-import { has, isDate, isNil, isObject, isString } from "../../../util";
+import { AnyVal } from "../../../types";
+import { isDate, isNil } from "../../../util";
 
 export type Duration =
   | "year"
@@ -105,6 +107,8 @@ export function adjustDate(d: Date, tz: Timezone): void {
 
 /**
  * Computes a date expression
+ * @param obj The target object
+ * @param expr Any value that resolves to a valid date expression. Valid expressions include a number, Date, or Object{date: number|Date, timezone?: string}
  */
 export function computeDate(
   obj: AnyVal,
@@ -112,32 +116,24 @@ export function computeDate(
   options?: Options
 ): Date {
   const d = computeValue(obj, expr, null, options) as
-    | string
-    | number
     | Date
-    | RawObject;
-  if (isDate(d)) return d;
-  if (isString(d)) throw Error("cannot take a string as an argument");
+    | number
+    | { date: Date | number; timezone?: string };
 
-  // default assuming the computed value is a number
-  let date = new Date(d as number);
+  if (isDate(d)) return new Date(d);
+  // timestamp is in seconds
+  if (isNumber(d)) return new Date(d * 1000);
 
-  let tz: Timezone = null;
-  let timestamp = 0;
-  const dateObj = d as RawObject;
-  if (isObject(dateObj) && has(dateObj, "date") && has(dateObj, "timezone")) {
-    const tzstr = computeValue(obj, dateObj.timezone, null, options) as string;
-    tz = parseTimezone(tzstr);
-    timestamp = computeValue(obj, dateObj.date, null, options) as number;
-    date = new Date(timestamp);
+  if (d.date) {
+    const date = isDate(d.date) ? new Date(d.date) : new Date(d.date * 1000);
+
+    if (d.timezone) {
+      adjustDate(date, parseTimezone(d.timezone));
+    }
+    return date;
   }
 
-  if (isNaN(date.getTime()))
-    throw Error(`cannot convert ${obj?.toString()} to date`);
-
-  adjustDate(date, tz);
-
-  return date;
+  throw Error(`cannot convert ${expr?.toString()} to date`);
 }
 
 export function padDigits(n: number, digits: number): string {

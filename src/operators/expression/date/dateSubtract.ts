@@ -1,9 +1,8 @@
 // Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
 
-import { Options } from "../../../core";
+import { computeValue, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
 import { $dateAdd } from "..";
-import { Duration } from "./_internal";
 
 /**
  * Decrements a Date object by a specified number of time units.
@@ -12,13 +11,9 @@ import { Duration } from "./_internal";
  */
 export function $dateSubtract(
   obj: RawObject,
-  expr: {
-    startDate: Date | number; // timestamp in seconds.
-    unit: Duration;
-    amount: number;
-    timezone?: string;
-  },
+  expr: RawObject,
   options?: Options
 ): AnyVal {
-  return $dateAdd(obj, { ...expr, amount: -1 * expr.amount }, options);
+  const amount = computeValue(obj, expr?.amount, null, options) as number;
+  return $dateAdd(obj, { ...expr, amount: -1 * amount }, options);
 }
