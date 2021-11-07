@@ -5,6 +5,7 @@ export * from "./comparison";
 export * from "./conditional";
 export * from "./date";
 export * from "./literal";
+export * from "./misc";
 export * from "./object";
 export * from "./set";
 export * from "./string";
