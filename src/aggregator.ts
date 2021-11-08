@@ -11,12 +11,8 @@ import { assert, isEmpty } from "./util";
  * @constructor
  */
 export class Aggregator {
-  private __pipeline: Collection;
-  private __options: Options;
-
-  constructor(pipeline: Collection, options?: Options) {
-    this.__pipeline = pipeline;
-    this.__options = makeOptions(options);
+  constructor(readonly pipeline: Collection, readonly options?: Options) {
+    this.options = makeOptions(options);
   }
 
   /**
@@ -29,9 +25,9 @@ export class Aggregator {
   stream(collection: Source): Iterator {
     let iterator: Iterator = Lazy(collection);
 
-    if (!isEmpty(this.__pipeline)) {
+    if (!isEmpty(this.pipeline)) {
       // run aggregation pipeline
-      for (const operator of this.__pipeline) {
+      for (const operator of this.pipeline) {
         const operatorKeys = Object.keys(operator);
         const op = operatorKeys[0];
         const call = getOperator(OperatorType.PIPELINE, op);
@@ -39,7 +35,7 @@ export class Aggregator {
           operatorKeys.length === 1 && !!call,
           `invalid aggregation operator ${op}`
         );
-        iterator = call(iterator, operator[op], this.__options) as Iterator;
+        iterator = call(iterator, operator[op], this.options) as Iterator;
       }
     }
     return iterator;

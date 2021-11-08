@@ -125,11 +125,13 @@ function createCallback(
  * A lazy collection iterator yields a single value at time upon request
  */
 export class Iterator {
-  private __iteratees: Iteratee[]; // lazy function chain
-  private __first: boolean; // flag whether to return a single value
-  private __done: boolean;
-  private __buf: AnyVal[];
-  private __next: Callback<IteratorResult>;
+  private readonly iteratees = new Array<Iteratee>(); // lazy function chain
+  private readonly yieldedValues: RawArray = [];
+  private getNext: Callback<IteratorResult>;
+
+  // flag whether to return a single value
+  private isSingle: boolean;
+  private isDone: boolean;
 
   /**
    * @param {*} source An iterable object or function.
@@ -139,10 +141,10 @@ export class Iterator {
    * @param {Function} fn An optional transformation function
    */
   constructor(source: Source) {
-    this.__iteratees = []; // lazy function chain
-    this.__first = false; // flag whether to return a single value
-    this.__done = false;
-    this.__buf = [];
+    this.iteratees = []; // lazy function chain
+    this.isSingle = false; // flag whether to return a single value
+    this.isDone = false;
+    this.yieldedValues = [];
 
     let nextVal: Callback<AnyVal>;
 
@@ -173,11 +175,11 @@ export class Iterator {
     }
 
     // create next function
-    this.__next = createCallback(nextVal, this.__iteratees, this.__buf);
+    this.getNext = createCallback(nextVal, this.iteratees, this.yieldedValues);
   }
 
-  private _validate() {
-    if (this.__first)
+  private validate() {
+    if (this.isSingle)
       throw new Error("Cannot add iteratee/transform after `first()`");
   }
 
@@ -185,12 +187,12 @@ export class Iterator {
    * Add an iteratee to this lazy sequence
    * @param {Object} iteratee
    */
-  private _push(action: Action, value: AnyVal) {
-    this._validate();
+  private push(action: Action, value: AnyVal) {
+    this.validate();
     if (typeof value === "function") {
-      this.__iteratees.push({ action, func: value as Callback<AnyVal> });
+      this.iteratees.push({ action, func: value as Callback<AnyVal> });
     } else if (typeof value === "number") {
-      this.__iteratees.push({ action, count: value });
+      this.iteratees.push({ action, count: value });
     } else {
       throw Error("invalid value");
     }
@@ -198,7 +200,7 @@ export class Iterator {
   }
 
   next(): IteratorResult {
-    return this.__next();
+    return this.getNext();
   }
 
   // Iteratees methods
@@ -208,7 +210,7 @@ export class Iterator {
    * @param {Function} f
    */
   map(f: Callback<AnyVal>): Iterator {
-    return this._push(Action.MAP, f);
+    return this.push(Action.MAP, f);
   }
 
   /**
@@ -216,7 +218,7 @@ export class Iterator {
    * @param {Function} pred
    */
   filter(predicate: Predicate<AnyVal>): Iterator {
-    return this._push(Action.FILTER, predicate);
+    return this.push(Action.FILTER, predicate);
   }
 
   /**
@@ -224,7 +226,7 @@ export class Iterator {
    * @param {Number} n A number greater than 0
    */
   take(n: number): Iterator {
-    return n > 0 ? this._push(Action.TAKE, n) : this;
+    return n > 0 ? this.push(Action.TAKE, n) : this;
   }
 
   /**
@@ -232,7 +234,7 @@ export class Iterator {
    * @param {Number} n Number of items to drop greater than 0
    */
   drop(n: number): Iterator {
-    return n > 0 ? this._push(Action.DROP, n) : this;
+    return n > 0 ? this.push(Action.DROP, n) : this;
   }
 
   // Transformations
@@ -244,7 +246,7 @@ export class Iterator {
    * @param {Function} fn Tranform function of type (Array) => (Any)
    */
   transform(fn: Callback<Source>): Iterator {
-    this._validate();
+    this.validate();
     const self = this;
     let iter: Iterator;
     return Lazy(() => {
@@ -261,7 +263,7 @@ export class Iterator {
    */
   first(): Iterator {
     this.take(1);
-    this.__first = true;
+    this.isSingle = true;
     return this;
   }
 
@@ -273,10 +275,10 @@ export class Iterator {
    * The realized values are cached for subsequent calls
    */
   value(): AnyVal {
-    if (!this.__done) {
-      this.__done = this.__next(true).done;
+    if (!this.isDone) {
+      this.isDone = this.getNext(true).done;
     }
-    return this.__first ? this.__buf[0] : this.__buf;
+    return this.isSingle ? this.yieldedValues[0] : this.yieldedValues;
   }
 
   /**

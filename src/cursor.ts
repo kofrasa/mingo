@@ -15,42 +15,30 @@ import { Callback, into, isObject, Predicate } from "./util";
  * @constructor
  */
 export class Cursor {
-  private __predicateFn: Predicate<AnyVal>;
-  private __source: Source;
-  private __projection: RawObject;
-  private __operators: Array<RawObject>;
-  private __result: Iterator;
-  private __stack: RawArray;
-  private __options: Options;
+  private readonly operators = Array<RawObject>();
+  private __result: Iterator = null;
+  private __stack: RawArray = [];
 
   constructor(
-    source: Source,
-    predicate: Predicate<AnyVal>,
-    projection: RawObject,
-    options: Options
-  ) {
-    this.__predicateFn = predicate;
-    this.__source = source;
-    this.__projection = projection;
-    this.__operators = [];
-    this.__result = null;
-    this.__stack = [];
-    this.__options = options;
-  }
+    readonly source: Source,
+    readonly predicate: Predicate<AnyVal>,
+    readonly projection: RawObject,
+    readonly options: Options
+  ) {}
 
-  _fetch(): Iterator {
+  private fetch(): Iterator {
     if (this.__result) return this.__result;
 
     // add projection operator
-    if (isObject(this.__projection)) {
-      this.__operators.push({ $project: this.__projection });
+    if (isObject(this.projection)) {
+      this.operators.push({ $project: this.projection });
     }
 
     // filter collection
-    this.__result = Lazy(this.__source).filter(this.__predicateFn);
+    this.__result = Lazy(this.source).filter(this.predicate);
 
-    if (this.__operators.length > 0) {
-      this.__result = new Aggregator(this.__operators, this.__options).stream(
+    if (this.operators.length > 0) {
+      this.__result = new Aggregator(this.operators, this.options).stream(
         this.__result
       );
     }
@@ -63,7 +51,7 @@ export class Cursor {
    * @returns {Array}
    */
   all(): RawArray {
-    return this._fetch().value() as RawArray;
+    return this.fetch().value() as RawArray;
   }
 
   /**
@@ -80,7 +68,7 @@ export class Cursor {
    * @return {Cursor} Returns the cursor, so you can chain this call.
    */
   skip(n: number): Cursor {
-    this.__operators.push({ $skip: n });
+    this.operators.push({ $skip: n });
     return this;
   }
 
@@ -90,7 +78,7 @@ export class Cursor {
    * @return {Cursor} Returns the cursor, so you can chain this call.
    */
   limit(n: number): Cursor {
-    this.__operators.push({ $limit: n });
+    this.operators.push({ $limit: n });
     return this;
   }
 
@@ -100,7 +88,7 @@ export class Cursor {
    * @return {Cursor} Returns the cursor, so you can chain this call.
    */
   sort(modifier: RawObject): Cursor {
-    this.__operators.push({ $sort: modifier });
+    this.operators.push({ $sort: modifier });
     return this;
   }
 
@@ -109,7 +97,7 @@ export class Cursor {
    * @param {*} spec
    */
   collation(spec: CollationSpec): Cursor {
-    into(this.__options, { collation: spec });
+    into(this.options, { collation: spec });
     return this;
   }
 
@@ -125,7 +113,7 @@ export class Cursor {
     if (this.__stack.length > 0) {
       return this.__stack.pop();
     }
-    const o = this._fetch().next();
+    const o = this.fetch().next();
 
     if (!o.done) return o.value;
     this.__stack = null;
@@ -142,7 +130,7 @@ export class Cursor {
     // there is a value on stack
     if (this.__stack.length > 0) return true;
 
-    const o = this._fetch().next();
+    const o = this.fetch().next();
     if (o.done) {
       this.__stack = null;
     } else {
@@ -158,7 +146,7 @@ export class Cursor {
    * @returns {Array}
    */
   map(callback: Callback<AnyVal>): Collection {
-    return this._fetch().map(callback).value() as Collection;
+    return this.fetch().map(callback).value() as Collection;
   }
 
   /**
@@ -166,10 +154,10 @@ export class Cursor {
    * @param callback
    */
   forEach(callback: Callback<AnyVal>): void {
-    this._fetch().each(callback);
+    this.fetch().each(callback);
   }
 
   [Symbol.iterator](): Iterator {
-    return this._fetch(); /* eslint-disable-line */
+    return this.fetch(); /* eslint-disable-line */
   }
 }

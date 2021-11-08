@@ -19,39 +19,39 @@ import {
  * @constructor
  */
 export class Query {
-  private __criteria: RawObject;
-  private __compiled: Callback<AnyVal>[];
-  private __options: Options;
+  private readonly compiled: Callback<AnyVal>[];
 
-  constructor(criteria: RawObject, options?: Options) {
-    this.__criteria = criteria;
-    this.__options = makeOptions(options);
-    this.__compiled = [];
-    this._compile();
+  constructor(
+    private readonly criteria: RawObject,
+    private readonly options?: Options
+  ) {
+    this.options = makeOptions(options);
+    this.compiled = [];
+    this.compile();
   }
 
-  _compile(): void {
-    assert(isObject(this.__criteria), "query criteria must be an object");
+  private compile(): void {
+    assert(isObject(this.criteria), "query criteria must be an object");
 
     let whereOperator: { field: string; expr: AnyVal };
 
-    for (const [field, expr] of Object.entries(this.__criteria)) {
+    for (const [field, expr] of Object.entries(this.criteria)) {
       if ("$where" === field) {
         whereOperator = { field: field, expr: expr };
       } else if ("$expr" === field) {
-        this._processOperator(field, field, expr);
+        this.processOperator(field, field, expr);
       } else if (inArray(["$and", "$or", "$nor"], field)) {
-        this._processOperator(field, field, expr);
+        this.processOperator(field, field, expr);
       } else {
         // normalize expression
         assert(!isOperator(field), `unknown top level operator: ${field}`);
         for (const [operator, val] of Object.entries(normalize(expr))) {
-          this._processOperator(field, operator, val);
+          this.processOperator(field, operator, val);
         }
       }
 
       if (isObject(whereOperator)) {
-        this._processOperator(
+        this.processOperator(
           whereOperator.field,
           whereOperator.field,
           whereOperator.expr
@@ -60,11 +60,15 @@ export class Query {
     }
   }
 
-  _processOperator(field: string, operator: string, value: AnyVal): void {
+  private processOperator(
+    field: string,
+    operator: string,
+    value: AnyVal
+  ): void {
     const call = getOperator(OperatorType.QUERY, operator);
     assert(!!call, `unknown operator ${operator}`);
-    const fn = call(field as AnyVal, value, this.__options) as Callback<AnyVal>;
-    this.__compiled.push(fn);
+    const fn = call(field, value, this.options) as Callback<AnyVal>;
+    this.compiled.push(fn);
   }
 
   /**
@@ -74,8 +78,8 @@ export class Query {
    * @returns {boolean} True or false
    */
   test(obj: RawObject): boolean {
-    for (let i = 0, len = this.__compiled.length; i < len; i++) {
-      if (!this.__compiled[i](obj)) {
+    for (let i = 0, len = this.compiled.length; i < len; i++) {
+      if (!this.compiled[i](obj)) {
         return false;
       }
     }
@@ -94,7 +98,7 @@ export class Query {
       collection,
       (x: RawObject) => this.test(x),
       projection || {},
-      this.__options
+      this.options
     );
   }
 
