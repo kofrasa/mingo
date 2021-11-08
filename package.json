@@ -6,7 +6,7 @@
   "module": "lib",
   "scripts": {
     "prepare": "husky install",
-    "docs": "typedoc src/ && touch docs/.nojekyll",
+    "docs": "typedoc --entryPointStrategy expand src/ && touch docs/.nojekyll",
     "build": "tsc && node ./build.js",
     "test": "npm run build && NODE_ENV=test nyc --reporter=lcov --reporter=text ./runtest.sh",
     "dist": "npm run test && cd lib && npm publish",
@@ -69,6 +69,6 @@
     "url": "https://github.com/kofrasa/mingo/issues"
   },
   "lint-staged": {
-    "*.{js,ts}": "eslint --cache --fix"
+    "*.ts": "eslint --cache --fix"
   }
 }
