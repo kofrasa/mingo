@@ -71,6 +71,24 @@ export function createExpressionOperator(
   };
 }
 
+type Bitmask = number | number[];
+
+export const createBitwiseQueryOperator = (
+  predicate: (_1: number, _2: number) => boolean
+): QueryOperator => {
+  return createQueryOperator(
+    (value: number, mask: Bitmask, options?: Options): boolean => {
+      let b = 0;
+      if (mask instanceof Array) {
+        for (const n of mask) b = b | (1 << n);
+      } else {
+        b = mask;
+      }
+      return predicate(value & b, b);
+    }
+  );
+};
+
 /**
  * Checks that two values are equal.
  *
@@ -223,7 +241,7 @@ export function $exists(a: AnyVal, b: AnyVal, options?: Options): boolean {
  */
 export function $all(
   values: RawArray,
-  queries: RawArray,
+  queries: Array<RawObject>,
   options?: Options
 ): boolean {
   if (
@@ -240,7 +258,7 @@ export function $all(
     // no need to check all the queries.
     if (!matched) break;
     if (isObject(query) && inArray(Object.keys(query), "$elemMatch")) {
-      matched = $elemMatch(values, query["$elemMatch"], options);
+      matched = $elemMatch(values, query["$elemMatch"] as RawObject, options);
     } else if (query instanceof RegExp) {
       matched = values.some((s) => typeof s === "string" && query.test(s));
     } else {

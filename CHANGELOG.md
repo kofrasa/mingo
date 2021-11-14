@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.x.x / YYYY-mm-dd
+
+**Features**
+* Add bitwise query operators. Inlcudes; `$bitsAllClear`, `$bitsAllSet`, `$bitsAnyClear`, `$bitsAnySet`.
+
 ## 4.3.0 / 2021-11-07
 
 **Features**

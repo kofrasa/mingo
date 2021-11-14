@@ -20,6 +20,7 @@ MongoDB query language for in-memory objects
 * Supports Dot Notation for both _`<array>.<index>`_ and _`<document>.<field>`_ selectors
 * Query and Projection Operators
   * [Array Operators](https://docs.mongodb.com/manual/reference/operator/query-array/)
+  * [Bitwise Operators](https://docs.mongodb.com/manual/reference/operator/query-bitwise/)
   * [Comparisons Operators](https://docs.mongodb.com/manual/reference/operator/query-comparison/)
   * [Element Operators](https://docs.mongodb.com/manual/reference/operator/query-element/)
   * [Evaluation Operators](https://docs.mongodb.com/manual/reference/operator/query-evaluation/)
@@ -36,11 +37,12 @@ MongoDB query language for in-memory objects
     * [Conditional Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#conditional-expression-operators/)
     * [Date Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators/)
     * [Literal Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#literal-expression-operators/)
+    * [Miscellaneous Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#miscellaneous-operators)
     * [Object Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#object-expression-operators)
     * [Set Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#set-expression-operators/)
+    * [String Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators)
     * [Trignometry Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#trigonometry-expression-operators)
     * [Type Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#type-expression-operators)
-    * [String Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators)
     * [Variable Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#variable-expression-operators)
 * Support for adding custom operators using `mingo.addOperators`
 * Match against user-defined types
