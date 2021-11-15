@@ -1,9 +1,13 @@
 # Changelog
 
-## 4.x.x / YYYY-mm-dd
+## 4.4.0 / 2021-11-15
 
 **Features**
-* Add bitwise query operators. Inlcudes; `$bitsAllClear`, `$bitsAllSet`, `$bitsAnyClear`, `$bitsAnySet`.
+* Add bitwise query operators.
+  * `$bitsAllClear`
+  * `$bitsAllSet`
+  * `$bitsAnyClear`
+  * `$bitsAnySet`.
 * Add `$jsonSchema` query operator.
 
 ## 4.3.0 / 2021-11-07

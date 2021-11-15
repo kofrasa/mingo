@@ -229,6 +229,49 @@ let stream = agg.stream(collection)
 let result = agg.run(collection)
 ```
 
+### Using $jsonSchema operator
+
+To use the `$jsonSchema` operator, you must register your own `JsonSchemaValidator` using the options.
+This library does not provide schema validation out of the box which allows users to use their preferred libraries and schema format.
+
+The example below uses [Ajv](https://www.npmjs.com/package/ajv) to implement schema validation.
+
+```js
+import { RawObject } from "mingo/types"
+import { JsonSchemaValidator } from "mingo/core"
+import Ajv, { Schema } from "ajv"
+
+const schema = {
+  type: "object",
+  required: ["item", "qty", "instock"],
+  properties: {
+    item: { type: "string" },
+    qty: { type: "integer" },
+    size: {
+      type: "object",
+      required: ["uom"],
+      properties: {
+        uom: { type: "string" },
+        h: { type: "number" },
+        w: { type: "number" },
+      },
+    },
+    instock: { type: "boolean" },
+  },
+};
+
+const jsonSchemaValidator: JsonSchemaValidator = (s: RawObject) => {
+  const ajv = new Ajv();
+  const v = ajv.compile(s as Schema);
+  return (o: RawObject) => (v(o) ? true : false);
+};
+
+// queries documents using schema validation
+find(docs, { $jsonSchema: schema }, {}, { jsonSchemaValidator }).all();
+```
+
+> An error is thrown when the `$jsonSchema` operator is used without a the `jsonSchemaValidator` configured.
+
 ## Benefits
 
 * Better alternative to writing custom code for transforming collection of objects
