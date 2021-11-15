@@ -4,6 +4,7 @@
 
 **Features**
 * Add bitwise query operators. Inlcudes; `$bitsAllClear`, `$bitsAllSet`, `$bitsAnyClear`, `$bitsAnySet`.
+* Add `$jsonSchema` query operator.
 
 ## 4.3.0 / 2021-11-07
 

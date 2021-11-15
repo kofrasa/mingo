@@ -4,6 +4,7 @@ import {
   ArrayOrObject,
   Callback,
   Collection,
+  Predicate,
   RawArray,
   RawObject,
 } from "./types";
@@ -41,6 +42,11 @@ export interface CollationSpec {
 }
 
 /**
+ * JSON schema validator
+ */
+export type JsonSchemaValidator = (schema: RawObject) => Predicate<RawObject>;
+
+/**
  * Generic options interface passed down to all operators
  */
 export interface Options extends RawObject {
@@ -48,6 +54,7 @@ export interface Options extends RawObject {
   readonly collation?: CollationSpec;
   readonly hashFunction?: HashFunction;
   readonly collectionResolver?: CollectionResolver;
+  readonly jsonSchemaValidator?: JsonSchemaValidator;
 }
 
 // options to core functions computeValue() and redact()

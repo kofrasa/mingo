@@ -38,9 +38,9 @@ export class Query {
     for (const [field, expr] of Object.entries(this.criteria)) {
       if ("$where" === field) {
         whereOperator = { field: field, expr: expr };
-      } else if ("$expr" === field) {
-        this.processOperator(field, field, expr);
-      } else if (inArray(["$and", "$or", "$nor"], field)) {
+      } else if (
+        inArray(["$and", "$or", "$nor", "$expr", "$jsonSchema"], field)
+      ) {
         this.processOperator(field, field, expr);
       } else {
         // normalize expression

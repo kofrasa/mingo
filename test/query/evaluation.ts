@@ -1,9 +1,14 @@
 import "../../src/init/system";
 
+import Ajv, { Schema } from "ajv";
 import test from "tape";
 
-import { find } from "../../src";
-import { OperatorType, useOperators } from "../../src/core";
+import { aggregate, find } from "../../src";
+import {
+  JsonSchemaValidator,
+  OperatorType,
+  useOperators,
+} from "../../src/core";
 import { $where } from "../../src/operators/query/evaluation/where";
 import { RawArray, RawObject } from "../../src/types";
 
@@ -217,6 +222,84 @@ test("$rand", (t) => {
     ).all();
 
   t.notDeepEqual(q(), q(), "returns random objects");
+
+  t.end();
+});
+
+test("Query: $jsonSchema", (t) => {
+  const docs = [
+    {
+      item: "journal",
+      qty: 25,
+      size: { h: 14, w: 21, uom: "cm" },
+      instock: true,
+    },
+    {
+      item: "notebook",
+      qty: 50,
+      size: { h: 8.5, w: 11, uom: "in" },
+      instock: true,
+    },
+    { item: "paper", qty: 100, size: { h: 8.5, w: 11, uom: "in" }, instock: 1 },
+    {
+      item: "planner",
+      qty: 75,
+      size: { h: 22.85, w: 30, uom: "cm" },
+      instock: 1,
+    },
+    {
+      item: "postcard",
+      qty: 45,
+      size: { h: 10, w: 15.25, uom: "cm" },
+      instock: true,
+    },
+    { item: "apple", qty: 45, status: "A", instock: true },
+    { item: "pears", qty: 50, status: "A", instock: true },
+  ];
+
+  const schema = {
+    type: "object",
+    required: ["item", "qty", "instock"],
+    properties: {
+      item: { type: "string" },
+      qty: { type: "integer" },
+      size: {
+        type: "object",
+        required: ["uom"],
+        properties: {
+          uom: { type: "string" },
+          h: { type: "number" },
+          w: { type: "number" },
+        },
+      },
+      instock: { type: "boolean" },
+    },
+  };
+
+  const jsonSchemaValidator: JsonSchemaValidator = (s: RawObject) => {
+    const ajv = new Ajv();
+    const v = ajv.compile(s as Schema);
+    return (o: RawObject) => (v(o) ? true : false);
+  };
+
+  const options = { jsonSchemaValidator };
+
+  let result = find(docs, { $jsonSchema: schema }, {}, options).all();
+  t.equal(result.length, 5, "matches with $jsonSchema in query");
+
+  result = aggregate(docs, [{ $match: { $jsonSchema: schema } }], options);
+  t.equal(result.length, 5, "matches with $jsonSchema in aggregation");
+
+  try {
+    find(docs, { $jsonSchema: schema }, {});
+    t.ok(false, "must throw exception");
+  } catch (err: unknown) {
+    t.match(
+      err?.toString(),
+      /Missing option 'jsonSchemaValidator'/,
+      "throws error on invalid JsonSchemaValidator"
+    );
+  }
 
   t.end();
 });
