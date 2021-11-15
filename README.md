@@ -204,31 +204,6 @@ for (let value of cursor) {
 cursor.all()
 ```
 
-## Aggregation Pipeline
-
-```js
-import { Aggregator } from 'mingo/aggregator'
-import { useOperators, OperatorType } from 'mingo/core'
-import { $match, $group } from 'mingo/operators/pipeline'
-import { $min } from 'mingo/operators/accumulator'
-
-// ensure the required operators are preloaded prior to using them.
-useOperators(OperatorType.PIPELINE, { $match, $group })
-useOperators(OperatorType.ACCUMULATOR, { $min })
-
-let agg = new Aggregator([
-  {'$match': { "type": "homework"}},
-  {'$group': {'_id':'$student_id', 'score':{$min:'$score'}}},
-  {'$sort': {'_id': 1, 'score': 1}}
-])
-
-// return an iterator for streaming results
-let stream = agg.stream(collection)
-
-// return all results. same as `stream.all()`
-let result = agg.run(collection)
-```
-
 ### Using $jsonSchema operator
 
 To use the `$jsonSchema` operator, you must register your own `JsonSchemaValidator` using the options.
@@ -270,7 +245,32 @@ const jsonSchemaValidator: JsonSchemaValidator = (s: RawObject) => {
 find(docs, { $jsonSchema: schema }, {}, { jsonSchemaValidator }).all();
 ```
 
-> An error is thrown when the `$jsonSchema` operator is used without a the `jsonSchemaValidator` configured.
+**Note:** An error is thrown when the `$jsonSchema` operator is used without a the `jsonSchemaValidator` configured.
+
+## Aggregation Pipeline
+
+```js
+import { Aggregator } from 'mingo/aggregator'
+import { useOperators, OperatorType } from 'mingo/core'
+import { $match, $group } from 'mingo/operators/pipeline'
+import { $min } from 'mingo/operators/accumulator'
+
+// ensure the required operators are preloaded prior to using them.
+useOperators(OperatorType.PIPELINE, { $match, $group })
+useOperators(OperatorType.ACCUMULATOR, { $min })
+
+let agg = new Aggregator([
+  {'$match': { "type": "homework"}},
+  {'$group': {'_id':'$student_id', 'score':{$min:'$score'}}},
+  {'$sort': {'_id': 1, 'score': 1}}
+])
+
+// return an iterator for streaming results
+let stream = agg.stream(collection)
+
+// return all results. same as `stream.all()`
+let result = agg.run(collection)
+```
 
 ## Benefits
 
