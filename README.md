@@ -206,8 +206,8 @@ cursor.all()
 
 ### Using $jsonSchema operator
 
-To use the `$jsonSchema` operator, you must register your own `JsonSchemaValidator` using the options.
-This library does not provide schema validation out of the box which allows users to use their preferred libraries and schema format.
+To use the `$jsonSchema` operator, you must register your own `JsonSchemaValidator` in the options.
+No default implementation is provided out of the box so users can use a library with their preferred schema format.
 
 The example below uses [Ajv](https://www.npmjs.com/package/ajv) to implement schema validation.
 
@@ -215,6 +215,12 @@ The example below uses [Ajv](https://www.npmjs.com/package/ajv) to implement sch
 import { RawObject } from "mingo/types"
 import { JsonSchemaValidator } from "mingo/core"
 import Ajv, { Schema } from "ajv"
+
+const jsonSchemaValidator: JsonSchemaValidator = (s: RawObject) => {
+  const ajv = new Ajv();
+  const v = ajv.compile(s as Schema);
+  return (o: RawObject) => (v(o) ? true : false);
+};
 
 const schema = {
   type: "object",
@@ -233,12 +239,6 @@ const schema = {
     },
     instock: { type: "boolean" },
   },
-};
-
-const jsonSchemaValidator: JsonSchemaValidator = (s: RawObject) => {
-  const ajv = new Ajv();
-  const v = ajv.compile(s as Schema);
-  return (o: RawObject) => (v(o) ? true : false);
 };
 
 // queries documents using schema validation
