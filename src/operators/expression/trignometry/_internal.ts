@@ -1,6 +1,6 @@
 // Trignometry Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#trigonometry-expression-operators
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
 import { Callback, isNil } from "../../../util";
 
@@ -12,7 +12,7 @@ import { Callback, isNil } from "../../../util";
 export function createTrignometryOperator(
   f: Callback<number | null>,
   returnInfinity?: boolean
-): Callback<number | null> {
+): ExpressionOperator {
   return (obj: RawObject, expr: AnyVal, options?: Options): number | null => {
     const n = computeValue(obj, expr, null, options) as number;
     if (isNaN(n) || isNil(n)) return n;

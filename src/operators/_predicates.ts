@@ -71,24 +71,6 @@ export function createExpressionOperator(
   };
 }
 
-type Bitmask = number | number[];
-
-export const createBitwiseQueryOperator = (
-  predicate: (_1: number, _2: number) => boolean
-): QueryOperator => {
-  return createQueryOperator(
-    (value: number, mask: Bitmask, options?: Options): boolean => {
-      let b = 0;
-      if (mask instanceof Array) {
-        for (const n of mask) b = b | (1 << n);
-      } else {
-        b = mask;
-      }
-      return predicate(value & b, b);
-    }
-  );
-};
-
 /**
  * Checks that two values are equal.
  *
