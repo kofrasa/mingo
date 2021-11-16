@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.4.1 / 2021-11-16
+**Fixes**
+* Remove `lodash` reference in expression operators.
+
 ## 4.4.0 / 2021-11-15
 
 **Features**
