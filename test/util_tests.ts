@@ -1,5 +1,6 @@
 import test from "tape";
 
+import { find } from "../src";
 import { RawObject } from "../src/types";
 import { isEmpty, isEqual, isObject, sortBy } from "../src/util";
 
@@ -84,7 +85,7 @@ test("Test isObject", (t) => {
   ];
 
   fixtures.forEach((arr) => {
-    t.equal(isObject(arr[0]), arr[1], arr[2]);
+    t.equal(isObject(arr[0]), arr[1], arr[2] as string);
   });
 
   t.end();
@@ -97,5 +98,33 @@ test("isEmpty util", (t) => {
     [false, false, true, true, true, true],
     "pass test"
   );
+  t.end();
+});
+
+test("hash function collision", (t) => {
+  const data = [{ codes: ["KNE_OC42-midas"] }, { codes: ["KNE_OCS3-midas"] }];
+  const fixtures = [
+    {
+      query: { codes: { $in: ["KNE_OCS3-midas"] } },
+      result: [{ codes: ["KNE_OC42-midas"] }, { codes: ["KNE_OCS3-midas"] }],
+      options: {},
+      message:
+        "should return both documents due to hash collision with default hash function",
+    },
+    {
+      query: { codes: { $in: ["KNE_OCS3-midas"] } },
+      result: [{ codes: ["KNE_OCS3-midas"] }],
+      options: {
+        hashFunction: (v) => JSON.stringify(v), // basic hash function, but has low performances
+      },
+      message:
+        "should return the good document due to no hash collision with custom hash function",
+    },
+  ];
+  for (let i = 0; i < fixtures.length; i++) {
+    const line = fixtures[i];
+    const res = find(data, line.query, {}, line.options).all();
+    t.deepEqual(res, line.result, line.message);
+  }
   t.end();
 });
