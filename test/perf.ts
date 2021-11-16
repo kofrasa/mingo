@@ -1,29 +1,33 @@
-import _ from "lodash";
+import "../src/init/system";
+
 import { performance } from "perf_hooks";
 import test from "tape";
 
 import { aggregate, Aggregator } from "../src";
 import { RawObject } from "../src/types";
 
-const items: Array<RawObject> = _.range(10 * 1000).map((id: number) => {
-  return {
-    id: id,
-    name: `item ${id}`,
+const items: Array<RawObject> = [];
+for (let i = 0; i < 100_000; i++) {
+  const books = [];
+  const authors = [];
+  for (let j = 0; j < 10; j++) {
+    books.push({
+      id: j,
+      title: `book ${j}`,
+    });
+    authors.push({
+      id: j,
+      name: `author ${j}`,
+    });
+  }
+  items.push({
+    _id: i,
+    name: `item ${i}`,
     active: true,
-    books: _.range(10).map((bookId: number) => {
-      return {
-        id: bookId,
-        title: `book ${bookId}`,
-      };
-    }),
-    authors: _.range(10).map((authorId: number) => {
-      return {
-        id: authorId,
-        name: `author ${authorId}`,
-      };
-    }),
-  };
-});
+    books,
+    authors,
+  });
+}
 
 test("Aggregation performance", (t) => {
   const time1 = performance.now();
@@ -87,12 +91,12 @@ test("Sorting performance", (t) => {
     for (let i = 0; i < length; i++) {
       text.push(possible.charAt(Math.floor(Math.random() * possible.length)));
     }
-    return text.join();
+    return text.join("");
   }
 
   const arrayToSort = [];
   for (let i = 0; i < 5000; i++) {
-    arrayToSort.push(makeid(20));
+    arrayToSort.push(makeid(128));
   }
 
   const mingoSorter1 = new Aggregator(
@@ -118,16 +122,24 @@ test("Sorting performance", (t) => {
     },
   ]);
 
-  console.time("MINGO SORT WITH LOCALE");
+  const MINGO_SORT = "MINGO SORT";
+  const MINGO_SORT_LOCALE = "MINGO SORT WITH LOCALE";
+  const NATIVE_SORT = "NATIVE SORT";
+  const NATIVE_SORT_LOCALE = "NATIVE SORT WITH LOCALE";
+
+  console.time(MINGO_SORT_LOCALE);
   mingoSorter1.run(arrayToSort);
-  console.timeEnd("MINGO SORT WITH LOCALE");
+  console.timeEnd(MINGO_SORT_LOCALE);
 
-  console.time("MINGO SORT WITHOUT LOCALE");
+  console.time(MINGO_SORT);
   mingoSorter2.run(arrayToSort);
-  console.timeEnd("MINGO SORT WITHOUT LOCALE");
+  console.timeEnd(MINGO_SORT);
 
-  console.time("NATIVE SORT WITH LOCALE");
-  arrayToSort.concat().sort((a: string, b: string) => {
+  const nativeSort = arrayToSort.concat();
+  const nativeLocaleSort = arrayToSort.concat();
+
+  console.time(NATIVE_SORT_LOCALE);
+  nativeLocaleSort.sort((a: string, b: string) => {
     const r = a.localeCompare(b, "en", {
       sensitivity: "base",
     });
@@ -135,10 +147,10 @@ test("Sorting performance", (t) => {
     if (r > 0) return 1;
     return 0;
   });
-  console.timeEnd("NATIVE SORT WITH LOCALE");
+  console.timeEnd(NATIVE_SORT_LOCALE);
 
-  console.time("NATIVE SORT WITHOUT LOCALE");
-  arrayToSort.concat().sort();
-  console.timeEnd("NATIVE SORT WITHOUT LOCALE");
+  console.time(NATIVE_SORT);
+  nativeSort.sort();
+  console.timeEnd(NATIVE_SORT);
   t.end();
 });

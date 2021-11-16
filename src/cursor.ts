@@ -15,9 +15,9 @@ import { Callback, into, isObject, Predicate } from "./util";
  * @constructor
  */
 export class Cursor {
-  private readonly operators = Array<RawObject>();
-  private __result: Iterator = null;
-  private __stack: RawArray = [];
+  private readonly operators: Array<RawObject> = [];
+  private result: Iterator = null;
+  private stack: RawArray = [];
 
   constructor(
     readonly source: Source,
@@ -27,7 +27,7 @@ export class Cursor {
   ) {}
 
   private fetch(): Iterator {
-    if (this.__result) return this.__result;
+    if (this.result) return this.result;
 
     // add projection operator
     if (isObject(this.projection)) {
@@ -35,15 +35,15 @@ export class Cursor {
     }
 
     // filter collection
-    this.__result = Lazy(this.source).filter(this.predicate);
+    this.result = Lazy(this.source).filter(this.predicate);
 
     if (this.operators.length > 0) {
-      this.__result = new Aggregator(this.operators, this.options).stream(
-        this.__result
+      this.result = new Aggregator(this.operators, this.options).stream(
+        this.result
       );
     }
 
-    return this.__result;
+    return this.result;
   }
 
   /**
@@ -107,16 +107,16 @@ export class Cursor {
    */
   next(): AnyVal {
     // empty stack means processing is done
-    if (!this.__stack) return;
+    if (!this.stack) return;
 
     // yield value obtains in hasNext()
-    if (this.__stack.length > 0) {
-      return this.__stack.pop();
+    if (this.stack.length > 0) {
+      return this.stack.pop();
     }
     const o = this.fetch().next();
 
     if (!o.done) return o.value;
-    this.__stack = null;
+    this.stack = null;
     return;
   }
 
@@ -125,19 +125,19 @@ export class Cursor {
    * @returns {boolean}
    */
   hasNext(): boolean {
-    if (!this.__stack) return false; // done
+    if (!this.stack) return false; // done
 
     // there is a value on stack
-    if (this.__stack.length > 0) return true;
+    if (this.stack.length > 0) return true;
 
     const o = this.fetch().next();
     if (o.done) {
-      this.__stack = null;
+      this.stack = null;
     } else {
-      this.__stack.push(o.value);
+      this.stack.push(o.value);
     }
 
-    return !!this.__stack;
+    return !!this.stack;
   }
 
   /**

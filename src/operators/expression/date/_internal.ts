@@ -1,8 +1,6 @@
-import { isNumber } from "lodash";
-
 import { computeValue, Options } from "../../../core";
 import { AnyVal } from "../../../types";
-import { isDate, isNil } from "../../../util";
+import { isDate, isNil, isNumber } from "../../../util";
 
 export type Duration =
   | "year"
