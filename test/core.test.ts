@@ -1,5 +1,3 @@
-import test from "tape";
-
 import { aggregate, Aggregator, find } from "../src";
 import {
   addOperators,
@@ -8,12 +6,11 @@ import {
   OperatorType,
 } from "../src/core";
 import { AnyVal, Collection, RawObject } from "../src/types";
+import { isNumber } from "../src/util";
 import * as support from "./support";
 
-test("Custom Operators", (t) => {
-  t.test("custom pipeline operator", (t) => {
-    t.plan(1);
-
+describe("Custom Operators", () => {
+  it("should add new pipeline operator", () => {
     function $pluck(collection: unknown, expr: AnyVal): unknown {
       const array = collection as Array<{ __temp__: unknown }>;
       const agg = new Aggregator([{ $project: { __temp__: expr } }]);
@@ -28,17 +25,16 @@ test("Custom Operators", (t) => {
       { $unwind: "$scores" },
       { $pluck: "$scores.score" },
     ]);
-    t.ok(typeof result[0] === "number", "can add new pipeline operator");
+
+    expect(isNumber(result[0])).toBe(true);
   });
 
-  function $between(selector: string, lhs: AnyVal, rhs: AnyVal): boolean {
-    const args = rhs as number[];
-    const value = lhs as number;
-    return value >= args[0] && value <= args[1];
-  }
-
-  t.test("custom query operator", (t) => {
-    t.plan(2);
+  it("should add new query operator", () => {
+    function $between(selector: string, lhs: AnyVal, rhs: AnyVal): boolean {
+      const args = rhs as number[];
+      const value = lhs as number;
+      return value >= args[0] && value <= args[1];
+    }
 
     addOperators(OperatorType.QUERY, (_): AddOperatorsMap => {
       return { $between };
@@ -51,19 +47,15 @@ test("Custom Operators", (t) => {
       { a: 20, b: 10 },
     ];
     const result = find(coll, { a: { $between: [5, 10] } }, null).all();
-    t.equal(2, result.length, "can add new query operator");
-
-    try {
+    expect(result.length).toBe(2);
+    expect(() =>
       addOperators(OperatorType.QUERY, (_: OperatorContext) => {
         return { $between };
-      });
-    } catch (e) {
-      t.ok(true, "cannot override existing operators");
-    }
+      })
+    ).toThrow(/\$between already exists/);
   });
 
-  t.test("custom accumulator operator", (t) => {
-    t.plan(2);
+  it("should add accumulator operator", () => {
     addOperators(OperatorType.ACCUMULATOR, (m) => {
       return {
         $stddev: (collection: Collection, expr: AnyVal) => {
@@ -83,15 +75,12 @@ test("Custom Operators", (t) => {
         },
       };
     });
+
     const result = aggregate(support.complexGradesData, [
       { $unwind: "$scores" },
       { $group: { stddev: { $stddev: "$scores.score" } } },
     ]);
-    t.ok(result.length === 1, "must return one result after grouping");
-    t.equal(
-      28.57362029450366,
-      (result[0] as RawObject).stddev,
-      "must return correct stddev"
-    );
+    expect(result.length).toBe(1);
+    expect((result[0] as RawObject).stddev).toEqual(28.57362029450366);
   });
 });
