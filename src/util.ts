@@ -72,6 +72,7 @@ export interface Comparator<T> {
 interface ResolveOptions {
   unwrapArray?: boolean;
   preserveMissing?: boolean;
+  preserveKeys?: boolean;
 }
 
 // no array, object, or function types
@@ -108,7 +109,7 @@ export function cloneDeep(obj: AnyVal): AnyVal {
  * @param v A value
  */
 export function getType(v: AnyVal): string {
-  return OBJECT_TYPE_RE.exec(Object.prototype.toString.call(v))[1];
+  return OBJECT_TYPE_RE.exec(Object.prototype.toString.call(v) as string)[1];
 }
 export function isBoolean(v: AnyVal): v is boolean {
   return typeof v === JsType.BOOLEAN;
@@ -119,7 +120,7 @@ export function isString(v: AnyVal): v is string {
 export function isNumber(v: AnyVal): v is number {
   return !isNaN(v as number) && typeof v === JsType.NUMBER;
 }
-export const isArray = Array.isArray || ((v) => v instanceof Array);
+export const isArray = Array.isArray;
 export function isObject(v: AnyVal): boolean {
   if (!v) return false;
   const proto = Object.getPrototypeOf(v) as AnyVal;
@@ -241,7 +242,7 @@ export function merge(
         result[i] = merge(result[i++], input[j++], options);
       }
       while (j < input.length) {
-        result.push(obj[j++]);
+        result.push(obj[j++] as ArrayOrObject);
       }
     } else {
       Array.prototype.push.apply(result, input);
@@ -249,8 +250,12 @@ export function merge(
   } else {
     Object.keys(obj).forEach((k) => {
       if (has(obj as RawObject, k)) {
-        if (has(target as RawObject, k)) {
-          target[k] = merge(target[k], obj[k], options);
+        if (has(target, k)) {
+          target[k] = merge(
+            target[k] as ArrayOrObject,
+            obj[k] as ArrayOrObject,
+            options
+          );
         } else {
           target[k] = obj[k] as AnyVal;
         }
@@ -787,7 +792,7 @@ export function resolveGraph(
       value = resolveGraph(value as ArrayOrObject, next, options);
     }
     if (value === undefined) return undefined;
-    result = {};
+    result = options.preserveKeys ? { ...obj } : {};
     result[key] = value;
   }
 
@@ -843,7 +848,7 @@ export function traverse(
     if (force === true && isNil(obj[key])) {
       obj[key] = {};
     }
-    traverse(obj[key], next, fn, force);
+    traverse(obj[key] as ArrayOrObject, next, fn, force);
   }
 }
 
@@ -925,7 +930,12 @@ export function normalize(expr: AnyVal): AnyVal {
 
     // ensure valid regex
     if (has(expr as RawObject, "$regex")) {
-      return { $regex: new RegExp(expr["$regex"], expr["$options"]) };
+      return {
+        $regex: new RegExp(
+          expr["$regex"] as string,
+          expr["$options"] as string
+        ),
+      };
     }
   }
 

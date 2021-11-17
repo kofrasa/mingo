@@ -1,7 +1,7 @@
 import { computeValue, Options } from "../../core";
 import { Iterator } from "../../lazy";
 import { RawObject } from "../../types";
-import { cloneDeep, removeValue, setValue } from "../../util";
+import { removeValue, setValue } from "../../util";
 
 /**
  * Adds new fields to documents.
@@ -20,8 +20,8 @@ export function $addFields(
 
   if (newFields.length === 0) return collection;
 
-  return collection.map((obj) => {
-    const newObj = cloneDeep(obj) as RawObject;
+  return collection.map((obj: RawObject) => {
+    const newObj = { ...obj };
     for (const field of newFields) {
       const newValue = computeValue(obj, expr[field], null, options);
       if (newValue !== undefined) {

@@ -2,11 +2,11 @@ import { Options } from "../../core";
 import { Iterator, Lazy } from "../../lazy";
 import { AnyVal, RawObject } from "../../types";
 import {
-  cloneDeep,
   isEmpty,
   isString,
   removeValue,
   resolve,
+  resolveGraph,
   setValue,
 } from "../../util";
 
@@ -65,20 +65,20 @@ export function $unwind(
       if (value instanceof Array) {
         if (value.length === 0 && preserveNullAndEmptyArrays === true) {
           value = null; // reset unwind value
-          const tmp = cloneDeep(obj) as RawObject;
-          removeValue(tmp, field);
-          return { value: format(tmp, null), done: false };
+          removeValue(obj, field);
+          return { value: format(obj, null), done: false };
         } else {
           // construct a lazy sequence for elements per value
           value = Lazy(value).map((item, i: number) => {
-            const tmp = cloneDeep(obj) as RawObject;
-            setValue(tmp, field, item);
-            return format(tmp, i);
+            const newObj = resolveGraph(obj, field, {
+              preserveKeys: true,
+            }) as RawObject;
+            setValue(newObj, field, item);
+            return format(newObj, i);
           });
         }
       } else if (!isEmpty(value) || preserveNullAndEmptyArrays === true) {
-        const tmp = cloneDeep(obj) as RawObject;
-        return { value: format(tmp, null), done: false };
+        return { value: format(obj, null), done: false };
       }
     }
   });

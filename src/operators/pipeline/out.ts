@@ -1,13 +1,15 @@
 import { Options } from "../../core";
 import { Iterator } from "../../lazy";
 import { Collection, RawObject } from "../../types";
-import { assert, isString } from "../../util";
+import { assert, cloneDeep, isString } from "../../util";
 
 /**
  * Takes the documents returned by the aggregation pipeline and writes them to a specified collection.
  *
  * Unlike the $out operator in MongoDB, this operator can appear in any position in the pipeline and is
  * useful for collecting intermediate results of an aggregation operation.
+ *
+ * Note: Object are deep cloned for outputing regardless of the ProcessingMode.
  *
  * @param collection
  * @param expr
@@ -25,7 +27,7 @@ export function $out(
   assert(outputColl instanceof Array, `expression must resolve to an array`);
 
   return collection.map((o: RawObject) => {
-    outputColl.push(o);
+    outputColl.push(cloneDeep(o) as RawObject);
     return o; // passthrough
   });
 }

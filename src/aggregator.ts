@@ -1,7 +1,13 @@
-import { getOperator, makeOptions, OperatorType, Options } from "./core";
+import {
+  getOperator,
+  makeOptions,
+  OperatorType,
+  Options,
+  ProcessingMode,
+} from "./core";
 import { Iterator, Lazy, Source } from "./lazy";
-import { Collection } from "./types";
-import { assert, isEmpty } from "./util";
+import { Collection, RawObject } from "./types";
+import { assert, cloneDeep, intersection, isEmpty } from "./util";
 
 /**
  * Provides functionality for the mongoDB aggregation pipeline
@@ -11,7 +17,7 @@ import { assert, isEmpty } from "./util";
  * @constructor
  */
 export class Aggregator {
-  constructor(readonly pipeline: Collection, readonly options?: Options) {
+  constructor(readonly pipeline: Array<RawObject>, readonly options?: Options) {
     this.options = makeOptions(options);
   }
 
@@ -24,7 +30,15 @@ export class Aggregator {
    */
   stream(collection: Source): Iterator {
     let iterator: Iterator = Lazy(collection);
+    const mode = this.options.processingMode;
+    if (
+      mode == ProcessingMode.CLONE_ALL ||
+      mode == ProcessingMode.CLONE_INPUT
+    ) {
+      iterator.map(cloneDeep);
+    }
 
+    const pipelineOperators: string[] = [];
     if (!isEmpty(this.pipeline)) {
       // run aggregation pipeline
       for (const operator of this.pipeline) {
@@ -35,9 +49,21 @@ export class Aggregator {
           operatorKeys.length === 1 && !!call,
           `invalid aggregation operator ${op}`
         );
+        pipelineOperators.push(op);
         iterator = call(iterator, operator[op], this.options) as Iterator;
       }
     }
+
+    // operators that may share object graphs of inputs.
+    // we only need to clone the output for these since the objects will already be distinct for other operators.
+    if (
+      mode == ProcessingMode.CLONE_OUTPUT ||
+      (mode == ProcessingMode.CLONE_ALL &&
+        !!intersection(["$group", "$unwind"], pipelineOperators).length)
+    ) {
+      iterator.map(cloneDeep);
+    }
+
     return iterator;
   }
 

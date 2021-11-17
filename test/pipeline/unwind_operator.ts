@@ -7,7 +7,7 @@ test("$unwind pipeline operator", (t) => {
   const flattened = aggregate(samples.studentsData, [{ $unwind: "$scores" }]);
   t.ok(flattened.length === 800, "can unwind array value in collection");
 
-  const data = [
+  const getData = () => [
     { _id: 1, item: "ABC", sizes: ["S", "M", "L"] },
     { _id: 2, item: "EFG", sizes: [] },
     { _id: 3, item: "IJK", sizes: "M" },
@@ -15,8 +15,8 @@ test("$unwind pipeline operator", (t) => {
     { _id: 5, item: "XYZ", sizes: null },
   ];
 
-  const a = aggregate(data, [{ $unwind: "$sizes" }]);
-  const b = aggregate(data, [{ $unwind: { path: "$sizes" } }]);
+  const a = aggregate(getData(), [{ $unwind: "$sizes" }]);
+  const b = aggregate(getData(), [{ $unwind: { path: "$sizes" } }]);
   const expected = [
     { _id: 1, item: "ABC", sizes: "S" },
     { _id: 1, item: "ABC", sizes: "M" },
@@ -26,7 +26,7 @@ test("$unwind pipeline operator", (t) => {
   t.deepEqual(a, expected, "can $unwind with field path");
   t.deepEqual(b, expected, "can $unwind with object expression");
 
-  let result = aggregate(data, [
+  let result = aggregate(getData(), [
     { $unwind: { path: "$sizes", includeArrayIndex: "arrayIndex" } },
   ]);
   t.deepEqual(
@@ -40,7 +40,7 @@ test("$unwind pipeline operator", (t) => {
     'can $unwind with option "includeArrayIndex"'
   );
 
-  result = aggregate(data, [
+  result = aggregate(getData(), [
     { $unwind: { path: "$sizes", preserveNullAndEmptyArrays: true } },
   ]);
 

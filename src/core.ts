@@ -10,7 +10,6 @@ import {
 } from "./types";
 import {
   assert,
-  cloneDeep,
   has,
   HashFunction,
   into,
@@ -47,18 +46,64 @@ export interface CollationSpec {
 export type JsonSchemaValidator = (schema: RawObject) => Predicate<RawObject>;
 
 /**
+ * This controls how input and output documents are processed to meet different application needs.
+ * Each mode has different trade offs for; immutability, reference sharing, and performance.
+ */
+export enum ProcessingMode {
+  /**
+   * Clone inputs prior to processing, and the outputs if some objects graphs may be shared.
+   * Use this option to keep input collection immutable and to get distinct output objects.
+   *
+   * Note: This option is expensive and reduces performance.
+   */
+  CLONE_ALL = "CLONE_ALL",
+
+  /**
+   * Clones inputs prior to processing.
+   * This option will return output objects with shared graphs in their path if specific operators are used.
+   * Use this option to keep the input collection immutable.
+   *
+   */
+  CLONE_INPUT = "CLONE_INPUT",
+
+  /**
+   * Clones the output to return distinct objects with no shared paths.
+   * This option modifies the input collection and during processing.
+   */
+  CLONE_OUTPUT = "CLONE_OUTPUT",
+
+  /**
+   * Turn off cloning and modifies the input collection as needed.
+   * This option will also return output objects with shared paths in their graph when specific operators are used.
+   *
+   * This option provides the greatest speedup for the biggest tradeoff. When using the aggregation pipeline, you can use
+   * the "$out" operator to collect immutable intermediate results.
+   *
+   * @default
+   */
+  CLONE_OFF = "CLONE_OFF",
+}
+
+/**
  * Generic options interface passed down to all operators
  */
 export interface Options extends RawObject {
+  /** The key string that is used to lookup the ID value of a document. */
   readonly idKey?: string;
+  /** The collation specification for string operations. */
   readonly collation?: CollationSpec;
+  /** Processing mode that determines how to treat inputs and outputs. */
+  readonly processingMode?: ProcessingMode;
+  /** Hash function to replace the somewhat weaker default implementation. */
   readonly hashFunction?: HashFunction;
+  /** Function to resolve collections from an external source. */
   readonly collectionResolver?: CollectionResolver;
+  /** JSON schema validator to use with the $jsonSchema operator. Required to use the operator. */
   readonly jsonSchemaValidator?: JsonSchemaValidator;
 }
 
 // options to core functions computeValue() and redact()
-export interface ComputeOptions extends Options {
+interface ComputeOptions extends Options {
   readonly root?: RawObject;
 }
 
@@ -67,7 +112,10 @@ export interface ComputeOptions extends Options {
  * @param options Options
  */
 export function makeOptions(options?: Options): Options {
-  return Object.assign({ idKey: "_id" }, options || {});
+  return Object.assign(
+    { idKey: "_id", processingMode: ProcessingMode.CLONE_OFF },
+    options || {}
+  );
 }
 
 /**
@@ -269,7 +317,7 @@ const systemVariables: Record<string, Callback<AnyVal>> = {
 /**
  * Implementation of $redact variables
  *
- * Each function accepts 3 arguments (obj, expr, opt)
+ * Each function accepts 3 arguments (obj, expr, options)
  *
  * @type {Object}
  */
@@ -285,9 +333,8 @@ const redactVariables: Record<string, Callback<AnyVal>> = {
     if (!has(expr as RawObject, "$cond")) return obj;
 
     let result: ArrayOrObject;
-    const newObj = cloneDeep(obj) as ArrayOrObject;
 
-    for (const [key, current] of Object.entries(newObj)) {
+    for (const [key, current] of Object.entries(obj)) {
       if (isObjectLike(current)) {
         if (current instanceof Array) {
           const array: RawArray = [];
@@ -305,13 +352,13 @@ const redactVariables: Record<string, Callback<AnyVal>> = {
         }
 
         if (isNil(result)) {
-          delete newObj[key]; // pruned result
+          delete obj[key]; // pruned result
         } else {
-          newObj[key] = result;
+          obj[key] = result;
         }
       }
     }
-    return newObj;
+    return obj;
   },
 };
 /* eslint-enable unused-imports/no-unused-vars-ts */
@@ -410,9 +457,9 @@ export function computeValue(
       }
     }
     return result;
-  } else {
-    return expr;
   }
+
+  return expr;
 }
 
 /**

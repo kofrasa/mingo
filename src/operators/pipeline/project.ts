@@ -1,9 +1,8 @@
 import { computeValue, getOperator, OperatorType, Options } from "../../core";
 import { Iterator } from "../../lazy";
-import { AnyVal, RawObject } from "../../types";
+import { AnyVal, Predicate, RawObject } from "../../types";
 import {
   assert,
-  cloneDeep,
   ensureArray,
   filterMissing,
   has,
@@ -50,7 +49,9 @@ export function $project(
   if (inArray(expressionKeys, ID_KEY)) {
     const id = expr[ID_KEY];
     if (id === 0 || id === false) {
-      expressionKeys = expressionKeys.filter(notInArray.bind(null, [ID_KEY]));
+      expressionKeys = expressionKeys.filter(
+        notInArray.bind(null, [ID_KEY]) as Predicate<AnyVal>
+      );
       idOnlyExcluded = expressionKeys.length == 0;
     }
   } else {
@@ -141,7 +142,7 @@ function processObject(
         validateExpression(subExprObj, options);
         let target = obj[key];
         if (target instanceof Array) {
-          value = target.map((o) =>
+          value = target.map((o: RawObject) =>
             processObject(o, subExprObj, options, subExprKeys, false)
           );
         } else {
@@ -196,7 +197,6 @@ function processObject(
   if (foundSlice || foundExclusion || idOnlyExcluded) {
     newObj = into({}, obj, newObj);
     if (dropKeys.length > 0) {
-      newObj = cloneDeep(newObj);
       for (const k of dropKeys) {
         removeValue(newObj, k);
       }

@@ -3,6 +3,7 @@ import "../src/init/system";
 import test from "tape";
 
 import { find } from "../src";
+import { ProcessingMode } from "../src/core";
 import { Collection, RawArray } from "../src/types";
 import * as samples from "./support";
 
@@ -142,9 +143,10 @@ test("Query projection operators", (t) => {
   }
 
   {
-    const data = [
+    const getData = () => [
       { name: "Steve", age: 15, features: { hair: "brown", eyes: "brown" } },
     ];
+    let data = getData();
     let result = find(data, {}, { "features.hair": 1 }).next();
     t.deepEqual(
       result,
@@ -155,13 +157,15 @@ test("Query projection operators", (t) => {
 
     t.throws(
       function () {
-        find(data, {}, { "features.hair": 0, name: 1 }).next();
+        find(getData(), {}, { "features.hair": 0, name: 1 }).next();
       },
       Error,
       "should throw exception: Projection cannot have a mix of inclusion and exclusion"
     );
 
-    result = find(data, {}, { "features.hair": 0 }).next();
+    const options = { processingMode: ProcessingMode.CLONE_INPUT };
+    data = getData();
+    result = find(data, {}, { "features.hair": 0 }, options).next();
     t.deepEqual(
       result,
       { name: "Steve", age: 15, features: { eyes: "brown" } },
@@ -171,10 +175,13 @@ test("Query projection operators", (t) => {
   }
 
   {
-    const data = [
+    const getData = () => [
       { name: "Steve", age: 15, features: ["hair", "eyes", "nose"] },
     ];
-    let result = find(data, {}, { "features.1": 0 }).next();
+
+    const options = { processingMode: ProcessingMode.CLONE_INPUT };
+    let data = getData();
+    let result = find(data, {}, { "features.1": 0 }, options).next();
     t.deepEqual(
       result,
       { name: "Steve", age: 15, features: ["hair", "nose"] },
@@ -182,7 +189,8 @@ test("Query projection operators", (t) => {
     );
     t.notDeepEqual(data[0], result, "should not modify original");
 
-    result = find(data, {}, { "features.1": 1 }).next();
+    data = getData();
+    result = find(data, {}, { "features.1": 1 }, options).next();
     t.deepEqual(
       result,
       { features: ["eyes"] },

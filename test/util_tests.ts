@@ -2,7 +2,14 @@ import test from "tape";
 
 import { find } from "../src";
 import { RawObject } from "../src/types";
-import { isEmpty, isEqual, isObject, sortBy } from "../src/util";
+import {
+  isEmpty,
+  isEqual,
+  isObject,
+  resolve,
+  resolveGraph,
+  sortBy,
+} from "../src/util";
 
 test("Test isEqual", (t) => {
   const sample = [
@@ -98,6 +105,37 @@ test("isEmpty util", (t) => {
     [false, false, true, true, true, true],
     "pass test"
   );
+  t.end();
+});
+
+test("resolveGraph", (t) => {
+  const doc = { a: 1, b: { c: 2, d: ["hello"], e: [1, 2, 3] } };
+  const sameDoc = { a: 1, b: { c: 2, d: ["hello"], e: [1, 2, 3] } };
+  let result = resolveGraph(doc, "b.e.1");
+
+  t.deepEqual({ b: { e: [2] } }, result, "resolves graph without extra leaves");
+  t.deepEqual(
+    doc,
+    sameDoc,
+    "does not modify original object when keepLeaves=false"
+  );
+
+  result = resolveGraph(doc, "b.e.1", { preserveKeys: true });
+  t.deepEqual(
+    { a: 1, b: { c: 2, d: ["hello"], e: [2] } },
+    result,
+    "resolve graph with leaves preserved"
+  );
+  t.deepEqual(
+    doc,
+    sameDoc,
+    "does not modify original object when preserveKeys=true"
+  );
+
+  const leaf = resolve(result, "b.d");
+  t.deepEqual(leaf, ["hello"], "values for leaves preserved");
+  t.ok(leaf === doc.b.d, "values for leaves identical to source");
+
   t.end();
 });
 
