@@ -10,9 +10,6 @@ module.exports = {
   //   global: { lines: 80 },
   // },
 
-  // A custom global setup module which exports an async function that is triggered once before all test suites.
-  // globalSetup: "./test/init.ts",
-
   // A preset that is used as a base for Jest's configuration.
   preset: "ts-jest",
 
