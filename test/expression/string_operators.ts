@@ -155,7 +155,7 @@ support.runTestPipeline("$regexMatch operators", [
   {
     message: "$regexMatch with option 's'",
     input: productsData,
-    query: [
+    pipeline: [
       {
         $addFields: {
           returns: {
@@ -168,7 +168,7 @@ support.runTestPipeline("$regexMatch operators", [
         },
       },
     ],
-    check: [
+    expected: [
       { _id: 1, description: "Single LINE description.", returns: false },
       { _id: 2, description: "First lines\nsecond line", returns: false },
       { _id: 3, description: "Many spaces before     line", returns: true },
@@ -187,14 +187,14 @@ support.runTestPipeline("$regexFind operators", [
       { _id: 2, category: "cafe" },
       { _id: 3, category: "cafE" },
     ],
-    query: [
+    pipeline: [
       {
         $addFields: {
           resultObject: { $regexFind: { input: "$category", regex: /cafe/ } },
         },
       },
     ],
-    check: [
+    expected: [
       { _id: 1, category: "café", resultObject: null },
       {
         _id: 2,
@@ -208,7 +208,7 @@ support.runTestPipeline("$regexFind operators", [
   {
     message: "$regexFind with 'captures': 1",
     input: data,
-    query: [
+    pipeline: [
       {
         $project: {
           returnObject: {
@@ -217,7 +217,7 @@ support.runTestPipeline("$regexFind operators", [
         },
       },
     ],
-    check: [
+    expected: [
       {
         _id: 1,
         returnObject: { match: "Carol", idx: 0, captures: ["Car", "ar"] },
@@ -232,7 +232,7 @@ support.runTestPipeline("$regexFind operators", [
   {
     message: "$regexFind with 'captures': 2",
     input: data,
-    query: [
+    pipeline: [
       {
         $project: {
           nycContacts: {
@@ -244,7 +244,7 @@ support.runTestPipeline("$regexFind operators", [
         },
       },
     ],
-    check: [
+    expected: [
       {
         _id: 1,
         nycContacts: {
@@ -277,7 +277,7 @@ support.runTestPipeline("$regexFind operators", [
   {
     message: "$regexFind without grouping",
     input: productsData,
-    query: [
+    pipeline: [
       {
         $addFields: {
           returnObject: {
@@ -286,7 +286,7 @@ support.runTestPipeline("$regexFind operators", [
         },
       },
     ],
-    check: [
+    expected: [
       { _id: 1, description: "Single LINE description.", returnObject: null },
       {
         _id: 2,
@@ -315,7 +315,7 @@ support.runTestPipeline("$regexFind operators", [
   {
     message: "$regexFind with grouping",
     input: productsData,
-    query: [
+    pipeline: [
       {
         $addFields: {
           returnObject: {
@@ -324,7 +324,7 @@ support.runTestPipeline("$regexFind operators", [
         },
       },
     ],
-    check: [
+    expected: [
       { _id: 1, description: "Single LINE description.", returnObject: null },
       {
         _id: 2,
@@ -353,7 +353,7 @@ support.runTestPipeline("$regexFind operators", [
   {
     message: "$regexFind 'idx' is codepoint",
     input: productsData,
-    query: [
+    pipeline: [
       {
         $addFields: {
           returnObject: {
@@ -362,7 +362,7 @@ support.runTestPipeline("$regexFind operators", [
         },
       },
     ],
-    check: [
+    expected: [
       { _id: 1, description: "Single LINE description.", returnObject: null },
       { _id: 2, description: "First lines\nsecond line", returnObject: null },
       {
@@ -391,7 +391,7 @@ support.runTestPipeline("$regexFind operators", [
   {
     message: "$regexFind with option 'i'",
     input: productsData,
-    query: [
+    pipeline: [
       {
         $addFields: {
           returnObject: {
@@ -400,7 +400,7 @@ support.runTestPipeline("$regexFind operators", [
         },
       },
     ],
-    check: [
+    expected: [
       {
         _id: 1,
         description: "Single LINE description.",
@@ -433,7 +433,7 @@ support.runTestPipeline("$regexFind operators", [
   {
     message: "$regexFind with option 'm'",
     input: productsData,
-    query: [
+    pipeline: [
       {
         $addFields: {
           returnObject: {
@@ -442,7 +442,7 @@ support.runTestPipeline("$regexFind operators", [
         },
       },
     ],
-    check: [
+    expected: [
       {
         _id: 1,
         description: "Single LINE description.",
@@ -475,7 +475,7 @@ support.runTestPipeline("$regexFind operators", [
   {
     message: "$regexFind with option 's'",
     input: productsData,
-    query: [
+    pipeline: [
       {
         $addFields: {
           returnObject: {
@@ -488,7 +488,7 @@ support.runTestPipeline("$regexFind operators", [
         },
       },
     ],
-    check: [
+    expected: [
       { _id: 1, description: "Single LINE description.", returnObject: null },
       { _id: 2, description: "First lines\nsecond line", returnObject: null },
       {
@@ -518,7 +518,7 @@ support.runTestPipeline("$regexFind operators", [
   // {
   //   message: "$regexFind with option 'x'",
   //   input: dataForOptions,
-  //   query: [ { $addFields: { returnObject: { $regexFind: { input: "$description", regex: /lin(e|k) # matches line or link/, options: "x" } } } } ],
+  //   pipeline: [ { $addFields: { returnObject: { $regexFind: { input: "$description", regex: /lin(e|k) # matches line or link/, options: "x" } } } } ],
   //   check: [
   //     { "_id" : 1, "description" : "Single LINE description.", "returnObject" : null },
   //     { "_id" : 2, "description" : "First lines\nsecond line", "returnObject" : null },
@@ -545,7 +545,7 @@ support.runTestPipeline("$regexFind operators", [
       },
       { _id: 4, comment: "It's just me. I'm testing.  fred@MongoDB.com" },
     ],
-    query: [
+    pipeline: [
       {
         $addFields: {
           email: {
@@ -558,7 +558,7 @@ support.runTestPipeline("$regexFind operators", [
       },
       { $set: { email: "$email.match" } },
     ],
-    check: [
+    expected: [
       {
         _id: 1,
         comment:
@@ -600,7 +600,7 @@ support.runTestPipeline("$regexFind operators", [
       },
       { _id: 4, name: "Fred", details: ["+1-111-222-3333"] },
     ],
-    query: [
+    pipeline: [
       { $unwind: "$details" },
       {
         $addFields: {
@@ -635,7 +635,7 @@ support.runTestPipeline("$regexFind operators", [
       },
       { $sort: { _id: 1 } },
     ],
-    check: [
+    expected: [
       {
         _id: 1,
         name: "Aunt Arc Tikka",
@@ -666,7 +666,7 @@ support.runTestPipeline("$regexFind operators", [
       { _id: 3, name: "Cam Bo Dia", email: "cam.dia@example.com" },
       { _id: 4, name: "Fred" },
     ],
-    query: [
+    pipeline: [
       {
         $addFields: {
           username: {
@@ -680,7 +680,7 @@ support.runTestPipeline("$regexFind operators", [
       },
       { $set: { username: { $arrayElemAt: ["$username.captures", 0] } } },
     ],
-    check: [
+    expected: [
       {
         _id: 1,
         name: "Aunt Arc Tikka",
@@ -712,7 +712,7 @@ support.runTestPipeline("$regexFindAll operator", [
       { _id: 2, category: "cafe" },
       { _id: 3, category: "cafE" },
     ],
-    query: [
+    pipeline: [
       {
         $addFields: {
           resultObject: {
@@ -721,7 +721,7 @@ support.runTestPipeline("$regexFindAll operator", [
         },
       },
     ],
-    check: [
+    expected: [
       { _id: 1, category: "café", resultObject: [] },
       {
         _id: 2,
@@ -735,7 +735,7 @@ support.runTestPipeline("$regexFindAll operator", [
   {
     message: "$regexFindAll with 'captures': 1",
     input: data,
-    query: [
+    pipeline: [
       {
         $project: {
           returnObject: {
@@ -744,7 +744,7 @@ support.runTestPipeline("$regexFindAll operator", [
         },
       },
     ],
-    check: [
+    expected: [
       {
         _id: 1,
         returnObject: [{ match: "Carol", idx: 0, captures: ["Car", "ar"] }],
@@ -762,7 +762,7 @@ support.runTestPipeline("$regexFindAll operator", [
   {
     message: "$regexFindAll with 'captures': 2",
     input: data,
-    query: [
+    pipeline: [
       {
         $project: {
           nycContacts: {
@@ -774,7 +774,7 @@ support.runTestPipeline("$regexFindAll operator", [
         },
       },
     ],
-    check: [
+    expected: [
       {
         _id: 1,
         nycContacts: [
@@ -801,7 +801,7 @@ support.runTestPipeline("$regexFindAll operator", [
   {
     message: "$regexFindAll without grouping",
     input: productsData,
-    query: [
+    pipeline: [
       {
         $addFields: {
           returnObject: {
@@ -810,7 +810,7 @@ support.runTestPipeline("$regexFindAll operator", [
         },
       },
     ],
-    check: [
+    expected: [
       { _id: 1, description: "Single LINE description.", returnObject: [] },
       {
         _id: 2,
@@ -842,7 +842,7 @@ support.runTestPipeline("$regexFindAll operator", [
   {
     message: "$regexFindAll with grouping",
     input: productsData,
-    query: [
+    pipeline: [
       {
         $addFields: {
           returnObject: {
@@ -851,7 +851,7 @@ support.runTestPipeline("$regexFindAll operator", [
         },
       },
     ],
-    check: [
+    expected: [
       { _id: 1, description: "Single LINE description.", returnObject: [] },
       {
         _id: 2,
@@ -886,7 +886,7 @@ support.runTestPipeline("$regexFindAll operator", [
   {
     message: "$regexFindAll 'idx' is codepoint",
     input: productsData,
-    query: [
+    pipeline: [
       {
         $addFields: {
           returnObject: {
@@ -895,7 +895,7 @@ support.runTestPipeline("$regexFindAll operator", [
         },
       },
     ],
-    check: [
+    expected: [
       { _id: 1, description: "Single LINE description.", returnObject: [] },
       { _id: 2, description: "First lines\nsecond line", returnObject: [] },
       { _id: 3, description: "Many spaces before     line", returnObject: [] },
@@ -916,7 +916,7 @@ support.runTestPipeline("$regexFindAll operator", [
   {
     message: "$regexFindAll with option 'i'",
     input: productsData,
-    query: [
+    pipeline: [
       {
         $addFields: {
           returnObject: {
@@ -929,7 +929,7 @@ support.runTestPipeline("$regexFindAll operator", [
         },
       },
     ],
-    check: [
+    expected: [
       {
         _id: 1,
         description: "Single LINE description.",
@@ -965,7 +965,7 @@ support.runTestPipeline("$regexFindAll operator", [
   {
     message: "$regexFindAll with option 'm'",
     input: productsData,
-    query: [
+    pipeline: [
       {
         $addFields: {
           returnObject: {
@@ -974,7 +974,7 @@ support.runTestPipeline("$regexFindAll operator", [
         },
       },
     ],
-    check: [
+    expected: [
       {
         _id: 1,
         description: "Single LINE description.",
@@ -999,7 +999,7 @@ support.runTestPipeline("$regexFindAll operator", [
   {
     message: "$regexFindAll with option 's'",
     input: productsData,
-    query: [
+    pipeline: [
       {
         $addFields: {
           returnObject: {
@@ -1012,7 +1012,7 @@ support.runTestPipeline("$regexFindAll operator", [
         },
       },
     ],
-    check: [
+    expected: [
       { _id: 1, description: "Single LINE description.", returnObject: [] },
       { _id: 2, description: "First lines\nsecond line", returnObject: [] },
       {
@@ -1040,7 +1040,7 @@ support.runTestPipeline("$regexFindAll operator", [
   // {
   //   message: "$regexFindAll with option 'x'",
   //   input: dataForOptions,
-  //   query: [ { $addFields: { returnObject: { $regexFindAll: { input: "$description", regex: /lin(e|k) # matches line or link/, options: "x" } } } } ],
+  //   pipeline: [ { $addFields: { returnObject: { $regexFindAll: { input: "$description", regex: /lin(e|k) # matches line or link/, options: "x" } } } } ],
   //   check: [
   //     { "_id" : 1, "description" : "Single LINE description.", "returnObject" : [] },
   //     { "_id" : 2, "description" : "First lines\nsecond line", "returnObject" : [ { "match" : "line", "idx" : 6, "captures" : [ "e" ] }, { "match" : "line", "idx" : 19, "captures" : [ "e" ] } ] },
@@ -1067,7 +1067,7 @@ support.runTestPipeline("$regexFindAll operator", [
       },
       { _id: 4, comment: "It's just me. I'm testing.  fred@MongoDB.com" },
     ],
-    query: [
+    pipeline: [
       {
         $addFields: {
           email: {
@@ -1080,7 +1080,7 @@ support.runTestPipeline("$regexFindAll operator", [
       },
       { $set: { email: "$email.match" } },
     ],
-    check: [
+    expected: [
       {
         _id: 1,
         comment:
@@ -1118,7 +1118,7 @@ support.runTestPipeline("$regexFindAll operator", [
       },
       { _id: 4, comment: "It's just me. I'm testing.  fred@MongoDB.com" },
     ],
-    query: [
+    pipeline: [
       {
         $addFields: {
           names: {
@@ -1141,7 +1141,7 @@ support.runTestPipeline("$regexFindAll operator", [
         },
       },
     ],
-    check: [
+    expected: [
       {
         _id: 1,
         comment:
