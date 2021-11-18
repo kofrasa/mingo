@@ -1,27 +1,8 @@
-import test from "tape";
+import "../../src/init/system";
 
 import { aggregate } from "../../src";
-import { runTest } from "../support";
 
-runTest("Set Operators", {
-  $setUnion: [
-    [
-      [
-        ["a", "b", "a"],
-        ["b", "a"],
-      ],
-      ["a", "b"],
-    ],
-    [
-      [["a", "b"], [["a", "b"]]],
-      ["a", "b", ["a", "b"]],
-    ],
-  ],
-});
-
-test("Set Operators", (t) => {
-  t.plan(7);
-
+describe("expression/set", () => {
   const experiments = [
     { _id: 1, A: ["red", "blue"], B: ["red", "blue"] },
     { _id: 2, A: ["red", "blue"], B: ["blue", "red", "blue"] },
@@ -35,19 +16,18 @@ test("Set Operators", (t) => {
   ];
 
   // equality
-  let result = aggregate(experiments, [
-    {
-      $project: {
-        A: 1,
-        B: 1,
-        sameElements: { $setEquals: ["$A", "$B"] },
-        _id: 0,
+  it("can aggregate with $setEquals", () => {
+    const result = aggregate(experiments, [
+      {
+        $project: {
+          A: 1,
+          B: 1,
+          sameElements: { $setEquals: ["$A", "$B"] },
+          _id: 0,
+        },
       },
-    },
-  ]);
-  t.deepEqual(
-    result,
-    [
+    ]);
+    expect(result).toEqual([
       { A: ["red", "blue"], B: ["red", "blue"], sameElements: true },
       { A: ["red", "blue"], B: ["blue", "red", "blue"], sameElements: true },
       { A: ["red", "blue"], B: ["red", "blue", "green"], sameElements: false },
@@ -57,24 +37,22 @@ test("Set Operators", (t) => {
       { A: ["red", "blue"], B: [["red", "blue"]], sameElements: false },
       { A: [], B: [], sameElements: true },
       { A: [], B: ["red"], sameElements: false },
-    ],
-    "aggregate with $setEquals"
-  );
+    ]);
+  });
 
   // intersection
-  result = aggregate(experiments, [
-    {
-      $project: {
-        A: 1,
-        B: 1,
-        commonToBoth: { $setIntersection: ["$A", "$B"] },
-        _id: 0,
+  it("can aggregate with $setIntersection", () => {
+    const result = aggregate(experiments, [
+      {
+        $project: {
+          A: 1,
+          B: 1,
+          commonToBoth: { $setIntersection: ["$A", "$B"] },
+          _id: 0,
+        },
       },
-    },
-  ]);
-  t.deepEqual(
-    result,
-    [
+    ]);
+    expect(result).toEqual([
       { A: ["red", "blue"], B: ["red", "blue"], commonToBoth: ["red", "blue"] },
       {
         A: ["red", "blue"],
@@ -92,19 +70,22 @@ test("Set Operators", (t) => {
       { A: ["red", "blue"], B: [["red", "blue"]], commonToBoth: [] },
       { A: [], B: [], commonToBoth: [] },
       { A: [], B: ["red"], commonToBoth: [] },
-    ],
-    "aggregate with $setIntersection"
-  );
+    ]);
+  });
 
   // union
-  result = aggregate(experiments, [
-    {
-      $project: { A: 1, B: 1, allValues: { $setUnion: ["$A", "$B"] }, _id: 0 },
-    },
-  ]);
-  t.deepEqual(
-    result,
-    [
+  it("can aggregate with $setUnion", () => {
+    const result = aggregate(experiments, [
+      {
+        $project: {
+          A: 1,
+          B: 1,
+          allValues: { $setUnion: ["$A", "$B"] },
+          _id: 0,
+        },
+      },
+    ]);
+    expect(result).toEqual([
       { A: ["red", "blue"], B: ["red", "blue"], allValues: ["red", "blue"] },
       {
         A: ["red", "blue"],
@@ -134,24 +115,22 @@ test("Set Operators", (t) => {
       },
       { A: [], B: [], allValues: [] },
       { A: [], B: ["red"], allValues: ["red"] },
-    ],
-    "aggregate with $setUnion"
-  );
+    ]);
+  });
 
   // difference
-  result = aggregate(experiments, [
-    {
-      $project: {
-        A: 1,
-        B: 1,
-        inBOnly: { $setDifference: ["$B", "$A"] },
-        _id: 0,
+  it("can aggregate with $setDifference", () => {
+    const result = aggregate(experiments, [
+      {
+        $project: {
+          A: 1,
+          B: 1,
+          inBOnly: { $setDifference: ["$B", "$A"] },
+          _id: 0,
+        },
       },
-    },
-  ]);
-  t.deepEqual(
-    result,
-    [
+    ]);
+    expect(result).toEqual([
       { A: ["red", "blue"], B: ["red", "blue"], inBOnly: [] },
       { A: ["red", "blue"], B: ["blue", "red", "blue"], inBOnly: [] },
       { A: ["red", "blue"], B: ["red", "blue", "green"], inBOnly: ["green"] },
@@ -165,24 +144,22 @@ test("Set Operators", (t) => {
       { A: ["red", "blue"], B: [["red", "blue"]], inBOnly: [["red", "blue"]] },
       { A: [], B: [], inBOnly: [] },
       { A: [], B: ["red"], inBOnly: ["red"] },
-    ],
-    "aggregate with $setDifference"
-  );
+    ]);
+  });
 
   // subset
-  result = aggregate(experiments, [
-    {
-      $project: {
-        A: 1,
-        B: 1,
-        AisSubset: { $setIsSubset: ["$A", "$B"] },
-        _id: 0,
+  it("can aggregate with $setIsSubset", () => {
+    const result = aggregate(experiments, [
+      {
+        $project: {
+          A: 1,
+          B: 1,
+          AisSubset: { $setIsSubset: ["$A", "$B"] },
+          _id: 0,
+        },
       },
-    },
-  ]);
-  t.deepEqual(
-    result,
-    [
+    ]);
+    expect(result).toEqual([
       { A: ["red", "blue"], B: ["red", "blue"], AisSubset: true },
       { A: ["red", "blue"], B: ["blue", "red", "blue"], AisSubset: true },
       { A: ["red", "blue"], B: ["red", "blue", "green"], AisSubset: true },
@@ -192,9 +169,8 @@ test("Set Operators", (t) => {
       { A: ["red", "blue"], B: [["red", "blue"]], AisSubset: false },
       { A: [], B: [], AisSubset: true },
       { A: [], B: ["red"], AisSubset: true },
-    ],
-    "aggregate with $setIsSubset"
-  );
+    ]);
+  });
 
   const surveyData = [
     { _id: 1, responses: [true] },
@@ -210,18 +186,17 @@ test("Set Operators", (t) => {
   ];
 
   // any element true
-  result = aggregate(surveyData, [
-    {
-      $project: {
-        responses: 1,
-        isAnyTrue: { $anyElementTrue: ["$responses"] },
-        _id: 0,
+  it("can aggregate with $anyElementTrue", () => {
+    const result = aggregate(surveyData, [
+      {
+        $project: {
+          responses: 1,
+          isAnyTrue: { $anyElementTrue: ["$responses"] },
+          _id: 0,
+        },
       },
-    },
-  ]);
-  t.deepEqual(
-    result,
-    [
+    ]);
+    expect(result).toEqual([
       { responses: [true], isAnyTrue: true },
       { responses: [true, false], isAnyTrue: true },
       { responses: [], isAnyTrue: false },
@@ -232,23 +207,21 @@ test("Set Operators", (t) => {
       { responses: [[false]], isAnyTrue: true },
       { responses: [null], isAnyTrue: false },
       { responses: [undefined], isAnyTrue: false },
-    ],
-    "aggregate with $anyElementTrue"
-  );
+    ]);
+  });
 
   // all elements true
-  result = aggregate(surveyData, [
-    {
-      $project: {
-        responses: 1,
-        isAllTrue: { $allElementsTrue: ["$responses"] },
-        _id: 0,
+  it("can aggregate with $allElementsTrue", () => {
+    const result = aggregate(surveyData, [
+      {
+        $project: {
+          responses: 1,
+          isAllTrue: { $allElementsTrue: ["$responses"] },
+          _id: 0,
+        },
       },
-    },
-  ]);
-  t.deepEqual(
-    result,
-    [
+    ]);
+    expect(result).toEqual([
       { responses: [true], isAllTrue: true },
       { responses: [true, false], isAllTrue: false },
       { responses: [], isAllTrue: true },
@@ -259,9 +232,6 @@ test("Set Operators", (t) => {
       { responses: [[false]], isAllTrue: true },
       { responses: [null], isAllTrue: false },
       { responses: [undefined], isAllTrue: false },
-    ],
-    "aggregate with $allElementsTrue"
-  );
-
-  t.end();
+    ]);
+  });
 });
