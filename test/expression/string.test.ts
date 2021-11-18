@@ -2,7 +2,7 @@ import * as support from "../support";
 
 const opt = { err: true };
 
-support.runTest("String Operators", {
+support.runTest("expression/string", {
   $concat: [
     [[null, "abc"], null],
     [["a", "-", "c"], "a-c"],
