@@ -1,7 +1,5 @@
 import "../../src/init/system";
 
-import test from "tape";
-
 import { find, Query } from "../../src";
 import { OperatorType, useOperators } from "../../src/core";
 import { $where } from "../../src/operators/query/evaluation/where";
@@ -17,7 +15,7 @@ const obj = Object.assign({}, samples.personData, { _id: new ObjectId(idStr) });
 
 useOperators(OperatorType.QUERY, { $where });
 
-test("Comparison, Evaluation, and Element Operators", (t) => {
+describe("query/comparison", () => {
   const queries = [
     [{ _id: new ObjectId(idStr) }, "can match against user-defined types"],
     [{ firstName: "Francis" }, "can check for equality with $eq"],
@@ -95,14 +93,17 @@ test("Comparison, Evaluation, and Element Operators", (t) => {
   ];
 
   queries.forEach((q: RawArray) => {
-    const query = new Query(q[0] as RawObject);
-    t.ok(query.test(obj), q[1] as string);
+    const [criteria, message] = q;
+    const query = new Query(criteria as RawObject);
+    it(message as string, () => {
+      expect(query.test(obj)).toEqual(true);
+    });
   });
 
-  //https://github.com/kofrasa/mingo/issues/54
-  const data = [{ _id: 1, item: null }, { _id: 2 }];
-  const result = find(data, { item: null }).all();
-  t.deepEqual(result, data, "can match null and missing types correctly");
-
-  t.end();
+  it("can match null and missing types correctly", () => {
+    //https://github.com/kofrasa/mingo/issues/54
+    const data = [{ _id: 1, item: null }, { _id: 2 }];
+    const result = find(data, { item: null }).all();
+    expect(result).toEqual(data);
+  });
 });
