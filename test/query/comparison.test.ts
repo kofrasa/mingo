@@ -4,14 +4,10 @@ import { find, Query } from "../../src";
 import { OperatorType, useOperators } from "../../src/core";
 import { $where } from "../../src/operators/query/evaluation/where";
 import { RawArray, RawObject } from "../../src/types";
-import * as samples from "../support";
-
-class ObjectId {
-  constructor(readonly _id: string) {}
-}
+import { ObjectId, personData } from "../support";
 
 const idStr = "123456789abe";
-const obj = Object.assign({}, samples.personData, { _id: new ObjectId(idStr) });
+const obj = Object.assign({}, personData, { _id: new ObjectId(idStr) });
 
 useOperators(OperatorType.QUERY, { $where });
 

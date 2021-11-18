@@ -18,6 +18,10 @@ export const personData = person;
 
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 
+export class ObjectId {
+  constructor(readonly _id: string) {}
+}
+
 export const groupByObjectsData = [
   {
     date_buckets: {
