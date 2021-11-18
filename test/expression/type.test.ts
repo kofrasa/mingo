@@ -1,6 +1,6 @@
 import * as support from "../support";
 
-support.runTest("Type operators", {
+support.runTest("expression/type", {
   $toString: [
     [true, "true"],
     [false, "false"],
