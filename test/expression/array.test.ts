@@ -1,6 +1,6 @@
 import * as support from "../support";
 
-support.runTest("Array Operators", {
+support.runTest("expression/array", {
   $arrayElemAt: [
     [[[1, 2, 3], 0], 1],
     [[[1, 2, 3], -2], 2],

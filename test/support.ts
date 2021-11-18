@@ -184,7 +184,7 @@ export function runTest(
 
           if (ctx.err) {
             it(`${prefix} => Error("${expected}")`, () => {
-              expect(() => computeValue(obj, input, field)).toThrow(Error);
+              expect(() => computeValue(obj, input, field)).toThrowError();
             });
           } else {
             it(`${prefix} => ${JSON.stringify(expected)}`, () => {

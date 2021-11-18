@@ -1,6 +1,6 @@
 import * as support from "../support";
 
-support.runTest("Arithmetic Operators", {
+support.runTest("expression/arithmetic", {
   $abs: [
     [{ $abs: null }, null],
     [{ $abs: -1 }, 1],
