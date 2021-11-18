@@ -1,7 +1,5 @@
-import test from "tape";
-
 import { aggregate } from "../../src";
-import { RawObject } from "../../src/types";
+import { AnyVal, RawObject } from "../../src/types";
 import * as support from "../support";
 
 const apply3Units = {
@@ -22,7 +20,7 @@ const minuteDate = new Date("2021-01-28T13:02:00Z");
 const secondDate = new Date("2021-01-28T13:04:57Z");
 const millisecondDate = new Date("2021-01-28T13:04:59.997Z");
 
-support.runTest("Date operators:", {
+support.runTest("expression/date", {
   $dateAdd: [
     [{ ...apply3Units, unit: "year" }, testDate, { obj: yearDate }],
     [{ ...apply3Units, unit: "quarter" }, testDate, { obj: quarterDate }],
@@ -90,7 +88,11 @@ support.runTest("Date operators:", {
   ],
 });
 
-test("Date Operators", (t) => {
+describe("Date Operators", () => {
+  const check = (actual: AnyVal, expected: AnyVal, message: string) => {
+    it(message, () => expect(actual).toEqual(expected));
+  };
+
   const projectionOperator = {
     $project: {
       year: { $year: "$date" },
@@ -134,25 +136,29 @@ test("Date Operators", (t) => {
       [projectionOperator]
     ).pop() as RawObject;
 
-    t.equals(result.year, 2014, "can apply $year");
-    t.equals(result.month, 1, "can apply $month");
-    t.equals(result.day, 1, "can apply $day");
-    t.equals(result.hour, 8, "can apply $hour");
-    t.equals(result.minutes, 15, "can apply $minutes");
-    t.equals(result.seconds, 39, "can apply $seconds");
-    t.equals(result.milliseconds, 736, "can apply $milliseconds");
-    t.equals(result.dayOfWeek, 4, "can apply $dayOfWeek");
-    t.equals(result.dayOfYear, 1, "can apply $dayOfYear");
-    t.equals(result.week, 0, "can apply $week");
-    t.equals(result.yearMonthDay, "2014-01-01", "formats date to string");
-    t.equals(result.time, "08:15:39:736", "formats time to string");
-    t.equals(result.yearMonthDayUTC, "2014-01-01", "format date with timezone");
-    t.equals(
+    check(result.year, 2014, "can apply $year");
+    check(result.month, 1, "can apply $month");
+    check(result.day, 1, "can apply $day");
+    check(result.hour, 8, "can apply $hour");
+    check(result.minutes, 15, "can apply $minutes");
+    check(result.seconds, 39, "can apply $seconds");
+    check(result.milliseconds, 736, "can apply $milliseconds");
+    check(result.dayOfWeek, 4, "can apply $dayOfWeek");
+    check(result.dayOfYear, 1, "can apply $dayOfYear");
+    check(result.week, 0, "can apply $week");
+    check(result.yearMonthDay, "2014-01-01", "can format date to string");
+    check(result.time, "08:15:39:736", "can format time to string");
+    check(
+      result.yearMonthDayUTC,
+      "2014-01-01",
+      "can format date with timezone"
+    );
+    check(
       result.timewithOffset430,
       "12:45:39:736+0430",
-      "format time with timezone"
+      "can format time with timezone"
     );
-    t.equals(result.minutesOffset430, "270", "format minutes with timezone");
+    check(result.minutesOffset430, "270", "can format minutes with timezone");
 
     // Test date operators with timezone
 
@@ -172,7 +178,7 @@ test("Date Operators", (t) => {
       [projectionOperator]
     ).pop() as RawObject;
 
-    t.equals(result.hour, 1, "can apply $hour with timezone");
+    check(result.hour, 1, "can apply $hour with timezone");
   }
 
   {
@@ -215,7 +221,7 @@ test("Date Operators", (t) => {
       ]
     );
 
-    t.deepEqual(
+    check(
       result,
       [
         { _id: 1, date: new Date("2017-02-08T17:10:40.787Z") },
@@ -250,7 +256,7 @@ test("Date Operators", (t) => {
       ]
     );
 
-    t.deepEqual(
+    check(
       result,
       [
         { _id: 1, date: new Date("2017-02-08T17:10:40.787Z") },
@@ -259,11 +265,9 @@ test("Date Operators", (t) => {
       "can apply $dateFromString with onNull option"
     );
   }
-
-  t.end();
 });
 
-test("Date Operators: $dateFromParts", (t) => {
+describe("Date Operators: $dateFromParts", () => {
   const data = [
     {
       _id: 1,
@@ -305,31 +309,24 @@ test("Date Operators: $dateFromParts", (t) => {
     },
   ])[0] as RawObject;
 
-  t.deepEqual(
-    result.date,
-    new Date("2017-02-08T12:00:00Z"),
-    "can apply $dateFromParts without all parts"
-  );
-  t.deepEqual(
-    result.date_range_greater,
-    new Date("2018-02-01T12:00:00Z"),
-    "can apply $dateFromParts with date parts above range of values"
-  );
-  t.deepEqual(
-    result.date_range_lesser,
-    new Date("2016-12-01T12:00:00Z"),
-    "can apply $dateFromParts with date parts below range of values"
-  );
-  t.deepEqual(
-    result.date_timezone,
-    new Date("2017-01-01T04:46:12Z"),
-    "can apply $dateFromParts with timezone"
-  );
+  it("can apply $dateFromParts without all parts", () => {
+    expect(result.date).toEqual(new Date("2017-02-08T12:00:00Z"));
+  });
 
-  t.end();
+  it("can apply $dateFromParts with date parts above range of values", () => {
+    expect(result.date_range_greater).toEqual(new Date("2018-02-01T12:00:00Z"));
+  });
+
+  it("can apply $dateFromParts with date parts below range of values", () => {
+    expect(result.date_range_lesser).toEqual(new Date("2016-12-01T12:00:00Z"));
+  });
+
+  it("can apply $dateFromParts with timezone", () => {
+    expect(result.date_timezone).toEqual(new Date("2017-01-01T04:46:12Z"));
+  });
 });
 
-test("Date Operators: $dateToParts", (t) => {
+it("can apply $dateToParts with timezone", () => {
   const data = [
     {
       _id: 2,
@@ -357,42 +354,36 @@ test("Date Operators: $dateToParts", (t) => {
     },
   ]);
 
-  t.deepEqual(
-    result,
-    [
-      {
-        _id: 2,
-        date: {
-          year: 2017,
-          month: 1,
-          day: 1,
-          hour: 1,
-          minute: 29,
-          second: 9,
-          millisecond: 123,
-        },
-        // "date_iso" : {
-        //   "isoWeekYear" : 2016,
-        //   "isoWeek" : 52,
-        //   "isoDayOfWeek" : 7,
-        //   "hour" : 1,
-        //   "minute" : 29,
-        //   "second" : 9,
-        //   "millisecond" : 123
-        // },
-        date_timezone: {
-          year: 2016,
-          month: 12,
-          day: 31,
-          hour: 20,
-          minute: 29,
-          second: 9,
-          millisecond: 123,
-        },
+  expect(result).toEqual([
+    {
+      _id: 2,
+      date: {
+        year: 2017,
+        month: 1,
+        day: 1,
+        hour: 1,
+        minute: 29,
+        second: 9,
+        millisecond: 123,
       },
-    ],
-    "can apply $dateToParts with timezone"
-  );
-
-  t.end();
+      // "date_iso" : {
+      //   "isoWeekYear" : 2016,
+      //   "isoWeek" : 52,
+      //   "isoDayOfWeek" : 7,
+      //   "hour" : 1,
+      //   "minute" : 29,
+      //   "second" : 9,
+      //   "millisecond" : 123
+      // },
+      date_timezone: {
+        year: 2016,
+        month: 12,
+        day: 31,
+        hour: 20,
+        minute: 29,
+        second: 9,
+        millisecond: 123,
+      },
+    },
+  ]);
 });
