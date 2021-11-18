@@ -1,6 +1,6 @@
 import * as support from "../support";
 
-support.runTest("Conditional Operators", {
+support.runTest("expression/conditional", {
   $cond: [
     [{ if: { $lte: [200, 200] }, then: "low", else: "high" }, "low"],
     [{ if: { $lte: [500, 200] }, then: "low", else: "high" }, "high"],
