@@ -1,6 +1,6 @@
 import * as support from "../support";
 
-support.runTest("Trignometry Operators", {
+support.runTest("expression/trignometry", {
   $sin: [
     [NaN, NaN],
     [null, null],
@@ -96,6 +96,7 @@ support.runTest("Trignometry Operators", {
     ],
     [Math.PI - 3, 0.14255044070731132],
   ],
+  /* eslint-disable @typescript-eslint/no-loss-of-precision */
   $degreesToRadians: [
     [NaN, NaN],
     [null, null],
