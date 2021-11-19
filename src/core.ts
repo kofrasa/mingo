@@ -113,7 +113,7 @@ interface ComputeOptions extends Options {
  */
 export function makeOptions(options?: Options): Options {
   return Object.assign(
-    { idKey: "_id", processingMode: ProcessingMode.CLONE_OFF },
+    { idKey: "_id", processingMode: ProcessingMode.CLONE_OFF } as Options,
     options || {}
   );
 }

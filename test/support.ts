@@ -222,7 +222,10 @@ export function runTestPipeline(
       const actual = aggregate(
         input,
         pipeline,
-        Object.assign({ processingMode: ProcessingMode.CLONE_INPUT }, options)
+        Object.assign(
+          { processingMode: ProcessingMode.CLONE_INPUT } as Options,
+          options
+        )
       );
       it(message, () => {
         if (typeof expected === "function") {
