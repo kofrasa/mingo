@@ -8,7 +8,6 @@
     "prepare": "husky install",
     "docs": "typedoc --entryPointStrategy expand src/ && touch docs/.nojekyll",
     "build": "tsc && node ./build.js",
-    "test-old": "npm run build && NODE_ENV=test nyc --reporter=lcov --reporter=text ./runtest.sh",
     "test": "jest",
     "dist": "npm run test && cd lib && npm publish",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
@@ -28,7 +27,6 @@
   "devDependencies": {
     "@types/jest": "^27.0.2",
     "@types/node": "16.11.6",
-    "@types/tape": "4.13.2",
     "@typescript-eslint/eslint-plugin": "5.3.0",
     "@typescript-eslint/parser": "5.3.0",
     "ajv": "8.8.0",
@@ -45,7 +43,6 @@
     "nyc": "15.1.0",
     "perf_hooks": "0.0.1",
     "prettier": "2.4.1",
-    "tape": "5.3.1",
     "ts-jest": "27.0.7",
     "ts-node": "10.4.0",
     "typedoc": "0.22.8",
