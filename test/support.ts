@@ -1,8 +1,8 @@
 import "../src/init/system";
 
 import { aggregate } from "../src";
-import { computeValue } from "../src/core";
-import { RawArray, RawObject } from "../src/types";
+import { computeValue, Options, ProcessingMode } from "../src/core";
+import { AnyVal, Callback, RawArray, RawObject } from "../src/types";
 import complexGrades from "./data/grades_complex";
 import simpleGrades from "./data/grades_simple";
 import person from "./data/person";
@@ -205,8 +205,9 @@ export function runTest(
 interface PipelineTestSuite {
   input: RawArray;
   pipeline: Array<RawObject>;
-  expected: RawArray;
+  expected: AnyVal | Callback<AnyVal>;
   message: string;
+  options?: Options;
 }
 /**
  * run pipeline test
@@ -217,9 +218,20 @@ export function runTestPipeline(
 ): void {
   describe(description, () => {
     suite.forEach((unitTest) => {
-      const { input, pipeline, expected, message } = unitTest;
-      const actual = aggregate(input, pipeline);
-      it(message, () => expect(actual).toEqual(expected));
+      const { input, pipeline, expected, message, options } = unitTest;
+      const actual = aggregate(
+        input,
+        pipeline,
+        Object.assign({ processingMode: ProcessingMode.CLONE_INPUT }, options)
+      );
+      it(message, () => {
+        if (typeof expected === "function") {
+          const cb = expected as Callback<AnyVal>;
+          cb(actual);
+        } else {
+          expect(actual).toEqual(expected);
+        }
+      });
     });
   });
 }

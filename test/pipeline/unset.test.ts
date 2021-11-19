@@ -23,12 +23,12 @@ const books = [
   },
 ];
 
-samples.runTestPipeline("$unset pipeline operator", [
+samples.runTestPipeline("pipeline/unset", [
   {
     message: "Remove a Single Field",
-    query: [{ $unset: "copies" }],
+    pipeline: [{ $unset: "copies" }],
     input: books,
-    check: [
+    expected: [
       {
         _id: 1,
         title: "Antelope Antics",
@@ -45,9 +45,9 @@ samples.runTestPipeline("$unset pipeline operator", [
   },
   {
     message: "Remove Top-Level Fields",
-    query: [{ $unset: ["isbn", "copies"] }],
+    pipeline: [{ $unset: ["isbn", "copies"] }],
     input: books,
-    check: [
+    expected: [
       {
         _id: 1,
         title: "Antelope Antics",
@@ -62,9 +62,9 @@ samples.runTestPipeline("$unset pipeline operator", [
   },
   {
     message: "Remove Embedded Fields",
-    query: [{ $unset: ["isbn", "author.first", "copies.warehouse"] }],
+    pipeline: [{ $unset: ["isbn", "author.first", "copies.warehouse"] }],
     input: books,
-    check: [
+    expected: [
       {
         _id: 1,
         title: "Antelope Antics",

@@ -6,9 +6,9 @@ module.exports = {
   collectCoverage: true,
 
   // An object that configures minimum threshold enforcement for coverage results
-  // coverageThreshold: {
-  //   global: { lines: 80 },
-  // },
+  coverageThreshold: {
+    global: { lines: 95 },
+  },
 
   // A preset that is used as a base for Jest's configuration.
   preset: "ts-jest",
