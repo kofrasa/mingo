@@ -1,5 +1,5 @@
 import { computeValue, Options } from "../../core";
-import { AnyVal, Collection } from "../../types";
+import { AnyVal, RawObject } from "../../types";
 
 /**
  * Returns the last value in the collection.
@@ -10,7 +10,7 @@ import { AnyVal, Collection } from "../../types";
  * @returns {*}
  */
 export function $last(
-  collection: Collection,
+  collection: RawObject[],
   expr: AnyVal,
   options?: Options
 ): AnyVal {

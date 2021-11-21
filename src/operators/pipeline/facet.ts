@@ -1,7 +1,7 @@
 import { Aggregator } from "../../aggregator";
 import { Options } from "../../core";
 import { Iterator } from "../../lazy";
-import { Collection, RawObject } from "../../types";
+import { RawObject } from "../../types";
 import { objectMap } from "../../util";
 
 /**
@@ -13,7 +13,7 @@ export function $facet(
   expr: RawObject,
   options?: Options
 ): Iterator {
-  return collection.transform((array: Collection) => {
+  return collection.transform((array: RawObject[]) => {
     return [
       objectMap(expr, (pipeline: Array<RawObject>) =>
         new Aggregator(pipeline, options).run(array)

@@ -1,5 +1,5 @@
 import { computeValue, Options } from "../../core";
-import { AnyVal, Collection, RawArray } from "../../types";
+import { AnyVal, RawArray, RawObject } from "../../types";
 import { isNil } from "../../util";
 
 /**
@@ -11,7 +11,7 @@ import { isNil } from "../../util";
  * @returns {Array|*}
  */
 export function $push(
-  collection: Collection,
+  collection: RawObject[],
   expr: AnyVal,
   options?: Options
 ): RawArray {

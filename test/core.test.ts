@@ -5,7 +5,7 @@ import {
   OperatorContext,
   OperatorType,
 } from "../src/core";
-import { AnyVal, Collection, RawObject } from "../src/types";
+import { AnyVal, RawObject } from "../src/types";
 import { isNumber } from "../src/util";
 import * as support from "./support";
 
@@ -58,7 +58,7 @@ describe("Custom Operators", () => {
   it("should add accumulator operator", () => {
     addOperators(OperatorType.ACCUMULATOR, (m) => {
       return {
-        $stddev: (collection: Collection, expr: AnyVal) => {
+        $stddev: (collection: RawObject[], expr: AnyVal) => {
           const result = aggregate(collection, [
             { $group: { avg: { $avg: expr } } },
           ]) as Array<RawObject>;

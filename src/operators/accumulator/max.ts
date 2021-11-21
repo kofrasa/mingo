@@ -1,5 +1,5 @@
 import { Options } from "../../core";
-import { AnyVal, Collection } from "../../types";
+import { AnyVal, RawObject } from "../../types";
 import { $push } from "./push";
 
 /**
@@ -11,7 +11,7 @@ import { $push } from "./push";
  * @returns {*}
  */
 export function $max(
-  collection: Collection,
+  collection: RawObject[],
   expr: AnyVal,
   options?: Options
 ): AnyVal {

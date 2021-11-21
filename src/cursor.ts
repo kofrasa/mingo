@@ -1,7 +1,7 @@
 import { Aggregator } from "./aggregator";
 import { CollationSpec, Options } from "./core";
 import { Iterator, Lazy, Source } from "./lazy";
-import { AnyVal, Collection, RawArray, RawObject } from "./types";
+import { AnyVal, RawArray, RawObject } from "./types";
 import { Callback, into, isObject, Predicate } from "./util";
 
 /**
@@ -145,8 +145,8 @@ export class Cursor {
    * @param callback
    * @returns {Array}
    */
-  map(callback: Callback<AnyVal>): Collection {
-    return this.fetch().map(callback).value() as Collection;
+  map(callback: Callback<AnyVal>): RawObject[] {
+    return this.fetch().map(callback).value() as RawObject[];
   }
 
   /**

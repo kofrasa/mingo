@@ -3,7 +3,6 @@ import {
   AnyVal,
   ArrayOrObject,
   Callback,
-  Collection,
   Predicate,
   RawArray,
   RawObject,
@@ -26,7 +25,7 @@ import {
  * This is useful for operators that require a second collection to use such as $lookup and $out.
  * The collection is not cached and will be resolved each time it is used.
  */
-export type CollectionResolver = (name: string) => Collection;
+export type CollectionResolver = (name: string) => Array<RawObject>;
 
 /** Specification for collation options */
 export interface CollationSpec {
@@ -88,11 +87,11 @@ export enum ProcessingMode {
  * Generic options interface passed down to all operators
  */
 export interface Options extends RawObject {
-  /** The key string that is used to lookup the ID value of a document. */
+  /** The key string that is used to lookup the ID value of a document. @default "_id" */
   readonly idKey?: string;
   /** The collation specification for string operations. */
   readonly collation?: CollationSpec;
-  /** Processing mode that determines how to treat inputs and outputs. */
+  /** Processing mode that determines how to treat inputs and outputs. @default ProcessingMode.CLONE_OFF */
   readonly processingMode?: ProcessingMode;
   /** Hash function to replace the somewhat weaker default implementation. */
   readonly hashFunction?: HashFunction;
@@ -139,7 +138,7 @@ const OPERATORS: Record<OperatorType, OperatorMap> = {
 };
 
 export type AccumulatorOperator = (
-  collection: Collection,
+  collection: RawObject[],
   expr: AnyVal,
   options?: Options
 ) => AnyVal;
@@ -159,7 +158,7 @@ export type PipelineOperator = (
 export type ProjectionOperator = (
   obj: RawObject,
   expr: AnyVal,
-  field: string,
+  selector: string,
   options?: Options
 ) => AnyVal;
 
@@ -195,15 +194,28 @@ export type AddOperatorsMap = Record<
   | SelectorOperator<AnyVal>
 >;
 
+/** Context used for creating new operators */
+export interface OperatorContext {
+  readonly computeValue: typeof computeValue;
+  readonly resolve: typeof resolve;
+}
+
 /**
  * Validates the object collection of operators
  */
-function validateOperatorMap(operators: RawObject): void {
+function validateOperators(
+  operators: RawObject,
+  operatorType?: OperatorType
+): void {
   for (const [k, v] of Object.entries(operators)) {
     assert(
       v instanceof Function && isOperator(k),
       "invalid operator specified"
     );
+    if (operatorType) {
+      const call = getOperator(operatorType, k);
+      assert(!call, `${k} already exists for '${operatorType}' operators`);
+    }
   }
 }
 
@@ -214,7 +226,7 @@ function validateOperatorMap(operators: RawObject): void {
  * @param operators Name of operator
  */
 export function useOperators(cls: OperatorType, operators: OperatorMap): void {
-  validateOperatorMap(operators);
+  validateOperators(operators);
   into(OPERATORS[cls], operators);
 }
 
@@ -230,12 +242,6 @@ export function getOperator(
   return has(OPERATORS[cls], operator) ? OPERATORS[cls][operator] : null;
 }
 
-/** Context used for creating new operators */
-export interface OperatorContext {
-  readonly computeValue: typeof computeValue;
-  readonly resolve: typeof resolve;
-}
-
 /**
  * Add new operators
  *
@@ -248,7 +254,7 @@ export function addOperators(
 ): void {
   const customOperators = operatorFactory({ computeValue, resolve });
 
-  validateOperatorMap(customOperators);
+  validateOperators(customOperators);
 
   // check for existing operators
   for (const [op, _] of Object.entries(customOperators)) {

@@ -6,7 +6,7 @@ import {
   ProcessingMode,
 } from "./core";
 import { Iterator, Lazy, Source } from "./lazy";
-import { Collection, RawObject } from "./types";
+import { RawObject } from "./types";
 import { assert, cloneDeep, intersection, isEmpty } from "./util";
 
 /**
@@ -73,7 +73,7 @@ export class Aggregator {
    * @param {*} collection
    * @param {*} query
    */
-  run(collection: Source): Collection {
-    return this.stream(collection).value() as Collection;
+  run(collection: Source): RawObject[] {
+    return this.stream(collection).value() as RawObject[];
   }
 }

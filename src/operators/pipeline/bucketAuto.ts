@@ -1,6 +1,6 @@
 import { computeValue, Options } from "../../core";
 import { Iterator } from "../../lazy";
-import { AnyVal, Collection, RawArray, RawObject } from "../../types";
+import { AnyVal, RawArray, RawObject } from "../../types";
 import { assert, has, into, isNil, memoize, sortBy } from "../../util";
 
 interface Boundary extends RawObject {
@@ -39,7 +39,7 @@ export function $bucketAuto(
 
   const ID_KEY = "_id";
 
-  return collection.transform((coll: Collection) => {
+  return collection.transform((coll: RawObject[]) => {
     const approxBucketSize = Math.max(1, Math.round(coll.length / bucketCount));
     const computeValueOptimized = memoize(computeValue, options?.hashFunction);
     const grouped: Record<string, RawArray> = {};

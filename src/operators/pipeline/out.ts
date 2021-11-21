@@ -1,6 +1,6 @@
 import { Options } from "../../core";
 import { Iterator } from "../../lazy";
-import { Collection, RawObject } from "../../types";
+import { RawObject } from "../../types";
 import { assert, cloneDeep, isString } from "../../util";
 
 /**
@@ -18,10 +18,10 @@ import { assert, cloneDeep, isString } from "../../util";
  */
 export function $out(
   collection: Iterator,
-  expr: string | Collection,
+  expr: string | RawObject[],
   options?: Options
 ): Iterator {
-  const outputColl: Collection = isString(expr)
+  const outputColl: RawObject[] = isString(expr)
     ? options?.collectionResolver(expr)
     : expr;
   assert(outputColl instanceof Array, `expression must resolve to an array`);

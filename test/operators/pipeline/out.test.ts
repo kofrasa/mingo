@@ -1,7 +1,7 @@
-import { AnyVal, Collection } from "../../../src/types";
+import { AnyVal, RawObject } from "../../../src/types";
 import * as samples from "../../support";
 
-const output: Collection = [];
+const output: RawObject[] = [];
 const result = [
   { _id: "Dante", books: ["The Banquet", "Divine Comedy", "Eclogues"] },
   { _id: "Homer", books: ["The Odyssey", "Iliad"] },

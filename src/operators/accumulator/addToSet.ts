@@ -1,5 +1,5 @@
 import { Options } from "../../core";
-import { AnyVal, Collection } from "../../types";
+import { AnyVal, RawObject } from "../../types";
 import { unique } from "../../util";
 import { $push } from "./push";
 
@@ -12,12 +12,12 @@ import { $push } from "./push";
  * @returns {*}
  */
 export function $addToSet(
-  collection: Collection,
+  collection: RawObject[],
   expr: AnyVal,
   options?: Options
-): Collection {
+): RawObject[] {
   return unique(
     $push(collection, expr, options),
     options?.hashFunction
-  ) as Collection;
+  ) as RawObject[];
 }

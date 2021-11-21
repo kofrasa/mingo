@@ -1,5 +1,12 @@
 # Changelog
 
+## Next Release
+
+**New**
+* Added new option `ProcessingMode` to control input and output behaviour
+**Removed**
+* `Collection` type
+
 ## 4.4.1 / 2021-11-16
 **Fixes**
 * Remove `lodash` reference in expression operators.

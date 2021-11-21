@@ -1,5 +1,5 @@
 import { Options } from "../../core";
-import { AnyVal, Collection } from "../../types";
+import { AnyVal, RawObject } from "../../types";
 import { isNumber } from "../../util";
 import { stddev } from "./_internal";
 import { $push } from "./push";
@@ -13,7 +13,7 @@ import { $push } from "./push";
  * @return {Number}
  */
 export function $stdDevPop(
-  collection: Collection,
+  collection: RawObject[],
   expr: AnyVal,
   options?: Options
 ): number {

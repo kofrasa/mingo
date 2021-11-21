@@ -1,7 +1,7 @@
 import { getOperator, makeOptions, OperatorType, Options } from "./core";
 import { Cursor } from "./cursor";
 import { Source } from "./lazy";
-import { AnyVal, Collection, RawObject } from "./types";
+import { AnyVal, RawObject } from "./types";
 import {
   assert,
   Callback,
@@ -108,10 +108,13 @@ export class Query {
    * @param collection An array of documents
    * @returns {Array} A new array with matching elements removed
    */
-  remove(collection: Collection): Collection {
-    return collection.reduce<Collection>((acc: Collection, obj: RawObject) => {
-      if (!this.test(obj)) acc.push(obj);
-      return acc;
-    }, []);
+  remove(collection: RawObject[]): RawObject[] {
+    return collection.reduce<RawObject[]>(
+      (acc: RawObject[], obj: RawObject) => {
+        if (!this.test(obj)) acc.push(obj);
+        return acc;
+      },
+      []
+    );
   }
 }

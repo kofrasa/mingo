@@ -6,7 +6,7 @@ import { Options } from "./core";
 import { Cursor } from "./cursor";
 import { Source } from "./lazy";
 import { Query } from "./query";
-import { Collection, RawArray, RawObject } from "./types";
+import { RawArray, RawObject } from "./types";
 
 export { Aggregator } from "./aggregator";
 export { Query } from "./query";
@@ -39,7 +39,7 @@ export function find(
  * @returns {Array} New filtered array
  */
 export function remove(
-  collection: Collection,
+  collection: RawObject[],
   criteria: RawObject,
   options?: Options
 ): RawObject[] {
@@ -50,7 +50,7 @@ export function remove(
  * Return the result collection after running the aggregation pipeline for the given collection.
  * Shorthand for `(new Aggregator(pipeline, options)).run(collection)`
  *
- * @param collection Collection or stream of objects
+ * @param collection array or stream of objects
  * @param pipeline The pipeline operators to use
  * @param options
  * @returns {Array} New array of results

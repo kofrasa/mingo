@@ -1,5 +1,5 @@
 import { computeValue, Options } from "../../core";
-import { AnyVal, Collection } from "../../types";
+import { AnyVal, RawObject } from "../../types";
 
 /**
  * Returns the first value in a group.
@@ -9,7 +9,7 @@ import { AnyVal, Collection } from "../../types";
  * @returns {*}
  */
 export function $first(
-  collection: Collection,
+  collection: RawObject[],
   expr: AnyVal,
   options?: Options
 ): AnyVal {

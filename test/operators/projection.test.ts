@@ -2,7 +2,7 @@ import "../../src/init/system";
 
 import { find } from "../../src";
 import { Options, ProcessingMode } from "../../src/core";
-import { Collection, RawArray } from "../../src/types";
+import { RawArray, RawObject } from "../../src/types";
 import { ObjectId, personData } from "../support";
 
 const idStr = "123456789abe";
@@ -93,7 +93,7 @@ describe("operators/projection", () => {
     });
 
     it("can project nested selector with $slice", () => {
-      const data: Collection = [obj];
+      const data: RawObject[] = [obj];
       const result = find(
         data,
         {},

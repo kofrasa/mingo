@@ -1,6 +1,6 @@
 import { Options } from "../../core";
 import { Iterator } from "../../lazy";
-import { Collection, RawArray, RawObject } from "../../types";
+import { RawArray, RawObject } from "../../types";
 import { assert, hashCode, into, isString, resolve } from "../../util";
 
 /**
@@ -13,7 +13,7 @@ import { assert, hashCode, into, isString, resolve } from "../../util";
 export function $lookup(
   collection: Iterator,
   expr: {
-    from: string | Collection;
+    from: string | RawObject[];
     localField: string;
     foreignField: string;
     as: string;
