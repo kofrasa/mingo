@@ -3,17 +3,10 @@ import "../../../src/init/system";
 import Ajv, { Schema } from "ajv";
 
 import { aggregate, find } from "../../../src";
-import {
-  JsonSchemaValidator,
-  OperatorType,
-  useOperators,
-} from "../../../src/core";
-import { $where } from "../../../src/operators/query/evaluation/where";
+import { JsonSchemaValidator } from "../../../src/core";
 import { RawArray, RawObject } from "../../../src/types";
 
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-
-useOperators(OperatorType.QUERY, { $where });
 
 describe("operators/query/evaluation", () => {
   describe("$where", () => {

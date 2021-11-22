@@ -18,6 +18,7 @@ export function $where(
   value: AnyVal,
   options?: Options
 ): Callback<boolean> {
+  assert(options.scriptEnabled, "$where operator requires 'scriptEnabled' option to be true")
   const f = value as Predicate<AnyVal>;
   assert(isFunction(f), "$where only accepts a Function object")
   return (obj) => f.call(obj) === true;

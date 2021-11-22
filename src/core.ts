@@ -93,6 +93,12 @@ export interface Options extends RawObject {
   readonly collation?: CollationSpec;
   /** Processing mode that determines how to treat inputs and outputs. @default ProcessingMode.CLONE_OFF */
   readonly processingMode?: ProcessingMode;
+  /**
+   * Enables or disables custom script execution.
+   * When disabled, you cannot use operations that execute custom code, such as the $where, $accumulator, and $function.
+   * @default true
+   */
+  readonly scriptEnabled?: boolean;
   /** Hash function to replace the somewhat weaker default implementation. */
   readonly hashFunction?: HashFunction;
   /** Function to resolve collections from an external source. */
@@ -112,10 +118,12 @@ interface ComputeOptions extends Options {
  * @param options Options
  */
 export function makeOptions(options?: Options): Options {
-  return Object.assign(
-    { idKey: "_id", processingMode: ProcessingMode.CLONE_OFF } as Options,
-    options || {}
-  );
+  return {
+    idKey: "_id",
+    scriptEnabled: true,
+    processingMode: ProcessingMode.CLONE_OFF,
+    ...options,
+  };
 }
 
 /**
@@ -248,6 +256,7 @@ export function getOperator(
  *
  * @param operatorType the operator class to extend
  * @param operatorFactory a callback that accepts internal object state and returns an object of new operators.
+ * @deprecated Use custom operator expressions $where, $function, and $accumulator
  */
 export function addOperators(
   operatorType: OperatorType,

@@ -2,6 +2,7 @@
 
 import { computeValue, Options } from "../../../core";
 import { AnyVal, Callback, RawArray, RawObject } from "../../../types";
+import { assert } from "../../../util";
 
 interface AccumulatorExpr {
   /** Function used to initialize the state. */
@@ -23,7 +24,7 @@ interface AccumulatorExpr {
  * Defines a custom accumulator function.
  *
  * @param {Array} collection The input array
- * @param {*} expr The expression for tht operator
+ * @param {*} expr The expression for the operator
  * @param {Options} options Options
  */
 export function $accumulator(
@@ -31,6 +32,11 @@ export function $accumulator(
   expr: AccumulatorExpr,
   options?: Options
 ): AnyVal {
+  assert(
+    options.scriptEnabled,
+    "$accumulator operator requires 'scriptEnabled' option to be true"
+  );
+
   if (collection.length == 0) return expr.initArgs;
 
   const initArgs = computeValue(
