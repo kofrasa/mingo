@@ -6,6 +6,8 @@ import { $where } from "../../../src/operators/query/evaluation/where";
 import { RawArray, RawObject } from "../../../src/types";
 import { ObjectId, personData } from "../../support";
 
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+
 const idStr = "123456789abe";
 const obj = Object.assign({}, personData, { _id: new ObjectId(idStr) });
 
@@ -83,7 +85,11 @@ describe("operators/query/comparison", () => {
     ],
     [{ today: { $type: 9 } }, "can match type of fields with $type"],
     [
-      { $where: "this.jobs === 6 && this.grades.length < 10" },
+      {
+        $where: function () {
+          return this.jobs === 6 && this.grades.length < 10;
+        },
+      },
       "can match with $where expression",
     ],
   ];

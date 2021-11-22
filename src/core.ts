@@ -104,6 +104,7 @@ export interface Options extends RawObject {
 // options to core functions computeValue() and redact()
 interface ComputeOptions extends Options {
   readonly root?: RawObject;
+  readonly groupId?: AnyVal;
 }
 
 /**

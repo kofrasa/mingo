@@ -3,6 +3,7 @@ export * from "./array";
 export * from "./boolean";
 export * from "./comparison";
 export * from "./conditional";
+export * from "./custom";
 export * from "./date";
 export * from "./literal";
 export * from "./misc";

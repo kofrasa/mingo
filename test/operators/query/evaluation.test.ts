@@ -11,6 +11,8 @@ import {
 import { $where } from "../../../src/operators/query/evaluation/where";
 import { RawArray, RawObject } from "../../../src/types";
 
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+
 useOperators(OperatorType.QUERY, { $where });
 
 describe("operators/query/evaluation", () => {
@@ -42,7 +44,9 @@ describe("operators/query/evaluation", () => {
       const criteria: RawObject = {
         "user.color": { $exists: true },
         "user.number": { $exists: true },
-        $where: 'this.user.color === "green" && this.user.number === 42',
+        $where: function () {
+          return this.user.color === "green" && this.user.number === 42;
+        },
       };
 
       // It should return one user object
@@ -55,8 +59,16 @@ describe("operators/query/evaluation", () => {
         "user.color": { $exists: true },
         "user.number": { $exists: true },
         $and: [
-          { $where: 'this.user.color === "green"' },
-          { $where: "this.user.number === 42" },
+          {
+            $where: function () {
+              return this.user.color === "green";
+            },
+          },
+          {
+            $where: function () {
+              return this.user.number === 42;
+            },
+          },
         ],
       };
       // It should return one user object

@@ -38,17 +38,20 @@ export function $group(
     return () => {
       if (++i === size) return { done: true };
 
-      const value = partitions.keys[i];
+      const groupId = partitions.keys[i];
       const obj: RawObject = {};
 
       // exclude undefined key value
-      if (value !== undefined) {
-        obj[ID_KEY] = value;
+      if (groupId !== undefined) {
+        obj[ID_KEY] = groupId;
       }
 
       // compute remaining keys in expression
       for (const [key, val] of Object.entries(expr)) {
-        obj[key] = computeValue(partitions.groups[i], val, key, options);
+        obj[key] = computeValue(partitions.groups[i], val, key, {
+          groupId,
+          ...options,
+        });
       }
 
       return { value: obj, done: false };
