@@ -25,7 +25,11 @@ export const MIN_LONG = Number.MIN_SAFE_INTEGER;
 export type HashFunction = Callback<string>;
 
 // special value to identify missing items. treated differently from undefined
-const MISSING = {};
+class Missing implements RawObject {
+  [x: string]: unknown;
+}
+
+const missing = new Missing();
 
 const DEFAULT_HASH_FUNC: HashFunction = (value: AnyVal): string => {
   const s = encode(value);
@@ -121,7 +125,7 @@ export function isNumber(v: AnyVal): v is number {
   return !isNaN(v as number) && typeof v === JsType.NUMBER;
 }
 export const isArray = Array.isArray;
-export function isObject(v: AnyVal): boolean {
+export function isObject(v: AnyVal): v is object {
   if (!v) return false;
   const proto = Object.getPrototypeOf(v) as AnyVal;
   return (
@@ -219,8 +223,8 @@ export function merge(
   options?: MergeOptions
 ): ArrayOrObject {
   // take care of missing inputs
-  if (target === MISSING) return obj;
-  if (obj === MISSING) return target;
+  if (target === missing) return obj;
+  if (obj === missing) return target;
 
   const inputs = [target, obj];
 
@@ -778,7 +782,7 @@ export function resolveGraph(
         value = resolveGraph(item as ArrayOrObject, selector, options);
         if (options.preserveMissing) {
           if (value === undefined) {
-            value = MISSING;
+            value = missing;
           }
           (result as RawArray).push(value);
         } else if (value !== undefined) {
@@ -807,7 +811,7 @@ export function resolveGraph(
 export function filterMissing(obj: ArrayOrObject): void {
   if (obj instanceof Array) {
     for (let i = obj.length - 1; i >= 0; i--) {
-      if (obj[i] === MISSING) {
+      if (obj[i] === missing) {
         obj.splice(i, 1);
       } else {
         filterMissing(obj[i] as ArrayOrObject);

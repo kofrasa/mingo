@@ -299,7 +299,7 @@ const redactVariables: Record<string, Callback<AnyVal>> = {
 export function computeValue(
   obj: AnyVal,
   expr: AnyVal,
-  operator: string,
+  operator?: string,
   options?: ComputeOptions
 ): AnyVal {
   // ensure valid options exist on first invocation

@@ -1,8 +1,9 @@
 import { aggregate } from "../../../src";
+import { ProcessingMode } from "../../../src/core";
 import * as support from "../../support";
 
 describe("operators/expression/object", () => {
-  support.runTest("Object expression: $mergeObjects", {
+  support.runTest("$mergeObjects", {
     $mergeObjects: [
       [{ $mergeObjects: [{ a: 1 }, null] }, { a: 1 }],
       [{ $mergeObjects: [null, null] }, {}],
@@ -53,7 +54,7 @@ describe("operators/expression/object", () => {
         { $project: { fromItems: 0 } },
       ]);
 
-      expect(result).toEqual([
+      expect(result).toStrictEqual([
         {
           _id: 1,
           item: "abc",
@@ -103,7 +104,7 @@ describe("operators/expression/object", () => {
         { $sort: { _id: -1 } },
       ]);
 
-      expect(result).toEqual([
+      expect(result).toStrictEqual([
         {
           _id: "B",
           mergedSales: { "2017Q1": 300, "2016Q3": 100, "2016Q4": 250 },
@@ -119,6 +120,200 @@ describe("operators/expression/object", () => {
             "2016Q4": 0,
           },
         },
+      ]);
+    });
+  });
+
+  describe("$setFields", () => {
+    const data = [
+      { _id: 1, item: "sweatshirt", price: 45.99, qty: 300 },
+      { _id: 2, item: "winter coat", price: 499.99, qty: 200 },
+      { _id: 3, item: "sun dress", price: 199.99, qty: 250 },
+      { _id: 4, item: "leather boots", price: 249.99, qty: 300 },
+      { _id: 5, item: "bow tie", price: 9.99, qty: 180 },
+    ];
+
+    const options = { processingMode: ProcessingMode.CLONE_INPUT };
+
+    it("Add Fields that Contain Periods ", () => {
+      const result = aggregate(
+        data,
+        [
+          {
+            $replaceWith: {
+              newRoot: {
+                $setField: {
+                  field: "price.usd",
+                  input: "$$ROOT",
+                  value: "$price",
+                },
+              },
+            },
+          },
+          { $unset: "price" },
+        ],
+        options
+      );
+
+      expect(result).toStrictEqual([
+        { _id: 1, item: "sweatshirt", qty: 300, "price.usd": 45.99 },
+        { _id: 2, item: "winter coat", qty: 200, "price.usd": 499.99 },
+        { _id: 3, item: "sun dress", qty: 250, "price.usd": 199.99 },
+        { _id: 4, item: "leather boots", qty: 300, "price.usd": 249.99 },
+        { _id: 5, item: "bow tie", qty: 180, "price.usd": 9.99 },
+      ]);
+    });
+
+    it("Add Fields that Start with a Dollar Sign", () => {
+      const result = aggregate(
+        data,
+        [
+          {
+            $replaceWith: {
+              newRoot: {
+                $setField: {
+                  field: { $literal: "$price" },
+                  input: "$$ROOT",
+                  value: "$price",
+                },
+              },
+            },
+          },
+          { $unset: "price" },
+        ],
+        options
+      );
+
+      expect(result).toStrictEqual([
+        { _id: 1, item: "sweatshirt", qty: 300, $price: 45.99 },
+        { _id: 2, item: "winter coat", qty: 200, $price: 499.99 },
+        { _id: 3, item: "sun dress", qty: 250, $price: 199.99 },
+        { _id: 4, item: "leather boots", qty: 300, $price: 249.99 },
+        { _id: 5, item: "bow tie", qty: 180, $price: 9.99 },
+      ]);
+    });
+
+    it("Update Fields that Contain Periods", () => {
+      const result = aggregate(
+        data,
+        [
+          { $match: { _id: 1 } },
+          {
+            $replaceWith: {
+              newRoot: {
+                $setField: {
+                  field: "price.usd",
+                  input: "$$ROOT",
+                  value: 49.99,
+                },
+              },
+            },
+          },
+          { $unset: "price" },
+        ],
+        options
+      );
+
+      expect(result).toStrictEqual([
+        { _id: 1, item: "sweatshirt", qty: 300, "price.usd": 49.99 },
+      ]);
+    });
+
+    it("Update Fields that Start with a Dollar Sign", () => {
+      const result = aggregate(
+        [
+          { _id: 1, item: "sweatshirt", qty: 300, $price: 45.99 },
+          { _id: 2, item: "winter coat", qty: 200, $price: 499.99 },
+          { _id: 3, item: "sun dress", qty: 250, $price: 199.99 },
+          { _id: 4, item: "leather boots", qty: 300, $price: 249.99 },
+          { _id: 5, item: "bow tie", qty: 180, $price: 9.99 },
+        ],
+        [
+          { $match: { _id: 1 } },
+          {
+            $replaceWith: {
+              newRoot: {
+                $setField: {
+                  field: { $literal: "$price" },
+                  input: "$$ROOT",
+                  value: 49.99,
+                },
+              },
+            },
+          },
+        ],
+        options
+      );
+
+      expect(result).toStrictEqual([
+        { _id: 1, item: "sweatshirt", qty: 300, $price: 49.99 },
+      ]);
+    });
+
+    it("Remove Fields that Contain Periods", () => {
+      const result = aggregate(
+        [
+          { _id: 1, item: "sweatshirt", qty: 300, "price.usd": 45.99 },
+          { _id: 2, item: "winter coat", qty: 200, "price.usd": 499.99 },
+          { _id: 3, item: "sun dress", qty: 250, "price.usd": 199.99 },
+          { _id: 4, item: "leather boots", qty: 300, "price.usd": 249.99 },
+          { _id: 5, item: "bow tie", qty: 180, "price.usd": 9.99 },
+        ],
+        [
+          {
+            $replaceWith: {
+              newRoot: {
+                $setField: {
+                  field: "price.usd",
+                  input: "$$ROOT",
+                  value: "$$REMOVE",
+                },
+              },
+            },
+          },
+        ],
+        options
+      );
+
+      expect(result).toStrictEqual([
+        { _id: 1, item: "sweatshirt", qty: 300 },
+        { _id: 2, item: "winter coat", qty: 200 },
+        { _id: 3, item: "sun dress", qty: 250 },
+        { _id: 4, item: "leather boots", qty: 300 },
+        { _id: 5, item: "bow tie", qty: 180 },
+      ]);
+    });
+
+    it("Remove Fields that Start with a Dollar Sign", () => {
+      const result = aggregate(
+        [
+          { _id: 1, item: "sweatshirt", qty: 300, $price: 45.99 },
+          { _id: 2, item: "winter coat", qty: 200, $price: 499.99 },
+          { _id: 3, item: "sun dress", qty: 250, $price: 199.99 },
+          { _id: 4, item: "leather boots", qty: 300, $price: 249.99 },
+          { _id: 5, item: "bow tie", qty: 180, $price: 9.99 },
+        ],
+        [
+          {
+            $replaceWith: {
+              newRoot: {
+                $unsetField: {
+                  field: { $literal: "$price" },
+                  input: "$$ROOT",
+                },
+              },
+            },
+          },
+        ],
+        options
+      );
+
+      expect(result).toStrictEqual([
+        { _id: 1, item: "sweatshirt", qty: 300 },
+        { _id: 2, item: "winter coat", qty: 200 },
+        { _id: 3, item: "sun dress", qty: 250 },
+        { _id: 4, item: "leather boots", qty: 300 },
+        { _id: 5, item: "bow tie", qty: 180 },
       ]);
     });
   });

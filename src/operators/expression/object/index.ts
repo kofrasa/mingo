@@ -1,2 +1,4 @@
-export { $mergeObjects } from "./mergeObjects";
-export { $objectToArray } from "./objectToArray";
+export * from "./mergeObjects";
+export * from "./objectToArray";
+export * from "./setField";
+export * from "./unsetField";
