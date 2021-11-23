@@ -13,69 +13,101 @@ MongoDB query language for in-memory objects
 
 ## Install
 
-```$ npm install mingo```
+`$ npm install mingo`
 
 ## Features
 
-* Supports Dot Notation for both _`<array>.<index>`_ and _`<document>.<field>`_ selectors
-* Query and Projection Operators
-  * [Array Operators](https://docs.mongodb.com/manual/reference/operator/query-array/)
-  * [Bitwise Operators](https://docs.mongodb.com/manual/reference/operator/query-bitwise/)
-  * [Comparisons Operators](https://docs.mongodb.com/manual/reference/operator/query-comparison/)
-  * [Element Operators](https://docs.mongodb.com/manual/reference/operator/query-element/)
-  * [Evaluation Operators](https://docs.mongodb.com/manual/reference/operator/query-evaluation/)
-  * [Logical Operators](https://docs.mongodb.com/manual/reference/operator/query-logical/)
-  * [Projection Operators](https://docs.mongodb.com/manual/reference/operator/projection/)
-* Aggregation Framework Operators
-  * [Pipeline Operators](https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline/)
-  * [Accumulator Operators](https://docs.mongodb.com/manual/reference/operator/aggregation#accumulators-group/)
-  * [Expression Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#expression-operators)
-    * [Arithmetic Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators)
-    * [Array Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators/)
-    * [Boolean Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#boolean-expression-operators/)
-    * [Comparisons Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#comparison-expression-operators/)
-    * [Conditional Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#conditional-expression-operators/)
-    * [Date Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators/)
-    * [Literal Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#literal-expression-operators/)
-    * [Miscellaneous Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#miscellaneous-operators)
-    * [Object Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#object-expression-operators)
-    * [Set Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#set-expression-operators/)
-    * [String Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators)
-    * [Trignometry Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#trigonometry-expression-operators)
-    * [Type Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#type-expression-operators)
-    * [Variable Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#variable-expression-operators)
-* Support for adding custom operators using `mingo.addOperators`
-* Match against user-defined types
-* Support for aggregaion variables
-  * [`$$ROOT`,`$$CURRENT`,`$$DESCEND`,`$$PRUNE`,`$$KEEP`,`$$REMOVE`](https://docs.mongodb.com/manual/reference/aggregation-variables/)
-* ES6 module compatible
-* Support integrating with custom collections via mixin
-* Query filtering and aggregation streaming.
+- Supports Dot Notation for both _`<array>.<index>`_ and _`<document>.<field>`_ selectors
+- Query and Projection Operators
+  - [Array Operators](https://docs.mongodb.com/manual/reference/operator/query-array/)
+  - [Bitwise Operators](https://docs.mongodb.com/manual/reference/operator/query-bitwise/)
+  - [Comparisons Operators](https://docs.mongodb.com/manual/reference/operator/query-comparison/)
+  - [Element Operators](https://docs.mongodb.com/manual/reference/operator/query-element/)
+  - [Evaluation Operators](https://docs.mongodb.com/manual/reference/operator/query-evaluation/)
+  - [Logical Operators](https://docs.mongodb.com/manual/reference/operator/query-logical/)
+  - [Projection Operators](https://docs.mongodb.com/manual/reference/operator/projection/)
+- Aggregation Framework Operators
+  - [Pipeline Operators](https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline/)
+  - [Accumulator Operators](https://docs.mongodb.com/manual/reference/operator/aggregation#accumulators-group/)
+  - [Expression Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#expression-operators)
+    - [Arithmetic Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators)
+    - [Array Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators/)
+    - [Boolean Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#boolean-expression-operators/)
+    - [Comparisons Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#comparison-expression-operators/)
+    - [Conditional Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#conditional-expression-operators/)
+    - [Custom Aggregation Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#custom-aggregation-expression-operators)
+    - [Date Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators/)
+    - [Literal Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#literal-expression-operators/)
+    - [Miscellaneous Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#miscellaneous-operators)
+    - [Object Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#object-expression-operators)
+    - [Set Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#set-expression-operators/)
+    - [String Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators)
+    - [Trignometry Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#trigonometry-expression-operators)
+    - [Type Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#type-expression-operators)
+    - [Variable Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#variable-expression-operators)
+- ~~Support for adding custom operators using `mingo.addOperators`~~ Replaced with `$where`, `$accumulator`, and `$function` operators.
+- Match against user-defined types
+- Support for aggregaion variables
+  - [`$$ROOT`,`$$CURRENT`,`$$DESCEND`,`$$PRUNE`,`$$KEEP`,`$$REMOVE`](https://docs.mongodb.com/manual/reference/aggregation-variables/)
+- ES6 module compatible
+- Query filtering and aggregation streaming.
 
 For documentation on using query operators see [mongodb](http://docs.mongodb.org/manual/reference/operator/query/)
 
 ## Documentation
 
-* [Package docs](http://kofrasa.net/mingo/)
-* [Custom Operators](https://github.com/kofrasa/mingo/wiki/Custom-Operators)
+- [Package docs](http://kofrasa.net/mingo/)
+
+## Differences from MongoDB
+
+This library works with in-memory objects so differs slightly from the server implementation as outlined below.
+
+1. There is no concept of a collection. Data sources are either an array of objects or a generator function to support streaming.
+1. The `collectionResolver` must be configured if referencing input arrays by name in operators that use it such as `$lookup` and `$out`.
+1. Operators that accepts input arrays by name, also accept the array reference directly. See previous point.
+1. [Data size](https://docs.mongodb.com/manual/reference/operator/aggregation/#data-size-operators) operators (`$binarySize` and `bsonSize`) are not implemented.
+1. Operators `$comment`, `$meta`, `$toObjectId`, as well as any operator that requires server-side support are not implemented.
+1. Custom function evaluation operators `$where`, `$function`, and `$accumulator` DO NOT accept strings as the function body.
+1. Custom function evaluation operators are enabled by default and can be disabled by setting the `scriptEnabled` option to `false`.
 
 ## Usage
 
 ```js
 // Use as es6 module
-import mingo from 'mingo'
+import mingo from "mingo";
 
 // or vanilla nodeJS
-const mingo = require('mingo')
+const mingo = require("mingo");
 ```
 
-### Change in 4.x.x
+### Options
 
-The `$where` operator is not loaded by default and must be explicitly registered if required. See [documentation](https://docs.mongodb.com/manual/reference/operator/query/where/index.html) for preferred alternatives.
+Query and aggregation operations can be configured with options to enabled different features or customize how documents are processed. Some options are only relevant to specific operators and need not be specified if not required.
 
-### Changes in 3.0.0
+```js
+interface Options {
+  /** The key that is used to lookup the ID value of a document. @default "_id" */
+  readonly idKey?: string;
+  /** The collation specification for string operations. */
+  readonly collation?: CollationSpec;
+  /** Processing mode that determines how to treat inputs and outputs. @default ProcessingMode.CLONE_OFF */
+  readonly processingMode?: ProcessingMode;
+  /**
+   * Enables or disables custom script execution.
+   * When disabled, you cannot use operations that execute custom code, such as the $where, $accumulator, and $function.
+   * @default true
+   */
+  readonly scriptEnabled?: boolean;
+  /** Hash function to replace the somewhat weaker default implementation. */
+  readonly hashFunction?: HashFunction;
+  /** Function to resolve string reference to a collection for use by `$lookup` and `$out` operators. */
+  readonly collectionResolver?: CollectionResolver;
+  /** JSON schema validator to use with the $jsonSchema operator. Required to use the operator. */
+  readonly jsonSchemaValidator?: JsonSchemaValidator;
+}
+```
 
-#### Default exports and operators
+### Default exports and operators
 
 The default export of the main module only includes `Aggregator`, `Query`, `aggregate()`, `find()`, and `remove()`.
 
@@ -86,7 +118,7 @@ If your application uses most of the available operators or you do not care abou
 
 ```js
 // Note that doing this effectively imports the entire library into your bundle and unused operators cannot be tree shaked
-import 'mingo/init/system'
+import "mingo/init/system";
 ```
 
 Or from the node CLI
@@ -94,25 +126,6 @@ Or from the node CLI
 ```sh
 node -r 'mingo/init/system' myscript.js
 ```
-
-#### Custom Operators
-
-The `addOperators` function for registering custom operators and helper constants have been moved to `mingo/core`.
-The constants `OP_XXX` have been deprecated and replace with an enum type `OperatorType` also in `mingo/core`.
-The values defined include;
-
-* `ACCUMULATOR`
-* `EXPRESSION`
-* `PIPELINE`
-* `PROJECTION`
-* `QUERY`
-
-Lastly, the function argument to `addOperators(operatorType, fn)` now accepts an object with the these two internal functions;
-
-* `computeValue(obj: AnyVal, expr: AnyVal, operator: string, options?: ComputeOptions): AnyVal`
-* `resolve(obj: AnyVal, selector: string, options?: ResolveOptions): AnyVal`
-
-Any extra utility may be imported directly from the specific module.
 
 ### Importing submodules
 
@@ -126,7 +139,7 @@ This work natively in typescript since it knows how to load commonJS modules as 
 You may optionally install the [esm](https://www.npmjs.com/package/esm) module to use this syntax.
 
 ```js
-import { $unwind } from 'mingo/operators/pipeline'
+import { $unwind } from "mingo/operators/pipeline";
 ```
 
 #### ES5
@@ -134,7 +147,7 @@ import { $unwind } from 'mingo/operators/pipeline'
 Unlike the ES6 version, it is necessary to specify the operator module in the path to avoid loading any extras
 
 ```js
-const $unwind = require('mingo/operators/pipeline/unwind').$unwind
+const $unwind = require("mingo/operators/pipeline/unwind").$unwind;
 ```
 
 ## Configuration
@@ -142,66 +155,64 @@ const $unwind = require('mingo/operators/pipeline/unwind').$unwind
 To support tree-shaking, you may import and register specific operators that will be used in your application.
 
 ```js
-import { useOperators, OperatorType } from 'mingo/core'
-import { $trunc } from 'mingo/operators/expression'
-import { $bucket } from 'mingo/operators/pipeline'
+import { useOperators, OperatorType } from "mingo/core";
+import { $trunc } from "mingo/operators/expression";
+import { $bucket } from "mingo/operators/pipeline";
 
-useOperators(OperatorType.EXPRESSION, { $trunc, $floor })
-useOperators(OperatorType.PIPELINE, { $bucket })
+useOperators(OperatorType.EXPRESSION, { $trunc, $floor });
+useOperators(OperatorType.PIPELINE, { $bucket });
 ```
 
 ## Using query object to test objects
 
 ```js
-import { Query } from 'mingo'
+import { Query } from "mingo";
 
 // create a query with criteria
 // find all grades for homework with score >= 50
 let query = new Query({
   type: "homework",
-  score: { $gte: 50 }
+  score: { $gte: 50 },
 });
 
 // test if an object matches query
-query.test(doc)
+query.test(doc);
 ```
 
 ## Searching and Filtering
 
 ```js
-import { Query } from 'mingo'
+import { Query } from "mingo";
 
 // input is either an Array or any iterable source (i.e Object{next:Function}) including ES6 generators.
-let criteria = { score: { $gt: 10 } }
+let criteria = { score: { $gt: 10 } };
 
-let query = new Query(criteria)
+let query = new Query(criteria);
 
 // filter collection with find()
-let cursor = query.find(collection)
+let cursor = query.find(collection);
 
 // alternatively use shorthand
 // cursor = mingo.find(collection, criteria)
 
 // sort, skip and limit by chaining
-cursor.sort({student_id: 1, score: -1})
-  .skip(100)
-  .limit(100)
+cursor.sort({ student_id: 1, score: -1 }).skip(100).limit(100);
 
 // count matches. exhausts cursor
-cursor.count()
+cursor.count();
 
 // classic cursor iterator (old school)
 while (cursor.hasNext()) {
-  console.log(cursor.next())
+  console.log(cursor.next());
 }
 
 // ES6 iterators (new cool)
 for (let value of cursor) {
-  console.log(value)
+  console.log(value);
 }
 
 // all() to retrieve matched objects. exhausts cursor
-cursor.all()
+cursor.all();
 ```
 
 ### Using $jsonSchema operator
@@ -250,39 +261,39 @@ find(docs, { $jsonSchema: schema }, {}, { jsonSchemaValidator }).all();
 ## Aggregation Pipeline
 
 ```js
-import { Aggregator } from 'mingo/aggregator'
-import { useOperators, OperatorType } from 'mingo/core'
-import { $match, $group } from 'mingo/operators/pipeline'
-import { $min } from 'mingo/operators/accumulator'
+import { Aggregator } from "mingo/aggregator";
+import { useOperators, OperatorType } from "mingo/core";
+import { $match, $group } from "mingo/operators/pipeline";
+import { $min } from "mingo/operators/accumulator";
 
 // ensure the required operators are preloaded prior to using them.
-useOperators(OperatorType.PIPELINE, { $match, $group })
-useOperators(OperatorType.ACCUMULATOR, { $min })
+useOperators(OperatorType.PIPELINE, { $match, $group });
+useOperators(OperatorType.ACCUMULATOR, { $min });
 
 let agg = new Aggregator([
-  {'$match': { "type": "homework"}},
-  {'$group': {'_id':'$student_id', 'score':{$min:'$score'}}},
-  {'$sort': {'_id': 1, 'score': 1}}
-])
+  { $match: { type: "homework" } },
+  { $group: { _id: "$student_id", score: { $min: "$score" } } },
+  { $sort: { _id: 1, score: 1 } },
+]);
 
 // return an iterator for streaming results
-let stream = agg.stream(collection)
+let stream = agg.stream(collection);
 
 // return all results. same as `stream.all()`
-let result = agg.run(collection)
+let result = agg.run(collection);
 ```
 
 ## Benefits
 
-* Better alternative to writing custom code for transforming collection of objects
-* Quick validation of MongoDB queries without the need for a database
-* MongoDB query language is among the best in the market and is well documented
+- Better alternative to writing custom code for transforming collection of objects
+- Quick validation of MongoDB queries without the need for a database
+- MongoDB query language is among the best in the market and is well documented
 
 ## Contributing
 
-* Squash changes into one commit
-* Run `npm test` to build and execute unit tests
-* Submit pull request
+- Squash changes into one commit
+- Run `npm test` to build and execute unit tests
+- Submit pull request
 
 ## License
 

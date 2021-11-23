@@ -3,9 +3,12 @@
 ## Next Release
 
 **New**
-* Added new option `ProcessingMode` to control input and output behaviour
-**Removed**
-* `Collection` type
+* Added new option `ProcessingMode` to control input and output behaviour.
+* Added custom aggregation expression operators; `$function` and `$accumulator`.
+* Added `scriptEnabled` option to control whether to enable custom function operators; `$where`, `$function`, and `$accumulator`.
+* Removed support for string body for custom function expressions.
+* Remove `addOperators` function.
+* Removed `Collection` type.
 
 ## 4.4.1 / 2021-11-16
 **Fixes**
