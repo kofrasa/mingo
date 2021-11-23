@@ -13,5 +13,5 @@ module.exports = {
   // A preset that is used as a base for Jest's configuration.
   preset: "ts-jest",
 
-  testMatch: [ "**/__tests__/**/*.test.ts", "**/?(*.)+(spec|test).ts" ]
+  testMatch: ["**/__tests__/**/*.test.ts", "**/?(*.)+(spec|test).ts"],
 };

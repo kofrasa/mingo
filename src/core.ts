@@ -137,15 +137,6 @@ export enum OperatorType {
   QUERY = "query",
 }
 
-// operator definitions
-const OPERATORS: Record<OperatorType, OperatorMap> = {
-  [OperatorType.ACCUMULATOR]: {},
-  [OperatorType.EXPRESSION]: {},
-  [OperatorType.PIPELINE]: {},
-  [OperatorType.PROJECTION]: {},
-  [OperatorType.QUERY]: {},
-};
-
 export type AccumulatorOperator = (
   collection: RawObject[],
   expr: AnyVal,
@@ -177,139 +168,54 @@ export type QueryOperator = (
   options?: Options
 ) => (obj: RawObject) => boolean;
 
-/** Map of operator functions */
-export type OperatorMap = Record<
-  string,
+type Operator =
   | AccumulatorOperator
   | ExpressionOperator
   | PipelineOperator
   | ProjectionOperator
-  | QueryOperator
->;
+  | QueryOperator;
 
-/** Spec for Query and Project operators where the value of the selector is resolved. */
-type SelectorOperator<R> = (
-  selector: string,
-  lhs: AnyVal,
-  rhs: AnyVal,
-  options?: Options
-) => R;
+/** Map of operator functions */
+type OperatorMap = Record<string, Operator>;
 
-export type AddOperatorsMap = Record<
-  string,
-  | AccumulatorOperator
-  | ExpressionOperator
-  | PipelineOperator
-  | SelectorOperator<AnyVal>
->;
-
-/** Context used for creating new operators */
-export interface OperatorContext {
-  readonly computeValue: typeof computeValue;
-  readonly resolve: typeof resolve;
-}
-
-/**
- * Validates the object collection of operators
- */
-function validateOperators(
-  operators: RawObject,
-  operatorType?: OperatorType
-): void {
-  for (const [k, v] of Object.entries(operators)) {
-    assert(
-      v instanceof Function && isOperator(k),
-      "invalid operator specified"
-    );
-    if (operatorType) {
-      const call = getOperator(operatorType, k);
-      assert(!call, `${k} already exists for '${operatorType}' operators`);
-    }
-  }
-}
+// operator definitions
+const OPERATORS: Record<OperatorType, OperatorMap> = {
+  [OperatorType.ACCUMULATOR]: {},
+  [OperatorType.EXPRESSION]: {},
+  [OperatorType.PIPELINE]: {},
+  [OperatorType.PROJECTION]: {},
+  [OperatorType.QUERY]: {},
+};
 
 /**
  * Register fully specified operators for the given operator class.
  *
- * @param cls Category of the operator
- * @param operators Name of operator
+ * @param type The operator type
+ * @param operators Map of the operators
  */
-export function useOperators(cls: OperatorType, operators: OperatorMap): void {
-  validateOperators(operators);
-  into(OPERATORS[cls], operators);
+export function useOperators(type: OperatorType, operators: OperatorMap): void {
+  for (const [name, func] of Object.entries(operators)) {
+    assert(
+      func instanceof Function && isOperator(name),
+      "invalid operator specified"
+    );
+    // const call = getOperator(type, name);
+    // assert(!call, `${name} already exists for '${type}' operators`);
+  }
+  // toss the operator salad :)
+  into(OPERATORS[type], operators);
 }
 
 /**
  * Returns the operator function or null if it is not found
- * @param cls Category of the operator
+ * @param type Type of operator
  * @param operator Name of the operator
  */
 export function getOperator(
-  cls: OperatorType,
+  type: OperatorType,
   operator: string
 ): Callback<AnyVal> | null {
-  return has(OPERATORS[cls], operator) ? OPERATORS[cls][operator] : null;
-}
-
-/**
- * Add new operators
- *
- * @param operatorType the operator class to extend
- * @param operatorFactory a callback that accepts internal object state and returns an object of new operators.
- * @deprecated Use custom operator expressions $where, $function, and $accumulator
- */
-export function addOperators(
-  operatorType: OperatorType,
-  operatorFactory: (context: OperatorContext) => AddOperatorsMap
-): void {
-  const customOperators = operatorFactory({ computeValue, resolve });
-
-  validateOperators(customOperators);
-
-  // check for existing operators
-  for (const [op, _] of Object.entries(customOperators)) {
-    const call = getOperator(operatorType, op);
-    assert(!call, `${op} already exists for '${operatorType}' operators`);
-  }
-
-  const normalizedOperators: OperatorMap = {};
-
-  switch (operatorType) {
-    case OperatorType.QUERY:
-      for (const [op, f] of Object.entries(customOperators)) {
-        const fn = f as SelectorOperator<boolean>;
-        normalizedOperators[op] =
-          (selector: string, value: AnyVal, options: Options) =>
-          (obj: RawObject): boolean => {
-            // value of field must be fully resolved.
-            const lhs = resolve(obj, selector, { unwrapArray: true });
-            return fn(selector, lhs, value, options);
-          };
-      }
-      break;
-    case OperatorType.PROJECTION:
-      for (const [op, f] of Object.entries(customOperators)) {
-        const fn = f as SelectorOperator<AnyVal>;
-        normalizedOperators[op] = (
-          obj: RawObject,
-          expr: AnyVal,
-          selector: string,
-          options: Options
-        ): AnyVal => {
-          const lhs = resolve(obj, selector);
-          return fn(selector, lhs, expr, options);
-        };
-      }
-      break;
-    default:
-      for (const [op, fn] of Object.entries(customOperators)) {
-        normalizedOperators[op] = (...args: RawArray) =>
-          fn.call(null, ...args) as AnyVal;
-      }
-  }
-
-  // toss the operator salad :)
-  useOperators(operatorType, normalizedOperators);
+  return OPERATORS[type][operator];
 }
 
 /* eslint-disable unused-imports/no-unused-vars-ts */
