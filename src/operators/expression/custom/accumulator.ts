@@ -40,7 +40,7 @@ export function $accumulator(
   if (collection.length == 0) return expr.initArgs;
 
   const initArgs = computeValue(
-    options.groupId || {},
+    options["groupId"] || {},
     expr.initArgs || [],
     null,
     options

@@ -2,7 +2,7 @@ import { Aggregator } from "./aggregator";
 import { CollationSpec, Options } from "./core";
 import { Iterator, Lazy, Source } from "./lazy";
 import { AnyVal, RawArray, RawObject } from "./types";
-import { Callback, into, isObject, Predicate } from "./util";
+import { Callback, isObject, Predicate } from "./util";
 
 /**
  * Cursor to iterate and perform filtering on matched objects.
@@ -23,7 +23,7 @@ export class Cursor {
     readonly source: Source,
     readonly predicate: Predicate<AnyVal>,
     readonly projection: RawObject,
-    readonly options: Options
+    private options: Options
   ) {}
 
   private fetch(): Iterator {
@@ -97,7 +97,7 @@ export class Cursor {
    * @param {*} spec
    */
   collation(spec: CollationSpec): Cursor {
-    into(this.options, { collation: spec });
+    this.options = { ...this.options, collation: spec };
     return this;
   }
 

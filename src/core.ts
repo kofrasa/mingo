@@ -86,8 +86,8 @@ export enum ProcessingMode {
 /**
  * Generic options interface passed down to all operators
  */
-export interface Options extends RawObject {
-  /** The key string that is used to lookup the ID value of a document. @default "_id" */
+export interface Options {
+  /** The key that is used to lookup the ID value of a document. @default "_id" */
   readonly idKey?: string;
   /** The collation specification for string operations. */
   readonly collation?: CollationSpec;
@@ -101,7 +101,7 @@ export interface Options extends RawObject {
   readonly scriptEnabled?: boolean;
   /** Hash function to replace the somewhat weaker default implementation. */
   readonly hashFunction?: HashFunction;
-  /** Function to resolve collections from an external source. */
+  /** Function to resolve string reference to a collection for use by `$lookup` and `$out` operators. */
   readonly collectionResolver?: CollectionResolver;
   /** JSON schema validator to use with the $jsonSchema operator. Required to use the operator. */
   readonly jsonSchemaValidator?: JsonSchemaValidator;
@@ -109,7 +109,9 @@ export interface Options extends RawObject {
 
 // options to core functions computeValue() and redact()
 interface ComputeOptions extends Options {
+  /** Reference to the root object when processing subgraphs of the object  */
   readonly root?: RawObject;
+  /** The groupId computed for a group of documents by the $group operator. */
   readonly groupId?: AnyVal;
 }
 
@@ -341,11 +343,7 @@ export function computeValue(
     if (has(systemVariables, arr[0])) {
       // set 'root' only the first time it is required to be used for all subsequent calls
       // if it already available on the options, it will be used
-      obj = systemVariables[arr[0]](
-        obj,
-        null,
-        into({ root: obj }, options) as ComputeOptions
-      );
+      obj = systemVariables[arr[0]](obj, null, { root: obj, ...options });
       if (arr.length == 1) return obj;
       expr = expr.substr(arr[0].length); // '.' prefix will be sliced off below
     }
@@ -398,10 +396,6 @@ export function redact(
 ): AnyVal {
   const result = computeValue(obj, expr, null, options);
   return has(redactVariables, result as string)
-    ? redactVariables[result as string](
-        obj,
-        expr,
-        into({ root: obj }, options) as ComputeOptions
-      )
+    ? redactVariables[result as string](obj, expr, { root: obj, ...options })
     : result;
 }
