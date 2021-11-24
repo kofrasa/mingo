@@ -4,6 +4,8 @@ export * from "./ltrim";
 export * from "./regexFind";
 export * from "./regexFindAll";
 export * from "./regexMatch";
+export * from "./replaceAll";
+export * from "./replaceOne";
 export * from "./rtrim";
 export * from "./split";
 export * from "./strcasecmp";

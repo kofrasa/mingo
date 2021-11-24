@@ -132,6 +132,18 @@ support.runTest("operators/expression/string", {
     [{ $rtrim: { input: " ggggoodbyeeeee    ", chars: "e " } }, " ggggoodby"],
     [{ $rtrim: { input: null } }, null],
   ],
+
+  $replaceOne: [
+    [{ input: null, find: "abc", replacement: "ABC" }, null],
+    [{ input: "abc", find: null, replacement: "ABC" }, null],
+    [{ input: "abc", find: "abc", replacement: null }, null],
+  ],
+
+  $replaceAll: [
+    [{ input: null, find: "abc", replacement: "ABC" }, null],
+    [{ input: "abc", find: null, replacement: "ABC" }, null],
+    [{ input: "abc", find: "abc", replacement: null }, null],
+  ],
 });
 
 const data = [
@@ -1160,6 +1172,68 @@ support.runTestPipeline("$regexFindAll operator", [
         comment: "It's just me. I'm testing.  fred@MongoDB.com",
         names: ["fred"],
       },
+    ],
+  },
+]);
+
+support.runTestPipeline("$replaceOne: More examples", [
+  {
+    message: "$replaceOne",
+    input: [
+      { _id: 1, item: "blue paint" },
+      { _id: 2, item: "blue and green paint" },
+      { _id: 3, item: "blue paint with blue paintbrush" },
+      { _id: 4, item: "blue paint with green paintbrush" },
+    ],
+    pipeline: [
+      {
+        $project: {
+          item: {
+            $replaceOne: {
+              input: "$item",
+              find: "blue paint",
+              replacement: "red paint",
+            },
+          },
+        },
+      },
+    ],
+    expected: [
+      { _id: 1, item: "red paint" },
+      { _id: 2, item: "blue and green paint" },
+      { _id: 3, item: "red paint with blue paintbrush" },
+      { _id: 4, item: "red paint with green paintbrush" },
+    ],
+  },
+]);
+
+support.runTestPipeline("$replaceAll: More examples", [
+  {
+    message: "$replaceAll",
+    input: [
+      { _id: 1, item: "blue paint" },
+      { _id: 2, item: "blue and green paint" },
+      { _id: 3, item: "blue paint with blue paintbrush" },
+      { _id: 4, item: "blue paint with green paintbrush" },
+    ],
+    pipeline: [
+      {
+        $project: {
+          item: {
+            $replaceAll: {
+              input: "$item",
+              find: "blue paint",
+              replacement: "red paint",
+            },
+          },
+        },
+      },
+    ],
+    expected: [
+      { _id: 1, item: "red paint" },
+      { _id: 2, item: "blue and green paint" },
+      { _id: 3, item: "red paint with red paintbrush" },
+      { _id: 4, item: "red paint with green paintbrush" },
     ],
   },
 ]);
