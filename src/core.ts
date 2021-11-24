@@ -119,13 +119,13 @@ interface ComputeOptions extends Options {
  * Creates an Option from another required keys are initialized
  * @param options Options
  */
-export function makeOptions(options?: Options): Options {
-  return {
+export function initOptions(options?: Options): Options {
+  return Object.freeze({
     idKey: "_id",
     scriptEnabled: true,
     processingMode: ProcessingMode.CLONE_OFF,
     ...options,
-  };
+  });
 }
 
 /**
@@ -303,7 +303,7 @@ export function computeValue(
   options?: ComputeOptions
 ): AnyVal {
   // ensure valid options exist on first invocation
-  options = options || makeOptions();
+  options = options || initOptions();
 
   if (isOperator(operator)) {
     // if the field of the object is a valid operator

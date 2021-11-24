@@ -1,6 +1,6 @@
 import {
   getOperator,
-  makeOptions,
+  initOptions,
   OperatorType,
   Options,
   ProcessingMode,
@@ -18,7 +18,7 @@ import { assert, cloneDeep, intersection, isEmpty } from "./util";
  */
 export class Aggregator {
   constructor(readonly pipeline: Array<RawObject>, readonly options?: Options) {
-    this.options = makeOptions(options);
+    this.options = initOptions(options);
   }
 
   /**

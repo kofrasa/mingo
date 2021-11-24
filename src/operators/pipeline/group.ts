@@ -1,7 +1,7 @@
 import { computeValue, Options } from "../../core";
 import { Iterator } from "../../lazy";
 import { RawArray, RawObject } from "../../types";
-import { groupBy, into } from "../../util";
+import { groupBy } from "../../util";
 
 /**
  * Groups documents together for the purpose of calculating aggregate values based on a collection of documents.
@@ -29,7 +29,7 @@ export function $group(
     );
 
     // remove the group key
-    expr = into({}, expr) as RawObject;
+    expr = { ...expr } as RawObject;
     delete expr[ID_KEY];
 
     let i = -1;

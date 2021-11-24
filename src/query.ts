@@ -1,4 +1,4 @@
-import { getOperator, makeOptions, OperatorType, Options } from "./core";
+import { getOperator, initOptions, OperatorType, Options } from "./core";
 import { Cursor } from "./cursor";
 import { Source } from "./lazy";
 import { AnyVal, RawObject } from "./types";
@@ -25,7 +25,7 @@ export class Query {
     private readonly criteria: RawObject,
     private readonly options?: Options
   ) {
-    this.options = makeOptions(options);
+    this.options = initOptions(options);
     this.compiled = [];
     this.compile();
   }
