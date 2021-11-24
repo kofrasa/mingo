@@ -54,21 +54,7 @@ MongoDB query language for in-memory objects
 
 For documentation on using query operators see [mongodb](http://docs.mongodb.org/manual/reference/operator/query/)
 
-## Documentation
-
-- [Package docs](http://kofrasa.net/mingo/)
-
-## Differences from MongoDB
-
-This library works with in-memory objects so differs slightly from the server implementation as outlined below.
-
-1. There is no concept of a collection. Data sources are either an array of objects or a generator function to support streaming.
-1. The `collectionResolver` must be configured if referencing input arrays by name in operators that use it such as `$lookup` and `$out`.
-1. Operators that accepts input arrays by name, also accept the array reference directly. See previous point.
-1. [Data size](https://docs.mongodb.com/manual/reference/operator/aggregation/#data-size-operators) operators (`$binarySize` and `bsonSize`) are not implemented.
-1. Operators `$comment`, `$meta`, `$toObjectId`, as well as any operator that requires server-side support are not implemented.
-1. Custom function evaluation operators `$where`, `$function`, and `$accumulator` DO NOT accept strings as the function body.
-1. Custom function evaluation operators are enabled by default and can be disabled by setting the `scriptEnabled` option to `false`.
+Browse [package docs](http://kofrasa.net/mingo/) for modules.
 
 ## Usage
 
@@ -78,33 +64,6 @@ import mingo from "mingo";
 
 // or vanilla nodeJS
 const mingo = require("mingo");
-```
-
-### Options
-
-Query and aggregation operations can be configured with options to enabled different features or customize how documents are processed. Some options are only relevant to specific operators and need not be specified if not required.
-
-```js
-interface Options {
-  /** The key that is used to lookup the ID value of a document. @default "_id" */
-  readonly idKey?: string;
-  /** The collation specification for string operations. */
-  readonly collation?: CollationSpec;
-  /** Processing mode that determines how to treat inputs and outputs. @default ProcessingMode.CLONE_OFF */
-  readonly processingMode?: ProcessingMode;
-  /**
-   * Enables or disables custom script execution.
-   * When disabled, you cannot use operations that execute custom code, such as the $where, $accumulator, and $function.
-   * @default true
-   */
-  readonly scriptEnabled?: boolean;
-  /** Hash function to replace the somewhat weaker default implementation. */
-  readonly hashFunction?: HashFunction;
-  /** Function to resolve string reference to a collection for use by `$lookup` and `$out` operators. */
-  readonly collectionResolver?: CollectionResolver;
-  /** JSON schema validator to use with the $jsonSchema operator. Required to use the operator. */
-  readonly jsonSchemaValidator?: JsonSchemaValidator;
-}
 ```
 
 ### Default exports and operators
@@ -150,7 +109,7 @@ Unlike the ES6 version, it is necessary to specify the operator module in the pa
 const $unwind = require("mingo/operators/pipeline/unwind").$unwind;
 ```
 
-## Configuration
+## Enabling Operators
 
 To support tree-shaking, you may import and register specific operators that will be used in your application.
 
@@ -215,7 +174,7 @@ for (let value of cursor) {
 cursor.all();
 ```
 
-### Using $jsonSchema operator
+## Using $jsonSchema operator
 
 To use the `$jsonSchema` operator, you must register your own `JsonSchemaValidator` in the options.
 No default implementation is provided out of the box so users can use a library with their preferred schema format.
@@ -282,6 +241,47 @@ let stream = agg.stream(collection);
 // return all results. same as `stream.all()`
 let result = agg.run(collection);
 ```
+
+## Options
+
+Query and aggregation operations can be configured with options to enabled different features or customize how documents are processed. Some options are only relevant to specific operators and need not be specified if not required.
+
+```js
+interface Options {
+  /** The key that is used to lookup the ID value of a document. @default "_id" */
+  readonly idKey?: string;
+  /** The collation specification for string operations. */
+  readonly collation?: CollationSpec;
+  /** Processing mode that determines how to treat inputs and outputs. @default ProcessingMode.CLONE_OFF */
+  readonly processingMode?: ProcessingMode;
+  /**
+   * Enables or disables custom script execution.
+   * When disabled, you cannot use operations that execute custom code, such as the $where, $accumulator, and $function.
+   * @default true
+   */
+  readonly scriptEnabled?: boolean;
+  /** Hash function to replace the somewhat weaker default implementation. */
+  readonly hashFunction?: HashFunction;
+  /** Function to resolve string reference to a collection for use by `$lookup` and `$out` operators. */
+  readonly collectionResolver?: CollectionResolver;
+  /** JSON schema validator to use with the $jsonSchema operator. Required to use the operator. */
+  readonly jsonSchemaValidator?: JsonSchemaValidator;
+}
+```
+
+## Differences from MongoDB
+
+1. There are no collections. Data for processing is either an array of objects or a generator function to support streaming.
+1. The `collectionResolver` option can be configured to reference an array using a name for lookup instead of providing the reference directly. See [$lookup](https://docs.mongodb.com/manual/reference/operator/aggregation/lookup/) and [$out](https://docs.mongodb.com/manual/reference/operator/aggregation/out/).
+1. The following operators are not supported.
+   - Query: `$comment`, `$meta`, `$text`
+   - Expression: `$toObjectId`, `$binarySize`, `bsonSize`
+   - Pipeline: `$merge`
+1. Custom function evaluation operators `$where`, `$function`, and `$accumulator` DO NOT accept strings as the function body.
+1. Custom function evaluation operators are enabled by default. They can be disabled with the `scriptEnabled` option.
+1. Expression operator [$accumulator](https://docs.mongodb.com/manual/reference/operator/aggregation/accumulator/) does not support the `merge` option.
+
+**Note**: Any server-side specific feature is not supported.
 
 ## Benefits
 

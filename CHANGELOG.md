@@ -3,10 +3,18 @@
 ## Next Release
 
 **New**
-* Added new option `ProcessingMode` to control input and output behaviour.
-* Added custom aggregation expression operators; `$function` and `$accumulator`.
-* Added `scriptEnabled` option to control whether to enable custom function operators; `$where`, `$function`, and `$accumulator`.
-* Removed support for string body for custom function expressions.
+* Add option `processingMode` to control input and output behaviour.
+* Add option `scriptEnabled` to control whether to enable custom function operators; `$where`, `$function`, and `$accumulator`.
+* Add aggregation expression operators;
+    - `$accumulator`
+    - `$function`
+    - `$getField`
+    - `$setField`
+    - `$unsetField`
+    - `$sampleRate`
+    - `$replaceOne`
+    - `$replaceAll`
+* Removed support for string function body in `$where` operator.
 * Remove `addOperators` function.
 * Removed `Collection` type.
 
