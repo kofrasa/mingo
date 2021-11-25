@@ -4,6 +4,7 @@
 
 export * from "./addToSet";
 export * from "./avg";
+export * from "./count";
 export * from "./covariancePop";
 export * from "./covarianceSamp";
 export * from "./first";
