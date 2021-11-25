@@ -14,9 +14,18 @@
     - `$sampleRate`
     - `$replaceOne`
     - `$replaceAll`
+* Add pipeline operator `$setWindowFields`.
+* Add accumulator operators.
+    - `$count`
+    - `$covarianceSamp`
+    - `$covariancePop`
 * Removed support for string function body in `$where` operator.
 * Remove `addOperators` function.
 * Removed `Collection` type.
+
+**Fixes**
+
+* Fixed computation bug in `$dateAdd` and `$dateSubtract` operators.
 
 ## 4.4.1 / 2021-11-16
 **Fixes**
