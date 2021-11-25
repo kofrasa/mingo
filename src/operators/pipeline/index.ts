@@ -18,6 +18,7 @@ export * from "./replaceRoot";
 export * from "./replaceWith";
 export * from "./sample";
 export * from "./set";
+export * from "./setWindowFields";
 export * from "./skip";
 export * from "./sort";
 export * from "./sortByCount";

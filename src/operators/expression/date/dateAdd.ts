@@ -63,11 +63,11 @@ export function $dateAdd(
 function addMonth(d: Date, amount: number): void {
   // months start from 0 to 11.
   const m = d.getUTCMonth() + amount;
+  const yearOffset = Math.floor(m / 12);
   if (m < 0) {
-    const yearOffset = Math.floor(m / 12);
     const month = (m % 12) + 12;
     d.setUTCFullYear(d.getUTCFullYear() + yearOffset, month, d.getDate());
   } else {
-    d.setUTCFullYear(d.getUTCFullYear() + (m % 11), m % 12, d.getDate());
+    d.setUTCFullYear(d.getUTCFullYear() + yearOffset, m % 12, d.getDate());
   }
 }
