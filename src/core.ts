@@ -137,6 +137,7 @@ export enum OperatorType {
   PIPELINE = "pipeline",
   PROJECTION = "projection",
   QUERY = "query",
+  WINDOW = "window",
 }
 
 export type AccumulatorOperator = (
@@ -170,12 +171,24 @@ export type QueryOperator = (
   options?: Options
 ) => (obj: RawObject) => boolean;
 
+export type WindowOperator = (
+  obj: RawObject,
+  array: RawObject[],
+  expr: {
+    parentExpr: AnyVal;
+    inputExpr: AnyVal;
+    indexKey: string;
+  },
+  options?: Options
+) => AnyVal;
+
 type Operator =
   | AccumulatorOperator
   | ExpressionOperator
   | PipelineOperator
   | ProjectionOperator
-  | QueryOperator;
+  | QueryOperator
+  | WindowOperator;
 
 /** Map of operator functions */
 type OperatorMap = Record<string, Operator>;
@@ -187,6 +200,7 @@ const OPERATORS: Record<OperatorType, OperatorMap> = {
   [OperatorType.PIPELINE]: {},
   [OperatorType.PROJECTION]: {},
   [OperatorType.QUERY]: {},
+  [OperatorType.WINDOW]: {},
 };
 
 /**

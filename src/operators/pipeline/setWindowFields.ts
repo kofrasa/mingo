@@ -1,32 +1,18 @@
 // $setWindowFields -  https://docs.mongodb.com/manual/reference/operator/aggregation/setWindowFields/
 
-import { getOperator, OperatorType, Options } from "../../core";
+import {
+  AccumulatorOperator,
+  getOperator,
+  OperatorType,
+  Options,
+  WindowOperator,
+} from "../../core";
 import { Iterator, Lazy } from "../../lazy";
-import { AnyVal, Callback, RawArray, RawObject } from "../../types";
+import { AnyVal, RawArray, RawObject } from "../../types";
 import { assert, isNumber, isOperator, isString } from "../../util";
 import { $dateAdd } from "../expression";
-import { Duration } from "../expression/date/_internal";
 import { $addFields, $group, $sort } from ".";
-
-type Boundary = "current" | "unbounded" | number;
-
-interface Window {
-  documents?: [Boundary, Boundary];
-  range?: [Boundary, Boundary];
-  unit?: Duration;
-}
-
-interface InputExpr {
-  partitionBy?: AnyVal;
-  sortBy: Record<string, 1 | -1>;
-  output: Record<
-    string,
-    {
-      [x: string]: AnyVal;
-      window?: Window;
-    }
-  >;
-}
+import { SetWindowFieldsInput, WindowOutputOption } from "./_internal";
 
 /**
  * Randomly selects the specified number of documents from its input. The given iterator must have finite values
@@ -38,7 +24,7 @@ interface InputExpr {
  */
 export function $setWindowFields(
   collection: Iterator,
-  expr: InputExpr,
+  expr: SetWindowFieldsInput,
   options?: Options
 ): Iterator {
   // validate inputs early since this can be an expensive operation.
@@ -46,7 +32,8 @@ export function $setWindowFields(
     const keys = Object.keys(outputExpr);
     const op = keys.find(isOperator);
     assert(
-      !!getOperator(OperatorType.ACCUMULATOR, op),
+      !!getOperator(OperatorType.WINDOW, op) ||
+        !!getOperator(OperatorType.ACCUMULATOR, op),
       `${op} is not a valid window operator`
     );
 
@@ -107,16 +94,24 @@ export function $setWindowFields(
     });
 
     const outputConfig: Array<{
-      func: Callback<AnyVal>;
+      operatorName: string;
+      func: {
+        left: AccumulatorOperator | null;
+        right: WindowOperator | null;
+      };
       args: AnyVal;
       field: string;
-      window: Window;
+      window: WindowOutputOption;
     }> = [];
 
     for (const [field, outputExpr] of Object.entries(expr.output)) {
       const operatorName = Object.keys(outputExpr).find(isOperator);
       outputConfig.push({
-        func: getOperator(OperatorType.ACCUMULATOR, operatorName),
+        operatorName,
+        func: {
+          left: getOperator(OperatorType.ACCUMULATOR, operatorName),
+          right: getOperator(OperatorType.WINDOW, operatorName),
+        },
         args: outputExpr[operatorName],
         field: field,
         window: outputExpr.window,
@@ -143,74 +138,99 @@ export function $setWindowFields(
 
       for (const config of outputConfig) {
         const { func, args, field, window } = config;
-        const { documents, range, unit } = window;
-        const boundary = documents || range;
-        const begin = boundary[0];
-        const end = boundary[1];
-
-        if (boundary && (begin != "unbounded" || end != "unbounded")) {
-          const toBeginIndex = (currentIndex: number): number => {
-            if (begin == "current") return currentIndex;
-            if (begin == "unbounded") return 0;
-            return Math.max(begin + currentIndex, 0);
-          };
-
-          const toEndIndex = (currentIndex: number): number => {
-            if (end == "current") return currentIndex + 1;
-            if (end == "unbounded") return items.length;
-            return end + currentIndex + 1;
-          };
-
-          const getItems = (current: RawObject): RawObject[] => {
-            const currentIndex = current[INDEX_FIELD_NAME] as number;
-            // handle string boundaries or documents
-            if (!!documents || boundary.every(isString)) {
-              return items.slice(
-                toBeginIndex(currentIndex),
-                toEndIndex(currentIndex)
-              );
+        const makeResultFunc = (getItemsFn: (_: RawObject) => RawObject[]) => {
+          return (obj: RawObject) => {
+            // process accumulator function
+            if (func.left) {
+              return func.left(getItemsFn(obj), args, options);
             }
 
-            // handle range with numeric boundary values
-            const sortKey = Object.keys(expr.sortBy)[0];
-            let lower: number;
-            let upper: number;
-
-            if (unit) {
-              // we are dealing with datetimes
-              const getTime = (amount: number): number => {
-                return (
-                  $dateAdd(current, {
-                    startDate: new Date(current[sortKey] as Date),
-                    unit,
-                    amount,
-                  }) as Date
-                ).getTime();
-              };
-              lower = isNumber(begin) ? getTime(begin) : -Infinity;
-              upper = isNumber(end) ? getTime(end) : Infinity;
-            } else {
-              const currentValue = current[sortKey] as number;
-              lower = isNumber(begin) ? currentValue + begin : -Infinity;
-              upper = isNumber(end) ? currentValue + end : Infinity;
-            }
-
-            let array: RawObject[] = items;
-            if (begin == "current") array = items.slice(currentIndex);
-            if (end == "current") array = items.slice(0, currentIndex + 1);
-
-            // look within the boundary and filter down
-            return array.filter((o: RawObject) => {
-              const value = o[sortKey];
-              const n = +value;
-              return n >= lower && n <= upper;
-            });
+            // OR process window function
+            return func.right(
+              obj,
+              getItemsFn(obj),
+              {
+                parentExpr: expr,
+                inputExpr: args,
+                indexKey: INDEX_FIELD_NAME,
+              },
+              options
+            );
           };
+        };
 
-          windowResultMap[field] = (obj: RawObject) =>
-            func(getItems(obj), args, options);
-        } else {
-          windowResultMap[field] = (_) => func(items, args, options);
+        if (window) {
+          const { documents, range, unit } = window;
+          const boundary = documents || range;
+          const begin = boundary[0];
+          const end = boundary[1];
+
+          if (boundary && (begin != "unbounded" || end != "unbounded")) {
+            const toBeginIndex = (currentIndex: number): number => {
+              if (begin == "current") return currentIndex;
+              if (begin == "unbounded") return 0;
+              return Math.max(begin + currentIndex, 0);
+            };
+
+            const toEndIndex = (currentIndex: number): number => {
+              if (end == "current") return currentIndex + 1;
+              if (end == "unbounded") return items.length;
+              return end + currentIndex + 1;
+            };
+
+            const getItems = (current: RawObject): RawObject[] => {
+              const currentIndex = current[INDEX_FIELD_NAME] as number;
+              // handle string boundaries or documents
+              if (!!documents || boundary.every(isString)) {
+                return items.slice(
+                  toBeginIndex(currentIndex),
+                  toEndIndex(currentIndex)
+                );
+              }
+
+              // handle range with numeric boundary values
+              const sortKey = Object.keys(expr.sortBy)[0];
+              let lower: number;
+              let upper: number;
+
+              if (unit) {
+                // we are dealing with datetimes
+                const getTime = (amount: number): number => {
+                  return (
+                    $dateAdd(current, {
+                      startDate: new Date(current[sortKey] as Date),
+                      unit,
+                      amount,
+                    }) as Date
+                  ).getTime();
+                };
+                lower = isNumber(begin) ? getTime(begin) : -Infinity;
+                upper = isNumber(end) ? getTime(end) : Infinity;
+              } else {
+                const currentValue = current[sortKey] as number;
+                lower = isNumber(begin) ? currentValue + begin : -Infinity;
+                upper = isNumber(end) ? currentValue + end : Infinity;
+              }
+
+              let array: RawObject[] = items;
+              if (begin == "current") array = items.slice(currentIndex);
+              if (end == "current") array = items.slice(0, currentIndex + 1);
+
+              // look within the boundary and filter down
+              return array.filter((o: RawObject) => {
+                const value = o[sortKey];
+                const n = +value;
+                return n >= lower && n <= upper;
+              });
+            };
+
+            windowResultMap[field] = makeResultFunc(getItems);
+          }
+        }
+
+        // default action is to utilize the entire set of items
+        if (!windowResultMap[field]) {
+          windowResultMap[field] = makeResultFunc((_) => items);
         }
 
         // invoke add fields to get the desired behaviour using a custom function.
