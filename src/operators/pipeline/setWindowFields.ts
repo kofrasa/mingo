@@ -153,6 +153,7 @@ export function $setWindowFields(
                 parentExpr: expr,
                 inputExpr: args,
                 indexKey: INDEX_FIELD_NAME,
+                field,
               },
               options
             );

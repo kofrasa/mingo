@@ -178,6 +178,7 @@ export type WindowOperator = (
     parentExpr: AnyVal;
     inputExpr: AnyVal;
     indexKey: string;
+    field: string;
   },
   options?: Options
 ) => AnyVal;

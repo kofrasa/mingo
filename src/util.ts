@@ -573,7 +573,7 @@ export function groupBy(
   collection: RawArray,
   keyFn: Callback<AnyVal>,
   hashFunction: HashFunction
-): { keys: RawArray; groups: RawArray } {
+): { keys: RawArray; groups: RawArray[] } {
   const result = {
     keys: new Array<AnyVal>(),
     groups: new Array<RawArray>(),

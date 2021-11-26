@@ -25,4 +25,5 @@ export interface WindowOperatorInput {
   readonly parentExpr: SetWindowFieldsInput;
   readonly inputExpr: AnyVal;
   readonly indexKey: string;
+  readonly field: string;
 }
