@@ -581,8 +581,9 @@ export function groupBy(
 
   const lookup: Record<string, number> = {};
 
-  for (const obj of collection) {
-    const key = keyFn(obj);
+  for (let i = 0; i < collection.length; i++) {
+    const obj = collection[i];
+    const key = keyFn(obj, i);
     const hash = hashCode(key, hashFunction);
     let index = -1;
 
