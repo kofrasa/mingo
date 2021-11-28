@@ -271,17 +271,16 @@ interface Options {
 
 ## Differences from MongoDB
 
-1. There are no collections. Data for processing is either an array of objects or a generator function to support streaming.
-1. The `collectionResolver` option can be configured to reference an array using a name for lookup instead of providing the reference directly. See [$lookup](https://docs.mongodb.com/manual/reference/operator/aggregation/lookup/) and [$out](https://docs.mongodb.com/manual/reference/operator/aggregation/out/).
+1. There are no collections. Input data is either an array of objects or a generator function to support streaming.
+1. Server-side specific operators are not supported. Examples include `$collStat`, `$planCacheStats`, `$listSessions` etc.
+   1. Pipeline operator `$merge` is supported but not loaded by default. It requires a unique index which is checked on demand for client-sude processing. Users must explicitly load this operator with `useOperators` to use it.
 1. The following operators are not supported.
    - Query: `$comment`, `$meta`, `$text`
    - Expression: `$toObjectId`, `$binarySize`, `bsonSize`
-   - Pipeline: `$merge`
-1. Custom function evaluation operators `$where`, `$function`, and `$accumulator` DO NOT accept strings as the function body.
+1. The `collectionResolver` option can be configured to reference an array using a name for lookup instead of providing the reference directly. This is used in `$lookup`, `$out`, `merge`, and `$unionWith`.
+1. Custom function evaluation operators `$where`, `$function`, and `$accumulator` do not accept strings as the function body.
 1. Custom function evaluation operators are enabled by default. They can be disabled with the `scriptEnabled` option.
-1. Expression operator [$accumulator](https://docs.mongodb.com/manual/reference/operator/aggregation/accumulator/) does not support the `merge` option.
-
-**Note**: Any server-side specific feature is not supported.
+1. [$accumulator](https://docs.mongodb.com/manual/reference/operator/aggregation/accumulator/) does not support the `merge` option.
 
 ## Benefits
 

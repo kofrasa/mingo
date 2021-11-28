@@ -15,16 +15,25 @@
     - `$replaceOne`
     - `$replaceAll`
 * Add pipeline operator `$setWindowFields`.
+* Add window operators for `$setWindowFields`.
+    - `$denseRank`
+    - `$derivative`
+    - `$documentNumber`
+    - `$expMovingAvg`
+    - `$integral`
+    - `$rank`
+    - `$shift`
 * Add accumulator operators.
     - `$count`
     - `$covarianceSamp`
     - `$covariancePop`
+
+**Removed**
 * Removed support for string function body in `$where` operator.
 * Remove `addOperators` function.
 * Removed `Collection` type.
 
 **Fixes**
-
 * Fixed computation bug in `$dateAdd` and `$dateSubtract` operators.
 
 ## 4.4.1 / 2021-11-16
