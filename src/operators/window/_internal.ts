@@ -2,7 +2,26 @@ import { Options } from "../../core";
 import { AnyVal, RawArray, RawObject } from "../../types";
 import { assert, groupBy, hashCode, isEqual, isOperator } from "../../util";
 import { $push } from "../accumulator";
+import { MILLIS_PER_DAY } from "../expression/date/_internal";
 import { WindowOperatorInput } from "../pipeline/_internal";
+
+export type TimeUnit =
+  | "week"
+  | "day"
+  | "hour"
+  | "minute"
+  | "second"
+  | "millisecond";
+
+// millis map to diffirent time units
+export const MILLIS_PER_UNIT: Record<TimeUnit, number> = {
+  week: MILLIS_PER_DAY * 7,
+  day: MILLIS_PER_DAY,
+  hour: MILLIS_PER_DAY / 24,
+  minute: 60000,
+  second: 1000,
+  millisecond: 1,
+};
 
 type CacheValue = {
   partitions: { keys: RawArray; groups: RawArray[] };
@@ -11,7 +30,7 @@ type CacheValue = {
   groupIndex: number;
 };
 
-const cache: Record<string, CacheValue> = {};
+const rankCache: Record<string, CacheValue> = {};
 
 /** Returns the position of a document in the $setWindowFields stage partition. */
 export function rank(
@@ -41,7 +60,7 @@ export function rank(
       );
 
       // cache the data for subsequent runs
-      cache[key] = {
+      rankCache[key] = {
         partitions,
         sortValues,
         lastRank: 1,
@@ -49,7 +68,7 @@ export function rank(
       };
     }
 
-    const { partitions, sortValues, groupIndex, lastRank } = cache[key];
+    const { partitions, sortValues, groupIndex, lastRank } = rankCache[key];
 
     // same number of paritions as lenght means all sort keys are unique
     if (partitions.keys.length == collection.length) {
@@ -61,15 +80,15 @@ export function rank(
 
     for (let i = groupIndex; i < partitions.keys.length; i++) {
       if (isEqual(current, partitions.keys[i])) {
-        cache[key].groupIndex = i;
-        cache[key].lastRank = dense ? i : rank;
-        return cache[key].lastRank;
+        rankCache[key].groupIndex = i;
+        rankCache[key].lastRank = dense ? i : rank;
+        return rankCache[key].lastRank;
       }
       rank += partitions.groups[i].length;
     }
   } finally {
     if (expr.documentNumber == collection.length) {
-      delete cache[key];
+      delete rankCache[key];
     }
   }
 }
