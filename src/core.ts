@@ -177,7 +177,7 @@ export type WindowOperator = (
   expr: {
     parentExpr: AnyVal;
     inputExpr: AnyVal;
-    indexKey: string;
+    documentNumber: number;
     field: string;
   },
   options?: Options

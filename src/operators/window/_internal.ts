@@ -32,7 +32,7 @@ export function rank(
   const sortKey = "$" + Object.keys(expr.parentExpr.sortBy)[0];
 
   try {
-    if (obj[expr.indexKey] === 0) {
+    if (expr.documentNumber === 1) {
       const sortValues = $push(collection, sortKey, options);
       const partitions = groupBy(
         collection,
@@ -51,15 +51,13 @@ export function rank(
 
     const { partitions, sortValues, groupIndex, lastRank } = cache[key];
 
-    const currentIndex = obj[expr.indexKey] as number;
-
     // same number of paritions as lenght means all sort keys are unique
     if (partitions.keys.length == collection.length) {
-      return currentIndex + 1;
+      return expr.documentNumber;
     }
 
     let rank = lastRank;
-    const current = sortValues[currentIndex];
+    const current = sortValues[expr.documentNumber - 1];
 
     for (let i = groupIndex; i < partitions.keys.length; i++) {
       if (isEqual(current, partitions.keys[i])) {
@@ -70,7 +68,7 @@ export function rank(
       rank += partitions.groups[i].length;
     }
   } finally {
-    if (obj[expr.indexKey] == collection.length - 1) {
+    if (expr.documentNumber == collection.length) {
       delete cache[key];
     }
   }

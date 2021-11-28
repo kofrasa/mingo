@@ -9,5 +9,5 @@ export function $documentNumber(
   expr: WindowOperatorInput,
   options?: Options
 ): AnyVal {
-  return (obj[expr.indexKey] as number) + 1;
+  return expr.documentNumber;
 }

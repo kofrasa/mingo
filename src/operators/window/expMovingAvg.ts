@@ -26,11 +26,11 @@ export function $expMovingAvg(
     };
 
     // compute the entire series once and cache
-    if (obj[expr.indexKey] === 0) {
+    if (expr.documentNumber === 1) {
       cache[key] = $push(collection, input, options) as number[];
     }
 
-    const series = cache[key].slice(0, (obj[expr.indexKey] as number) + 1);
+    const series = cache[key].slice(0, expr.documentNumber);
     let result = series[0];
     const weight = N != undefined ? 2 / (N + 1) : alpha;
 
@@ -40,7 +40,7 @@ export function $expMovingAvg(
 
     return result;
   } finally {
-    if (obj[expr.indexKey] == collection.length - 1) {
+    if (expr.documentNumber == collection.length) {
       delete cache[key];
     }
   }

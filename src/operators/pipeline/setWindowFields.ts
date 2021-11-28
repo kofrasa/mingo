@@ -118,9 +118,6 @@ export function $setWindowFields(
       });
     }
 
-    // temporary field to add the current document's index within a given window
-    const INDEX_FIELD_NAME = Math.random().toFixed(5).replace("0.", "__mingo_");
-
     // each parition maintains its own closure to process the documents in the window.
     partitions.forEach((group: { items: RawArray }) => {
       // get the items to process
@@ -128,31 +125,34 @@ export function $setWindowFields(
 
       // create an iterator per group.
       // we need the index of each document so we track it using a special field.
-      let iterator = Lazy(items).map((o, i) => {
-        o[INDEX_FIELD_NAME] = i;
-        return o;
-      });
+      let iterator = Lazy(items);
 
       // results map
       const windowResultMap: Record<string, (_: RawObject) => AnyVal> = {};
 
       for (const config of outputConfig) {
         const { func, args, field, window } = config;
-        const makeResultFunc = (getItemsFn: (_: RawObject) => RawObject[]) => {
+        const makeResultFunc = (
+          getItemsFn: (_: RawObject, i: number) => RawObject[]
+        ) => {
+          // closure for object index within the partition
+          let index = -1;
           return (obj: RawObject) => {
+            ++index;
+
             // process accumulator function
             if (func.left) {
-              return func.left(getItemsFn(obj), args, options);
+              return func.left(getItemsFn(obj, index), args, options);
             }
 
             // OR process window function
             return func.right(
               obj,
-              getItemsFn(obj),
+              getItemsFn(obj, index),
               {
                 parentExpr: expr,
                 inputExpr: args,
-                indexKey: INDEX_FIELD_NAME,
+                documentNumber: index + 1,
                 field,
               },
               options
@@ -179,14 +179,13 @@ export function $setWindowFields(
               return end + currentIndex + 1;
             };
 
-            const getItems = (current: RawObject): RawObject[] => {
-              const currentIndex = current[INDEX_FIELD_NAME] as number;
+            const getItems = (
+              current: RawObject,
+              index: number
+            ): RawObject[] => {
               // handle string boundaries or documents
               if (!!documents || boundary.every(isString)) {
-                return items.slice(
-                  toBeginIndex(currentIndex),
-                  toEndIndex(currentIndex)
-                );
+                return items.slice(toBeginIndex(index), toEndIndex(index));
               }
 
               // handle range with numeric boundary values
@@ -214,8 +213,8 @@ export function $setWindowFields(
               }
 
               let array: RawObject[] = items;
-              if (begin == "current") array = items.slice(currentIndex);
-              if (end == "current") array = items.slice(0, currentIndex + 1);
+              if (begin == "current") array = items.slice(index);
+              if (end == "current") array = items.slice(0, index + 1);
 
               // look within the boundary and filter down
               return array.filter((o: RawObject) => {
@@ -244,12 +243,6 @@ export function $setWindowFields(
           },
         });
       }
-
-      // remove our index tracker
-      iterator = iterator.map((obj: RawObject) => {
-        delete obj[INDEX_FIELD_NAME];
-        return obj;
-      });
 
       // add to iterator list
       iterators.push(iterator);
