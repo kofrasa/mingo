@@ -4,7 +4,7 @@ import { $first, $last } from "../accumulator";
 import { Duration, MILLIS_PER_DAY } from "../expression/date/_internal";
 import { WindowOperatorInput } from "../pipeline/_internal";
 
-// internal cache to store precomputed series once to avoid O(N^2) calls to over the collection
+// millis map to diffirent time units
 const MILLIS_PER_UNIT: Record<string, number> = {
   week: MILLIS_PER_DAY * 7,
   day: MILLIS_PER_DAY,
@@ -15,8 +15,7 @@ const MILLIS_PER_UNIT: Record<string, number> = {
 };
 
 /**
- * Returns the exponential moving average of numeric expressions applied to documents
- * in a partition defined in the $setWindowFields stage.
+ * Returns the average rate of change within the specified window
  */
 export function $derivative(
   obj: RawObject,
