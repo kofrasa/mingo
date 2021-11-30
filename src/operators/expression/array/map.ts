@@ -21,11 +21,6 @@ export function $map(
 
   const tempKey = "$" + (expr.as || "this");
   return input.map((o: AnyVal) =>
-    computeValue(
-      Object.assign({}, obj, { [tempKey]: o }),
-      expr.in,
-      null,
-      options
-    )
+    computeValue({ ...obj, [tempKey]: o }, expr.in, null, options)
   );
 }

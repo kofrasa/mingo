@@ -22,11 +22,6 @@ export function $filter(
   const tempKey = "$" + (expr.as || "this");
   return input.filter(
     (o: AnyVal) =>
-      computeValue(
-        Object.assign({}, obj, { [tempKey]: o }),
-        expr.cond,
-        null,
-        options
-      ) === true
+      computeValue({ ...obj, [tempKey]: o }, expr.cond, null, options) === true
   );
 }

@@ -214,7 +214,7 @@ export function useOperators(type: OperatorType, operators: OperatorMap): void {
   for (const [name, func] of Object.entries(operators)) {
     assert(
       func instanceof Function && isOperator(name),
-      "invalid operator specified"
+      `'${name}' is not a valid operator`
     );
     // const call = getOperator(type, name);
     // assert(!call, `${name} already exists for '${type}' operators`);

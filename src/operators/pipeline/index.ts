@@ -11,6 +11,7 @@ export * from "./group";
 export * from "./limit";
 export * from "./lookup";
 export * from "./match";
+export * from "./merge";
 export * from "./out";
 export * from "./project";
 export * from "./redact";
