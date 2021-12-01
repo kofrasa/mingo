@@ -6,6 +6,7 @@
 
 - Add option `processingMode` to control input and output behaviour.
 - Add option `scriptEnabled` to control whether to enable custom function operators; `$where`, `$function`, and `$accumulator`.
+- Add new operator type `OperatorType.WINDOW`.
 - Add aggregation expression operators;
   - `$accumulator`
   - `$function`
