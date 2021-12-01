@@ -125,4 +125,17 @@ support.runTest("operators/expression/type", {
     [null, false],
     [undefined, false],
   ],
+
+  $type: [
+    ["a", "string"],
+    [/a/, "regex"],
+    [1.2, "double"],
+    [627, "int"],
+    [true, "bool"],
+    [{ x: 1 }, "object"],
+    [[1, 2, 3], "array"],
+    [new Date(), "date"],
+    [null, "null"],
+    [undefined, "undefined"],
+  ],
 });
