@@ -19,11 +19,10 @@ export function $let(
   options?: Options
 ): AnyVal {
   // resolve vars
+  const vars = {};
   for (const [key, val] of Object.entries(expr.vars)) {
-    const newExpr = computeValue(obj, val, null, options);
-    const tempKey = "$" + key;
-    obj[tempKey] = newExpr;
+    vars[`$${key}`] = computeValue(obj, val, null, options);
   }
 
-  return computeValue(obj, expr.in, null, options);
+  return computeValue({ obj, ...vars }, expr.in, null, options);
 }
