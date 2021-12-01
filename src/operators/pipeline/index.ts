@@ -23,5 +23,6 @@ export * from "./setWindowFields";
 export * from "./skip";
 export * from "./sort";
 export * from "./sortByCount";
+export * from "./unionWith";
 export * from "./unset";
 export * from "./unwind";
