@@ -271,9 +271,9 @@ interface Options {
 
 ## Differences from MongoDB
 
-1. There are no collections. Input data is either an array of objects or a generator function to support streaming.
-1. Server-side specific operators those that require special support are not supported. E.g. `$collStat`, `$planCacheStats`, `$listSessions`.
-1. Pipeline operator `$merge` is supported and enforces the unique constraint on the lookup fields at runtime.
+1. There is no concept of a collection. Input data is either an array of objects or a generator function to support streaming.
+1. Server-side specific operators are not supported. E.g. `$collStat`, `$planCacheStats`, `$listSessions`.
+1. Pipeline operator `$merge` is supported and enforces the unique constraint on the lookup field at runtime.
 1. The following operators are not supported.
    - Query: `$comment`, `$meta`, `$text`
    - Expression: `$toObjectId`, `$binarySize`, `bsonSize`

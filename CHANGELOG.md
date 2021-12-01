@@ -18,6 +18,7 @@
 - Add pipeline operators.
   - `$setWindowFields`
   - `$merge`
+  - `$unionWith`
 - Add window operators for `$setWindowFields`.
   - `$denseRank`
   - `$derivative`
