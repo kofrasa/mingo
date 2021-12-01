@@ -101,20 +101,32 @@
 
 ## 4.1.0 / 2021-01-14
 
-- **Features**
-  - Added trignometry operators. `$sin`,`$cos`,`$tan`,`$asin`,`$acos`,`$atan`,`$atan2`,`$asinh`,`$acosh`,`$atanh`,`$degreesToRadians`,`$radiansToDegrees`.
+**Features**
+- Added trignometry operators.
+  - `$sin`
+  - `$cos`
+  - `$tan`
+  - `$asin`
+  - `$acos`
+  - `$atan`
+  - `$atan2`
+  - `$asinh`
+  - `$acosh`
+  - `$atanh`
+  - `$degreesToRadians`
+  - `$radiansToDegrees`
 
 ## 4.0.0 / 2021-01-07
 
-- **Features**
+**Features**
   - Added option `hashFunction` to enable custom hash functions
   - Added `$unset` pipeline operator
   - Added `$isNumber` expression operator
   - Added option `collectionResolver` to resolve collections from names for use in supported operators. Closes [#150](https://github.com/kofrasa/mingo/issues/150)
   - Removed `$where` operator from default query operators included at load time. Closes [#155](https://github.com/kofrasa/mingo/issues/155)
-- **Fixes**
+**Fixes**
   - Support object type names with integer characters
-- **Other**
+**Other**
   - Improved type annotations
   - Added ES lint to ensure code quality
   - Added Prettier to maintain consistent code format
