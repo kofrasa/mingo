@@ -4,8 +4,8 @@ export type RawArray = Array<AnyVal>;
 export type ArrayOrObject = RawObject | RawArray;
 
 // Generic callback
-export interface Callback<R> {
-  (...args: AnyVal[]): R;
+export interface Callback<R = AnyVal, T = AnyVal> {
+  (...args: T[]): R;
 }
 
 // Generic predicate

@@ -122,7 +122,7 @@ useOperators(OperatorType.EXPRESSION, { $trunc, $floor });
 useOperators(OperatorType.PIPELINE, { $bucket });
 ```
 
-## Using query object to test objects
+## Using query to test objects
 
 ```js
 import { Query } from "mingo";

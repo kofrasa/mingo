@@ -16,13 +16,13 @@ describe("Cursor", () => {
     expect(cursor.hasNext()).toBe(false);
   });
 
-  it("forEach", () => {
+  it("can iterate with forEach", () => {
     const cursor = newCursor();
     cursor.forEach((x) => x);
     expect(cursor.next()).toBeFalsy();
   });
 
-  it("map", () => {
+  it("can iterate with map", () => {
     const cursor = newCursor();
     cursor.map((x) => typeof x).every((x) => typeof x === "boolean");
     expect(cursor.next()).toBeFalsy();

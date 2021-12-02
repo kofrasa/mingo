@@ -62,7 +62,7 @@ enum Action {
 }
 
 function createCallback(
-  nextFn: Callback<AnyVal>,
+  nextFn: Callback,
   iteratees: Iteratee[],
   buffer: RawArray
 ): Callback<IteratorResult> {
@@ -209,7 +209,7 @@ export class Iterator {
    * Transform each item in the sequence to a new value
    * @param {Function} f
    */
-  map(f: Callback<AnyVal>): Iterator {
+  map<T = AnyVal>(f: Callback<T>): Iterator {
     return this.push(Action.MAP, f);
   }
 
@@ -217,7 +217,7 @@ export class Iterator {
    * Select only items matching the given predicate
    * @param {Function} pred
    */
-  filter(predicate: Predicate<AnyVal>): Iterator {
+  filter<T = AnyVal>(predicate: Predicate<T>): Iterator {
     return this.push(Action.FILTER, predicate);
   }
 
@@ -286,11 +286,11 @@ export class Iterator {
    * @param {Function} f
    * @returns {Boolean} false iff `f` return false for AnyVal execution, otherwise true
    */
-  each(f: Callback<AnyVal>): boolean {
+  each<T = AnyVal>(f: Callback<T>): boolean {
     for (;;) {
       const o = this.next();
       if (o.done) break;
-      if (f(o.value) === false) return false;
+      if ((f(o.value) as AnyVal) === false) return false;
     }
     return true;
   }
@@ -301,7 +301,7 @@ export class Iterator {
    * @param {*} f a reducing function
    * @param {*} init
    */
-  reduce<T>(f: Callback<T>, initialValue: T): T {
+  reduce<T = AnyVal>(f: Callback<T>, initialValue?: AnyVal): T {
     let o = this.next();
     let i = 0;
 
@@ -312,11 +312,11 @@ export class Iterator {
     }
 
     while (!o.done) {
-      initialValue = f(initialValue, o.value, i++);
+      initialValue = f(initialValue, o.value as T);
       o = this.next();
     }
 
-    return initialValue;
+    return initialValue as T;
   }
 
   /**

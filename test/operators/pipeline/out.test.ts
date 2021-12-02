@@ -1,7 +1,10 @@
 import { AnyVal, RawObject } from "../../../src/types";
 import * as samples from "../../support";
 
-const output: RawObject[] = [];
+const output: Record<string, RawObject[]> = {
+  first: [],
+  second: [],
+};
 const result = [
   { _id: "Dante", books: ["The Banquet", "Divine Comedy", "Eclogues"] },
   { _id: "Homer", books: ["The Odyssey", "Iliad"] },
@@ -9,13 +12,13 @@ const result = [
 
 samples.runTestPipeline("operators/pipeline/out", [
   {
-    message: "can apply $out operator",
+    message: "can apply $out operator with resolver",
     pipeline: [
       { $group: { _id: "$author", books: { $push: "$title" } } },
-      { $out: "out" },
+      { $out: "first" },
     ],
     options: {
-      collectionResolver: (_: string) => output,
+      collectionResolver: (s: string) => output[s],
     },
     input: [
       { _id: 8751, title: "The Banquet", author: "Dante", copies: 2 },
@@ -26,7 +29,25 @@ samples.runTestPipeline("operators/pipeline/out", [
     ],
     expected: (actual: AnyVal) => {
       expect(actual).toEqual(result);
-      expect(output).toEqual(result);
+      expect(output.first).toEqual(result);
+    },
+  },
+  {
+    message: "can apply $out operator with reference",
+    pipeline: [
+      { $group: { _id: "$author", books: { $push: "$title" } } },
+      { $out: output.second },
+    ],
+    input: [
+      { _id: 8751, title: "The Banquet", author: "Dante", copies: 2 },
+      { _id: 8752, title: "Divine Comedy", author: "Dante", copies: 1 },
+      { _id: 8645, title: "Eclogues", author: "Dante", copies: 2 },
+      { _id: 7000, title: "The Odyssey", author: "Homer", copies: 10 },
+      { _id: 7020, title: "Iliad", author: "Homer", copies: 10 },
+    ],
+    expected: (actual: AnyVal) => {
+      expect(actual).toEqual(result);
+      expect(output.second).toEqual(result);
     },
   },
 ]);
