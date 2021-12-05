@@ -99,8 +99,8 @@ useOperators(OperatorType.PIPELINE, { $bucket });
 const core = require("mingo/core");
 const $trunc = require("mingo/operators/expression/trunc").$trunc;
 const $bucket = require("mingo/operators/pipeline/bucket").$bucket;
-const useOperators = core.useOperators
-const OperatorType = core.OperatorType
+const useOperators = core.useOperators;
+const OperatorType = core.OperatorType;
 
 useOperators(OperatorType.EXPRESSION, { $trunc: $trunc });
 useOperators(OperatorType.PIPELINE, { $bucket: $bucket });
@@ -264,6 +264,7 @@ interface Options {
 1. Custom function evaluation operators; `$where`, `$function`, and `$accumulator`, do not accept strings as the function body.
 1. Custom function evaluation operators are enabled by default. They can be disabled with the `scriptEnabled` option.
 1. Custom function evaluation operator [$accumulator](https://docs.mongodb.com/manual/reference/operator/aggregation/accumulator/) does not support the `merge` option.
+1. The `$jsonSchema` operator requires the user to register their own validator using the `jsonSchemaValidator` option.
 
 ## Benefits
 
