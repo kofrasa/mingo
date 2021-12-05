@@ -125,13 +125,13 @@ function createCallback(
  * A lazy collection iterator yields a single value at time upon request
  */
 export class Iterator {
-  private readonly iteratees = new Array<Iteratee>(); // lazy function chain
+  private readonly iteratees: Iteratee[] = [];
   private readonly yieldedValues: RawArray = [];
   private getNext: Callback<IteratorResult>;
 
   // flag whether to return a single value
-  private isSingle: boolean;
-  private isDone: boolean;
+  private isSingle = false;
+  private isDone = false;
 
   /**
    * @param {*} source An iterable object or function.
@@ -141,11 +141,6 @@ export class Iterator {
    * @param {Function} fn An optional transformation function
    */
   constructor(source: Source) {
-    this.iteratees = []; // lazy function chain
-    this.isSingle = false; // flag whether to return a single value
-    this.isDone = false;
-    this.yieldedValues = [];
-
     let nextVal: Callback<AnyVal>;
 
     if (source instanceof Function) {

@@ -21,7 +21,7 @@
   <h2>Features</h2>
 </a>
 <ul>
-<li>Supports Dot Notation for both <em><code>&lt;array&gt;.&lt;index&gt;</code></em> and <em><code>&lt;document&gt;.&lt;field&gt;</code></em> selectors</li>
+<li>Supports dot notation for both <em><code>&lt;array&gt;.&lt;index&gt;</code></em> and <em><code>&lt;document&gt;.&lt;field&gt;</code></em> selectors</li>
 <li>Query and Projection Operators<ul>
 <li><a href="https://docs.mongodb.com/manual/reference/operator/query-array/">Array Operators</a></li>
 <li><a href="https://docs.mongodb.com/manual/reference/operator/query-bitwise/">Bitwise Operators</a></li>
@@ -53,16 +53,11 @@
 <li><a href="https://docs.mongodb.com/manual/reference/operator/aggregation/#variable-expression-operators">Variable Operators</a></li>
 </ul>
 </li>
+<li><a href="https://docs.mongodb.com/manual/reference/operator/aggregation/setWindowFields/#window-operators">Window Operators</a></li>
 </ul>
 </li>
-<li><del>Support for adding custom operators using <code>mingo.addOperators</code></del> Replaced with <code>$where</code>, <code>$accumulator</code>, and <code>$function</code> operators.</li>
-<li>Match against user-defined types</li>
-<li>Support for aggregaion variables<ul>
-<li><a href="https://docs.mongodb.com/manual/reference/aggregation-variables/"><code>$$ROOT</code>,<code>$$CURRENT</code>,<code>$$DESCEND</code>,<code>$$PRUNE</code>,<code>$$KEEP</code>,<code>$$REMOVE</code></a></li>
-</ul>
-</li>
-<li>ES6 module compatible</li>
-<li>Query filtering and aggregation streaming.</li>
+<li>Supports aggregaion variables; <a href="https://docs.mongodb.com/manual/reference/aggregation-variables/"><code>$$ROOT</code>, <code>$$CURRENT</code>, <code>$$DESCEND</code>, <code>$$PRUNE</code>, <code>$$KEEP</code>, <code>$$REMOVE</code></a></li>
+<li>Filtering and aggregation using streaming.</li>
 </ul>
 <p>For documentation on using query operators see <a href="http://docs.mongodb.org/manual/reference/operator/query/">mongodb</a></p>
 <p>Browse <a href="http://kofrasa.net/mingo/">package docs</a> for modules.</p>
@@ -72,50 +67,33 @@
 </a>
 <pre><code class="language-js"><span class="hl-0">// Use as es6 module</span><br/><span class="hl-1">import</span><span class="hl-2"> </span><span class="hl-3">mingo</span><span class="hl-2"> </span><span class="hl-1">from</span><span class="hl-2"> </span><span class="hl-4">&quot;mingo&quot;</span><span class="hl-2">;</span><br/><br/><span class="hl-0">// or vanilla nodeJS</span><br/><span class="hl-5">const</span><span class="hl-2"> </span><span class="hl-6">mingo</span><span class="hl-2"> = </span><span class="hl-7">require</span><span class="hl-2">(</span><span class="hl-4">&quot;mingo&quot;</span><span class="hl-2">);</span>
 </code></pre>
+<p>The main module exports <code>Aggregator</code>, <code>Query</code>, <code>aggregate()</code>, <code>find()</code>, and <code>remove()</code>. Only <a href="https://docs.mongodb.com/manual/reference/operator/query/">Query and Projection</a> operators are loaded by default when you require the main module. This is done using the side-effect module <code>mingo/init/basic</code> and automatically includes pipeline operators; <code>$project</code>, <code>$skip</code>, <code>$limit</code>, and <code>$sort</code>.</p>
 
-<a href="#default-exports-and-operators" id="default-exports-and-operators" style="color: inherit; text-decoration: none;">
-  <h3>Default exports and operators</h3>
+<a href="#loading-operators" id="loading-operators" style="color: inherit; text-decoration: none;">
+  <h2>Loading Operators</h2>
 </a>
-<p>The default export of the main module only includes <code>Aggregator</code>, <code>Query</code>, <code>aggregate()</code>, <code>find()</code>, and <code>remove()</code>.</p>
-<p>Only <a href="https://docs.mongodb.com/manual/reference/operator/query/">Query and Projection</a> operators are loaded by default when using the main module.
-This is done using the side-effect module <code>mingo/init/basic</code>, and also automatically includes pipeline operators <code>$project</code>, <code>$skip</code>, <code>$limit</code>, and <code>$sort</code>.</p>
-<p>If your application uses most of the available operators or you do not care about bundle size, you can load all operators as shown below.</p>
+<p>MongoDB query library is huge and you may not need all the operators. If using this library on the server-side where bundle size is not a concern, you can load all operators as shown below.</p>
 <pre><code class="language-js"><span class="hl-0">// Note that doing this effectively imports the entire library into your bundle and unused operators cannot be tree shaked</span><br/><span class="hl-1">import</span><span class="hl-2"> </span><span class="hl-4">&quot;mingo/init/system&quot;</span><span class="hl-2">;</span>
 </code></pre>
 <p>Or from the node CLI</p>
 <pre><code class="language-sh"><span class="hl-2">node -r </span><span class="hl-4">&#39;mingo/init/system&#39;</span><span class="hl-2"> myscript.js</span>
 </code></pre>
-
-<a href="#importing-submodules" id="importing-submodules" style="color: inherit; text-decoration: none;">
-  <h3>Importing submodules</h3>
-</a>
-<p>Submodule imports are supported for both ES6 and ES5.</p>
-<p>The following two examples are equivalent.</p>
+<p>To support tree-shaking for client side bundles, you can import and register specific operators that will be used in your application.</p>
 
 <a href="#es6" id="es6" style="color: inherit; text-decoration: none;">
-  <h4>ES6</h4>
+  <h3>ES6</h3>
 </a>
-<p>This work natively in typescript since it knows how to load commonJS modules as ES6.
-You may optionally install the <a href="https://www.npmjs.com/package/esm">esm</a> module to use this syntax.</p>
-<pre><code class="language-js"><span class="hl-1">import</span><span class="hl-2"> { </span><span class="hl-3">$unwind</span><span class="hl-2"> } </span><span class="hl-1">from</span><span class="hl-2"> </span><span class="hl-4">&quot;mingo/operators/pipeline&quot;</span><span class="hl-2">;</span>
+<pre><code class="language-js"><span class="hl-1">import</span><span class="hl-2"> { </span><span class="hl-3">useOperators</span><span class="hl-2">, </span><span class="hl-3">OperatorType</span><span class="hl-2"> } </span><span class="hl-1">from</span><span class="hl-2"> </span><span class="hl-4">&quot;mingo/core&quot;</span><span class="hl-2">;</span><br/><span class="hl-1">import</span><span class="hl-2"> { </span><span class="hl-3">$trunc</span><span class="hl-2"> } </span><span class="hl-1">from</span><span class="hl-2"> </span><span class="hl-4">&quot;mingo/operators/expression/trunc&quot;</span><span class="hl-2">;</span><br/><span class="hl-1">import</span><span class="hl-2"> { </span><span class="hl-3">$bucket</span><span class="hl-2"> } </span><span class="hl-1">from</span><span class="hl-2"> </span><span class="hl-4">&quot;mingo/operators/pipeline/bucket&quot;</span><span class="hl-2">;</span><br/><br/><span class="hl-7">useOperators</span><span class="hl-2">(</span><span class="hl-3">OperatorType</span><span class="hl-2">.</span><span class="hl-6">EXPRESSION</span><span class="hl-2">, { </span><span class="hl-3">$trunc</span><span class="hl-2"> });</span><br/><span class="hl-7">useOperators</span><span class="hl-2">(</span><span class="hl-3">OperatorType</span><span class="hl-2">.</span><span class="hl-6">PIPELINE</span><span class="hl-2">, { </span><span class="hl-3">$bucket</span><span class="hl-2"> });</span>
 </code></pre>
 
 <a href="#es5" id="es5" style="color: inherit; text-decoration: none;">
-  <h4>ES5</h4>
+  <h3>ES5</h3>
 </a>
-<p>Unlike the ES6 version, it is necessary to specify the operator module in the path to avoid loading any extras</p>
-<pre><code class="language-js"><span class="hl-5">const</span><span class="hl-2"> </span><span class="hl-6">$unwind</span><span class="hl-2"> = </span><span class="hl-7">require</span><span class="hl-2">(</span><span class="hl-4">&quot;mingo/operators/pipeline/unwind&quot;</span><span class="hl-2">).</span><span class="hl-3">$unwind</span><span class="hl-2">;</span>
+<pre><code class="language-js"><span class="hl-5">const</span><span class="hl-2"> </span><span class="hl-6">core</span><span class="hl-2"> = </span><span class="hl-7">require</span><span class="hl-2">(</span><span class="hl-4">&quot;mingo/core&quot;</span><span class="hl-2">);</span><br/><span class="hl-5">const</span><span class="hl-2"> </span><span class="hl-6">$trunc</span><span class="hl-2"> = </span><span class="hl-7">require</span><span class="hl-2">(</span><span class="hl-4">&quot;mingo/operators/expression/trunc&quot;</span><span class="hl-2">).</span><span class="hl-3">$trunc</span><span class="hl-2">;</span><br/><span class="hl-5">const</span><span class="hl-2"> </span><span class="hl-6">$bucket</span><span class="hl-2"> = </span><span class="hl-7">require</span><span class="hl-2">(</span><span class="hl-4">&quot;mingo/operators/pipeline/bucket&quot;</span><span class="hl-2">).</span><span class="hl-3">$bucket</span><span class="hl-2">;</span><br/><span class="hl-5">const</span><span class="hl-2"> </span><span class="hl-6">useOperators</span><span class="hl-2"> = </span><span class="hl-3">core</span><span class="hl-2">.</span><span class="hl-3">useOperators</span><br/><span class="hl-5">const</span><span class="hl-2"> </span><span class="hl-6">OperatorType</span><span class="hl-2"> = </span><span class="hl-3">core</span><span class="hl-2">.</span><span class="hl-3">OperatorType</span><br/><br/><span class="hl-7">useOperators</span><span class="hl-2">(</span><span class="hl-3">OperatorType</span><span class="hl-2">.</span><span class="hl-6">EXPRESSION</span><span class="hl-2">, { </span><span class="hl-3">$trunc:</span><span class="hl-2"> </span><span class="hl-3">$trunc</span><span class="hl-2"> });</span><br/><span class="hl-7">useOperators</span><span class="hl-2">(</span><span class="hl-3">OperatorType</span><span class="hl-2">.</span><span class="hl-6">PIPELINE</span><span class="hl-2">, { </span><span class="hl-3">$bucket:</span><span class="hl-2"> </span><span class="hl-3">$bucket</span><span class="hl-2"> });</span>
 </code></pre>
 
-<a href="#enabling-operators" id="enabling-operators" style="color: inherit; text-decoration: none;">
-  <h2>Enabling Operators</h2>
-</a>
-<p>To support tree-shaking, you may import and register specific operators that will be used in your application.</p>
-<pre><code class="language-js"><span class="hl-1">import</span><span class="hl-2"> { </span><span class="hl-3">useOperators</span><span class="hl-2">, </span><span class="hl-3">OperatorType</span><span class="hl-2"> } </span><span class="hl-1">from</span><span class="hl-2"> </span><span class="hl-4">&quot;mingo/core&quot;</span><span class="hl-2">;</span><br/><span class="hl-1">import</span><span class="hl-2"> { </span><span class="hl-3">$trunc</span><span class="hl-2"> } </span><span class="hl-1">from</span><span class="hl-2"> </span><span class="hl-4">&quot;mingo/operators/expression&quot;</span><span class="hl-2">;</span><br/><span class="hl-1">import</span><span class="hl-2"> { </span><span class="hl-3">$bucket</span><span class="hl-2"> } </span><span class="hl-1">from</span><span class="hl-2"> </span><span class="hl-4">&quot;mingo/operators/pipeline&quot;</span><span class="hl-2">;</span><br/><br/><span class="hl-7">useOperators</span><span class="hl-2">(</span><span class="hl-3">OperatorType</span><span class="hl-2">.</span><span class="hl-6">EXPRESSION</span><span class="hl-2">, { </span><span class="hl-3">$trunc</span><span class="hl-2">, </span><span class="hl-3">$floor</span><span class="hl-2"> });</span><br/><span class="hl-7">useOperators</span><span class="hl-2">(</span><span class="hl-3">OperatorType</span><span class="hl-2">.</span><span class="hl-6">PIPELINE</span><span class="hl-2">, { </span><span class="hl-3">$bucket</span><span class="hl-2"> });</span>
-</code></pre>
-
-<a href="#using-query-object-to-test-objects" id="using-query-object-to-test-objects" style="color: inherit; text-decoration: none;">
-  <h2>Using query object to test objects</h2>
+<a href="#using-query-to-test-objects" id="using-query-to-test-objects" style="color: inherit; text-decoration: none;">
+  <h2>Using query to test objects</h2>
 </a>
 <pre><code class="language-js"><span class="hl-1">import</span><span class="hl-2"> { </span><span class="hl-3">Query</span><span class="hl-2"> } </span><span class="hl-1">from</span><span class="hl-2"> </span><span class="hl-4">&quot;mingo&quot;</span><span class="hl-2">;</span><br/><br/><span class="hl-0">// create a query with criteria</span><br/><span class="hl-0">// find all grades for homework with score &gt;= 50</span><br/><span class="hl-5">let</span><span class="hl-2"> </span><span class="hl-3">query</span><span class="hl-2"> = </span><span class="hl-5">new</span><span class="hl-2"> </span><span class="hl-7">Query</span><span class="hl-2">({</span><br/><span class="hl-2">  </span><span class="hl-3">type:</span><span class="hl-2"> </span><span class="hl-4">&quot;homework&quot;</span><span class="hl-2">,</span><br/><span class="hl-2">  </span><span class="hl-3">score:</span><span class="hl-2"> { </span><span class="hl-3">$gte:</span><span class="hl-2"> </span><span class="hl-8">50</span><span class="hl-2"> },</span><br/><span class="hl-2">});</span><br/><br/><span class="hl-0">// test if an object matches query</span><br/><span class="hl-3">query</span><span class="hl-2">.</span><span class="hl-7">test</span><span class="hl-2">(</span><span class="hl-3">doc</span><span class="hl-2">);</span>
 </code></pre>
@@ -146,7 +124,7 @@ No default implementation is provided out of the box so users can use a library 
   <h2>Options</h2>
 </a>
 <p>Query and aggregation operations can be configured with options to enabled different features or customize how documents are processed. Some options are only relevant to specific operators and need not be specified if not required.</p>
-<pre><code class="language-js"><span class="hl-5">interface</span><span class="hl-2"> </span><span class="hl-9">Options</span><span class="hl-2"> {</span><br/><span class="hl-2">  </span><span class="hl-0">/** The key that is used to lookup the ID value of a document. </span><span class="hl-5">@default</span><span class="hl-0"> </span><span class="hl-3">&quot;</span><span class="hl-3">_id</span><span class="hl-3">&quot;</span><span class="hl-0"> */</span><br/><span class="hl-2">  </span><span class="hl-5">readonly</span><span class="hl-2"> </span><span class="hl-3">idKey</span><span class="hl-2">?: </span><span class="hl-9">string</span><span class="hl-2">;</span><br/><span class="hl-2">  </span><span class="hl-0">/** The collation specification for string operations. */</span><br/><span class="hl-2">  </span><span class="hl-5">readonly</span><span class="hl-2"> </span><span class="hl-3">collation</span><span class="hl-2">?: </span><span class="hl-9">CollationSpec</span><span class="hl-2">;</span><br/><span class="hl-2">  </span><span class="hl-0">/** Processing mode that determines how to treat inputs and outputs. </span><span class="hl-5">@default</span><span class="hl-0"> </span><span class="hl-3">ProcessingMode.CLONE_OFF</span><span class="hl-0"> */</span><br/><span class="hl-2">  </span><span class="hl-5">readonly</span><span class="hl-2"> </span><span class="hl-3">processingMode</span><span class="hl-2">?: </span><span class="hl-9">ProcessingMode</span><span class="hl-2">;</span><br/><span class="hl-2">  </span><span class="hl-0">/**</span><br/><span class="hl-0">   * Enables or disables custom script execution.</span><br/><span class="hl-0">   * When disabled, you cannot use operations that execute custom code, such as the $where, $accumulator, and $function.</span><br/><span class="hl-0">   * </span><span class="hl-5">@default</span><span class="hl-0"> </span><span class="hl-3">true</span><br/><span class="hl-0">   */</span><br/><span class="hl-2">  </span><span class="hl-5">readonly</span><span class="hl-2"> </span><span class="hl-3">scriptEnabled</span><span class="hl-2">?: </span><span class="hl-9">boolean</span><span class="hl-2">;</span><br/><span class="hl-2">  </span><span class="hl-0">/** Hash function to replace the somewhat weaker default implementation. */</span><br/><span class="hl-2">  </span><span class="hl-5">readonly</span><span class="hl-2"> </span><span class="hl-3">hashFunction</span><span class="hl-2">?: </span><span class="hl-9">HashFunction</span><span class="hl-2">;</span><br/><span class="hl-2">  </span><span class="hl-0">/** Function to resolve string reference to a collection for use by `$lookup` and `$out` operators. */</span><br/><span class="hl-2">  </span><span class="hl-5">readonly</span><span class="hl-2"> </span><span class="hl-3">collectionResolver</span><span class="hl-2">?: </span><span class="hl-9">CollectionResolver</span><span class="hl-2">;</span><br/><span class="hl-2">  </span><span class="hl-0">/** JSON schema validator to use with the $jsonSchema operator. Required to use the operator. */</span><br/><span class="hl-2">  </span><span class="hl-5">readonly</span><span class="hl-2"> </span><span class="hl-3">jsonSchemaValidator</span><span class="hl-2">?: </span><span class="hl-9">JsonSchemaValidator</span><span class="hl-2">;</span><br/><span class="hl-2">}</span>
+<pre><code class="language-js"><span class="hl-5">interface</span><span class="hl-2"> </span><span class="hl-9">Options</span><span class="hl-2"> {</span><br/><span class="hl-2">  </span><span class="hl-0">/** The key that is used to lookup the ID value of a document. </span><span class="hl-5">@default</span><span class="hl-0"> </span><span class="hl-3">&quot;</span><span class="hl-3">_id</span><span class="hl-3">&quot;</span><span class="hl-0"> */</span><br/><span class="hl-2">  </span><span class="hl-5">readonly</span><span class="hl-2"> </span><span class="hl-3">idKey</span><span class="hl-2">?: </span><span class="hl-9">string</span><span class="hl-2">;</span><br/><span class="hl-2">  </span><span class="hl-0">/** The collation specification for string sorting operations. */</span><br/><span class="hl-2">  </span><span class="hl-5">readonly</span><span class="hl-2"> </span><span class="hl-3">collation</span><span class="hl-2">?: </span><span class="hl-9">CollationSpec</span><span class="hl-2">;</span><br/><span class="hl-2">  </span><span class="hl-0">/** Determines how to treat inputs and outputs. </span><span class="hl-5">@default</span><span class="hl-0"> </span><span class="hl-3">ProcessingMode.CLONE_OFF</span><span class="hl-0"> */</span><br/><span class="hl-2">  </span><span class="hl-5">readonly</span><span class="hl-2"> </span><span class="hl-3">processingMode</span><span class="hl-2">?: </span><span class="hl-9">ProcessingMode</span><span class="hl-2">;</span><br/><span class="hl-2">  </span><span class="hl-0">/**</span><br/><span class="hl-0">   * Enables or disables custom script execution.</span><br/><span class="hl-0">   * When disabled, you cannot use operations that execute custom code, such as the $where, $accumulator, and $function.</span><br/><span class="hl-0">   * </span><span class="hl-5">@default</span><span class="hl-0"> </span><span class="hl-3">true</span><br/><span class="hl-0">   */</span><br/><span class="hl-2">  </span><span class="hl-5">readonly</span><span class="hl-2"> </span><span class="hl-3">scriptEnabled</span><span class="hl-2">?: </span><span class="hl-9">boolean</span><span class="hl-2">;</span><br/><span class="hl-2">  </span><span class="hl-0">/** Hash function to replace the somewhat weaker default implementation. */</span><br/><span class="hl-2">  </span><span class="hl-5">readonly</span><span class="hl-2"> </span><span class="hl-3">hashFunction</span><span class="hl-2">?: </span><span class="hl-9">HashFunction</span><span class="hl-2">;</span><br/><span class="hl-2">  </span><span class="hl-0">/** Function to resolve strings to arrays for use with operators that reference other collections such as; `$lookup`, `$out` and `$merge`. */</span><br/><span class="hl-2">  </span><span class="hl-5">readonly</span><span class="hl-2"> </span><span class="hl-3">collectionResolver</span><span class="hl-2">?: </span><span class="hl-9">CollectionResolver</span><span class="hl-2">;</span><br/><span class="hl-2">  </span><span class="hl-0">/** JSON schema validator to use with the &#39;$jsonSchema&#39; operator. This is required in order to use the operator. */</span><br/><span class="hl-2">  </span><span class="hl-5">readonly</span><span class="hl-2"> </span><span class="hl-3">jsonSchemaValidator</span><span class="hl-2">?: </span><span class="hl-9">JsonSchemaValidator</span><span class="hl-2">;</span><br/><span class="hl-2">}</span>
 </code></pre>
 
 <a href="#differences-from-mongodb" id="differences-from-mongodb" style="color: inherit; text-decoration: none;">
@@ -154,17 +132,14 @@ No default implementation is provided out of the box so users can use a library 
 </a>
 <ol>
 <li>There is no concept of a collection. Input data is either an array of objects or a generator function to support streaming.</li>
-<li>Server-side specific operators are not supported. E.g. <code>$collStat</code>, <code>$planCacheStats</code>, <code>$listSessions</code>.</li>
-<li>Pipeline operator <code>$merge</code> is supported and enforces the unique constraint on the lookup field at runtime.</li>
-<li>The following operators are not supported.<ul>
-<li>Query: <code>$comment</code>, <code>$meta</code>, <code>$text</code></li>
-<li>Expression: <code>$toObjectId</code>, <code>$binarySize</code>, <code>bsonSize</code></li>
-</ul>
-</li>
-<li>The <code>collectionResolver</code> option can be configured to reference an array using a name for lookup instead of providing the reference directly. This is used in <code>$lookup</code>, <code>$out</code>, <code>merge</code>, and <code>$unionWith</code>.</li>
-<li>Custom function evaluation operators <code>$where</code>, <code>$function</code>, and <code>$accumulator</code> do not accept strings as the function body.</li>
+<li>Does not support server specific operators. E.g. <code>$collStat</code>, <code>$planCacheStats</code>, <code>$listSessions</code>.</li>
+<li>Does not support GeoJSON query operators.</li>
+<li>Does not support query operators; <code>$comment</code>, <code>$meta</code>, <code>$text</code>.</li>
+<li>Does not support aggregation expression operators; <code>$toObjectId</code>, <code>$binarySize</code>, <code>bsonSize</code>.</li>
+<li>Agregation pipeline operator <code>$merge</code> enforces unique constraint on the lookup field at runtime.</li>
+<li>Custom function evaluation operators; <code>$where</code>, <code>$function</code>, and <code>$accumulator</code>, do not accept strings as the function body.</li>
 <li>Custom function evaluation operators are enabled by default. They can be disabled with the <code>scriptEnabled</code> option.</li>
-<li><a href="https://docs.mongodb.com/manual/reference/operator/aggregation/accumulator/">$accumulator</a> does not support the <code>merge</code> option.</li>
+<li>Custom function evaluation operator <a href="https://docs.mongodb.com/manual/reference/operator/aggregation/accumulator/">$accumulator</a> does not support the <code>merge</code> option.</li>
 </ol>
 
 <a href="#benefits" id="benefits" style="color: inherit; text-decoration: none;">

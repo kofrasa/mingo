@@ -17,7 +17,7 @@ MongoDB query language for in-memory objects
 
 ## Features
 
-- Supports Dot Notation for both _`<array>.<index>`_ and _`<document>.<field>`_ selectors
+- Supports dot notation for both _`<array>.<index>`_ and _`<document>.<field>`_ selectors
 - Query and Projection Operators
   - [Array Operators](https://docs.mongodb.com/manual/reference/operator/query-array/)
   - [Bitwise Operators](https://docs.mongodb.com/manual/reference/operator/query-bitwise/)
@@ -45,12 +45,9 @@ MongoDB query language for in-memory objects
     - [Trignometry Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#trigonometry-expression-operators)
     - [Type Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#type-expression-operators)
     - [Variable Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#variable-expression-operators)
-- ~~Support for adding custom operators using `mingo.addOperators`~~ Replaced with `$where`, `$accumulator`, and `$function` operators.
-- Match against user-defined types
-- Support for aggregaion variables
-  - [`$$ROOT`,`$$CURRENT`,`$$DESCEND`,`$$PRUNE`,`$$KEEP`,`$$REMOVE`](https://docs.mongodb.com/manual/reference/aggregation-variables/)
-- ES6 module compatible
-- Query filtering and aggregation streaming.
+  - [Window Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/setWindowFields/#window-operators)
+- Supports aggregaion variables; [`$$ROOT`, `$$CURRENT`, `$$DESCEND`, `$$PRUNE`, `$$KEEP`, `$$REMOVE`](https://docs.mongodb.com/manual/reference/aggregation-variables/)
+- Filtering and aggregation using streaming.
 
 For documentation on using query operators see [mongodb](http://docs.mongodb.org/manual/reference/operator/query/)
 
@@ -66,14 +63,11 @@ import mingo from "mingo";
 const mingo = require("mingo");
 ```
 
-### Default exports and operators
+The main module exports `Aggregator`, `Query`, `aggregate()`, `find()`, and `remove()`. Only [Query and Projection](https://docs.mongodb.com/manual/reference/operator/query/) operators are loaded by default when you require the main module. This is done using the side-effect module `mingo/init/basic` and automatically includes pipeline operators; `$project`, `$skip`, `$limit`, and `$sort`.
 
-The default export of the main module only includes `Aggregator`, `Query`, `aggregate()`, `find()`, and `remove()`.
+## Loading Operators
 
-Only [Query and Projection](https://docs.mongodb.com/manual/reference/operator/query/) operators are loaded by default when using the main module.
-This is done using the side-effect module `mingo/init/basic`, and also automatically includes pipeline operators `$project`, `$skip`, `$limit`, and `$sort`.
-
-If your application uses most of the available operators or you do not care about bundle size, you can load all operators as shown below.
+MongoDB query library is huge and you may not need all the operators. If using this library on the server-side where bundle size is not a concern, you can load all operators as shown below.
 
 ```js
 // Note that doing this effectively imports the entire library into your bundle and unused operators cannot be tree shaked
@@ -86,40 +80,30 @@ Or from the node CLI
 node -r 'mingo/init/system' myscript.js
 ```
 
-### Importing submodules
+To support tree-shaking for client side bundles, you can import and register specific operators that will be used in your application.
 
-Submodule imports are supported for both ES6 and ES5.
-
-The following two examples are equivalent.
-
-#### ES6
-
-This work natively in typescript since it knows how to load commonJS modules as ES6.
-You may optionally install the [esm](https://www.npmjs.com/package/esm) module to use this syntax.
-
-```js
-import { $unwind } from "mingo/operators/pipeline";
-```
-
-#### ES5
-
-Unlike the ES6 version, it is necessary to specify the operator module in the path to avoid loading any extras
-
-```js
-const $unwind = require("mingo/operators/pipeline/unwind").$unwind;
-```
-
-## Enabling Operators
-
-To support tree-shaking, you may import and register specific operators that will be used in your application.
+### ES6
 
 ```js
 import { useOperators, OperatorType } from "mingo/core";
-import { $trunc } from "mingo/operators/expression";
-import { $bucket } from "mingo/operators/pipeline";
+import { $trunc } from "mingo/operators/expression/trunc";
+import { $bucket } from "mingo/operators/pipeline/bucket";
 
-useOperators(OperatorType.EXPRESSION, { $trunc, $floor });
+useOperators(OperatorType.EXPRESSION, { $trunc });
 useOperators(OperatorType.PIPELINE, { $bucket });
+```
+
+### ES5
+
+```js
+const core = require("mingo/core");
+const $trunc = require("mingo/operators/expression/trunc").$trunc;
+const $bucket = require("mingo/operators/pipeline/bucket").$bucket;
+const useOperators = core.useOperators
+const OperatorType = core.OperatorType
+
+useOperators(OperatorType.EXPRESSION, { $trunc: $trunc });
+useOperators(OperatorType.PIPELINE, { $bucket: $bucket });
 ```
 
 ## Using query to test objects
@@ -250,9 +234,9 @@ Query and aggregation operations can be configured with options to enabled diffe
 interface Options {
   /** The key that is used to lookup the ID value of a document. @default "_id" */
   readonly idKey?: string;
-  /** The collation specification for string operations. */
+  /** The collation specification for string sorting operations. */
   readonly collation?: CollationSpec;
-  /** Processing mode that determines how to treat inputs and outputs. @default ProcessingMode.CLONE_OFF */
+  /** Determines how to treat inputs and outputs. @default ProcessingMode.CLONE_OFF */
   readonly processingMode?: ProcessingMode;
   /**
    * Enables or disables custom script execution.
@@ -262,9 +246,9 @@ interface Options {
   readonly scriptEnabled?: boolean;
   /** Hash function to replace the somewhat weaker default implementation. */
   readonly hashFunction?: HashFunction;
-  /** Function to resolve string reference to a collection for use by `$lookup` and `$out` operators. */
+  /** Function to resolve strings to arrays for use with operators that reference other collections such as; `$lookup`, `$out` and `$merge`. */
   readonly collectionResolver?: CollectionResolver;
-  /** JSON schema validator to use with the $jsonSchema operator. Required to use the operator. */
+  /** JSON schema validator to use with the '$jsonSchema' operator. This is required in order to use the operator. */
   readonly jsonSchemaValidator?: JsonSchemaValidator;
 }
 ```
@@ -272,15 +256,14 @@ interface Options {
 ## Differences from MongoDB
 
 1. There is no concept of a collection. Input data is either an array of objects or a generator function to support streaming.
-1. Server-side specific operators are not supported. E.g. `$collStat`, `$planCacheStats`, `$listSessions`.
-1. Pipeline operator `$merge` is supported and enforces the unique constraint on the lookup field at runtime.
-1. The following operators are not supported.
-   - Query: `$comment`, `$meta`, `$text`
-   - Expression: `$toObjectId`, `$binarySize`, `bsonSize`
-1. The `collectionResolver` option can be configured to reference an array using a name for lookup instead of providing the reference directly. This is used in `$lookup`, `$out`, `merge`, and `$unionWith`.
-1. Custom function evaluation operators `$where`, `$function`, and `$accumulator` do not accept strings as the function body.
+1. Does not support server specific operators. E.g. `$collStat`, `$planCacheStats`, `$listSessions`.
+1. Does not support GeoJSON query operators.
+1. Does not support query operators; `$comment`, `$meta`, `$text`.
+1. Does not support aggregation expression operators; `$toObjectId`, `$binarySize`, `bsonSize`.
+1. Agregation pipeline operator `$merge` enforces unique constraint on the lookup field at runtime.
+1. Custom function evaluation operators; `$where`, `$function`, and `$accumulator`, do not accept strings as the function body.
 1. Custom function evaluation operators are enabled by default. They can be disabled with the `scriptEnabled` option.
-1. [$accumulator](https://docs.mongodb.com/manual/reference/operator/aggregation/accumulator/) does not support the `merge` option.
+1. Custom function evaluation operator [$accumulator](https://docs.mongodb.com/manual/reference/operator/aggregation/accumulator/) does not support the `merge` option.
 
 ## Benefits
 

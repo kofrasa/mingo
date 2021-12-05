@@ -89,9 +89,9 @@ export enum ProcessingMode {
 export interface Options {
   /** The key that is used to lookup the ID value of a document. @default "_id" */
   readonly idKey?: string;
-  /** The collation specification for string operations. */
+  /** The collation specification for string sorting operations. */
   readonly collation?: CollationSpec;
-  /** Processing mode that determines how to treat inputs and outputs. @default ProcessingMode.CLONE_OFF */
+  /** Determines how to treat inputs and outputs. @default ProcessingMode.CLONE_OFF */
   readonly processingMode?: ProcessingMode;
   /**
    * Enables or disables custom script execution.
@@ -101,9 +101,9 @@ export interface Options {
   readonly scriptEnabled?: boolean;
   /** Hash function to replace the somewhat weaker default implementation. */
   readonly hashFunction?: HashFunction;
-  /** Function to resolve string reference to a collection for use by `$lookup` and `$out` operators. */
+  /** Function to resolve strings to arrays for use with operators that reference other collections such as; `$lookup`, `$out` and `$merge`. */
   readonly collectionResolver?: CollectionResolver;
-  /** JSON schema validator to use with the $jsonSchema operator. Required to use the operator. */
+  /** JSON schema validator to use with the '$jsonSchema' operator. This is required in order to use the operator. */
   readonly jsonSchemaValidator?: JsonSchemaValidator;
 }
 
