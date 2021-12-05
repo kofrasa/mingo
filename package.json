@@ -1,6 +1,6 @@
 {
   "name": "mingo",
-  "version": "4.4.1",
+  "version": "5.0.0",
   "description": "MongoDB query language for in-memory objects",
   "main": "lib",
   "module": "lib",

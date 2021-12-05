@@ -1,6 +1,6 @@
 # Changelog
 
-## Next Release
+## 5.0.0 / 2021-12-05
 
 **New**
 
