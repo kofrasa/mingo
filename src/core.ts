@@ -113,6 +113,8 @@ interface ComputeOptions extends Options {
   readonly root?: RawObject;
   /** The groupId computed for a group of documents by the $group operator. */
   readonly groupId?: AnyVal;
+  /** The current time in milliseconds. Remains the same throughout all stages of the aggregation pipeline. */
+  readonly currentTimestamp?: number;
 }
 
 /**
@@ -124,6 +126,7 @@ export function initOptions(options?: Options): Options {
     idKey: "_id",
     scriptEnabled: true,
     processingMode: ProcessingMode.CLONE_OFF,
+    currentTimestamp: Date.now(),
     ...options,
   });
 }
@@ -250,6 +253,9 @@ const systemVariables: Record<string, Callback<AnyVal>> = {
   },
   $$REMOVE(obj: AnyVal, expr: AnyVal, options: ComputeOptions) {
     return undefined;
+  },
+  $$NOW(obj: AnyVal, expr: AnyVal, options: ComputeOptions) {
+    return new Date(options.currentTimestamp);
   },
 };
 

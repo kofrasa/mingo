@@ -32,6 +32,7 @@
   - `$count`
   - `$covarianceSamp`
   - `$covariancePop`
+- Add support for `$$NOW` system variable.
 
 **Removed**
 
