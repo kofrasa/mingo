@@ -192,16 +192,13 @@ export class Iterator {
 
   /**
    * Add an iteratee to this lazy sequence
-   * @param {Object} iteratee
    */
-  private push(action: Action, value: AnyVal) {
+  private push(action: Action, value: Callback<AnyVal> | number) {
     this.validate();
     if (typeof value === "function") {
-      this.iteratees.push({ action, func: value as Callback<AnyVal> });
+      this.iteratees.push({ action, func: value });
     } else if (typeof value === "number") {
       this.iteratees.push({ action, count: value });
-    } else {
-      throw Error("invalid value");
     }
     return this;
   }

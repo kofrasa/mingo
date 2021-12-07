@@ -2,6 +2,7 @@ import { find } from "../src";
 import { RawObject } from "../src/types";
 import {
   cloneDeep,
+  compare,
   isEmpty,
   isEqual,
   isObject,
@@ -11,6 +12,14 @@ import {
 } from "../src/util";
 
 describe("util", () => {
+  describe("compare", () => {
+    it("can compare less than, greater than, and equal to", () => {
+      expect(compare(1, 5)).toBe(-1);
+      expect(compare(5, 1)).toBe(1);
+      expect(compare(1, 1)).toBe(0);
+    });
+  });
+
   describe("isEqual", () => {
     const fixture = [
       [NaN, 0 / 0, true],
@@ -43,16 +52,15 @@ describe("util", () => {
     expect(true).toBeTruthy();
   });
 
-  describe("sortBy util", () => {
-    expect(sortBy(["c", "a", "function", "constructor"], (k) => k)).toEqual([
-      "a",
-      "c",
-      "constructor",
-      "function",
-    ]);
+  describe("sortBy", () => {
+    it("can sortBy hash key", () => {
+      expect(
+        sortBy(["cat", "ant", "function", "ant", "constructor"], (k) => k)
+      ).toEqual(["ant", "ant", "cat", "constructor", "function"]);
+    });
   });
 
-  describe("Test isObject", () => {
+  describe("isObject", () => {
     class Foo {
       constructor(readonly a: string = "foo") {}
     }
@@ -86,11 +94,13 @@ describe("util", () => {
     ];
 
     fixtures.forEach((arr) => {
-      expect(isObject(arr[0])).toEqual(arr[1]);
+      it(arr[2] as string, () => {
+        expect(isObject(arr[0])).toEqual(arr[1]);
+      });
     });
   });
 
-  describe("isEmpty util", () => {
+  describe("isEmpty", () => {
     const sample = ["0", 0, null, {}, "", []];
     expect(sample.map(isEmpty)).toEqual([false, false, true, true, true, true]);
   });

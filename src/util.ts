@@ -231,7 +231,7 @@ export function merge(
         result.push(obj[j++] as ArrayOrObject);
       }
     } else {
-      Array.prototype.push.apply(result, input);
+      into(result, input);
     }
   } else {
     Object.keys(obj).forEach((k) => {
@@ -529,8 +529,8 @@ export function sortBy(
         hash[key].push(obj);
       } else {
         hash[key] = [obj];
+        sorted.push(key);
       }
-      sorted.push(key);
     }
   }
 
@@ -611,15 +611,13 @@ export function into(
       }
       return acc;
     }, target);
-  } else if (isObject(target)) {
+  } else {
     // merge objects. same behaviour as Object.assign
     return rest.filter(isObjectLike).reduce((acc, item) => {
       Object.assign(acc, item);
       return acc;
     }, target);
   }
-
-  return null;
 }
 
 /**
