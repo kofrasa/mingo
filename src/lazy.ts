@@ -34,6 +34,18 @@ export function Lazy(source: Source): Iterator {
   return source instanceof Iterator ? source : new Iterator(source);
 }
 
+export function compose(...iterators: Iterator[]): Iterator {
+  let index = 0;
+  return Lazy(() => {
+    while (index < iterators.length) {
+      const o = iterators[index].next();
+      if (!o.done) return o;
+      index++;
+    }
+    return { done: true };
+  });
+}
+
 /**
  * Checks whether the given object is compatible with a generator i.e Object{next:Function}
  * @param {*} o An object

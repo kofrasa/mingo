@@ -25,7 +25,7 @@ describe("operators/expression/misc", () => {
           { $project: { _id: 0, name: 1, registered: 1 } },
         ]);
 
-      expect(q()).not.toEqual(q());
+      expect(q()).not.toStrictEqual(q());
     });
   });
 

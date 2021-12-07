@@ -1,6 +1,6 @@
 import { Aggregator } from "./aggregator";
 import { CollationSpec, Options } from "./core";
-import { Iterator, Lazy, Source } from "./lazy";
+import { compose, Iterator, Lazy, Source } from "./lazy";
 import { AnyVal, RawArray, RawObject } from "./types";
 import { Callback, isObject, Predicate } from "./util";
 
@@ -17,7 +17,7 @@ import { Callback, isObject, Predicate } from "./util";
 export class Cursor {
   private readonly operators: Array<RawObject> = [];
   private result: Iterator = null;
-  private stack: RawArray = [];
+  private buffer: RawObject[] = [];
 
   constructor(
     readonly source: Source,
@@ -26,6 +26,7 @@ export class Cursor {
     private options: Options
   ) {}
 
+  /** Returns the iterator from running the query */
   private fetch(): Iterator {
     if (this.result) return this.result;
 
@@ -46,12 +47,19 @@ export class Cursor {
     return this.result;
   }
 
+  /** Returns an iterator with the buffered data included */
+  private fetchAll(): Iterator {
+    const buffered = Lazy([...this.buffer]);
+    this.buffer = [];
+    return compose(buffered, this.fetch());
+  }
+
   /**
    * Return remaining objects in the cursor as an array. This method exhausts the cursor
    * @returns {Array}
    */
   all(): RawArray {
-    return this.fetch().value() as RawArray;
+    return this.fetchAll().value() as RawArray;
   }
 
   /**
@@ -106,18 +114,13 @@ export class Cursor {
    * @returns {Object | Boolean}
    */
   next(): AnyVal {
-    // empty stack means processing is done
-    if (!this.stack) return;
-
     // yield value obtains in hasNext()
-    if (this.stack.length > 0) {
-      return this.stack.pop();
+    if (this.buffer.length > 0) {
+      return this.buffer.pop();
     }
     const o = this.fetch().next();
-
-    if (!o.done) return o.value;
-    this.stack = null;
-    return;
+    if (o.done) return;
+    return o.value;
   }
 
   /**
@@ -125,19 +128,14 @@ export class Cursor {
    * @returns {boolean}
    */
   hasNext(): boolean {
-    if (!this.stack) return false; // done
-
-    // there is a value on stack
-    if (this.stack.length > 0) return true;
+    // there is a value in the buffer
+    if (this.buffer.length > 0) return true;
 
     const o = this.fetch().next();
-    if (o.done) {
-      this.stack = null;
-    } else {
-      this.stack.push(o.value);
-    }
+    if (o.done) return false;
 
-    return !!this.stack;
+    this.buffer.push(o.value as RawObject);
+    return true;
   }
 
   /**
@@ -146,7 +144,7 @@ export class Cursor {
    * @returns {Array}
    */
   map(callback: Callback<AnyVal>): RawObject[] {
-    return this.fetch().map(callback).value() as RawObject[];
+    return this.all().map(callback) as RawObject[];
   }
 
   /**
@@ -154,10 +152,10 @@ export class Cursor {
    * @param callback
    */
   forEach(callback: Callback<AnyVal>): void {
-    this.fetch().each(callback);
+    this.all().forEach(callback);
   }
 
   [Symbol.iterator](): Iterator {
-    return this.fetch(); /* eslint-disable-line */
+    return this.fetchAll();
   }
 }

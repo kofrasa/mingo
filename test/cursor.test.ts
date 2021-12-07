@@ -27,4 +27,26 @@ describe("Cursor", () => {
     cursor.map((x) => typeof x).every((x) => typeof x === "boolean");
     expect(cursor.next()).toBeFalsy();
   });
+
+  it("can sort with collation", () => {
+    const cursor = new Query({}).find([
+      { name: "John" },
+      { name: "Bob" },
+      { name: "Casey" },
+      { name: "Alice" },
+    ]);
+
+    cursor.sort({ name: 1 }).collation({ locale: "en" });
+
+    expect(cursor.next()).toStrictEqual({ name: "Alice" });
+    expect(cursor.hasNext()).toEqual(true);
+    expect(cursor.next()).toStrictEqual({ name: "Bob" });
+    expect(cursor.hasNext()).toEqual(true);
+    expect(cursor.next()).toStrictEqual({ name: "Casey" });
+    expect(cursor.hasNext()).toEqual(true);
+    expect(cursor.all()).toStrictEqual([{ name: "John" }]);
+    expect(cursor.next()).toEqual(undefined);
+    expect(cursor.hasNext()).toEqual(false);
+    expect(cursor.all()).toStrictEqual([]);
+  });
 });
