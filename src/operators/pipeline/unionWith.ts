@@ -1,6 +1,6 @@
 import { Aggregator } from "../../aggregator";
 import { Options } from "../../core";
-import { Iterator, Lazy } from "../../lazy";
+import { compose, Iterator, Lazy } from "../../lazy";
 import { RawObject } from "../../types";
 import { isString } from "../../util";
 
@@ -32,13 +32,5 @@ export function $unionWith(
       : Lazy(array)
   );
 
-  let i = 0;
-  return Lazy(() => {
-    while (i < iterators.length) {
-      const o = iterators[i].next();
-      if (!o.done) return o;
-      i++;
-    }
-    return { done: true };
-  });
+  return compose(...iterators);
 }

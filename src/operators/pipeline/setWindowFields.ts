@@ -7,7 +7,7 @@ import {
   Options,
   WindowOperator,
 } from "../../core";
-import { Iterator, Lazy } from "../../lazy";
+import { compose, Iterator, Lazy } from "../../lazy";
 import { AnyVal, RawArray, RawObject } from "../../types";
 import { assert, isNumber, isOperator, isString } from "../../util";
 import { $dateAdd } from "../expression";
@@ -82,17 +82,18 @@ export function $setWindowFields(
 
   // transform values
   return collection.transform((partitions: RawArray) => {
-    let iteratorIndex = 0;
+    // let iteratorIndex = 0;
     const iterators: Iterator[] = [];
-    const rootIterator = Lazy(() => {
-      while (iteratorIndex < iterators.length) {
-        const o = iterators[iteratorIndex].next();
-        if (!o.done) return o;
-        iteratorIndex++;
-      }
-      return { done: true };
-    });
+    // const rootIterator = Lazy(() => {
+    //   while (iteratorIndex < iterators.length) {
+    //     const o = iterators[iteratorIndex].next();
+    //     if (!o.done) return o;
+    //     iteratorIndex++;
+    //   }
+    //   return { done: true };
+    // });
 
+    // const rootIterator = compose(iterators);
     const outputConfig: Array<{
       operatorName: string;
       func: {
@@ -248,6 +249,6 @@ export function $setWindowFields(
       iterators.push(iterator);
     });
 
-    return rootIterator;
+    return compose(...iterators);
   });
 }
