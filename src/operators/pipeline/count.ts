@@ -24,8 +24,11 @@ export function $count(
   );
 
   return Lazy(() => {
-    const o = {};
-    o[expr] = collection.size();
-    return { value: o, done: false };
+    return {
+      value: {
+        [expr]: collection.size(),
+      },
+      done: false,
+    };
   }).first();
 }
