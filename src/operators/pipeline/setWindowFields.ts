@@ -84,16 +84,6 @@ export function $setWindowFields(
   return collection.transform((partitions: RawArray) => {
     // let iteratorIndex = 0;
     const iterators: Iterator[] = [];
-    // const rootIterator = Lazy(() => {
-    //   while (iteratorIndex < iterators.length) {
-    //     const o = iterators[iteratorIndex].next();
-    //     if (!o.done) return o;
-    //     iteratorIndex++;
-    //   }
-    //   return { done: true };
-    // });
-
-    // const rootIterator = compose(iterators);
     const outputConfig: Array<{
       operatorName: string;
       func: {

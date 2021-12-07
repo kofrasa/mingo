@@ -650,5 +650,30 @@ describe("operators/pipeline/setWindowFields", () => {
         ]);
       });
     });
+
+    it("Can Process a Single Partition", () => {
+      const result = aggregate(
+        [{ name: "Bob" }, { name: "Casey" }, { name: "Alice" }],
+        [
+          {
+            $setWindowFields: {
+              sortBy: { name: 1 },
+              output: {
+                size: {
+                  $count: {},
+                },
+              },
+            },
+          },
+        ],
+        options
+      );
+
+      expect(result).toStrictEqual([
+        { name: "Alice", size: 3 },
+        { name: "Bob", size: 3 },
+        { name: "Casey", size: 3 },
+      ]);
+    });
   });
 });
