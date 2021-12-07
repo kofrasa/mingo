@@ -81,7 +81,7 @@ export function rank(
     for (let i = groupIndex; i < partitions.keys.length; i++) {
       if (isEqual(current, partitions.keys[i])) {
         rankCache[key].groupIndex = i;
-        rankCache[key].lastRank = dense ? i : rank;
+        rankCache[key].lastRank = dense ? i + 1 : rank;
         return rankCache[key].lastRank;
       }
       rank += partitions.groups[i].length;

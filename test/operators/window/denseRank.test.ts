@@ -210,5 +210,43 @@ describe("operators/window/denseRank", () => {
         },
       ]);
     });
+
+    it("Dense Rank Duplicate Values", () => {
+      const result = aggregate(
+        [
+          { name: "John", age: 13 },
+          { name: "Peter", age: 21 },
+          { name: "Marta", age: 12 },
+          { name: "Sam", age: 12 },
+          { name: "Raul", age: 13 },
+          { name: "Penny", age: 12 },
+          { name: "Penny", age: 12 },
+        ],
+        [
+          {
+            $setWindowFields: {
+              partitionBy: "$age",
+              sortBy: { name: 1 },
+              output: {
+                rank: {
+                  $denseRank: {},
+                },
+              },
+            },
+          },
+        ],
+        options
+      );
+
+      expect(result).toStrictEqual([
+        { name: "John", age: 13, rank: 1 },
+        { name: "Raul", age: 13, rank: 2 },
+        { name: "Marta", age: 12, rank: 1 },
+        { name: "Penny", age: 12, rank: 2 },
+        { name: "Penny", age: 12, rank: 2 },
+        { name: "Sam", age: 12, rank: 3 },
+        { name: "Peter", age: 21, rank: 1 },
+      ]);
+    });
   });
 });
