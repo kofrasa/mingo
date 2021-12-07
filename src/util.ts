@@ -25,11 +25,7 @@ export const MIN_LONG = Number.MIN_SAFE_INTEGER;
 export type HashFunction = Callback<string>;
 
 // special value to identify missing items. treated differently from undefined
-class Missing implements RawObject {
-  [x: string]: unknown;
-}
-
-const missing = new Missing();
+const MISSING = Object.freeze({});
 
 const DEFAULT_HASH_FUNC: HashFunction = (value: AnyVal): string => {
   const s = encode(value);
@@ -148,23 +144,9 @@ export function isFunction(v: AnyVal): boolean {
 export function isNil(v: AnyVal): boolean {
   return v === null || v === undefined;
 }
-export function isNull(v: AnyVal): boolean {
-  return v === null;
+export function inArray(arr: AnyVal[], item: AnyVal): boolean {
+  return arr.includes(item);
 }
-export function isUndefined(v: AnyVal): boolean {
-  return v === undefined;
-}
-export const inArray = (() => {
-  // if Array.includes is not supported
-  if (!Array.prototype.includes) {
-    return (arr: RawArray, item: AnyVal): boolean =>
-      isNaN(item as number) && !isString(item)
-        ? arr.some((v) => isNaN(v as number) && !isString(v))
-        : arr.indexOf(item) > -1;
-  }
-  // default
-  return (arr: Array<AnyVal>, item: AnyVal): boolean => arr.includes(item);
-})();
 export function notInArray(arr: RawArray, item: AnyVal): boolean {
   return !inArray(arr, item);
 }
@@ -223,8 +205,8 @@ export function merge(
   options?: MergeOptions
 ): ArrayOrObject {
   // take care of missing inputs
-  if (target === missing) return obj;
-  if (obj === missing) return target;
+  if (target === MISSING) return obj;
+  if (obj === MISSING) return target;
 
   const inputs = [target, obj];
 
@@ -783,7 +765,7 @@ export function resolveGraph(
         value = resolveGraph(item as ArrayOrObject, selector, options);
         if (options.preserveMissing) {
           if (value === undefined) {
-            value = missing;
+            value = MISSING;
           }
           (result as RawArray).push(value);
         } else if (value !== undefined) {
@@ -812,7 +794,7 @@ export function resolveGraph(
 export function filterMissing(obj: ArrayOrObject): void {
   if (obj instanceof Array) {
     for (let i = obj.length - 1; i >= 0; i--) {
-      if (obj[i] === missing) {
+      if (obj[i] === MISSING) {
         obj.splice(i, 1);
       } else {
         filterMissing(obj[i] as ArrayOrObject);

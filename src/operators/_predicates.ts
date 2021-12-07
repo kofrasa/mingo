@@ -24,7 +24,6 @@ import {
   isEmpty,
   isEqual,
   isNil,
-  isNull,
   isNumber,
   isObject,
   isOperator,
@@ -114,7 +113,7 @@ export function $ne(a: AnyVal, b: AnyVal, options?: Options): boolean {
  */
 export function $in(a: RawArray, b: RawArray, options?: Options): boolean {
   // queries for null should be able to find undefined fields
-  if (isNil(a)) return b.some(isNull);
+  if (isNil(a)) return b.some((v) => v === null);
 
   return intersection(ensureArray(a), b, options?.hashFunction).length > 0;
 }
@@ -338,7 +337,7 @@ function compareType(
       return isDate(a);
     case 10:
     case JsType.NULL:
-      return isNull(a);
+      return a === null;
     case 11:
     case JsType.REGEXP:
     case BsonType.REGEX:
