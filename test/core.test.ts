@@ -1,5 +1,11 @@
 import { aggregate, Aggregator, find } from "../src";
-import { computeValue, OperatorType, Options, useOperators } from "../src/core";
+import {
+  computeValue,
+  OperatorType,
+  Options,
+  redact,
+  useOperators,
+} from "../src/core";
 import { AnyVal, RawObject } from "../src/types";
 import { isNumber, resolve } from "../src/util";
 import * as support from "./support";
@@ -70,6 +76,44 @@ describe("core", () => {
       ]);
       expect(result.length).toBe(1);
       expect((result[0] as RawObject).stddev).toEqual(28.57362029450366);
+    });
+  });
+
+  describe("computeValue", () => {
+    it("throws for invalid operator", () => {
+      expect(() => computeValue({}, {}, "$fakeOperator")).toThrow(Error);
+    });
+
+    it("computes current timestamp using $$NOW", () => {
+      const result = computeValue({}, { date: "$$NOW" }) as { date: Date };
+      expect(result.date).toBeInstanceOf(Date);
+      expect(result.date.getTime()).toBeLessThanOrEqual(Date.now());
+    });
+  });
+
+  describe("redact", () => {
+    it("returns object with $$KEEP", () => {
+      const obj = { name: "Francis" };
+      const result = redact(obj, "$$KEEP", {});
+      expect(result).toStrictEqual(obj);
+    });
+
+    it("discards object with $$PRUNE", () => {
+      const obj = { name: "Francis" };
+      const result = redact(obj, "$$PRUNE", {});
+      expect(result).toStrictEqual(undefined);
+    });
+
+    it("return input object for $$DESCEND if operator is not $cond", () => {
+      const obj = { name: "Francis", level: "$$DESCEND" };
+      const result = redact(obj, "$level", {});
+      expect(result).toStrictEqual(obj);
+    });
+
+    it("ignore and return resolved value if not valid redact variable", () => {
+      const obj = { name: "Francis" };
+      const result = redact(obj, "unknown", {});
+      expect(result).toStrictEqual("unknown");
     });
   });
 });
