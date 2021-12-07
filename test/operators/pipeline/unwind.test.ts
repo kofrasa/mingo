@@ -23,7 +23,9 @@ describe("operators/pipeline/unwind", () => {
   });
 
   it("can $unwind with field selector", () => {
-    const result = aggregate(data, [{ $unwind: "$sizes" }], options);
+    const result = aggregate(data, [{ $unwind: "$sizes" }], {
+      processingMode: ProcessingMode.CLONE_ALL,
+    });
     expect(result).toStrictEqual([
       { _id: 1, item: "ABC", sizes: "S" },
       { _id: 1, item: "ABC", sizes: "M" },
