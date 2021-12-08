@@ -7,7 +7,7 @@ module.exports = {
 
   // An object that configures minimum threshold enforcement for coverage results
   coverageThreshold: {
-    global: { lines: 95 },
+    global: { lines: 98 },
   },
 
   // A preset that is used as a base for Jest's configuration.
