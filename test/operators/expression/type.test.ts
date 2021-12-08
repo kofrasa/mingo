@@ -82,6 +82,14 @@ support.runTest("operators/expression/type", {
       1522127087890,
     ],
     [{ input: "5e10", to: "double" }, 50000000000],
+    [
+      {
+        input: "hello",
+        to: "double",
+        onError: "Could not convert to type double.",
+      },
+      "Could not convert to type double.",
+    ],
 
     // date
     [{ input: 120000000000.5, to: "date" }, new Date("1973-10-20T21:20:00Z")],
