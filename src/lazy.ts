@@ -141,8 +141,6 @@ export class Iterator {
   private readonly yieldedValues: RawArray = [];
   private getNext: Callback<IteratorResult>;
 
-  // flag whether to return a single value
-  private isSingle = false;
   private isDone = false;
 
   /**
@@ -185,16 +183,10 @@ export class Iterator {
     this.getNext = createCallback(nextVal, this.iteratees, this.yieldedValues);
   }
 
-  private validate() {
-    if (this.isSingle)
-      throw new Error("Cannot add iteratee/transform after `first()`");
-  }
-
   /**
    * Add an iteratee to this lazy sequence
    */
   private push(action: Action, value: Callback<AnyVal> | number) {
-    this.validate();
     if (typeof value === "function") {
       this.iteratees.push({ action, func: value });
     } else if (typeof value === "number") {
@@ -250,7 +242,6 @@ export class Iterator {
    * @param {Function} fn Tranform function of type (Array) => (Any)
    */
   transform(fn: Callback<Source>): Iterator {
-    this.validate();
     const self = this;
     let iter: Iterator;
     return Lazy(() => {
@@ -259,16 +250,6 @@ export class Iterator {
       }
       return iter.next();
     });
-  }
-
-  /**
-   * Mark this lazy object to return only the first result on `lazy.value()`.
-   * No more iteratees or transformations can be added after this method is called.
-   */
-  first(): Iterator {
-    this.take(1);
-    this.isSingle = true;
-    return this;
   }
 
   // Terminal methods
@@ -282,7 +263,7 @@ export class Iterator {
     if (!this.isDone) {
       this.isDone = this.getNext(true).done;
     }
-    return this.isSingle ? this.yieldedValues[0] : this.yieldedValues;
+    return this.yieldedValues;
   }
 
   /**
