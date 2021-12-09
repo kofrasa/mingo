@@ -13,6 +13,6 @@ samples.runTestPipeline("operators/pipeline/sample", [
       { _id: 7, name: "ty", q1: false, q2: true },
     ],
     pipeline: [{ $sample: { size: 3 } }, { $count: "size" }],
-    expected: { size: 3 },
+    expected: [{ size: 3 }],
   },
 ]);

@@ -23,6 +23,6 @@ samples.runTestPipeline("operators/pipeline/count", [
         $count: "passing_scores",
       },
     ],
-    expected: { passing_scores: 4 },
+    expected: [{ passing_scores: 4 }],
   },
 ]);

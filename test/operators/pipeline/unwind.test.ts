@@ -19,7 +19,7 @@ describe("operators/pipeline/unwind", () => {
       [{ $unwind: "$scores" }, { $count: "size" }],
       { processingMode: ProcessingMode.CLONE_ALL }
     );
-    expect(result).toStrictEqual({ size: 800 });
+    expect(result).toStrictEqual([{ size: 800 }]);
   });
 
   it("can $unwind with field selector", () => {

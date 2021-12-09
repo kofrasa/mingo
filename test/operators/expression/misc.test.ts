@@ -157,8 +157,9 @@ describe("operators/expression/misc", () => {
         );
       }
 
-      results.forEach((r) => {
-        expect((r as RawObject).numMatches).toBeGreaterThanOrEqual(15);
+      results.forEach((arr) => {
+        const r = (arr as RawObject[])[0];
+        expect(r.numMatches).toBeGreaterThanOrEqual(15);
       });
     });
   });

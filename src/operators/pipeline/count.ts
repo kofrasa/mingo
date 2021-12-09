@@ -23,12 +23,9 @@ export function $count(
     "Invalid expression value for $count"
   );
 
-  return Lazy(() => {
-    return {
-      value: {
-        [expr]: collection.size(),
-      },
-      done: false,
-    };
-  }).first();
+  return Lazy([
+    {
+      [expr]: collection.size(),
+    },
+  ]);
 }

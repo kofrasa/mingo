@@ -8,6 +8,6 @@ samples.runTestPipeline("$match pipeline operator", [
       { $match: { _id: { $in: [0, 1, 2, 3, 4] } } },
       { $count: "size" },
     ],
-    expected: { size: 5 },
+    expected: [{ size: 5 }],
   },
 ]);

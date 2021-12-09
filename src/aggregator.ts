@@ -57,10 +57,9 @@ export class Aggregator {
     // operators that may share object graphs of inputs.
     // we only need to clone the output for these since the objects will already be distinct for other operators.
     if (
-      pipelineOperators[pipelineOperators.length - 1] != "$count" &&
-      (mode == ProcessingMode.CLONE_OUTPUT ||
-        (mode == ProcessingMode.CLONE_ALL &&
-          !!intersection(["$group", "$unwind"], pipelineOperators).length))
+      mode == ProcessingMode.CLONE_OUTPUT ||
+      (mode == ProcessingMode.CLONE_ALL &&
+        !!intersection(["$group", "$unwind"], pipelineOperators).length)
     ) {
       iterator.map(cloneDeep);
     }

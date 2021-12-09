@@ -127,9 +127,11 @@ samples.runTestPipeline("operators/pipeline/group", [
       },
       { $count: "size" },
     ],
-    expected: {
-      size: 3,
-    },
+    expected: [
+      {
+        size: 3,
+      },
+    ],
   },
 
   {
