@@ -1,3 +1,5 @@
+import { aggregate } from "../../../src";
+import { ProcessingMode } from "../../../src/core";
 import * as samples from "../../support";
 
 // english
@@ -19,91 +21,95 @@ const french = [
   { name: "A" },
 ];
 
-samples.runTestPipeline("operators/pipeline/replaceRoot", [
-  {
-    message: "can sort collection with $sort",
-    input: samples.studentsData,
-    pipeline: [{ $sort: { _id: -1 } }, { $limit: 1 }, { $project: { _id: 1 } }],
-    expected: [{ _id: 199 }],
-  },
+describe("operators/pipeline/sort", () => {
+  it("can sort collection with $sort", () => {
+    const result = aggregate(samples.studentsData, [
+      { $sort: { _id: -1 } },
+      { $limit: 1 },
+      { $project: { _id: 1 } },
+    ]);
+    expect(result).toStrictEqual([{ _id: 199 }]);
+  });
 
-  {
-    message: "can sort on complex fields",
-    input: [
-      { _id: "c", date: new Date(2018, 1, 1) },
+  it("can sort on complex fields", () => {
+    const result = aggregate(
+      [
+        { _id: "c", date: new Date(2018, 1, 1) },
+        { _id: "a", date: new Date(2017, 1, 1) },
+        { _id: "b", date: new Date(2017, 1, 1) },
+      ],
+      [{ $sort: { date: 1 } }]
+    );
+    expect(result).toStrictEqual([
       { _id: "a", date: new Date(2017, 1, 1) },
       { _id: "b", date: new Date(2017, 1, 1) },
-    ],
-    pipeline: [{ $sort: { date: 1 } }],
-    expected: [
-      { _id: "a", date: new Date(2017, 1, 1) },
-      { _id: "b", date: new Date(2017, 1, 1) },
       { _id: "c", date: new Date(2018, 1, 1) },
-    ],
-  },
+    ]);
+  });
 
-  {
-    message: "can sort with collation",
-    input: [
+  it("can sort with collation", () => {
+    const result = aggregate(
+      [
+        { _id: 1, name: "A" },
+        { _id: 2, name: "B" },
+        { _id: 3, name: "c" },
+        { _id: 4, name: "a" },
+      ],
+      [{ $sort: { name: 1 } }],
+      {
+        collation: {
+          locale: "en",
+          strength: 1,
+        },
+      }
+    );
+
+    expect(result).toStrictEqual([
       { _id: 1, name: "A" },
+      { _id: 4, name: "a" },
       { _id: 2, name: "B" },
       { _id: 3, name: "c" },
-      { _id: 4, name: "a" },
-    ],
-    pipeline: [{ $sort: { name: 1 } }],
-    options: {
-      collation: {
-        locale: "en",
-        strength: 1,
-      },
-    },
-    expected: [
-      { _id: 1, name: "A" },
-      { _id: 4, name: "a" },
-      { _id: 2, name: "B" },
-      { _id: 3, name: "c" },
-    ],
-  },
+    ]);
+  });
 
-  {
-    message: "can sort with locale",
-    input: english,
-    pipeline: [{ $sort: { name: 1 } }],
-    options: {
+  it("can sort with locale", () => {
+    const result = aggregate(english, [{ $sort: { name: 1 } }], {
       collation: {
         locale: "en",
       },
-    },
-    expected: [
+      processingMode: ProcessingMode.CLONE_INPUT,
+    });
+    expect(result).toStrictEqual([
       { name: "100" },
       { name: "21" },
       { name: "alice" },
       { name: "Bob" },
       { name: "peggy" },
       { name: "Tom" },
-    ],
-  },
+    ]);
+  });
 
-  {
-    message: "can sort with numeric odering",
-    input: english,
-    pipeline: [{ $sort: { name: 1 } }],
-    options: {
+  it("can sort with numeric odering", () => {
+    const result = aggregate(english, [{ $sort: { name: 1 } }], {
       collation: {
         locale: "en",
         numericOrdering: true,
       },
-    },
-    expected: [
+      processingMode: ProcessingMode.CLONE_INPUT,
+    });
+
+    expect(result).toStrictEqual([
       { name: "21" },
       { name: "100" },
       { name: "alice" },
       { name: "Bob" },
       { name: "peggy" },
       { name: "Tom" },
-    ],
-  },
+    ]);
+  });
+});
 
+samples.runTestPipeline("$sort", [
   {
     message: "can sort with accented letters",
     input: french,

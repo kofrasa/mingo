@@ -1,5 +1,7 @@
 // Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
 
+import { assert } from "console";
+
 import { computeValue, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
 import { Callback, isNil, isObject } from "../../../util";
@@ -43,9 +45,6 @@ const DATE_FUNCTIONS: Record<string, Callback<number>> = {
   "%L": $millisecond,
   "%u": $dayOfWeek,
   "%V": $week,
-  // "%z": null,
-  // "%Z": null,
-  // "%%": "%",
 };
 
 /**
@@ -101,13 +100,13 @@ export function $dateToString(
           (tz.hour < 0 ? -1 : 1) * Math.abs(tz.hour * MINUTES_PER_HOUR) +
           tz.minute
         }`;
-      } else if (operatorFn != null) {
-        value = padDigits(operatorFn(obj, date, options), props.padding);
       } else {
-        value = props;
+        assert(
+          !!operatorFn,
+          `unsupported date format specifier '${formatSpecifier}'`
+        );
+        value = padDigits(operatorFn(obj, date, options), props.padding);
       }
-    } else {
-      value = props;
     }
     // replace the match with resolved value
     format = format.replace(formatSpecifier, value as string);

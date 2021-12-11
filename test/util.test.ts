@@ -6,6 +6,7 @@ import {
   isEmpty,
   isEqual,
   isObject,
+  merge,
   resolve,
   resolveGraph,
   sortBy,
@@ -50,6 +51,36 @@ describe("util", () => {
       });
     });
     expect(true).toBeTruthy();
+  });
+
+  describe("merge", () => {
+    it("accepts same input and output arrays", () => {
+      const target = [1, 2];
+      const result = merge(target, [3, 4]);
+      expect(result).toBe(target);
+      expect(result).toStrictEqual([1, 2, 3, 4]);
+    });
+
+    it("accepts same input and output objects", () => {
+      const target = { a: 1 };
+      const result = merge(target, { b: 2 });
+      expect(result).toBe(target);
+      expect(result).toStrictEqual({ a: 1, b: 2 });
+    });
+
+    it("throws for mismatched input and output types", () => {
+      const target = { a: 1 };
+      expect(() => merge(target, [])).toThrowError();
+    });
+
+    it("flattens objects in target array", () => {
+      const target = [{ a: 1 }, { a: 2 }];
+      const result = merge(target, [{ b: 3 }, { b: 4 }, { c: 5 }], {
+        flatten: true,
+      });
+      expect(result).toBe(target);
+      expect(result).toStrictEqual([{ a: 1, b: 3 }, { a: 2, b: 4 }, { c: 5 }]);
+    });
   });
 
   describe("sortBy", () => {
@@ -113,6 +144,16 @@ describe("util", () => {
       const result = resolveGraph(doc, "b.e.1");
       expect({ b: { e: [2] } }).toEqual(result);
       expect(doc).toEqual(sameDoc);
+    });
+
+    it("resolves item in nested array by index", () => {
+      const result = resolveGraph({ a: [5, { b: [10] }] }, "a.1.b.0");
+      expect({ a: [{ b: [10] }] }).toEqual(result);
+    });
+
+    it("resolves object in a nested array", () => {
+      const result = resolveGraph({ a: [{ b: [{ c: 1 }] }] }, "a.b.c");
+      expect({ a: [{ b: [{ c: 1 }] }] }).toEqual(result);
     });
 
     it("preserves other keys of the resolved object graph", () => {

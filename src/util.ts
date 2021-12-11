@@ -316,10 +316,9 @@ export function union(
     const k = hashCode(e, hashFunction);
     if (!hash[k]) hash[k] = [e, i];
   });
-  const result = Object.values(hash)
-    .sort((a, b) => (a[1] < b[1] ? -1 : a[1] > b[1] ? 1 : 0))
+  return Object.values(hash)
+    .sort((a, b) => compare(a[1], b[1]))
     .map((e) => e[0]);
-  return result;
 }
 
 /**

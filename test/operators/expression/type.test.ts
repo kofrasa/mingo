@@ -2,6 +2,7 @@ import * as support from "../../support";
 
 support.runTest("operators/expression/type", {
   $toString: [
+    [null, null],
     [true, "true"],
     [false, "false"],
     [2.5, "2.5"],
@@ -21,11 +22,15 @@ support.runTest("operators/expression/type", {
   ],
 
   $toLong: [
+    [null, null],
     ["100", 100],
     [20, 20],
   ],
 
   $toDate: [
+    [undefined, null],
+    [null, null],
+    [new Date("1973-10-20T21:20:00Z"), new Date("1973-10-20T21:20:00Z")],
     [120000000000.5, new Date("1973-10-20T21:20:00Z")],
     [1253372036000.5, new Date("2009-09-19T14:53:56Z")],
     [1100000000000, new Date("2004-11-09T11:33:20Z")],
@@ -36,9 +41,9 @@ support.runTest("operators/expression/type", {
 
   $convert: [
     // bool
-    [{ input: true, to: "bool" }, true],
+    [{ input: true, to: 8 }, true],
     [{ input: false, to: "bool" }, false],
-    [{ input: 1.99999, to: "bool" }, true],
+    [{ input: 1.99999, to: "boolean" }, true],
     [{ input: 5, to: "bool" }, true],
     [{ input: 0, to: "bool" }, false],
     [{ input: 100, to: "bool" }, true],
@@ -63,18 +68,18 @@ support.runTest("operators/expression/type", {
       },
       "Could not convert to type integer.",
     ],
-    [{ input: 5000, to: "int" }, 5000],
+    [{ input: 5000, to: 16 }, 5000],
     [{ input: 922337203600, to: "int" }, "error", { err: true }],
     [{ input: "-2", to: "int" }, -2],
     [{ input: "2.5", to: "int" }, "error", { err: true }],
     [{ input: null, to: "int" }, null],
-    [{ input: "5e2", to: "long" }, 500],
+    [{ input: "5e2", to: 18 }, 500],
 
     // decimal / double
     [{ input: true, to: "decimal" }, 1],
-    [{ input: false, to: "decimal" }, 0],
-    [{ input: "2.5", to: "decimal" }, 2.5],
-    [{ input: 5, to: "decimal" }, 5],
+    [{ input: false, to: 19 }, 0],
+    [{ input: "2.5", to: 1 }, 2.5],
+    [{ input: 5, to: "number" }, 5],
     [{ input: 10000, to: "decimal" }, 10000],
     [{ input: "-5.5", to: "decimal" }, -5.5],
     [
@@ -92,7 +97,7 @@ support.runTest("operators/expression/type", {
     ],
 
     // date
-    [{ input: 120000000000.5, to: "date" }, new Date("1973-10-20T21:20:00Z")],
+    [{ input: 120000000000.5, to: 9 }, new Date("1973-10-20T21:20:00Z")],
     [{ input: 1253372036000.5, to: "date" }, new Date("2009-09-19T14:53:56Z")],
     [{ input: 1100000000000, to: "date" }, new Date("2004-11-09T11:33:20Z")],
     [{ input: -1100000000000, to: "date" }, new Date("1935-02-22T12:26:40Z")],
@@ -112,7 +117,7 @@ support.runTest("operators/expression/type", {
     ],
 
     // string
-    [{ input: true, to: "string" }, "true"],
+    [{ input: true, to: 2 }, "true"],
     [{ input: false, to: "string" }, "false"],
     [{ input: 2.5, to: "string" }, "2.5"],
     [{ input: 2, to: "string" }, "2"],

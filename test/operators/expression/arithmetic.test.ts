@@ -114,6 +114,10 @@ support.runTest("operators/expression/arithmetic", {
   $trunc: [
     [[NaN, 0], NaN],
     [[null, 0], null],
+    [[NaN, 1], NaN],
+    [[null, 1], null],
+    [[Infinity, 1], Infinity],
+    [[-Infinity, 1], -Infinity],
     [[0, 0], 0],
     // truncate to the first decimal place
     [[19.25, 1], 19.2],
