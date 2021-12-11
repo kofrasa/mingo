@@ -362,4 +362,24 @@ samples.runTestPipeline("operators/pipeline/project", [
     ],
     expected: [{ myArray: ["hi"] }],
   },
+  {
+    message: "should project with $slice expression operator",
+    input: [
+      { _id: 1, fruits: ["apple", "banana"] },
+      { _id: 2, fruits: ["orange", "kiwi"] },
+      { _id: 3, fruits: ["blueberry"] },
+    ],
+    pipeline: [
+      {
+        $project: {
+          bestFruit: { $slice: ["$fruits", 1, 1] },
+        },
+      },
+    ],
+    expected: [
+      { _id: 1, bestFruit: ["banana"] },
+      { _id: 2, bestFruit: ["kiwi"] },
+      { _id: 3, bestFruit: [] },
+    ],
+  },
 ]);
