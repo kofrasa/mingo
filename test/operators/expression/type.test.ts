@@ -1,6 +1,6 @@
-import * as support from "../../support";
+import { runTest } from "../../support";
 
-support.runTest("operators/expression/type", {
+runTest("operators/expression/type", {
   $toString: [
     [null, null],
     [true, "true"],

@@ -18,16 +18,7 @@ export function $type(obj: RawObject, expr: AnyVal, options?: Options): string {
       return val >= MIN_INT && val <= MAX_INT ? BsonType.INT : BsonType.LONG;
     case JsType.REGEXP:
       return BsonType.REGEX;
-    case JsType.STRING:
-    case JsType.DATE:
-    case JsType.ARRAY:
-    case JsType.OBJECT:
-    case JsType.FUNCTION:
-    case JsType.NULL:
-    case JsType.UNDEFINED:
-      return nativeType;
     default:
-      // unrecognized custom type
-      return typename;
+      return nativeType;
   }
 }
