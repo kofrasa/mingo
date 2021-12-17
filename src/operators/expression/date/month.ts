@@ -14,6 +14,5 @@ export function $month(
   expr: AnyVal,
   options?: Options
 ): number {
-  const d = computeDate(obj, expr, options);
-  return d.getUTCMonth() + 1;
+  return computeDate(obj, expr, options).getUTCMonth() + 1;
 }

@@ -2,17 +2,18 @@
 
 import { Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
-import { computeDate } from "./_internal";
+import { computeDate, isoWeek } from "./_internal";
 
 /**
- * Returns the minute for a date as a number between 0 and 59.
+ * Returns the week number in ISO 8601 format, ranging from 1 to 53.
+ * Week numbers start at 1 with the week (Monday through Sunday) that contains the year's first Thursday.
  * @param obj
  * @param expr
  */
-export function $minute(
+export function $isoWeek(
   obj: RawObject,
   expr: AnyVal,
   options?: Options
 ): number {
-  return computeDate(obj, expr, options).getUTCMinutes();
+  return isoWeek(computeDate(obj, expr, options));
 }

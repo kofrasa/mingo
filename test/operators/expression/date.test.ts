@@ -21,6 +21,62 @@ const secondDate = new Date("2021-01-28T13:04:57Z");
 const millisecondDate = new Date("2021-01-28T13:04:59.997Z");
 
 support.runTest("operators/expression/date", {
+  $week: [
+    [new Date("Jan 1, 2016"), 0],
+    [new Date("2016-01-04"), 1],
+    [{ date: new Date("August 14, 2011"), timezone: "-0600" }, 33],
+    [{ date: new Date("August 20, 2011"), timezone: "-0600" }, 33],
+    [{ date: new Date("August 21, 2011"), timezone: "-0600" }, 34],
+    [{ date: new Date("1998-11-01T00:00:00Z"), timezone: "-0500" }, 44],
+    ["2009-04-09", 43, { err: true }],
+  ],
+  $isoWeek: [
+    [new Date("Jan 4, 2016"), 1],
+    [new Date("2016-01-01"), 53],
+    [{ date: new Date("August 14, 2011"), timezone: "-0600" }, 32],
+    [{ date: new Date("August 15, 2011"), timezone: "-0600" }, 33],
+    [new Date("1998-11-02T00:00:00Z"), 45],
+    [{ date: new Date("1998-11-02T00:00:00Z"), timezone: "-0500" }, 44],
+    ["2009-04-09", 43, { err: true }],
+  ],
+  $isoDayOfWeek: [
+    [new Date("2016-01-01"), 5],
+    [{ date: new Date("Jan 7, 2003") }, 2],
+    [
+      {
+        date: new Date("August 14, 2011"),
+        timezone: "-0600",
+      },
+      7,
+    ],
+    [new Date("1998-11-07T00:00:00Z"), 6],
+    [
+      {
+        date: new Date("1998-11-07T00:00:00Z"),
+        timezone: "-0400",
+      },
+      5,
+    ],
+  ],
+  $isoWeekYear: [
+    [new Date("2015-05-26"), 2015],
+    [{ date: new Date("Jan 7, 2003") }, 2003],
+    [new Date("2017-01-02T00:00:00Z"), 2017],
+    [
+      {
+        date: new Date("2017-01-02T00:00:00Z"),
+        timezone: "-0500",
+      },
+      2016,
+    ],
+    [
+      {
+        date: new Date("April 08, 2024"),
+        timezone: "-0600",
+      },
+      2024,
+    ],
+  ],
   $dateAdd: [
     [{ ...apply3Units, unit: "year" }, testDate, { obj: yearDate }],
     [{ ...apply3Units, unit: "quarter" }, testDate, { obj: quarterDate }],
@@ -343,10 +399,9 @@ it("can apply $dateToParts with timezone", () => {
         date: {
           $dateToParts: { date: "$date" },
         },
-        // unsupported
-        // date_iso: {
-        //   $dateToParts: { date: "$date", iso8601: true }
-        // },
+        date_iso: {
+          $dateToParts: { date: "$date", iso8601: true },
+        },
         date_timezone: {
           $dateToParts: { date: "$date", timezone: "+0500" },
         },
@@ -366,15 +421,15 @@ it("can apply $dateToParts with timezone", () => {
         second: 9,
         millisecond: 123,
       },
-      // "date_iso" : {
-      //   "isoWeekYear" : 2016,
-      //   "isoWeek" : 52,
-      //   "isoDayOfWeek" : 7,
-      //   "hour" : 1,
-      //   "minute" : 29,
-      //   "second" : 9,
-      //   "millisecond" : 123
-      // },
+      date_iso: {
+        isoWeekYear: 2016,
+        isoWeek: 52,
+        isoDayOfWeek: 7,
+        hour: 1,
+        minute: 29,
+        second: 9,
+        millisecond: 123,
+      },
       date_timezone: {
         year: 2016,
         month: 12,

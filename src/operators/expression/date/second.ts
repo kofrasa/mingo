@@ -14,6 +14,5 @@ export function $second(
   expr: AnyVal,
   options?: Options
 ): number {
-  const d = computeDate(obj, expr, options);
-  return d.getUTCSeconds();
+  return computeDate(obj, expr, options).getUTCSeconds();
 }

@@ -5,14 +5,14 @@ import { AnyVal, RawObject } from "../../../types";
 import { computeDate } from "./_internal";
 
 /**
- * Returns the minute for a date as a number between 0 and 59.
+ * Returns the weekday number in ISO 8601 format, ranging from 1 (for Monday) to 7 (for Sunday).
  * @param obj
  * @param expr
  */
-export function $minute(
+export function $isoDayOfWeek(
   obj: RawObject,
   expr: AnyVal,
   options?: Options
 ): number {
-  return computeDate(obj, expr, options).getUTCMinutes();
+  return computeDate(obj, expr, options).getUTCDay() || 7;
 }

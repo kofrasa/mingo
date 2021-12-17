@@ -14,6 +14,5 @@ export function $dayOfWeek(
   expr: AnyVal,
   options?: Options
 ): number {
-  const d = computeDate(obj, expr, options);
-  return d.getUTCDay() + 1;
+  return computeDate(obj, expr, options).getUTCDay() + 1;
 }

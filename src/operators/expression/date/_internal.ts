@@ -13,6 +13,43 @@ export type Duration =
   | "second"
   | "millisecond";
 
+const COMMON_YEAR_DAYS_OFFSET = [
+  0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334,
+];
+
+const LEAP_YEAR_DAYS_OFFSET = [
+  0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335,
+];
+
+// https://en.wikipedia.org/wiki/ISO_week_date
+const p = (y: number): number =>
+  (y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400)) % 7;
+
+const weeks = (y: number): number => 52 + Number(p(y) == 4 || p(y - 1) == 3);
+
+const isLeap = (year: number): boolean =>
+  (year & 3) == 0 && (year % 100 != 0 || year % 400 == 0);
+
+export const getDayOfYear = (d: Date): number =>
+  (isLeap(d.getUTCFullYear())
+    ? LEAP_YEAR_DAYS_OFFSET
+    : COMMON_YEAR_DAYS_OFFSET)[d.getUTCMonth()] + d.getUTCDate();
+
+export function isoWeek(d: Date): number {
+  // algorithm based on https://en.wikipedia.org/wiki/ISO_week_date
+  const w = Math.floor((10 + getDayOfYear(d) - (d.getUTCDay() || 7)) / 7);
+  if (w < 1) return weeks(d.getUTCFullYear() - 1);
+  if (w > weeks(d.getUTCFullYear())) return 1;
+  return w;
+}
+
+export function isoWeekYear(d: Date): number {
+  return (
+    d.getUTCFullYear() -
+    Number(d.getUTCMonth() == 0 && d.getUTCDate() == 1 && d.getUTCDay() < 1)
+  );
+}
+
 export const MINUTES_PER_HOUR = 60;
 
 export const MILLIS_PER_DAY = 1000 * 60 * 60 * 24;

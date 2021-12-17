@@ -10,6 +10,5 @@ import { computeDate } from "./_internal";
  * @param expr
  */
 export function $year(obj: RawObject, expr: AnyVal, options?: Options): number {
-  const d = computeDate(obj, expr, options);
-  return d.getUTCFullYear();
+  return computeDate(obj, expr, options).getUTCFullYear();
 }

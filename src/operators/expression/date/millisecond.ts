@@ -14,6 +14,5 @@ export function $millisecond(
   expr: AnyVal,
   options?: Options
 ): number {
-  const d = computeDate(obj, expr, options);
-  return d.getUTCMilliseconds();
+  return computeDate(obj, expr, options).getUTCMilliseconds();
 }

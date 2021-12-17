@@ -5,14 +5,18 @@ import { AnyVal, RawObject } from "../../../types";
 import { computeDate } from "./_internal";
 
 /**
- * Returns the minute for a date as a number between 0 and 59.
+ * Returns the year number in ISO 8601 format. The year starts with the Monday of week 1 and ends with the Sunday of the last week.
  * @param obj
  * @param expr
  */
-export function $minute(
+export function $isoWeekYear(
   obj: RawObject,
   expr: AnyVal,
   options?: Options
 ): number {
-  return computeDate(obj, expr, options).getUTCMinutes();
+  const d = computeDate(obj, expr, options);
+  return (
+    d.getUTCFullYear() -
+    Number(d.getUTCMonth() == 0 && d.getUTCDate() == 1 && d.getUTCDay() < 1)
+  );
 }
