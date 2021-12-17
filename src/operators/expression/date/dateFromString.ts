@@ -7,7 +7,6 @@ import {
   adjustDate,
   DATE_FORMAT,
   DATE_SYM_TABLE,
-  MINUTES_PER_HOUR,
   parseTimezone,
   regexQuote,
   regexStrip,
@@ -110,9 +109,8 @@ export function $dateFromString(
   if (!isNil(dateParts.millisecond))
     d.setUTCMilliseconds(dateParts.millisecond);
 
-  // The minute part is unused when converting string.
-  // This was observed in the tests on MongoDB site but not officially stated anywhere
-  adjustDate(d, Math.floor(minuteOffset / MINUTES_PER_HOUR) * MINUTES_PER_HOUR);
+  // adjust to the correct represention for UTC
+  adjustDate(d, -minuteOffset);
 
   return d;
 }

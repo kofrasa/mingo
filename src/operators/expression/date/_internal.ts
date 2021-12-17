@@ -127,7 +127,7 @@ export function formatTimezone(minuteOffset: number): string {
 /**
  * Adjust the date by the given timezone
  * @param d Date object
- * @param tz Timezone
+ * @param minuteOffset number
  */
 export function adjustDate(d: Date, minuteOffset: number): void {
   d.setUTCMinutes(d.getUTCMinutes() + minuteOffset);

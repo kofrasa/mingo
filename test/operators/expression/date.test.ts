@@ -22,16 +22,16 @@ const millisecondDate = new Date("2021-01-28T13:04:59.997Z");
 
 support.runTest("operators/expression/date", {
   $week: [
-    [new Date("Jan 1, 2016"), 0],
+    [new Date("2016-01-01T00:00:00Z"), 0],
     [new Date("2016-01-04"), 1],
-    [{ date: new Date("August 14, 2011"), timezone: "-0600" }, 33],
-    [{ date: new Date("August 20, 2011"), timezone: "-0600" }, 33],
-    [{ date: new Date("August 21, 2011"), timezone: "-0600" }, 34],
+    [{ date: new Date("2011-08-14T06:00:00Z"), timezone: "-0600" }, 33],
+    [{ date: new Date("2011-08-20T06:00:00Z"), timezone: "-0600" }, 33],
+    [{ date: new Date("2011-08-21T06:00:00Z"), timezone: "-0600" }, 34],
     [{ date: new Date("1998-11-01T00:00:00Z"), timezone: "-0500" }, 44],
     ["2009-04-09", 43, { err: true }],
   ],
   $isoWeek: [
-    [new Date("Jan 4, 2016"), 1],
+    [new Date("2016-01-04T00:00:00Z"), 1],
     [new Date("2016-01-01"), 53],
     [{ date: new Date("August 14, 2011"), timezone: "-0600" }, 32],
     [{ date: new Date("August 15, 2011"), timezone: "-0600" }, 33],
@@ -41,10 +41,10 @@ support.runTest("operators/expression/date", {
   ],
   $isoDayOfWeek: [
     [new Date("2016-01-01"), 5],
-    [{ date: new Date("Jan 7, 2003") }, 2],
+    [{ date: new Date("2008-01-07") }, 2],
     [
       {
-        date: new Date("August 14, 2011"),
+        date: new Date("2011-08-14T06:00:00Z"),
         timezone: "-0600",
       },
       7,
@@ -114,13 +114,7 @@ support.runTest("operators/expression/date", {
     ],
 
     [
-      { dateString: "2017-02-08T12:10:40.787", timezone: "America/New_York" },
-      "timezone error",
-      { err: true },
-    ],
-
-    [
-      { dateString: "2017-02-08T12:10:40.787", timezone: "+0500" },
+      { dateString: "2017-02-08T12:10:40.787", timezone: "-0500" },
       new Date("2017-02-08T17:10:40.787Z"),
     ],
 
@@ -140,6 +134,14 @@ support.runTest("operators/expression/date", {
         format: "%d-%m-%Y",
       },
       new Date("2018-06-15T00:00:00Z"),
+    ],
+
+    [
+      {
+        dateString: "2017-02-09T03:35:02.055",
+        timezone: "-0500",
+      },
+      new Date("2017-02-09T08:35:02.055Z"),
     ],
   ],
 });
@@ -235,91 +237,6 @@ describe("Date Operators", () => {
     ).pop() as RawObject;
 
     check(result.hour, 1, "can apply $hour with timezone");
-  }
-
-  {
-    const result = aggregate(
-      [
-        {
-          _id: 1,
-          date: "2017-02-08T12:10:40.787",
-          timezone: "+0530",
-          message: "Step 1: Started",
-        },
-        {
-          _id: 2,
-          date: "2017-02-08",
-          timezone: "-05:00",
-          message: "Step 1: Ended",
-        },
-        { _id: 3, message: "Step 1: Ended" },
-        {
-          _id: 4,
-          date: "2017-02-09",
-          timezone: "+0000",
-          message: "Step 2: Started",
-        },
-        { _id: 5, date: "2017-02-09T03:35:02.055", timezone: "+0530" },
-        { _id: 6, date: "20177-02-09T03:35:02.055", timezone: "+0530" },
-      ],
-      [
-        {
-          $project: {
-            date: {
-              $dateFromString: {
-                dateString: "$date",
-                timezone: "+0530",
-                onError: "$date",
-              },
-            },
-          },
-        },
-      ]
-    );
-
-    check(
-      result,
-      [
-        { _id: 1, date: new Date("2017-02-08T17:10:40.787Z") },
-        { _id: 2, date: new Date("2017-02-08T05:00:00Z") },
-        { _id: 3, date: null },
-        { _id: 4, date: new Date("2017-02-09T05:00:00Z") },
-        { _id: 5, date: new Date("2017-02-09T08:35:02.055Z") },
-        { _id: 6, date: "20177-02-09T03:35:02.055" },
-      ],
-      "can apply $dateFromString"
-    );
-  }
-
-  {
-    const result = aggregate(
-      [
-        { _id: 1, date: "2017-02-08T12:10:40.787", timezone: "+0530" },
-        { _id: 2, date: null, timezone: "+0530" },
-      ],
-      [
-        {
-          $project: {
-            date: {
-              $dateFromString: {
-                dateString: "$date",
-                timezone: "$timezone",
-                onNull: new Date(0),
-              },
-            },
-          },
-        },
-      ]
-    );
-
-    check(
-      result,
-      [
-        { _id: 1, date: new Date("2017-02-08T17:10:40.787Z") },
-        { _id: 2, date: new Date("1970-01-01T00:00:00Z") },
-      ],
-      "can apply $dateFromString with onNull option"
-    );
   }
 });
 
