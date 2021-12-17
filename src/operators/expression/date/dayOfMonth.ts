@@ -14,6 +14,5 @@ export function $dayOfMonth(
   expr: AnyVal,
   options?: Options
 ): number {
-  const d = computeDate(obj, expr, options);
-  return d.getUTCDate();
+  return computeDate(obj, expr, options).getUTCDate();
 }

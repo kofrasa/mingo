@@ -26,10 +26,7 @@ export function $dateToParts(
   const d = new Date(args.date);
   const tz = parseTimezone(args.timezone);
   // invert timezone to construct value in UTC
-  tz.hour *= -1;
-  tz.minute *= -1;
-
-  adjustDate(d, tz);
+  adjustDate(d, -tz);
 
   const timePart = {
     hour: d.getUTCHours(),

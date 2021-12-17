@@ -10,6 +10,5 @@ import { computeDate } from "./_internal";
  * @param expr
  */
 export function $hour(obj: RawObject, expr: AnyVal, options?: Options): number {
-  const d = computeDate(obj, expr, options);
-  return d.getUTCHours();
+  return computeDate(obj, expr, options).getUTCHours();
 }

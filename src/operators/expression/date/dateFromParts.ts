@@ -2,7 +2,11 @@
 
 import { computeValue, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
-import { DATE_PART_INTERVAL, parseTimezone } from "./_internal";
+import {
+  DATE_PART_INTERVAL,
+  MINUTES_PER_HOUR,
+  parseTimezone,
+} from "./_internal";
 
 interface DateArgs {
   year: number;
@@ -29,7 +33,7 @@ export function $dateFromParts(
 ): AnyVal {
   const args = computeValue(obj, expr, null, options) as DateArgs;
 
-  const tz = parseTimezone(args.timezone);
+  const minuteOffset = parseTimezone(args.timezone);
 
   // assign default and adjust value ranges of the different parts
 
@@ -48,8 +52,8 @@ export function $dateFromParts(
     const limit = max + 1;
 
     // invert timezone to adjust the hours to UTC
-    if (k == "hour") part += tz.hour * -1;
-    if (k == "minute") part += tz.minute * -1;
+    if (k == "hour") part += Math.floor(minuteOffset / MINUTES_PER_HOUR) * -1;
+    if (k == "minute") part += (minuteOffset % MINUTES_PER_HOUR) * -1;
 
     // smaller than lower bound
     if (part < min) {

@@ -12,7 +12,6 @@ import {
   DATE_SYM_TABLE,
   DatePartFormatter,
   formatTimezone,
-  MINUTES_PER_HOUR,
   padDigits,
   parseTimezone,
 } from "./_internal";
@@ -79,11 +78,11 @@ export function $dateToString(
 
   const date = computeDate(obj, args.date, options);
   let format = args.format || DATE_FORMAT;
-  const tz = parseTimezone(args.timezone);
+  const minuteOffset = parseTimezone(args.timezone);
   const matches = format.match(/(%%|%Y|%G|%m|%d|%H|%M|%S|%L|%u|%V|%z|%Z)/g);
 
   // adjust the date to reflect timezone
-  adjustDate(date, tz);
+  adjustDate(date, minuteOffset);
 
   for (let i = 0, len = matches.length; i < len; i++) {
     const formatSpecifier = matches[i];
@@ -94,12 +93,9 @@ export function $dateToString(
     if (isObject(props)) {
       // reuse date
       if (props.name === "timezone") {
-        value = formatTimezone(tz);
+        value = formatTimezone(minuteOffset);
       } else if (props.name === "minuteOffset") {
-        value = `${
-          (tz.hour < 0 ? -1 : 1) * Math.abs(tz.hour * MINUTES_PER_HOUR) +
-          tz.minute
-        }`;
+        value = minuteOffset.toString();
       } else {
         assert(
           !!operatorFn,

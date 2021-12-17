@@ -95,37 +95,32 @@ export const DATE_SYM_TABLE: Record<string, DatePartFormatter> = {
   // "%%": "%",
 };
 
-export interface Timezone {
-  hour: number;
-  minute: number;
-}
-
 /**
  * Parse and return the timezone string as a number
  * @param tzstr Timezone string matching '+/-hh[:][mm]'
  */
-export function parseTimezone(tzstr?: string): Timezone {
-  if (isNil(tzstr)) return { hour: 0, minute: 0 };
+export function parseTimezone(tzstr?: string): number {
+  if (isNil(tzstr)) return 0;
 
   const m = DATE_SYM_TABLE["%z"].re.exec(tzstr);
   if (!m)
     throw Error(`invalid or location-based timezone '${tzstr}' not supported`);
 
-  return {
-    hour: parseInt(m[2]) || 0,
-    minute: parseInt(m[3]) || 0,
-  };
+  const hr = parseInt(m[2]) || 0;
+  const min = parseInt(m[3]) || 0;
+
+  return (Math.abs(hr * MINUTES_PER_HOUR) + min) * (hr < 0 ? -1 : 1);
 }
 
 /**
  * Formats the timezone for output
  * @param tz A timezone object
  */
-export function formatTimezone(tz: Timezone): string {
+export function formatTimezone(minuteOffset: number): string {
   return (
-    (tz.hour < 0 ? "-" : "+") +
-    padDigits(Math.abs(tz.hour), 2) +
-    padDigits(tz.minute, 2)
+    (minuteOffset < 0 ? "-" : "+") +
+    padDigits(Math.abs(Math.floor(minuteOffset / MINUTES_PER_HOUR)), 2) +
+    padDigits(Math.abs(minuteOffset) % MINUTES_PER_HOUR, 2)
   );
 }
 
@@ -134,10 +129,8 @@ export function formatTimezone(tz: Timezone): string {
  * @param d Date object
  * @param tz Timezone
  */
-export function adjustDate(d: Date, tz: Timezone): void {
-  const sign = tz.hour < 0 ? -1 : 1;
-  d.setUTCHours(d.getUTCHours() + tz.hour);
-  d.setUTCMinutes(d.getUTCMinutes() + sign * tz.minute);
+export function adjustDate(d: Date, minuteOffset: number): void {
+  d.setUTCMinutes(d.getUTCMinutes() + minuteOffset);
 }
 
 /**

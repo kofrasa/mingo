@@ -7,6 +7,7 @@ import {
   adjustDate,
   DATE_FORMAT,
   DATE_SYM_TABLE,
+  MINUTES_PER_HOUR,
   parseTimezone,
   regexQuote,
   regexStrip,
@@ -96,7 +97,7 @@ export function $dateFromString(
   )
     return args.onError;
 
-  const tz = parseTimezone(args.timezone);
+  const minuteOffset = parseTimezone(args.timezone);
 
   // create the date. month is 0-based in Date
   const d = new Date(
@@ -111,8 +112,7 @@ export function $dateFromString(
 
   // The minute part is unused when converting string.
   // This was observed in the tests on MongoDB site but not officially stated anywhere
-  tz.minute = 0;
-  adjustDate(d, tz);
+  adjustDate(d, Math.floor(minuteOffset / MINUTES_PER_HOUR) * MINUTES_PER_HOUR);
 
   return d;
 }
