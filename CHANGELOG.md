@@ -1,5 +1,21 @@
 # Changelog
 
+## 5.1.0
+
+**Features**
+
+- Add ISO date operators.
+  - `$isoWeek`
+  - `$isoWeekYear`
+  - `$isoDayOfWeek`
+- Add support for `iso8601` option to `$dateToParts`.
+
+**Fixes**
+
+- Fix bug in sortBy which causes duplicate values.
+- Fix ranking for duplicate values using $denseRank.
+- Fix cursor navigation bugs.
+
 ## 5.0.0 / 2021-12-05
 
 **New**
