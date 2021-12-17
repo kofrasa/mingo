@@ -2,8 +2,7 @@
 
 import { Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
-import { $isoWeek } from ".";
-import { computeDate } from "./_internal";
+import { computeDate, isoWeek } from "./_internal";
 
 /**
  * Returns the week of the year for a date as a number between 0 and 53.
@@ -12,8 +11,8 @@ import { computeDate } from "./_internal";
  * @param expr
  */
 export function $week(obj: RawObject, expr: AnyVal, options?: Options): number {
-  const result = $isoWeek(obj, expr, options);
   const d = computeDate(obj, expr, options);
+  const result = isoWeek(d);
   // check for starting of year and adjust accordingly
   if (d.getUTCDay() > 0 && d.getUTCDate() == 1 && d.getUTCMonth() == 0)
     return 0;
