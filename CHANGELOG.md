@@ -15,6 +15,7 @@
 - Fix bug in sortBy which causes duplicate values.
 - Fix ranking for duplicate values using $denseRank.
 - Fix cursor navigation bugs.
+- Fix timezone handling in `$dataToString`.
 
 ## 5.0.0 / 2021-12-05
 
