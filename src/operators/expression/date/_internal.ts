@@ -158,6 +158,7 @@ export function computeDate(
     if (d.timezone) {
       adjustDate(date, parseTimezone(d.timezone));
     }
+
     return date;
   }
 

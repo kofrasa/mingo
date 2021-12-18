@@ -33,15 +33,15 @@ support.runTest("operators/expression/date", {
   $isoWeek: [
     [new Date("2016-01-04T00:00:00Z"), 1],
     [new Date("2016-01-01"), 53],
-    [{ date: new Date("August 14, 2011"), timezone: "-0600" }, 32],
-    [{ date: new Date("August 15, 2011"), timezone: "-0600" }, 33],
+    [{ date: new Date("2011-08-14"), timezone: "-0600" }, 32],
+    [{ date: new Date("2011-08-15"), timezone: "-0600" }, 32],
     [new Date("1998-11-02T00:00:00Z"), 45],
     [{ date: new Date("1998-11-02T00:00:00Z"), timezone: "-0500" }, 44],
     ["2009-04-09", 43, { err: true }],
   ],
   $isoDayOfWeek: [
     [new Date("2016-01-01"), 5],
-    [{ date: new Date("2008-01-07") }, 2],
+    [new Date("2003-01-07"), 2],
     [
       {
         date: new Date("2011-08-14T06:00:00Z"),
