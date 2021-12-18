@@ -54,6 +54,15 @@ export const MINUTES_PER_HOUR = 60;
 
 export const MILLIS_PER_DAY = 1000 * 60 * 60 * 24;
 
+export const DURATION_IN_MILLIS: Record<string, number> = {
+  week: MILLIS_PER_DAY * 7,
+  day: MILLIS_PER_DAY,
+  hour: 1000 * 60 * 60,
+  minute: 1000 * 60,
+  second: 1000,
+  millisecond: 1,
+};
+
 // default format if unspecified
 export const DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%LZ";
 

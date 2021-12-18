@@ -6,18 +6,9 @@ import {
   adjustDate,
   computeDate,
   Duration,
-  MILLIS_PER_DAY,
+  DURATION_IN_MILLIS,
   parseTimezone,
 } from "./_internal";
-
-const DURATION_IN_MILLIS: Record<string, number> = {
-  week: MILLIS_PER_DAY * 7,
-  day: MILLIS_PER_DAY,
-  hour: 1000 * 60 * 60,
-  minute: 1000 * 60,
-  second: 1000,
-  millisecond: 1,
-};
 
 /**
  * Increments a Date object by a specified number of time units.
@@ -40,7 +31,7 @@ export function $dateAdd(
 
   switch (args.unit) {
     case "year":
-      d.setFullYear(d.getUTCFullYear() + args.amount);
+      d.setUTCFullYear(d.getUTCFullYear() + args.amount);
       break;
     case "quarter":
       addMonth(d, 3 * args.amount);
@@ -66,8 +57,8 @@ function addMonth(d: Date, amount: number): void {
   const yearOffset = Math.floor(m / 12);
   if (m < 0) {
     const month = (m % 12) + 12;
-    d.setUTCFullYear(d.getUTCFullYear() + yearOffset, month, d.getDate());
+    d.setUTCFullYear(d.getUTCFullYear() + yearOffset, month, d.getUTCDate());
   } else {
-    d.setUTCFullYear(d.getUTCFullYear() + yearOffset, m % 12, d.getDate());
+    d.setUTCFullYear(d.getUTCFullYear() + yearOffset, m % 12, d.getUTCDate());
   }
 }

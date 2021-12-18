@@ -1,6 +1,6 @@
 # Changelog
 
-## 5.1.0
+## 5.1.0 / 2022-02-xx
 
 **Features**
 
@@ -13,9 +13,10 @@
 **Fixes**
 
 - Fix bug in sortBy which causes duplicate values.
-- Fix ranking for duplicate values using $denseRank.
+- Fix ranking for duplicate values for `$denseRank` operator.
 - Fix cursor navigation bugs.
-- Fix timezone handling in `$dataToString`.
+- Fix timezone handling in `$dateToString` operator.
+- Return list of single item for `$count` aggregation operator.
 
 ## 5.0.0 / 2021-12-05
 
