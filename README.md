@@ -239,6 +239,11 @@ interface Options {
   /** Determines how to treat inputs and outputs. @default ProcessingMode.CLONE_OFF */
   readonly processingMode?: ProcessingMode;
   /**
+   * Enforces strict MongoDB compatibilty. See readme for differences. @default true.
+   * When disabled, the $elemMatch projection operator returns all matching nested documents instead of only the first.
+   */
+  readonly useStrictMode?: boolean;
+  /**
    * Enables or disables custom script execution.
    * When disabled, you cannot use operations that execute custom code, such as the $where, $accumulator, and $function.
    * @default true

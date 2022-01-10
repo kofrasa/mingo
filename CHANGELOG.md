@@ -9,6 +9,8 @@
   - `$isoWeekYear`
   - `$isoDayOfWeek`
 - Add support for `iso8601` option to `$dateToParts`.
+- Add `useStrictMode` option to enable useful non-standard behaviour on specific operators.
+  - Allows the `$elemMatch` projection operator to return all matching nested documents instead of only the first.
 
 **Fixes**
 

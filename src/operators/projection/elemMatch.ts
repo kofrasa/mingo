@@ -23,9 +23,15 @@ export function $elemMatch(
   const query = new Query(expr, options);
 
   assert(arr instanceof Array, "$elemMatch: argument must resolve to array");
-
+  const result: RawArray = [];
   for (let i = 0; i < (arr as RawArray).length; i++) {
-    if (query.test(arr[i])) return [arr[i]] as RawArray;
+    if (query.test(arr[i])) {
+      // MongoDB projects only the first nested document when using this operator.
+      // For some use cases this can lead to complicated queries to selectively project nested documents.
+      // When strict mode is disabled, we return all matching nested documents.
+      if (options.useStrictMode) return [arr[i]] as RawArray;
+      result.push(arr[i]);
+    }
   }
-  return undefined;
+  return result.length > 0 ? result : undefined;
 }

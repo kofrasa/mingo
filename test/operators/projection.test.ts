@@ -59,6 +59,32 @@ describe("operators/projection", () => {
       ]);
     });
 
+    it("can project multiple nested documents with $elemMatch", () => {
+      const result = find(
+        data,
+        { zipcode: "63109" },
+        { students: { $elemMatch: { school: 102 } } },
+        { useStrictMode: false }
+      ).all();
+      expect(result).toEqual([
+        {
+          _id: 1,
+          students: [
+            { name: "john", school: 102, age: 10 },
+            { name: "jess", school: 102, age: 11 },
+          ],
+        },
+        { _id: 3 },
+        {
+          _id: 4,
+          students: [
+            { name: "barney", school: 102, age: 7 },
+            { name: "ruth", school: 102, age: 16 },
+          ],
+        },
+      ]);
+    });
+
     it("can project multiple fields with $elemMatch", () => {
       const result = find(
         data,
