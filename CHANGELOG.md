@@ -1,8 +1,8 @@
 # Changelog
 
-## 5.1.0 / 2022-02-xx
+## 5.1.0 / 2022-01-28
 
-**Features**
+**New**
 
 - Add ISO date operators.
   - `$isoWeek`
@@ -10,7 +10,7 @@
   - `$isoDayOfWeek`
 - Add support for `iso8601` option to `$dateToParts`.
 - Add `useStrictMode` option to enable useful non-standard behaviour on specific operators.
-  - Allows the `$elemMatch` projection operator to return all matching nested documents instead of only the first.
+  - The `$elemMatch` projection operator return all matching nested documents instead when `useStrictMode` is `false`.
 
 **Fixes**
 
