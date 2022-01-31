@@ -9,10 +9,16 @@ import {
   QueryOperator,
 } from "../core";
 import { Query } from "../query";
-import { AnyVal, RawArray, RawObject } from "../types";
 import {
+  AnyVal,
   BsonType,
   Callback,
+  JsType,
+  Predicate,
+  RawArray,
+  RawObject,
+} from "../types";
+import {
   ensureArray,
   flatten,
   getType,
@@ -29,12 +35,10 @@ import {
   isOperator,
   isRegExp,
   isString,
-  JsType,
   MAX_INT,
   MAX_LONG,
   MIN_INT,
   MIN_LONG,
-  Predicate,
   resolve,
 } from "../util";
 

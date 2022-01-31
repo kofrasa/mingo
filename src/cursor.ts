@@ -1,8 +1,8 @@
 import { Aggregator } from "./aggregator";
 import { CollationSpec, Options } from "./core";
 import { compose, Iterator, Lazy, Source } from "./lazy";
-import { AnyVal, RawArray, RawObject } from "./types";
-import { Callback, isObject, Predicate } from "./util";
+import { AnyVal, Callback, Predicate, RawArray, RawObject } from "./types";
+import { isObject } from "./util";
 
 /**
  * Cursor to iterate and perform filtering on matched objects.

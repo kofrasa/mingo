@@ -1,8 +1,7 @@
 // Query Evaluation Operators: https://docs.mongodb.com/manual/reference/operator/query-evaluation/
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal } from "../../../types";
-import { Callback } from "../../../util";
+import { AnyVal, Callback } from "../../../types";
 
 /**
  * Allows the use of aggregation expressions within the query language.

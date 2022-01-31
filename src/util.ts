@@ -2,14 +2,14 @@
  * Utility constants and functions
  */
 
-import { AnyVal, ArrayOrObject, Callback, RawArray, RawObject } from "./types";
-
-/* backward-compatibility */
-export {
+import {
   AnyVal,
   ArrayOrObject,
   Callback,
-  Predicate,
+  Comparator,
+  ComparatorResult,
+  HashFunction,
+  JsType,
   RawArray,
   RawObject,
 } from "./types";
@@ -18,11 +18,6 @@ export const MAX_INT = 2147483647;
 export const MIN_INT = -2147483648;
 export const MAX_LONG = Number.MAX_SAFE_INTEGER;
 export const MIN_LONG = Number.MIN_SAFE_INTEGER;
-
-/**
- * Custom function to hash values to improve faster comparaisons
- */
-export type HashFunction = Callback<string>;
 
 // special value to identify missing items. treated differently from undefined
 const MISSING = Object.freeze({});
@@ -35,38 +30,6 @@ const DEFAULT_HASH_FUNC: HashFunction = (value: AnyVal): string => {
   const code = hash >>> 0;
   return code.toString();
 };
-
-// Javascript native types
-export enum JsType {
-  NULL = "null",
-  UNDEFINED = "undefined",
-  BOOLEAN = "boolean",
-  NUMBER = "number",
-  STRING = "string",
-  DATE = "date",
-  REGEXP = "regexp",
-  ARRAY = "array",
-  OBJECT = "object",
-  FUNCTION = "function",
-}
-
-// MongoDB BSON types
-export enum BsonType {
-  BOOL = "bool",
-  INT = "int",
-  LONG = "long",
-  DOUBLE = "double",
-  DECIMAL = "decimal",
-  REGEX = "regex",
-}
-
-// Result of comparator function
-type CompareResult = -1 | 0 | 1;
-
-// Generic comparator callback
-export interface Comparator<T> {
-  (left: T, right: T): CompareResult;
-}
 
 // Options to resolve() and resolveGraph() functions
 interface ResolveOptions {
@@ -484,7 +447,7 @@ export function hashCode(
  * @param {*} a
  * @param {*} b
  */
-export function compare(a: AnyVal, b: AnyVal): CompareResult {
+export function compare(a: AnyVal, b: AnyVal): ComparatorResult {
   if (a < b) return -1;
   if (a > b) return 1;
   return 0;

@@ -1,8 +1,7 @@
 import { CollationSpec, Options } from "../../core";
 import { Iterator } from "../../lazy";
-import { AnyVal, RawArray, RawObject } from "../../types";
+import { AnyVal, Comparator, RawArray, RawObject } from "../../types";
 import {
-  Comparator,
   compare,
   groupBy,
   into,
@@ -60,7 +59,7 @@ export function $sort(
       if (sortKeys[key] === -1) indexKeys.reverse();
       coll = [];
       for (const k of indexKeys) {
-        into(coll, grouped.groups[sortedIndex[k as string]] as RawArray);
+        into(coll, grouped.groups[sortedIndex[k as string]]);
       }
     }
 

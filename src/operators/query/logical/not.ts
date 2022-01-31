@@ -2,8 +2,8 @@
 
 import { Options } from "../../../core";
 import { Query } from "../../../query";
-import { AnyVal, RawObject } from "../../../types";
-import { Callback, normalize } from "../../../util";
+import { AnyVal, Callback, RawObject } from "../../../types";
+import { normalize } from "../../../util";
 
 /**
  * Inverts the effect of a query expression and returns documents that do not match the query expression.

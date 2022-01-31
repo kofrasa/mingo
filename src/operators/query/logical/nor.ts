@@ -1,8 +1,8 @@
 // Query Logical Operators: https://docs.mongodb.com/manual/reference/operator/query-logical/
 
 import { Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
-import { assert, Callback, isArray } from "../../../util";
+import { AnyVal, Callback, RawObject } from "../../../types";
+import { assert, isArray } from "../../../util";
 import { $or } from "./or";
 
 /**

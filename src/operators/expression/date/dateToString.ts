@@ -3,8 +3,8 @@
 import { assert } from "console";
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
-import { Callback, isNil, isObject } from "../../../util";
+import { AnyVal, Callback, RawObject } from "../../../types";
+import { isNil, isObject } from "../../../util";
 import {
   adjustDate,
   computeDate,

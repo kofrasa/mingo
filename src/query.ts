@@ -1,15 +1,8 @@
 import { getOperator, initOptions, OperatorType, Options } from "./core";
 import { Cursor } from "./cursor";
 import { Source } from "./lazy";
-import { AnyVal, RawObject } from "./types";
-import {
-  assert,
-  Callback,
-  inArray,
-  isObject,
-  isOperator,
-  normalize,
-} from "./util";
+import { AnyVal, Callback, RawObject } from "./types";
+import { assert, inArray, isObject, isOperator, normalize } from "./util";
 
 /**
  * An object used to filter input documents

@@ -1,26 +1,6 @@
 # Changelog
 
-## 5.1.0 / 2022-01-28
-
-**New**
-
-- Add ISO date operators.
-  - `$isoWeek`
-  - `$isoWeekYear`
-  - `$isoDayOfWeek`
-- Add support for `iso8601` option to `$dateToParts`.
-- Add `useStrictMode` option to enable useful non-standard behaviour on specific operators.
-  - The `$elemMatch` projection operator return all matching nested documents instead when `useStrictMode` is `false`.
-
-**Fixes**
-
-- Fix bug in sortBy which causes duplicate values.
-- Fix ranking for duplicate values for `$denseRank` operator.
-- Fix cursor navigation bugs.
-- Fix timezone handling in `$dateToString` operator.
-- Return list of single item for `$count` aggregation operator.
-
-## 5.0.0 / 2021-12-05
+## 6.0.0 / 2022-01-31
 
 **New**
 
@@ -53,6 +33,13 @@
   - `$covarianceSamp`
   - `$covariancePop`
 - Add support for `$$NOW` system variable.
+- Add ISO date operators.
+  - `$isoWeek`
+  - `$isoWeekYear`
+  - `$isoDayOfWeek`
+- Add support for `iso8601` option to `$dateToParts`.
+- Add `useStrictMode` option to enable useful non-standard behaviour on specific operators.
+  - The `$elemMatch` projection operator return all matching nested documents instead when `useStrictMode` is `false`.
 
 **Removed**
 
@@ -63,6 +50,19 @@
 **Fixes**
 
 - Fixed computation bug in `$dateAdd` and `$dateSubtract` operators.
+- Fix bug in `sortBy` which causes duplicate values.
+- Fix ranking for duplicate values for `$denseRank` operator.
+- Fix cursor navigation bugs.
+- Fix timezone handling in `$dateToString` operator.
+- Return list of single item for `$count` aggregation operator.
+
+## 5.1.0 / 2022-01-28
+
+Changes not published
+
+## 5.0.0 / 2021-12-05
+
+Changes not published
 
 ## 4.4.1 / 2021-11-16
 

@@ -2,8 +2,8 @@
 
 import { Options } from "../../../core";
 import { Query } from "../../../query";
-import { RawObject } from "../../../types";
-import { assert, Callback, isArray } from "../../../util";
+import { Callback, RawObject } from "../../../types";
+import { assert, isArray } from "../../../util";
 
 /**
  * Joins query clauses with a logical OR returns all documents that match the conditions of either clause.

@@ -3,8 +3,8 @@
  */
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
-import { BsonType, getType, JsType, MAX_INT, MIN_INT } from "../../../util";
+import { AnyVal, BsonType, JsType, RawObject } from "../../../types";
+import { getType, MAX_INT, MIN_INT } from "../../../util";
 
 export function $type(obj: RawObject, expr: AnyVal, options?: Options): string {
   const val = computeValue(obj, expr, null, options);

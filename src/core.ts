@@ -3,6 +3,7 @@ import {
   AnyVal,
   ArrayOrObject,
   Callback,
+  HashFunction,
   Predicate,
   RawArray,
   RawObject,
@@ -10,7 +11,6 @@ import {
 import {
   assert,
   has,
-  HashFunction,
   into,
   isNil,
   isObject,
