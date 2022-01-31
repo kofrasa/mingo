@@ -58,11 +58,11 @@
 
 ## 5.1.0 / 2022-01-28
 
-Changes not published
+Changes not published. Updates moved to `6.0.0`.
 
 ## 5.0.0 / 2021-12-05
 
-Changes not published
+Changes not published. Updates moved to `6.0.0`.
 
 ## 4.4.1 / 2021-11-16
 
