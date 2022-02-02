@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.0.1 / 2022-02-01
+
+**Fixes**
+
+- Fixed bug in `$dateFromParts` which incorrectly computes the dates for some input values. See [#223](https://github.com/kofrasa/mingo/pull/223).
+
 ## 6.0.0 / 2022-01-31
 
 **New**
