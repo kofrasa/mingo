@@ -1,5 +1,10 @@
 # Changelog
 
+## 6.0.2 / 2022-02-02
+
+**Fixes**
+- Fix incorrect date bug when handling underflows in `dateFromParts`. See [#224](https://github.com/kofrasa/mingo/issues/224)
+
 ## 6.0.1 / 2022-02-01
 
 **Fixes**
