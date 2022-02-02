@@ -32,7 +32,6 @@ export function $dateFromParts(
   options?: Options
 ): AnyVal {
   const args = computeValue(obj, expr, null, options) as DateArgs;
-
   const minuteOffset = parseTimezone(args.timezone);
 
   // assign default and adjust value ranges of the different parts
@@ -45,6 +44,9 @@ export function $dateFromParts(
 
     // add remainder from previous part. units should already be correct
     let part = ((args[k] as number) || 0) + remainder;
+
+    // reset remainder now that it's been used.
+    remainder = 0;
 
     // 1. compute the remainder for the next part
     // 2. adjust the current part to a valid range
