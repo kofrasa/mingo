@@ -1,7 +1,5 @@
 // Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
 
-import { assert } from "console";
-
 import { computeValue, Options } from "../../../core";
 import { AnyVal, Callback, RawObject } from "../../../types";
 import { isNil, isObject } from "../../../util";
@@ -97,7 +95,7 @@ export function $dateToString(
       } else if (props.name === "minuteOffset") {
         value = minuteOffset.toString();
       } else {
-        assert(
+        console.assert(
           !!operatorFn,
           `unsupported date format specifier '${formatSpecifier}'`
         );
