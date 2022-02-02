@@ -276,7 +276,7 @@ describe("Date Operators: $dateFromParts", () => {
           $dateFromParts: { year: 2017, month: 14, day: 1, hour: 12 },
         },
         date_range_lesser: {
-          $dateFromParts: { year: 2017, month: 0, day: 1, hour: 12 },
+          $dateFromParts: { year: 2017, month: 2, day: 0, hour: 12 },
         },
       },
     },
@@ -291,7 +291,7 @@ describe("Date Operators: $dateFromParts", () => {
   });
 
   it("can apply $dateFromParts with date parts below range of values", () => {
-    expect(result.date_range_lesser).toEqual(new Date("2016-12-01T12:00:00Z"));
+    expect(result.date_range_lesser).toEqual(new Date("2017-01-31T12:00:00Z"));
   });
 
   it("can apply $dateFromParts with timezone", () => {
