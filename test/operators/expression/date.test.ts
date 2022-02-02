@@ -359,3 +359,68 @@ it("can apply $dateToParts with timezone", () => {
     },
   ]);
 });
+
+describe("More $dateFromParts examples", () => {
+  it("correctly handle edge cases", () => {
+    const result = aggregate(
+      [
+        {
+          year: 2022,
+          month: 2,
+          day: 0,
+        },
+        {
+          year: 2022,
+          month: 1,
+          day: 30,
+        },
+        {
+          year: 2022,
+          month: 3,
+          day: 0,
+        },
+        {
+          year: 2022,
+          month: 0,
+          day: 1,
+        },
+        {
+          year: 2022,
+          month: 1,
+          day: 0,
+        },
+      ],
+      [
+        {
+          $addFields: {
+            newDate: {
+              $dateFromParts: {
+                year: "$year",
+                month: "$month",
+                day: "$day",
+              },
+            },
+          },
+        },
+        {
+          $project: {
+            value: {
+              $dateToString: {
+                date: "$newDate",
+                format: "%m/%d/%Y",
+              },
+            },
+          },
+        },
+      ]
+    );
+
+    expect(result).toStrictEqual([
+      { value: "01/31/2022" },
+      { value: "01/30/2022" },
+      { value: "02/28/2022" },
+      { value: "12/01/2021" },
+      { value: "12/31/2021" },
+    ]);
+  });
+});

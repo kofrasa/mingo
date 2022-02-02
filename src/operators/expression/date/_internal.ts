@@ -27,11 +27,11 @@ const p = (y: number): number =>
 
 const weeks = (y: number): number => 52 + Number(p(y) == 4 || p(y - 1) == 3);
 
-const isLeap = (year: number): boolean =>
+export const isLeapYear = (year: number): boolean =>
   (year & 3) == 0 && (year % 100 != 0 || year % 400 == 0);
 
 export const getDayOfYear = (d: Date): number =>
-  (isLeap(d.getUTCFullYear())
+  (isLeapYear(d.getUTCFullYear())
     ? LEAP_YEAR_DAYS_OFFSET
     : COMMON_YEAR_DAYS_OFFSET)[d.getUTCMonth()] + d.getUTCDate();
 

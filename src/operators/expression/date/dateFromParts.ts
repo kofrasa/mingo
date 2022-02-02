@@ -4,6 +4,7 @@ import { computeValue, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
 import {
   DATE_PART_INTERVAL,
+  isLeapYear,
   MINUTES_PER_HOUR,
   parseTimezone,
 } from "./_internal";
@@ -18,6 +19,14 @@ interface DateArgs {
   millisecond?: number;
   timezone?: string;
 }
+
+const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+const getDaysInMonth = (date: DateArgs): number => {
+  return date.month == 2 && isLeapYear(date.year)
+    ? 29
+    : DAYS_IN_MONTH[date.month - 1];
+};
 
 /**
  * Constructs and returns a Date object given the date’s constituent properties.
@@ -72,6 +81,9 @@ export function $dateFromParts(
     // reassign
     args[k] = part;
   }
+
+  // adjust end of month to correctly handle overflows
+  args.day = Math.min(args.day, getDaysInMonth(args));
 
   return new Date(
     Date.UTC(
