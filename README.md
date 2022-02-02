@@ -283,6 +283,8 @@ interface Options {
 - Run `npm test` to build and execute unit tests
 - Submit pull request
 
+To validate correct behaviour and semantics of operators, you may also test against [mongoplayground.net](https://mongoplayground.net/).
+
 ## License
 
 MIT
