@@ -1,5 +1,12 @@
 # Changelog
 
+## 6.0.3 / 2022-02-03
+
+**Fixes**
+
+- Remove use of `console.assert`. See [#226](https://github.com/kofrasa/mingo/pull/226)
+- Remove deprecated `mingo/init` import.
+
 ## 6.0.2 / 2022-02-02
 
 **Fixes**
