@@ -2,7 +2,7 @@
 
 import { computeValue, Options } from "../../../core";
 import { AnyVal, Callback, RawObject } from "../../../types";
-import { isNil, isObject } from "../../../util";
+import { assert, isNil, isObject } from "../../../util";
 import {
   adjustDate,
   computeDate,
@@ -95,7 +95,7 @@ export function $dateToString(
       } else if (props.name === "minuteOffset") {
         value = minuteOffset.toString();
       } else {
-        console.assert(
+        assert(
           !!operatorFn,
           `unsupported date format specifier '${formatSpecifier}'`
         );
