@@ -226,7 +226,7 @@ export function merge(
 export function intersection(
   a: RawArray,
   b: RawArray,
-  hashFunction?: HashFunction
+  hashFunction: HashFunction = DEFAULT_HASH_FUNC
 ): RawArray {
   let flipped = false;
 
@@ -272,7 +272,7 @@ export function intersection(
 export function union(
   xs: RawArray,
   ys: RawArray,
-  hashFunction?: HashFunction
+  hashFunction: HashFunction = DEFAULT_HASH_FUNC
 ): RawArray {
   const hash: Record<string, RawArray> = {};
   xs.concat(ys).forEach((e, i) => {
@@ -342,26 +342,20 @@ export function isEqual(a: AnyVal, b: AnyVal): boolean {
       into(rhs, ys);
     } else if (nativeType === JsType.OBJECT) {
       // deep compare objects
-      const ka = Object.keys(a);
-      const kb = Object.keys(b);
+      const aKeys = Object.keys(a);
+      const bKeys = Object.keys(b);
 
       // check length of keys early
-      if (ka.length !== kb.length) return false;
-
-      // we know keys are strings so we sort before comparing
-      ka.sort();
-      kb.sort();
+      if (aKeys.length !== bKeys.length) return false;
 
       // compare keys
-      for (let i = 0, len = ka.length; i < len; i++) {
-        const tempKey = ka[i];
-        if (tempKey !== kb[i]) {
-          return false;
-        } else {
-          // save later work
-          lhs.push(a[tempKey]);
-          rhs.push(b[tempKey]);
-        }
+      for (let i = 0, len = aKeys.length; i < len; i++) {
+        const k = aKeys[i];
+        // not found
+        if (!has(b as RawObject, k)) return false;
+        // key found
+        lhs.push(a[k]);
+        rhs.push(b[k]);
       }
     } else {
       // compare encoded values
@@ -376,7 +370,10 @@ export function isEqual(a: AnyVal, b: AnyVal): boolean {
  * @param  {Array} xs The input collection
  * @return {Array}    A new collection with unique values
  */
-export function unique(xs: RawArray, hashFunction: HashFunction): RawArray {
+export function unique(
+  xs: RawArray,
+  hashFunction: HashFunction = DEFAULT_HASH_FUNC
+): RawArray {
   const h = {};
   const arr = [];
   for (const item of xs) {
@@ -516,7 +513,7 @@ export function sortBy(
 export function groupBy(
   collection: RawArray,
   keyFn: Callback<AnyVal>,
-  hashFunction: HashFunction
+  hashFunction: HashFunction = DEFAULT_HASH_FUNC
 ): { keys: RawArray; groups: RawArray[] } {
   const result = {
     keys: new Array<AnyVal>(),
@@ -592,7 +589,7 @@ export function into(
  */
 export function memoize(
   fn: Callback<AnyVal>,
-  hashFunction: HashFunction
+  hashFunction: HashFunction = DEFAULT_HASH_FUNC
 ): Callback<AnyVal> {
   return ((memo: RawObject) => {
     return (...args: RawArray): AnyVal => {
