@@ -59,7 +59,7 @@ export class Aggregator {
     if (
       mode == ProcessingMode.CLONE_OUTPUT ||
       (mode == ProcessingMode.CLONE_ALL &&
-        !!intersection(["$group", "$unwind"], pipelineOperators).length)
+        !!intersection([["$group", "$unwind"], pipelineOperators]).length)
     ) {
       iterator.map(cloneDeep);
     }

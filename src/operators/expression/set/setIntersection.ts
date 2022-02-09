@@ -3,8 +3,8 @@
  */
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
-import { intersection } from "../../../util";
+import { AnyVal, RawArray, RawObject } from "../../../types";
+import { assert, intersection, isArray } from "../../../util";
 
 /**
  * Returns the common elements of the input sets.
@@ -16,6 +16,10 @@ export function $setIntersection(
   expr: AnyVal,
   options?: Options
 ): AnyVal {
-  const args = computeValue(obj, expr, null, options);
-  return intersection(args[0], args[1], options?.hashFunction);
+  const args = computeValue(obj, expr, null, options) as RawArray[];
+  assert(
+    isArray(args) && args.every(isArray),
+    "$setIntersection: expresssion must resolve to array of arrays"
+  );
+  return intersection(args, options?.hashFunction);
 }

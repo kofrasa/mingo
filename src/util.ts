@@ -22,13 +22,18 @@ export const MIN_LONG = Number.MIN_SAFE_INTEGER;
 // special value to identify missing items. treated differently from undefined
 const MISSING = Object.freeze({});
 
-const DEFAULT_HASH_FUNC: HashFunction = (value: AnyVal): string => {
-  const s = encode(value);
+/**
+ * Uses the simple hash method as described in Effective Java.
+ * @see https://stackoverflow.com/a/113600/1370481
+ * @param value The value to hash
+ * @returns {number}
+ */
+const DEFAULT_HASH_FUNCTION: HashFunction = (value: AnyVal): number => {
+  const s = stringify(value);
   let hash = 0;
   let i = s.length;
   while (i) hash = ((hash << 5) - hash) ^ s.charCodeAt(--i);
-  const code = hash >>> 0;
-  return code.toString();
+  return hash >>> 0;
 };
 
 // Options to resolve() and resolveGraph() functions
@@ -215,8 +220,45 @@ export function merge(
   return target;
 }
 
+// A tree to support O(logN) search
+interface BNode {
+  left?: BNode;
+  right?: BNode;
+  readonly key: string;
+  readonly indexes: number[];
+}
+
+function addIndex(root: BNode, key: string, index: number) {
+  if (root.key < key) {
+    if (root.right) {
+      addIndex(root.right, key, index);
+    } else {
+      root.right = { key, indexes: [index] } as BNode;
+    }
+  } else if (root.key > key) {
+    if (root.left) {
+      addIndex(root.left, key, index);
+    } else {
+      root.left = { key, indexes: [index] } as BNode;
+    }
+  } else {
+    root.indexes.push(index);
+  }
+}
+
+function getIndexes(root: BNode, key: string): number[] | undefined {
+  if (root.key == key) {
+    return root.indexes;
+  } else if (root.key < key) {
+    return root.right ? getIndexes(root.right, key) : undefined;
+  } else if (root.key > key) {
+    return root.left ? getIndexes(root.left, key) : undefined;
+  }
+  return undefined;
+}
+
 /**
- * Returns the intersection between two arrays
+ * Returns the intersection of multiple arrays.
  *
  * @param  {Array} a The first array
  * @param  {Array} b The second array
@@ -224,64 +266,100 @@ export function merge(
  * @return {Array}    Result array
  */
 export function intersection(
-  a: RawArray,
-  b: RawArray,
-  hashFunction: HashFunction = DEFAULT_HASH_FUNC
+  input: RawArray[],
+  hashFunction: HashFunction = DEFAULT_HASH_FUNCTION
 ): RawArray {
-  let flipped = false;
+  // if any array is empty, there is no intersection
+  if (input.some((arr) => arr.length == 0)) return [];
 
-  // we ensure the left array is always smallest
-  if (a.length > b.length) {
-    const t = a;
-    a = b;
-    b = t;
-    flipped = true;
+  // sort input arrays by size
+  const sortedIndex = input.map((a, i) => [i, a.length]);
+  sortedIndex.sort((a, b) => a[1] - b[1]);
+
+  // matched items index of first array for all other arrays.
+  const result: Array<Record<number, boolean>> = [];
+
+  const smallestArray = input[sortedIndex[0][0]];
+  const root: BNode = {
+    key: hashCode(smallestArray[0], hashFunction),
+    indexes: [0],
+  };
+
+  for (let i = 1; i < smallestArray.length; i++) {
+    const val = smallestArray[i];
+    const h = hashCode(val, hashFunction);
+    addIndex(root, h, i);
   }
 
-  const maxSize = Math.max(a.length, b.length);
-  const maxResult = Math.min(a.length, b.length);
+  let maxResultSize = sortedIndex[0][1];
+  const orderedIndexes: number[] = [];
 
-  const lookup = a.reduce((memo, v, i) => {
-    memo[hashCode(v, hashFunction)] = i;
-    return memo;
-  }, {});
+  for (let i = 1; i < sortedIndex.length; i++) {
+    const arrayIndex = sortedIndex[i][0];
+    const data = input[arrayIndex];
 
-  const indexes = new Array<number>();
+    // number of matched items
+    let size = 0;
+    for (let j = 0; j < data.length; j++) {
+      const h = hashCode(data[j], hashFunction);
+      const indexes = getIndexes(root, h);
 
-  for (let i = 0, j = 0; i < maxSize && j < maxResult; i++) {
-    const k = lookup[hashCode(b[i], hashFunction)] as number;
-    if (k !== undefined) {
-      indexes.push(k);
-      j++;
+      // not included.
+      if (!indexes) continue;
+
+      // check items equality to mitigate hash collisions and select the matching index.
+      const idx = indexes
+        .map((n) => smallestArray[n])
+        .findIndex((v) => isEqual(v, data[j]));
+
+      // not included
+      if (idx == -1) continue;
+
+      // item matched. ensure map exist for marking index
+      if (result.length < i) result.push({});
+
+      // map to index of the actual value and set position
+      result[result.length - 1][indexes[idx]] = true;
+
+      // if we have seen max result items we can stop.
+      size = Object.keys(result[result.length - 1]).length;
+
+      // ensure stabilty
+      if (arrayIndex == 0) {
+        if (orderedIndexes.indexOf(indexes[idx]) == -1) {
+          orderedIndexes.push(indexes[idx]);
+        }
+      }
     }
+    // no intersection if nothing found
+    if (size == 0) return [];
+
+    // new max result size
+    maxResultSize = Math.min(maxResultSize, size);
   }
 
-  // unless we flipped the arguments we must sort the indexes to keep stability
-  if (!flipped) indexes.sort();
+  const freq: Record<number, number> = {};
 
-  return indexes.map((i: number) => a[i]);
-}
-
-/**
- * Returns the union of two arrays
- *
- * @param  {Array} xs The first array
- * @param  {Array} ys The second array
- * @return {Array}   The result array
- */
-export function union(
-  xs: RawArray,
-  ys: RawArray,
-  hashFunction: HashFunction = DEFAULT_HASH_FUNC
-): RawArray {
-  const hash: Record<string, RawArray> = {};
-  xs.concat(ys).forEach((e, i) => {
-    const k = hashCode(e, hashFunction);
-    if (!hash[k]) hash[k] = [e, i];
+  // count occurrences
+  result.forEach((m) => {
+    Object.keys(m).forEach((k) => {
+      const n = parseFloat(k);
+      freq[n] = freq[n] || 0;
+      freq[n]++;
+    });
   });
-  return Object.values(hash)
-    .sort((a, b) => compare(a[1], b[1]))
-    .map((e) => e[0]);
+
+  const keys = orderedIndexes;
+
+  if (keys.length == 0) {
+    // note: cannot use parseInt due to second argument for radix.
+    keys.push(...Object.keys(freq).map(parseFloat));
+    keys.sort();
+  }
+
+  return keys
+    .filter((n) => freq[n] == input.length - 1)
+    .map((n) => smallestArray[n]);
 }
 
 /**
@@ -359,7 +437,7 @@ export function isEqual(a: AnyVal, b: AnyVal): boolean {
       }
     } else {
       // compare encoded values
-      if (encode(a) !== encode(b)) return false;
+      if (stringify(a) !== stringify(b)) return false;
     }
   }
   return lhs.length === 0;
@@ -368,22 +446,61 @@ export function isEqual(a: AnyVal, b: AnyVal): boolean {
 /**
  * Return a new unique version of the collection
  * @param  {Array} xs The input collection
- * @return {Array}    A new collection with unique values
+ * @return {Array}
  */
 export function unique(
   xs: RawArray,
-  hashFunction: HashFunction = DEFAULT_HASH_FUNC
+  hashFunction: HashFunction = DEFAULT_HASH_FUNCTION
 ): RawArray {
-  const h = {};
-  const arr = [];
-  for (const item of xs) {
-    const k = hashCode(item, hashFunction);
-    if (!has(h, k)) {
-      arr.push(item);
-      h[k] = 0;
-    }
+  if (xs.length == 0) return [];
+
+  const root: BNode = {
+    key: hashCode(xs[0], hashFunction),
+    indexes: [0],
+  };
+
+  // hash items on to tree to track collisions
+  for (let i = 1; i < xs.length; i++) {
+    addIndex(root, hashCode(xs[i], hashFunction), i);
   }
-  return arr;
+
+  const result: number[] = [];
+
+  // walk tree and remove duplicates
+  const stack = [root];
+  while (stack.length > 0) {
+    const node = stack.pop();
+    if (node.indexes.length == 1) {
+      result.push(node.indexes[0]);
+    } else {
+      // handle collisions by matching all items
+      const arr = node.indexes;
+      // we start by search from the back so we maintain the smaller index when there is a duplicate.
+      while (arr.length > 0) {
+        for (let j = 1; j < arr.length; j++) {
+          // if last item matches any remove the last item.
+          if (isEqual(xs[arr[arr.length - 1]], xs[arr[arr.length - 1 - j]])) {
+            // remove last item
+            arr.pop();
+            // reset position
+            j = 0;
+          }
+        }
+        // add the unique item
+        result.push(arr.pop());
+      }
+    }
+
+    // add children
+    if (node.left) stack.push(node.left);
+    if (node.right) stack.push(node.right);
+  }
+
+  // sort indexes for stability
+  result.sort();
+
+  // return the unique items
+  return result.map((i) => xs[i]);
 }
 
 /**
@@ -392,7 +509,7 @@ export function unique(
  * @param value
  * @returns {*}
  */
-function encode(value: AnyVal): string {
+export function stringify(value: AnyVal): string {
   const type = getType(value).toLowerCase();
   switch (type) {
     case JsType.BOOLEAN:
@@ -407,7 +524,7 @@ function encode(value: AnyVal): string {
     case JsType.UNDEFINED:
       return type;
     case JsType.ARRAY:
-      return "[" + (value as RawArray).map(encode).join(",") + "]";
+      return "[" + (value as RawArray).map(stringify).join(",") + "]";
     default:
       break;
   }
@@ -417,7 +534,7 @@ function encode(value: AnyVal): string {
   objKeys.sort();
   return (
     `${prefix}{` +
-    objKeys.map((k) => `${encode(k)}:${encode(value[k])}`).join(",") +
+    objKeys.map((k) => `${stringify(k)}:${stringify(value[k])}`).join(",") +
     "}"
   );
 }
@@ -432,11 +549,10 @@ function encode(value: AnyVal): string {
  */
 export function hashCode(
   value: AnyVal,
-  hashFunction: HashFunction = DEFAULT_HASH_FUNC
+  hashFunction: HashFunction = DEFAULT_HASH_FUNCTION
 ): string | null {
   if (isNil(value)) return null;
-
-  return hashFunction(value);
+  return hashFunction(value).toString();
 }
 
 /**
@@ -513,7 +629,7 @@ export function sortBy(
 export function groupBy(
   collection: RawArray,
   keyFn: Callback<AnyVal>,
-  hashFunction: HashFunction = DEFAULT_HASH_FUNC
+  hashFunction: HashFunction = DEFAULT_HASH_FUNCTION
 ): { keys: RawArray; groups: RawArray[] } {
   const result = {
     keys: new Array<AnyVal>(),
@@ -589,7 +705,7 @@ export function into(
  */
 export function memoize(
   fn: Callback<AnyVal>,
-  hashFunction: HashFunction = DEFAULT_HASH_FUNC
+  hashFunction: HashFunction = DEFAULT_HASH_FUNCTION
 ): Callback<AnyVal> {
   return ((memo: RawObject) => {
     return (...args: RawArray): AnyVal => {

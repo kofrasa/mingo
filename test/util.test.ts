@@ -1,8 +1,9 @@
-import { find } from "../src";
 import { RawObject } from "../src/types";
 import {
   cloneDeep,
   compare,
+  hashCode,
+  intersection,
   isEmpty,
   isEqual,
   isObject,
@@ -10,6 +11,7 @@ import {
   resolve,
   resolveGraph,
   sortBy,
+  unique,
 } from "../src/util";
 
 describe("util", () => {
@@ -42,7 +44,6 @@ describe("util", () => {
       [() => void {}, () => void {}, false],
       [RegExp, RegExp, true],
     ];
-    const b = true;
     fixture.forEach((arr) => {
       it(`check: ${JSON.stringify(arr[0])} == ${JSON.stringify(
         arr[1]
@@ -167,38 +168,74 @@ describe("util", () => {
     });
   });
 
-  describe("hash function collision", () => {
-    it("should check collissions", () => {
-      const data = [
-        { codes: ["KNE_OC42-midas"] },
-        { codes: ["KNE_OCS3-midas"] },
-      ];
-      const fixtures = [
-        {
-          query: { codes: { $in: ["KNE_OCS3-midas"] } },
-          result: [
-            { codes: ["KNE_OC42-midas"] },
-            { codes: ["KNE_OCS3-midas"] },
-          ],
-          options: {},
-          message:
-            "should return both documents due to hash collision with default hash function",
-        },
-        {
-          query: { codes: { $in: ["KNE_OCS3-midas"] } },
-          result: [{ codes: ["KNE_OCS3-midas"] }],
-          options: {
-            hashFunction: (v) => JSON.stringify(v), // basic hash function, but has low performances
-          },
-          message:
-            "should return the good document due to no hash collision with custom hash function",
-        },
-      ];
-      for (let i = 0; i < fixtures.length; i++) {
-        const line = fixtures[i];
-        const res = find(data, line.query, {}, line.options).all();
-        expect(res).toEqual(line.result);
-      }
+  describe("unique", () => {
+    it("returns unique items even with hash collision", () => {
+      const first = "KNE_OC42-midas";
+      const second = "KNE_OCS3-midas";
+      expect(hashCode(first)).toEqual(hashCode(second));
+
+      const res = unique([first, second]);
+      expect(res).toEqual([first, second]);
+    });
+
+    it("returns stable unique items from duplicates", () => {
+      expect(unique([1, 2, 2, 1])).toEqual([1, 2]);
+      expect(unique([5, [2], 3, [2], 1])).toEqual([5, [2], 3, 1]);
+    });
+  });
+
+  describe("intersection", () => {
+    it("should find no intersection", () => {
+      const res = intersection([
+        [1, 2, 3],
+        [4, 5, 6],
+        [5, 6, 7],
+      ]);
+      expect(res).toEqual([]);
+    });
+
+    it("should find one intersection", () => {
+      const res = intersection([
+        [1, 2, 3],
+        [4, 5, 3],
+      ]);
+      expect(res).toEqual([3]);
+    });
+
+    it("should find intersection of more than two arrays", () => {
+      const res = intersection([
+        [1, 2, 3],
+        [3, 6, 2],
+        [4, 5, 3],
+      ]);
+      expect(res).toEqual([3]);
+    });
+
+    it("should find intersection of multiple arrays with duplicates", () => {
+      const res = intersection([
+        [1, 2, 3, 6],
+        [4, 5, 3],
+        [3, 5, 3, 1],
+      ]);
+      expect(res).toEqual([3]);
+    });
+
+    it("should find intersection of multiple arrays with complex objects", () => {
+      const res = intersection([
+        [1, [2], 3, 3],
+        [4, 5, 3, [2]],
+        [[2], 4, 5, 3, 1],
+      ]);
+      expect(res).toEqual([[2], 3]);
+    });
+
+    it("should find intersection of multiple arrays and maintain stability of sequence", () => {
+      const res = intersection([
+        [1, [2], 3, 3, 9, 10, 11],
+        [4, 5, 3, [2]],
+        [[2], 4, 5, 3, 1],
+      ]);
+      expect(res).toEqual([[2], 3]);
     });
   });
 });

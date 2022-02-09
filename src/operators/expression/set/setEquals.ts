@@ -3,7 +3,7 @@
  */
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
+import { AnyVal, RawArray, RawObject } from "../../../types";
 import { intersection, unique } from "../../../util";
 
 /**
@@ -16,11 +16,11 @@ export function $setEquals(
   expr: AnyVal,
   options?: Options
 ): AnyVal {
-  const args = computeValue(obj, expr, null, options);
+  const args = computeValue(obj, expr, null, options) as RawArray[];
   const xs = unique(args[0], options?.hashFunction);
   const ys = unique(args[1], options?.hashFunction);
   return (
     xs.length === ys.length &&
-    xs.length === intersection(xs, ys, options?.hashFunction).length
+    xs.length === intersection([xs, ys], options?.hashFunction).length
   );
 }

@@ -3,8 +3,8 @@
  */
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
-import { union } from "../../../util";
+import { AnyVal, RawArray, RawObject } from "../../../types";
+import { assert, isArray, unique } from "../../../util";
 
 /**
  * Returns a set that holds all elements of the input sets.
@@ -16,6 +16,10 @@ export function $setUnion(
   expr: AnyVal,
   options?: Options
 ): AnyVal {
-  const args = computeValue(obj, expr, null, options);
-  return union(args[0], args[1], options?.hashFunction);
+  const args = computeValue(obj, expr, null, options) as RawArray[];
+  assert(
+    isArray(args) && args.length == 2 && args.every(isArray),
+    "$setUnion: arguments must be arrays"
+  );
+  return unique(args[0].concat(args[1]), options?.hashFunction);
 }

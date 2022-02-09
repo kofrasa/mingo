@@ -24,7 +24,7 @@ export interface Comparator<T> {
 /**
  * Custom function to hash values to improve faster comparaisons
  */
-export type HashFunction = Callback<string>;
+export type HashFunction = Callback<number>;
 
 // Javascript native types
 export enum JsType {
