@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.0.4 / 2022-02-09
+
+**Fixes**
+- Handle hash collisions to correct behaviour of set operators; `setEqual`, `$setIntersection`, `$setIsSubset`, and `$setUnion`.
+- Support arbitrary number of arrays in `$setIntersection`.
+
 ## 6.0.3 / 2022-02-03
 
 **Fixes**
