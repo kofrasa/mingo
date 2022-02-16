@@ -179,7 +179,7 @@ function processObject(
     // if computed add/or remove accordingly
     if (notInArray([0, 1, false, true], subExpr)) {
       if (value === undefined) {
-        removeValue(newObj, key);
+        removeValue(newObj, key, { descendArray: true });
       } else {
         setValue(newObj, key, value);
       }
@@ -198,7 +198,7 @@ function processObject(
     newObj = into({}, obj, newObj);
     if (dropKeys.length > 0) {
       for (const k of dropKeys) {
-        removeValue(newObj, k);
+        removeValue(newObj, k, { descendArray: true });
       }
     }
   }

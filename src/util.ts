@@ -757,9 +757,6 @@ export function resolve(
 ): AnyVal {
   let depth = 0;
 
-  // options
-  options = options || { unwrapArray: false };
-
   function resolve2(o: ArrayOrObject, path: Array<string>): AnyVal {
     let value: AnyVal = o;
     for (let i = 0; i < path.length; i++) {
@@ -794,7 +791,7 @@ export function resolve(
     ? obj
     : resolve2(obj, selector.split("."));
 
-  return result instanceof Array && options.unwrapArray
+  return result instanceof Array && options?.unwrapArray
     ? unwrap(result, depth)
     : result;
 }
@@ -811,11 +808,6 @@ export function resolveGraph(
   selector: string,
   options?: ResolveOptions
 ): ArrayOrObject {
-  // options
-  if (options === undefined) {
-    options = { preserveMissing: false };
-  }
-
   const names: string[] = selector.split(".");
   const key = names[0];
   // get the next part of the selector
@@ -836,7 +828,7 @@ export function resolveGraph(
       result = [];
       for (const item of obj) {
         value = resolveGraph(item as ArrayOrObject, selector, options);
-        if (options.preserveMissing) {
+        if (options?.preserveMissing) {
           if (value === undefined) {
             value = MISSING;
           }
@@ -852,7 +844,7 @@ export function resolveGraph(
       value = resolveGraph(value as ArrayOrObject, next, options);
     }
     if (value === undefined) return undefined;
-    result = options.preserveKeys ? { ...obj } : {};
+    result = options?.preserveKeys ? { ...obj } : {};
     result[key] = value;
   }
 
@@ -888,15 +880,16 @@ export function filterMissing(obj: ArrayOrObject): void {
  * @param  {Object|Array} obj   The object to traverse
  * @param  {String} selector    The selector
  * @param  {Function} fn Function to execute for value at the end the traversal
- * @param  {Boolean} force Force generating missing parts of object graph
  * @return {*}
  */
-export function traverse(
+function walk(
   obj: ArrayOrObject,
   selector: string,
   fn: Callback<void>,
-  force?: boolean
+  options?: { buildGraph?: boolean }
 ): void {
+  if (isNil(obj)) return;
+
   const names = selector.split(".");
   const key = names[0];
   const next = names.slice(1).join(".");
@@ -905,10 +898,10 @@ export function traverse(
     fn(obj, key);
   } else {
     // force the rest of the graph while traversing
-    if (force === true && isNil(obj[key])) {
+    if (options?.buildGraph === true && isNil(obj[key])) {
       obj[key] = {};
     }
-    traverse(obj[key] as ArrayOrObject, next, fn, force);
+    walk(obj[key] as ArrayOrObject, next, fn, options);
   }
 }
 
@@ -924,13 +917,13 @@ export function setValue(
   selector: string,
   value: AnyVal
 ): void {
-  traverse(
+  walk(
     obj,
     selector,
     (item: RawObject, key: string) => {
       item[key] = value;
     },
-    true
+    { buildGraph: true }
   );
 }
 
@@ -942,12 +935,16 @@ export function setValue(
  * @param obj {ArrayOrObject} object or array
  * @param selector {String} dot separated path to element to remove
  */
-export function removeValue(obj: ArrayOrObject, selector: string): void {
-  traverse(obj, selector, (item: AnyVal, key: string) => {
+export function removeValue(
+  obj: ArrayOrObject,
+  selector: string,
+  options?: { descendArray: boolean }
+): void {
+  walk(obj, selector, (item: AnyVal, key: string) => {
     if (item instanceof Array) {
       if (/^\d+$/.test(key)) {
         item.splice(parseInt(key), 1);
-      } else {
+      } else if (options && options.descendArray) {
         for (const elem of item) {
           if (isObject(elem)) {
             delete (elem as RawObject)[key];
