@@ -114,6 +114,16 @@ support.runTest("operators/expression/date", {
     ],
 
     [
+      { dateString: "2017-02-08T12:10:40.787Z" },
+      new Date("2017-02-08T12:10:40.787Z"),
+    ],
+
+    [
+      { dateString: "2017-02-08T12:10:40Z" },
+      new Date("2017-02-08T12:10:40.000Z"),
+    ],
+
+    [
       { dateString: "2017-02-08T12:10:40.787", timezone: "-0500" },
       new Date("2017-02-08T17:10:40.787Z"),
     ],
