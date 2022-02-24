@@ -2,15 +2,35 @@
 
 import { computeValue, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
-import { isNil, isObject } from "../../../util";
+import { assert, isNil, isObject } from "../../../util";
 import {
   adjustDate,
   DATE_FORMAT,
   DATE_SYM_TABLE,
+  MINUTES_PER_HOUR,
   parseTimezone,
   regexQuote,
   regexStrip,
 } from "./_internal";
+
+interface InputExpr {
+  dateString?: string;
+  timezone?: string;
+  format?: string;
+  onError?: AnyVal;
+  onNull?: AnyVal;
+}
+
+const buildMap = (letters: string, sign: number): Record<string, number> => {
+  const h: Record<string, number> = {};
+  letters.split("").forEach((v, i) => (h[v] = sign * (i + 1)));
+  return h;
+};
+const TZ_LETTER_OFFSETS = {
+  ...buildMap("ABCDEFGHIKLM", 1),
+  ...buildMap("NOPQRSTUVWXY", -1),
+  Z: 0,
+};
 
 /**
  * Converts a date/time string to a date object.
@@ -19,16 +39,10 @@ import {
  */
 export function $dateFromString(
   obj: RawObject,
-  expr: AnyVal,
+  expr: InputExpr,
   options?: Options
 ): AnyVal {
-  const args: {
-    dateString?: string;
-    timezone?: string;
-    format?: string;
-    onError?: AnyVal;
-    onNull?: AnyVal;
-  } = computeValue(obj, expr, null, options);
+  const args = computeValue(obj, expr, null, options) as InputExpr;
 
   args.format = args.format || DATE_FORMAT;
   args.onNull = args.onNull || null;
@@ -92,11 +106,23 @@ export function $dateFromString(
     isNil(dateParts.year) ||
     isNil(dateParts.month) ||
     isNil(dateParts.day) ||
-    !new RegExp("^" + expectedPattern + "$").exec(args.dateString)
-  )
+    !new RegExp("^" + expectedPattern + "[A-Z]?$").exec(args.dateString)
+  ) {
     return args.onError;
+  }
 
-  const minuteOffset = parseTimezone(args.timezone);
+  const m = args.dateString.match(/([A-Z])$/);
+  assert(
+    // only one of in-date timeone or timezone argument but not both.
+    !(m && args.timezone),
+    `$dateFromString: you cannot pass in a date/time string with time zone information ('${
+      m && m[0]
+    }') together with a timezone argument`
+  );
+
+  const minuteOffset = m
+    ? TZ_LETTER_OFFSETS[m[0]] * MINUTES_PER_HOUR
+    : parseTimezone(args.timezone);
 
   // create the date. month is 0-based in Date
   const d = new Date(

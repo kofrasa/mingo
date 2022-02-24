@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.0.5 / 2022-02-24
+
+**Fixes**
+
+- Handle timezone letters for `$dateFromString`. Fixes [#228](https://github.com/kofrasa/mingo/issues/228)
+
 ## 6.0.4 / 2022-02-09
 
 **Fixes**
