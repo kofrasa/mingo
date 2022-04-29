@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.0.6 / 2022-04-29
+
+**Fixes**
+
+- Correctly handle comparison of multiple deeply nested arrays. Fixes [#238](https://github.com/kofrasa/mingo/issues/238)
+
 ## 6.0.5 / 2022-02-24
 
 **Fixes**
