@@ -42,6 +42,8 @@ import {
   resolve,
 } from "../util";
 
+type PredicateOptions = Options & { depth: number };
+
 /**
  * Returns a query operator created from the predicate
  *
@@ -52,10 +54,11 @@ export function createQueryOperator(
 ): QueryOperator {
   return (selector: string, value: AnyVal, options?: Options) => {
     const opts = { unwrapArray: true };
+    const depth = Math.max(1, selector.split(".").length - 1);
     return (obj: RawObject): boolean => {
       // value of field must be fully resolved.
       const lhs = resolve(obj, selector, opts);
-      return predicate(lhs, value, options);
+      return predicate(lhs, value, { ...options, depth });
     };
   };
 }
@@ -81,7 +84,7 @@ export function createExpressionOperator(
  * @param b         The rhs operand provided by the user
  * @returns {*}
  */
-export function $eq(a: AnyVal, b: AnyVal, options?: Options): boolean {
+export function $eq(a: AnyVal, b: AnyVal, options?: PredicateOptions): boolean {
   // start with simple equality check
   if (isEqual(a, b)) return true;
 
@@ -91,7 +94,7 @@ export function $eq(a: AnyVal, b: AnyVal, options?: Options): boolean {
   // check
   if (a instanceof Array) {
     const eq = isEqual.bind(null, b) as Callback<boolean>;
-    return a.some(eq) || flatten(a, 1).some(eq);
+    return a.some(eq) || flatten(a, options.depth).some(eq);
   }
 
   return false;
@@ -104,7 +107,7 @@ export function $eq(a: AnyVal, b: AnyVal, options?: Options): boolean {
  * @param b
  * @returns {boolean}
  */
-export function $ne(a: AnyVal, b: AnyVal, options?: Options): boolean {
+export function $ne(a: AnyVal, b: AnyVal, options?: PredicateOptions): boolean {
   return !$eq(a, b, options);
 }
 
@@ -115,7 +118,11 @@ export function $ne(a: AnyVal, b: AnyVal, options?: Options): boolean {
  * @param b
  * @returns {*}
  */
-export function $in(a: RawArray, b: RawArray, options?: Options): boolean {
+export function $in(
+  a: RawArray,
+  b: RawArray,
+  options?: PredicateOptions
+): boolean {
   // queries for null should be able to find undefined fields
   if (isNil(a)) return b.some((v) => v === null);
 
@@ -129,7 +136,11 @@ export function $in(a: RawArray, b: RawArray, options?: Options): boolean {
  * @param b
  * @returns {*|boolean}
  */
-export function $nin(a: RawArray, b: RawArray, options?: Options): boolean {
+export function $nin(
+  a: RawArray,
+  b: RawArray,
+  options?: PredicateOptions
+): boolean {
   return !$in(a, b, options);
 }
 
@@ -140,7 +151,7 @@ export function $nin(a: RawArray, b: RawArray, options?: Options): boolean {
  * @param b
  * @returns {boolean}
  */
-export function $lt(a: AnyVal, b: AnyVal, options?: Options): boolean {
+export function $lt(a: AnyVal, b: AnyVal, options?: PredicateOptions): boolean {
   return compare(a, b, (x: AnyVal, y: AnyVal) => x < y);
 }
 
@@ -151,7 +162,11 @@ export function $lt(a: AnyVal, b: AnyVal, options?: Options): boolean {
  * @param b
  * @returns {boolean}
  */
-export function $lte(a: AnyVal, b: AnyVal, options?: Options): boolean {
+export function $lte(
+  a: AnyVal,
+  b: AnyVal,
+  options?: PredicateOptions
+): boolean {
   return compare(a, b, (x: AnyVal, y: AnyVal) => x <= y);
 }
 
@@ -162,7 +177,7 @@ export function $lte(a: AnyVal, b: AnyVal, options?: Options): boolean {
  * @param b
  * @returns {boolean}
  */
-export function $gt(a: AnyVal, b: AnyVal, options?: Options): boolean {
+export function $gt(a: AnyVal, b: AnyVal, options?: PredicateOptions): boolean {
   return compare(a, b, (x: AnyVal, y: AnyVal) => x > y);
 }
 
@@ -173,7 +188,11 @@ export function $gt(a: AnyVal, b: AnyVal, options?: Options): boolean {
  * @param b
  * @returns {boolean}
  */
-export function $gte(a: AnyVal, b: AnyVal, options?: Options): boolean {
+export function $gte(
+  a: AnyVal,
+  b: AnyVal,
+  options?: PredicateOptions
+): boolean {
   return compare(a, b, (x: AnyVal, y: AnyVal) => x >= y);
 }
 
@@ -184,7 +203,11 @@ export function $gte(a: AnyVal, b: AnyVal, options?: Options): boolean {
  * @param b
  * @returns {boolean}
  */
-export function $mod(a: AnyVal, b: number[], options?: Options): boolean {
+export function $mod(
+  a: AnyVal,
+  b: number[],
+  options?: PredicateOptions
+): boolean {
   return ensureArray(a).some(
     (x: number) => b.length === 2 && x % b[0] === b[1]
   );
@@ -197,7 +220,11 @@ export function $mod(a: AnyVal, b: number[], options?: Options): boolean {
  * @param b
  * @returns {boolean}
  */
-export function $regex(a: AnyVal, b: RegExp, options?: Options): boolean {
+export function $regex(
+  a: AnyVal,
+  b: RegExp,
+  options?: PredicateOptions
+): boolean {
   const lhs = ensureArray(a);
   const match = (x: string) => isString(x) && !!b.exec(x);
   return lhs.some(match) || flatten(lhs, 1).some(match);
@@ -210,7 +237,11 @@ export function $regex(a: AnyVal, b: RegExp, options?: Options): boolean {
  * @param b
  * @returns {boolean}
  */
-export function $exists(a: AnyVal, b: AnyVal, options?: Options): boolean {
+export function $exists(
+  a: AnyVal,
+  b: AnyVal,
+  options?: PredicateOptions
+): boolean {
   return (
     ((b === false || b === 0) && a === undefined) ||
     ((b === true || b === 1) && a !== undefined)
@@ -227,7 +258,7 @@ export function $exists(a: AnyVal, b: AnyVal, options?: Options): boolean {
 export function $all(
   values: RawArray,
   queries: Array<RawObject>,
-  options?: Options
+  options?: PredicateOptions
 ): boolean {
   if (
     !isArray(values) ||
@@ -260,7 +291,11 @@ export function $all(
  * @param b
  * @returns {*|boolean}
  */
-export function $size(a: RawArray, b: number, options?: Options): boolean {
+export function $size(
+  a: RawArray,
+  b: number,
+  options?: PredicateOptions
+): boolean {
   return a.length === b;
 }
 
@@ -277,7 +312,7 @@ function isNonBooleanOperator(name: string): boolean {
 export function $elemMatch(
   a: RawArray,
   b: RawObject,
-  options?: Options
+  options?: PredicateOptions
 ): boolean {
   // should return false for non-matching input
   if (isArray(a) && !isEmpty(a)) {
@@ -312,7 +347,7 @@ export function $elemMatch(
 function compareType(
   a: AnyVal,
   b: number | string,
-  options?: Options
+  options?: PredicateOptions
 ): boolean {
   switch (b) {
     case 1:
@@ -377,7 +412,7 @@ function compareType(
 export function $type(
   a: AnyVal,
   b: number | string | Array<number | string>,
-  options?: Options
+  options?: PredicateOptions
 ): boolean {
   return Array.isArray(b)
     ? b.findIndex((t) => compareType(a, t, options)) >= 0

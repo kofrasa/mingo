@@ -1,4 +1,4 @@
-import { remove } from "../src";
+import { Query, remove } from "../src";
 
 describe("Query", () => {
   it("remove", () => {
@@ -7,5 +7,29 @@ describe("Query", () => {
       { name: { $regex: /a$/ } }
     );
     expect(result).toStrictEqual([{ name: "Colt" }, { name: "Xavier" }]);
+  });
+
+  it("queries deeply nested arrays", () => {
+    const query = new Query({ "children.children.flags": "foobar" });
+    const result = query.test({
+      children: [
+        {
+          children: [
+            {
+              flags: ["foobar"],
+            },
+          ],
+        },
+        {
+          children: [
+            {
+              flags: [],
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(result).toBe(true);
   });
 });
