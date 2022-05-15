@@ -5,7 +5,7 @@
 import { computeValue, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
 import { isNil } from "../../../util";
-import { $dateToString } from "../date";
+import { $dateToString } from "../date/dateToString";
 
 export function $toString(
   obj: RawObject,

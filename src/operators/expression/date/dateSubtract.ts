@@ -2,7 +2,7 @@
 
 import { computeValue, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
-import { $dateAdd } from "..";
+import { $dateAdd } from "./dateAdd";
 
 /**
  * Decrements a Date object by a specified number of time units.

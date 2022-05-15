@@ -10,9 +10,11 @@ import {
 import { compose, Iterator, Lazy } from "../../lazy";
 import { AnyVal, RawArray, RawObject } from "../../types";
 import { assert, isNumber, isOperator, isString } from "../../util";
-import { $dateAdd } from "../expression";
-import { $addFields, $group, $sort } from ".";
+import { $dateAdd } from "../expression/date/dateAdd";
 import { SetWindowFieldsInput, WindowOutputOption } from "./_internal";
+import { $addFields } from "./addFields";
+import { $group } from "./group";
+import { $sort } from "./sort";
 
 /**
  * Randomly selects the specified number of documents from its input. The given iterator must have finite values

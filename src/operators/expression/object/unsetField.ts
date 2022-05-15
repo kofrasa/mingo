@@ -2,7 +2,7 @@
 
 import { Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
-import { $setField } from ".";
+import { $setField } from "./setField";
 
 interface InputExpr {
   readonly field: string;
