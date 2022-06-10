@@ -1,4 +1,5 @@
 export * from "./dateAdd";
+export * from "./dateDiff";
 export * from "./dateFromParts";
 export * from "./dateFromString";
 export * from "./dateSubtract";
