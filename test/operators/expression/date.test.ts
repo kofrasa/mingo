@@ -2,12 +2,6 @@ import { aggregate } from "../../../src";
 import { AnyVal, RawArray, RawObject } from "../../../src/types";
 import * as support from "../../support";
 
-const apply3Units = {
-  startDate: "$$this",
-  amount: 3,
-  timezone: "+00",
-};
-
 const testDate = new Date("2021-01-28T13:05:00Z");
 // dates less 3 units
 const yearDate = new Date("2018-01-28T13:05:00Z");
@@ -19,6 +13,17 @@ const hourDate = new Date("2021-01-28T10:05:00Z");
 const minuteDate = new Date("2021-01-28T13:02:00Z");
 const secondDate = new Date("2021-01-28T13:04:57Z");
 const millisecondDate = new Date("2021-01-28T13:04:59.997Z");
+
+const apply3Units = {
+  startDate: "$$this",
+  amount: 3,
+  timezone: "+00",
+};
+const dateDiff3Units = {
+  startDate: "$$this",
+  endDate: testDate,
+  timezone: "+00",
+};
 
 support.runTest("operators/expression/date", {
   $week: [
@@ -106,6 +111,17 @@ support.runTest("operators/expression/date", {
       millisecondDate,
       { obj: testDate },
     ],
+  ],
+  $dateDiff: [
+    [{ ...dateDiff3Units, unit: "year" }, 3, { obj: yearDate }],
+    [{ ...dateDiff3Units, unit: "quarter" }, 3, { obj: quarterDate }],
+    [{ ...dateDiff3Units, unit: "month" }, 3, { obj: monthDate }],
+    [{ ...dateDiff3Units, unit: "week" }, 3, { obj: weekDate }],
+    [{ ...dateDiff3Units, unit: "day" }, 3, { obj: dayDate }],
+    [{ ...dateDiff3Units, unit: "hour" }, 3, { obj: hourDate }],
+    [{ ...dateDiff3Units, unit: "minute" }, 3, { obj: minuteDate }],
+    [{ ...dateDiff3Units, unit: "second" }, 3, { obj: secondDate }],
+    [{ ...dateDiff3Units, unit: "millisecond" }, 3, { obj: millisecondDate }],
   ],
   $dateFromString: [
     [
