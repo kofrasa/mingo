@@ -43,6 +43,7 @@ support.runTest("operators/expression/conditional", {
     [[null, "Unspecified"], "Unspecified"],
     [[undefined, "Unspecified"], "Unspecified"],
     [[5, "Unspecified"], 5],
-    [[5, "Unspecified", "error"], "invalid arguments", { err: true }],
+    [[5, "Unspecified", "Dummy"], 5],
+    [[null, null, "Unspecified"], "Unspecified"],
   ],
 });

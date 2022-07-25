@@ -4,11 +4,10 @@
 
 import { computeValue, Options } from "../../../core";
 import { AnyVal, RawArray, RawObject } from "../../../types";
-import { assert, isArray, isNil } from "../../../util";
+import { isNil } from "../../../util";
 
 /**
- * Evaluates an expression and returns the first expression if it evaluates to a non-null value.
- * Otherwise, $ifNull returns the second expression's value.
+ * Evaluates an expression and returns the first non-null value.
  *
  * @param obj
  * @param expr
@@ -19,10 +18,6 @@ export function $ifNull(
   expr: RawArray,
   options?: Options
 ): AnyVal {
-  assert(
-    isArray(expr) && expr.length === 2,
-    "$ifNull expression must resolve to array(2)"
-  );
-  const args = computeValue(obj, expr, null, options);
-  return isNil(args[0]) ? args[1] : args[0];
+  const args = computeValue(obj, expr, null, options) as RawArray[];
+  return args.find((arg) => !isNil(arg));
 }
