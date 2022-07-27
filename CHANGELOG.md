@@ -1,5 +1,15 @@
 # Changelog
 
+## 6.1.0 / 2022-07-27
+
+**Fixes**
+
+- Allow multiple expressions to `$ifNull` conditional.
+
+**New**
+
+- Added `$dateDiff` operator. See [#244](https://github.com/kofrasa/mingo/pull/244)
+
 ## 6.0.6 / 2022-04-29
 
 **Fixes**
