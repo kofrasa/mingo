@@ -5,7 +5,7 @@
     "group:all"
   ],
   "ignoreUnstable": true,
-  "automerge": true,
+  "automerge": false,
   "automergeType": "branch",
   "lockFileMaintenance": {
     "enabled": true
