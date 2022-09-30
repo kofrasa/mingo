@@ -1,5 +1,5 @@
 import { aggregate } from "../../../src";
-import { AnyVal, RawArray } from "../../../src/types";
+import { AnyVal } from "../../../src/types";
 import * as support from "../../support";
 
 const testDate = new Date("2021-01-28T13:05:00Z");
@@ -123,108 +123,7 @@ support.runTest("operators/expression/date", {
     [{ ...dateDiff3Units, unit: "second" }, 3, { obj: secondDate }],
     [{ ...dateDiff3Units, unit: "millisecond" }, 3, { obj: millisecondDate }],
   ],
-  $dateFromString: [
-    [
-      { dateString: "2017-02-08T12:10:40.787" },
-      new Date("2017-02-08T12:10:40.787Z"),
-    ],
-
-    [
-      { dateString: "2017-02-08T12:10:40.787Z" },
-      new Date("2017-02-08T12:10:40.787Z"),
-    ],
-
-    [
-      { dateString: "2017-02-08T12:10:40Z" },
-      new Date("2017-02-08T12:10:40.000Z"),
-    ],
-
-    [{ dateString: "2017-02-08A" }, new Date("2017-02-07T23:00:00Z")],
-
-    [{ dateString: "2017-02-08B" }, new Date("2017-02-07T22:00:00Z")],
-
-    [{ dateString: "2017-02-08N" }, new Date("2017-02-08T01:00:00Z")],
-
-    [{ dateString: "2017-02-08Y" }, new Date("2017-02-08T12:00:00Z")],
-
-    [
-      { dateString: "2017-02-08T12:10:40.787", timezone: "-0500" },
-      new Date("2017-02-08T17:10:40.787Z"),
-    ],
-
-    [{ dateString: "2017-02-08" }, new Date("2017-02-08T00:00:00Z")],
-
-    [
-      {
-        dateString: "06-15-2018",
-        format: "%m-%d-%Y",
-      },
-      new Date("2018-06-15T00:00:00Z"),
-    ],
-
-    [
-      {
-        dateString: "15-06-2018",
-        format: "%d-%m-%Y",
-      },
-      new Date("2018-06-15T00:00:00Z"),
-    ],
-
-    [
-      {
-        dateString: "2017-02-09T03:35:02.055",
-        timezone: "-0500",
-      },
-      new Date("2017-02-09T08:35:02.055Z"),
-    ],
-  ],
-
-  $dateFromParts: dateFromPartsFixtures(),
 });
-
-function dateFromPartsFixtures(): RawArray[] {
-  const input = [
-    {
-      year: 2022,
-      month: 2,
-      day: 0,
-    },
-    {
-      year: 2022,
-      month: 1,
-      day: 30,
-    },
-    {
-      year: 2022,
-      month: 3,
-      day: 0,
-    },
-    {
-      year: 2022,
-      month: 0,
-      day: 1,
-    },
-    {
-      year: 2022,
-      month: 1,
-      day: 0,
-    },
-  ];
-  const output = [
-    new Date("2022-01-31T00:00:00Z"),
-    new Date("2022-01-30T00:00:00Z"),
-    new Date("2022-02-28T00:00:00Z"),
-    new Date("2021-12-01T00:00:00Z"),
-    new Date("2021-12-31T00:00:00Z"),
-  ];
-
-  const res = aggregate(
-    [{ val: [input, output] }],
-    [{ $project: { value: { $zip: { inputs: "$val" } } } }]
-  );
-
-  return res[0]["value"] as RawArray[];
-}
 
 describe("Date Operators", () => {
   const check = (actual: AnyVal, expected: AnyVal, message: string) => {
@@ -318,63 +217,4 @@ describe("Date Operators", () => {
 
     check(result.hour, 1, "can apply $hour with timezone");
   }
-});
-
-describe("Date Operators: $dateFromParts", () => {
-  const data = [
-    {
-      _id: 1,
-      item: "abc",
-      price: 20,
-      quantity: 5,
-      date: new Date("2017-05-20T10:24:51.303Z"),
-    },
-  ];
-  const result = aggregate(data, [
-    {
-      $project: {
-        date: {
-          $dateFromParts: {
-            year: 2017,
-            month: 2,
-            day: 8,
-            hour: 12,
-          },
-        },
-        date_timezone: {
-          $dateFromParts: {
-            year: 2016,
-            month: 12,
-            day: 31,
-            hour: 23,
-            minute: 46,
-            second: 12,
-            timezone: "-0500",
-          },
-        },
-        date_range_greater: {
-          $dateFromParts: { year: 2017, month: 14, day: 1, hour: 12 },
-        },
-        date_range_lesser: {
-          $dateFromParts: { year: 2017, month: 2, day: 0, hour: 12 },
-        },
-      },
-    },
-  ])[0];
-
-  it("can apply $dateFromParts without all parts", () => {
-    expect(result.date).toEqual(new Date("2017-02-08T12:00:00Z"));
-  });
-
-  it("can apply $dateFromParts with date parts above range of values", () => {
-    expect(result.date_range_greater).toEqual(new Date("2018-02-01T12:00:00Z"));
-  });
-
-  it("can apply $dateFromParts with date parts below range of values", () => {
-    expect(result.date_range_lesser).toEqual(new Date("2017-01-31T12:00:00Z"));
-  });
-
-  it("can apply $dateFromParts with timezone", () => {
-    expect(result.date_timezone).toEqual(new Date("2017-01-01T04:46:12Z"));
-  });
 });
