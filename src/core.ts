@@ -220,13 +220,16 @@ const OPERATORS: Record<OperatorType, OperatorMap> = {
  * @param operators Map of the operators
  */
 export function useOperators(type: OperatorType, operators: OperatorMap): void {
-  for (const [name, func] of Object.entries(operators)) {
+  for (const [name, fn] of Object.entries(operators)) {
     assert(
-      func instanceof Function && isOperator(name),
+      fn instanceof Function && isOperator(name),
       `'${name}' is not a valid operator`
     );
-    // const call = getOperator(type, name);
-    // assert(!call, `${name} already exists for '${type}' operators`);
+    const currentFn = getOperator(type, name);
+    assert(
+      !currentFn || fn === currentFn,
+      `${name} already exists for '${type}' operators. Cannot change operator function once registered.`
+    );
   }
   // toss the operator salad :)
   into(OPERATORS[type], operators);
