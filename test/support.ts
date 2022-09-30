@@ -15,6 +15,9 @@ export const personData = person;
 
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 
+export const testPath = (filename: string): string =>
+  filename.slice(filename.indexOf("test/operators"));
+
 export class ObjectId {
   constructor(readonly _id: string) {}
 }
@@ -164,19 +167,19 @@ export function runTest(
     describe(description, () => {
       describe(operator, () => {
         examples.forEach((val) => {
-          let input = val[0];
+          let input = val[0] as RawObject;
           let expected = val[1];
           const ctx = (val[2] || { err: false }) as RawObject;
           const obj = ctx?.obj || {};
 
-          let field = operator;
+          let field: string | undefined = operator;
           // use the operator as field if not present in input
           if (!!input && input.constructor === Object) {
-            field = Object.keys(input).find((s) => s[0] === "$") || null;
-            if (field === null) {
+            field = Object.keys(input).find((s) => s[0] === "$");
+            if (!field) {
               field = operator;
             } else {
-              input = input[field];
+              input = input[field] as RawObject;
             }
           }
 
