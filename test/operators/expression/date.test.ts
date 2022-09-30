@@ -272,7 +272,7 @@ describe("Date Operators", () => {
         },
       ],
       [projectionOperator]
-    ).pop();
+    )[0];
 
     check(result.year, 2014, "can apply $year");
     check(result.month, 1, "can apply $month");
@@ -314,7 +314,7 @@ describe("Date Operators", () => {
         },
       ],
       [projectionOperator]
-    ).pop();
+    )[0];
 
     check(result.hour, 1, "can apply $hour with timezone");
   }

@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.1.1 / 2022-09-30
+
+**Fixes**
+
+- Handle timezone correctly for `$dateToParts`. Closes [#256](https://github.com/kofrasa/mingo/issues/256)
+
 ## 6.1.0 / 2022-07-27
 
 **Fixes**

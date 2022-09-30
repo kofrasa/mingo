@@ -62,20 +62,4 @@ describe(testPath(__filename), () => {
       },
     ]);
   });
-
-  // it("ffd", () => {
-  //   const query = {
-  //     $addFields: {
-  //       localTime: {
-  //         $dateToParts: {
-  //           date: new Date("2022-09-30T16:00:00Z"),
-  //           timezone: "-05:00",
-  //           iso8601: true,
-  //         },
-  //       },
-  //     },
-  //   };
-  //   const res = aggregate([{ key: 1 }], [query])[0];
-  //   expect(res["localTime"]).toMatchObject({ hour: 11 });
-  // });
 });
