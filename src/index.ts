@@ -6,7 +6,7 @@ import { Options } from "./core";
 import { Cursor } from "./cursor";
 import { Source } from "./lazy";
 import { Query } from "./query";
-import { RawArray, RawObject } from "./types";
+import { RawObject } from "./types";
 
 export { Aggregator } from "./aggregator";
 export { Query } from "./query";
@@ -57,9 +57,9 @@ export function remove(
  */
 export function aggregate(
   collection: Source,
-  pipeline: Array<RawObject>,
+  pipeline: RawObject[],
   options?: Options
-): RawArray {
+): RawObject[] {
   return new Aggregator(pipeline, options).run(collection);
 }
 
