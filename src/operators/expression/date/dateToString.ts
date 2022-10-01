@@ -14,8 +14,9 @@ import {
   parseTimezone,
 } from "./_internal";
 import { $dayOfMonth } from "./dayOfMonth";
-import { $dayOfWeek } from "./dayOfWeek";
 import { $hour } from "./hour";
+import { $isoDayOfWeek } from "./isoDayOfWeek";
+import { $isoWeek } from "./isoWeek";
 import { $millisecond } from "./millisecond";
 import { $minute } from "./minute";
 import { $month } from "./month";
@@ -40,8 +41,9 @@ const DATE_FUNCTIONS: Record<string, Callback<number>> = {
   "%M": $minute,
   "%S": $second,
   "%L": $millisecond,
-  "%u": $dayOfWeek,
-  "%V": $week,
+  "%u": $isoDayOfWeek,
+  "%U": $week,
+  "%V": $isoWeek,
 };
 
 /**
@@ -77,7 +79,7 @@ export function $dateToString(
   const date = computeDate(obj, args.date, options);
   let format = args.format || DATE_FORMAT;
   const minuteOffset = parseTimezone(args.timezone);
-  const matches = format.match(/(%%|%Y|%G|%m|%d|%H|%M|%S|%L|%u|%V|%z|%Z)/g);
+  const matches = format.match(/(%%|%Y|%G|%m|%d|%H|%M|%S|%L|%u|%U|%V|%z|%Z)/g);
 
   // adjust the date to reflect timezone
   adjustDate(date, minuteOffset);

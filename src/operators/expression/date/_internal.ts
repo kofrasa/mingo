@@ -93,8 +93,9 @@ export const DATE_SYM_TABLE: Record<string, DatePartFormatter> = {
   "%M": { name: "minute", padding: 2, re: /([0-5][0-9])/ },
   "%S": { name: "second", padding: 2, re: /([0-5][0-9]|60)/ },
   "%L": { name: "millisecond", padding: 3, re: /([0-9]{3})/ },
-  "%u": { name: "weekDay", padding: 1, re: /([1-7])/ },
-  "%V": { name: "week", padding: 1, re: /([1-4][0-9]?|5[0-3]?)/ },
+  "%u": { name: "weekday", padding: 1, re: /([1-7])/ },
+  "%U": { name: "week", padding: 2, re: /([1-4][0-9]?|5[0-3]?)/ },
+  "%V": { name: "isoWeek", padding: 2, re: /([1-4][0-9]?|5[0-3]?)/ },
   "%z": {
     name: "timezone",
     padding: 2,

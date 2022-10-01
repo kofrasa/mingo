@@ -5,7 +5,7 @@ import { AnyVal, RawObject } from "../../../types";
 import { computeDate } from "./_internal";
 
 /**
- * Returns the weekday number in ISO 8601 format, ranging from 1 (for Monday) to 7 (for Sunday).
+ * Returns the weekday number in ISO 8601 format, ranging from 1 (Monday) to 7 (Sunday).
  * @param obj
  * @param expr
  */
