@@ -1,5 +1,14 @@
 # Changelog
 
+## 6.1.2 / 2022-10-02
+
+**Fixes**
+
+- Fix breaking change in `6.1.1`. Closes [274](https://github.com/kofrasa/mingo/issues/274)
+- Fix `$dateToString` formatter `%V` to be week of year in ISO 8601 format (i.e. `01`-`53`)
+- Fix `$dateToString` formatter `%u` to be day of week number in ISO 8601 format (i.e. `1`-`7`)
+- Add `$dateToString` formatter `%U` for week of year.
+
 ## 6.1.1 / 2022-09-30
 
 **Fixes**
@@ -31,6 +40,7 @@
 ## 6.0.4 / 2022-02-09
 
 **Fixes**
+
 - Handle hash collisions to correct behaviour of set operators; `setEqual`, `$setIntersection`, `$setIsSubset`, and `$setUnion`.
 - Support arbitrary number of arrays in `$setIntersection`.
 
@@ -44,6 +54,7 @@
 ## 6.0.2 / 2022-02-02
 
 **Fixes**
+
 - Fix incorrect date bug when handling underflows in `dateFromParts`. See [#224](https://github.com/kofrasa/mingo/issues/224)
 
 ## 6.0.1 / 2022-02-01
