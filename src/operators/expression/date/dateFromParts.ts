@@ -1,8 +1,7 @@
 // Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
 
-import { aggregate } from "../../../../src";
 import { computeValue, Options } from "../../../core";
-import { AnyVal, RawArray, RawObject } from "../../../types";
+import { AnyVal, RawObject } from "../../../types";
 import {
   DATE_PART_INTERVAL,
   isLeapYear,
@@ -97,48 +96,4 @@ export function $dateFromParts(
       args.millisecond
     )
   );
-}
-
-function dateFromPartsFixtures(): RawArray[] {
-  const input = [
-    {
-      year: 2022,
-      month: 2,
-      day: 0,
-    },
-    {
-      year: 2022,
-      month: 1,
-      day: 30,
-    },
-    {
-      year: 2022,
-      month: 3,
-      day: 0,
-    },
-    {
-      year: 2022,
-      month: 0,
-      day: 1,
-    },
-    {
-      year: 2022,
-      month: 1,
-      day: 0,
-    },
-  ];
-  const output = [
-    new Date("2022-01-31T00:00:00Z"),
-    new Date("2022-01-30T00:00:00Z"),
-    new Date("2022-02-28T00:00:00Z"),
-    new Date("2021-12-01T00:00:00Z"),
-    new Date("2021-12-31T00:00:00Z"),
-  ];
-
-  const res = aggregate(
-    [{ val: [input, output] }],
-    [{ $project: { value: { $zip: { inputs: "$val" } } } }]
-  );
-
-  return res[0]["value"] as RawArray[];
 }
