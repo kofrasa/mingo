@@ -112,7 +112,7 @@ export interface Options {
   readonly jsonSchemaValidator?: JsonSchemaValidator;
 }
 
-// options to core functions computeValue() and redact()
+/** options to core functions computeValue() and redact() */
 interface ComputeOptions extends Options {
   /** Reference to the root object when processing subgraphs of the object  */
   readonly root?: RawObject;

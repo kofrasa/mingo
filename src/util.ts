@@ -36,7 +36,7 @@ const DEFAULT_HASH_FUNCTION: HashFunction = (value: AnyVal): number => {
   return hash >>> 0;
 };
 
-// Options to resolve() and resolveGraph() functions
+/** Options to resolve() and resolveGraph() functions */
 interface ResolveOptions {
   unwrapArray?: boolean;
   preserveMissing?: boolean;
@@ -154,9 +154,9 @@ export function objectMap(obj: RawObject, fn: Callback<AnyVal>): RawObject {
   return o;
 }
 
-// Options to merge function
+/** Options to merge function */
 interface MergeOptions {
-  flatten?: boolean;
+  readonly flatten?: boolean;
 }
 
 /**
