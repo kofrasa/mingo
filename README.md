@@ -258,6 +258,27 @@ interface Options {
 }
 ```
 
+## Adding Custom Operators
+Custom operators can be added with the [useOperators(type, operatorMap)](http://kofrasa.net/mingo/modules/core.html#useOperators) where
+`type` is the kind of operators to add, and `operatorMap` is mapping of function names beginning with `$` to their implementations for the specific operator type.
+
+Once an operator has been registered the function referenced cannot be replaced. This ensures that behaviour of `mingo` remain consistent at runtime.
+
+Each operator type function has a different signature and must be registered correctly otherwise the result will be unexpected.
+
+- [AccumulatorOperator](http://kofrasa.net/mingo/modules/core.html#AccumulatorOperator)
+- [ExpressionOperator](http://kofrasa.net/mingo/modules/core.html#ExpressionOperator)
+- [ProjectionOperator](http://kofrasa.net/mingo/modules/core.html#ProjectionOperator)
+- [PipelineOperator](http://kofrasa.net/mingo/modules/core.html#PipelineOperator)
+- [WindowOperator](http://kofrasa.net/mingo/modules/core.html#WindowOperator)
+- [QueryOperator](http://kofrasa.net/mingo/modules/core.html#QueryOperator)
+
+Pre-loaded operators defined [here](https://github.com/kofrasa/mingo/blob/master/src/init/basic.ts) cannot be overridden. These include;
+- All [query](http://kofrasa.net/mingo/modules/operators_query.html) operators.
+- All [projection](http://kofrasa.net/mingo/modules/operators_projection.html) operators.
+- Expression operators for [boolean](http://kofrasa.net/mingo/modules/operators_expression_boolean.html) and [comparison](http://kofrasa.net/mingo/modules/operators_expression_comparison.html).
+- Pipeline [operators](http://kofrasa.net/mingo/modules/operators_pipeline.html); `$project`, `$skip`, `$limit`, and `$sort`.
+
 ## Differences from MongoDB
 
 1. There is no concept of a collection. Input data is either an array of objects or a generator function to support streaming.
