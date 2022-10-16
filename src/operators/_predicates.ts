@@ -44,6 +44,8 @@ import {
 
 type PredicateOptions = Options & { depth: number };
 
+type ConversionType = number | JsType | BsonType;
+
 /**
  * Returns a query operator created from the predicate
  *
@@ -337,6 +339,55 @@ export function $elemMatch(
   return false;
 }
 
+// helper functions
+const isNull = (a: AnyVal) => a === null;
+const isInt = (a: AnyVal) =>
+  isNumber(a) &&
+  a >= MIN_INT &&
+  a <= MAX_INT &&
+  a.toString().indexOf(".") === -1;
+const isLong = (a: AnyVal) =>
+  isNumber(a) &&
+  a >= MIN_LONG &&
+  a <= MAX_LONG &&
+  a.toString().indexOf(".") === -1;
+
+/** Mapping of type to predicate */
+const compareFuncs: Record<ConversionType, Predicate<AnyVal>> = {
+  array: isArray as Predicate<AnyVal>,
+  bool: isBoolean,
+  boolean: isBoolean,
+  date: isDate,
+  decimal: isNumber,
+  double: isNumber,
+  int: isInt,
+  long: isLong,
+  number: isNumber,
+  null: isNull,
+  object: isObject,
+  regex: isRegExp,
+  regexp: isRegExp,
+  string: isString,
+  // added for completeness
+  undefined: isNil, // deprecated
+  function: (_: AnyVal) => {
+    throw new Error("unsupported type key `function`.");
+  },
+  // Mongo identifiers
+  1: isNumber, //double
+  2: isString,
+  3: isObject,
+  4: isArray as Predicate<AnyVal>,
+  6: isNil, // deprecated
+  8: isBoolean,
+  9: isDate,
+  10: isNull,
+  11: isRegExp,
+  16: isInt,
+  18: isLong,
+  19: isNumber, //decimal
+};
+
 /**
  * Selects documents if a field is of the specified type.
  *
@@ -346,60 +397,11 @@ export function $elemMatch(
  */
 function compareType(
   a: AnyVal,
-  b: number | string,
-  options?: PredicateOptions
+  b: ConversionType,
+  _?: PredicateOptions
 ): boolean {
-  switch (b) {
-    case 1:
-    case 19:
-    case BsonType.DOUBLE:
-    case BsonType.DECIMAL:
-      return isNumber(a);
-    case 2:
-    case JsType.STRING:
-      return isString(a);
-    case 3:
-    case JsType.OBJECT:
-      return isObject(a);
-    case 4:
-    case JsType.ARRAY:
-      return isArray(a);
-    case 6:
-    case JsType.UNDEFINED:
-      return isNil(a);
-    case 8:
-    case JsType.BOOLEAN:
-    case BsonType.BOOL:
-      return isBoolean(a);
-    case 9:
-    case JsType.DATE:
-      return isDate(a);
-    case 10:
-    case JsType.NULL:
-      return a === null;
-    case 11:
-    case JsType.REGEXP:
-    case BsonType.REGEX:
-      return isRegExp(a);
-    case 16:
-    case BsonType.INT:
-      return (
-        isNumber(a) &&
-        a >= MIN_INT &&
-        a <= MAX_INT &&
-        a.toString().indexOf(".") === -1
-      );
-    case 18:
-    case BsonType.LONG:
-      return (
-        isNumber(a) &&
-        a >= MIN_LONG &&
-        a <= MAX_LONG &&
-        a.toString().indexOf(".") === -1
-      );
-    default:
-      return false;
-  }
+  const f = compareFuncs[b];
+  return f ? f(a) : false;
 }
 
 /**
@@ -411,7 +413,7 @@ function compareType(
  */
 export function $type(
   a: AnyVal,
-  b: number | string | Array<number | string>,
+  b: ConversionType | Array<ConversionType>,
   options?: PredicateOptions
 ): boolean {
   return Array.isArray(b)

@@ -26,26 +26,29 @@ export interface Comparator<T> {
  */
 export type HashFunction = Callback<number>;
 
+type CommonTypes =
+  | "null"
+  | "undefined"
+  | "string"
+  | "date"
+  | "array"
+  | "object";
+
 // Javascript native types
-export enum JsType {
-  NULL = "null",
-  UNDEFINED = "undefined",
-  BOOLEAN = "boolean",
-  NUMBER = "number",
-  STRING = "string",
-  DATE = "date",
-  REGEXP = "regexp",
-  ARRAY = "array",
-  OBJECT = "object",
-  FUNCTION = "function",
-}
+export type JsType =
+  | CommonTypes
+  | "boolean"
+  | "number"
+  | "string"
+  | "regexp"
+  | "function";
 
 // MongoDB BSON types
-export enum BsonType {
-  BOOL = "bool",
-  INT = "int",
-  LONG = "long",
-  DOUBLE = "double",
-  DECIMAL = "decimal",
-  REGEX = "regex",
-}
+export type BsonType =
+  | CommonTypes
+  | "bool"
+  | "int"
+  | "long"
+  | "double"
+  | "decimal"
+  | "regex";

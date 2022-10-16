@@ -3,7 +3,7 @@
  */
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, BsonType, JsType, RawObject } from "../../../types";
+import { AnyVal, RawObject } from "../../../types";
 import { isNil } from "../../../util";
 import { TypeConvertError } from "./_internal";
 import { $toBool } from "./toBool";
@@ -40,31 +40,31 @@ export function $convert(
   try {
     switch (args.to) {
       case 2:
-      case JsType.STRING:
+      case "string":
         return $toString(obj, args.input, options);
 
       case 8:
-      case JsType.BOOLEAN:
-      case BsonType.BOOL:
+      case "boolean":
+      case "bool":
         return $toBool(obj, args.input, options);
 
       case 9:
-      case JsType.DATE:
+      case "date":
         return $toDate(obj, args.input, options);
 
       case 1:
       case 19:
-      case BsonType.DOUBLE:
-      case BsonType.DECIMAL:
-      case JsType.NUMBER:
+      case "double":
+      case "decimal":
+      case "number":
         return $toDouble(obj, args.input, options);
 
       case 16:
-      case BsonType.INT:
+      case "int":
         return $toInt(obj, args.input, options);
 
       case 18:
-      case BsonType.LONG:
+      case "long":
         return $toLong(obj, args.input, options);
     }
   } catch (e) {

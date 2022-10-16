@@ -44,15 +44,15 @@ interface ResolveOptions {
 }
 
 // no array, object, or function types
-const JS_SIMPLE_TYPES = [
-  JsType.NULL,
-  JsType.UNDEFINED,
-  JsType.BOOLEAN,
-  JsType.NUMBER,
-  JsType.STRING,
-  JsType.DATE,
-  JsType.REGEXP,
-];
+const JS_SIMPLE_TYPES = new Set<JsType>([
+  "null",
+  "undefined",
+  "boolean",
+  "number",
+  "string",
+  "date",
+  "regexp",
+]);
 
 const OBJECT_PROTOTYPE = Object.getPrototypeOf({}) as AnyVal;
 const OBJECT_TAG = "[object Object]";
@@ -80,13 +80,13 @@ export function getType(v: AnyVal): string {
   return OBJECT_TYPE_RE.exec(Object.prototype.toString.call(v) as string)[1];
 }
 export function isBoolean(v: AnyVal): v is boolean {
-  return typeof v === JsType.BOOLEAN;
+  return typeof v === "boolean";
 }
 export function isString(v: AnyVal): v is string {
-  return typeof v === JsType.STRING;
+  return typeof v === "string";
 }
 export function isNumber(v: AnyVal): v is number {
-  return !isNaN(v as number) && typeof v === JsType.NUMBER;
+  return !isNaN(v as number) && typeof v === "number";
 }
 export const isArray = Array.isArray;
 export function isObject(v: AnyVal): v is object {
@@ -107,7 +107,7 @@ export function isRegExp(v: AnyVal): v is RegExp {
   return v instanceof RegExp;
 }
 export function isFunction(v: AnyVal): boolean {
-  return typeof v === JsType.FUNCTION;
+  return typeof v === "function";
 }
 export function isNil(v: AnyVal): boolean {
   return v === null || v === undefined;
@@ -402,23 +402,20 @@ export function isEqual(a: AnyVal, b: AnyVal): boolean {
     if (a === b) continue;
 
     // unequal types and functions cannot be equal.
-    const nativeType = getType(a).toLowerCase();
-    if (
-      nativeType !== getType(b).toLowerCase() ||
-      nativeType === JsType.FUNCTION
-    ) {
+    const nativeType = getType(a).toLowerCase() as JsType;
+    if (nativeType !== getType(b).toLowerCase() || nativeType === "function") {
       return false;
     }
 
     // leverage toString for Date and RegExp types
-    if (nativeType === JsType.ARRAY) {
+    if (nativeType === "array") {
       const xs = a as RawArray;
       const ys = b as RawArray;
       if (xs.length !== ys.length) return false;
       if (xs.length === ys.length && xs.length === 0) continue;
       into(lhs, xs);
       into(rhs, ys);
-    } else if (nativeType === JsType.OBJECT) {
+    } else if (nativeType === "object") {
       // deep compare objects
       const aKeys = Object.keys(a);
       const bKeys = Object.keys(b);
@@ -510,26 +507,26 @@ export function unique(
  * @returns {*}
  */
 export function stringify(value: AnyVal): string {
-  const type = getType(value).toLowerCase();
+  const type = getType(value).toLowerCase() as JsType;
   switch (type) {
-    case JsType.BOOLEAN:
-    case JsType.NUMBER:
-    case JsType.REGEXP:
+    case "boolean":
+    case "number":
+    case "regexp":
       return value.toString();
-    case JsType.STRING:
+    case "string":
       return JSON.stringify(value);
-    case JsType.DATE:
+    case "date":
       return (value as Date).toISOString();
-    case JsType.NULL:
-    case JsType.UNDEFINED:
+    case "null":
+    case "undefined":
       return type;
-    case JsType.ARRAY:
+    case "array":
       return "[" + (value as RawArray).map(stringify).join(",") + "]";
     default:
       break;
   }
   // default case
-  const prefix = type === JsType.OBJECT ? "" : `${getType(value)}`;
+  const prefix = type === "object" ? "" : `${getType(value)}`;
   const objKeys = Object.keys(value);
   objKeys.sort();
   return (
@@ -787,7 +784,7 @@ export function resolve(
     return value;
   }
 
-  const result = inArray(JS_SIMPLE_TYPES, getType(obj).toLowerCase())
+  const result = JS_SIMPLE_TYPES.has(getType(obj).toLowerCase() as JsType)
     ? obj
     : resolve2(obj, selector.split("."));
 
@@ -974,7 +971,7 @@ export function isOperator(name: string): boolean {
  */
 export function normalize(expr: AnyVal): AnyVal {
   // normalized primitives
-  if (inArray(JS_SIMPLE_TYPES, getType(expr).toLowerCase())) {
+  if (JS_SIMPLE_TYPES.has(getType(expr).toLowerCase() as JsType)) {
     return isRegExp(expr) ? { $regex: expr } : { $eq: expr };
   }
 
