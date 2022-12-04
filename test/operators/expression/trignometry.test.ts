@@ -11,6 +11,13 @@ support.runTest("operators/expression/trignometry", {
     ],
     [Math.PI, 1.2246467991473532e-16],
   ],
+  $sinh: [
+    [NaN, NaN],
+    [null, null],
+    [Infinity, Infinity],
+    [-Infinity, -Infinity],
+    [Math.PI, 11.548739357257748],
+  ],
   $cos: [
     [NaN, NaN],
     [null, null],
@@ -20,6 +27,13 @@ support.runTest("operators/expression/trignometry", {
       { err: true },
     ],
     [Math.PI, -1],
+  ],
+  $cosh: [
+    [NaN, NaN],
+    [null, null],
+    [Infinity, Infinity],
+    [-Infinity, Infinity],
+    [Math.PI, 11.591953275521519],
   ],
   $tan: [
     [NaN, NaN],
@@ -44,11 +58,7 @@ support.runTest("operators/expression/trignometry", {
   $acos: [
     [NaN, NaN],
     [null, null],
-    [
-      Infinity,
-      "cannot apply $acos to -inf, value must in (-inf,inf)",
-      { err: true },
-    ],
+    [Infinity, Infinity],
     [1, 0],
   ],
   $atan: [
@@ -69,21 +79,13 @@ support.runTest("operators/expression/trignometry", {
   $asinh: [
     [NaN, NaN],
     [null, null],
-    [
-      Infinity,
-      "cannot apply $asinh to -inf, value must in (-inf,inf)",
-      { err: true },
-    ],
+    [Infinity, Infinity],
     [Math.PI, 1.8622957433108482],
   ],
   $acosh: [
     [NaN, NaN],
     [null, null],
-    [
-      Infinity,
-      "cannot apply $acosh to -inf, value must in (-inf,inf)",
-      { err: true },
-    ],
+    [Infinity, Infinity],
     [Math.PI, 1.811526272460853],
   ],
   $atanh: [

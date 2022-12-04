@@ -2,8 +2,9 @@
 
 import { createTrignometryOperator } from "./_internal";
 
-/** Returns the inverse cosine (arc cosine) of a value in radians. */
-export const $acos = createTrignometryOperator(Math.acos, {
+/** Returns the hyperbolic cosine of a value that is measured in radians. */
+export const $cosh = createTrignometryOperator(Math.cosh, {
+  "-Infinity": Infinity,
   Infinity: Infinity,
-  0: new Error(),
+  // [Math.PI]: -1,
 });

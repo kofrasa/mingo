@@ -2,7 +2,14 @@
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, Callback, RawObject } from "../../../types";
-import { isNil } from "../../../util";
+
+const FIXED_POINTS = {
+  undefined: null,
+  null: null,
+  NaN: NaN,
+  Infinity: new Error(),
+  "-Infinity": new Error(),
+} as Record<string, null | number | Error>;
 
 /**
  * Returns an operator for a given trignometric function
@@ -11,16 +18,20 @@ import { isNil } from "../../../util";
  */
 export function createTrignometryOperator(
   f: Callback<number | null>,
-  returnInfinity?: boolean
+  fixedPoints = FIXED_POINTS
 ): ExpressionOperator {
+  const fp = Object.assign({}, FIXED_POINTS, fixedPoints);
+  const keySet = new Set(Object.keys(fp));
   return (obj: RawObject, expr: AnyVal, options?: Options): number | null => {
     const n = computeValue(obj, expr, null, options) as number;
-    if (isNaN(n) || isNil(n)) return n;
-    if (n === Infinity || n === -Infinity) {
-      if (returnInfinity) return n;
-      throw new Error(
-        `cannot apply $${f.name} to -inf, value must in (-inf,inf)`
-      );
+    if (keySet.has(`${n}`)) {
+      const res = fp[`${n}`];
+      if (res instanceof Error) {
+        throw new Error(
+          `cannot apply $${f.name} to -inf, value must in (-inf,inf)`
+        );
+      }
+      return res;
     }
     return f(n);
   };
