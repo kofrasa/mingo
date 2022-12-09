@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.1.3 / 2022-12-09
+
+**Fixes**
+- Use correct context for resolving paths. Closes [284](https://github.com/kofrasa/mingo/issues/284)
+- Support user-defined global variables.
+
 ## 6.1.2 / 2022-10-02
 
 **Fixes**
