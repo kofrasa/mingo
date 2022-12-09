@@ -4,6 +4,7 @@ import {
   computeValue,
   OperatorType,
   Options,
+  ProcessingMode,
   redact,
   useOperators,
 } from "../src/core";
@@ -14,6 +15,40 @@ import * as support from "./support";
 const copts = ComputeOptions.init();
 
 describe("core", () => {
+  afterEach(() => {
+    copts.udpate();
+  });
+
+  describe("ComputeOptions", () => {
+    it("should preserve 'root' on init if defined", () => {
+      expect(copts.root).toBeUndefined();
+      copts.udpate(false);
+      expect(copts.root).toEqual(false);
+      expect(ComputeOptions.init(copts, true).root).toEqual(false);
+    });
+
+    it("should preserve 'local' on init if defined", () => {
+      expect(copts.local).toBeUndefined();
+      copts.udpate(null, { groupId: 5 });
+      expect(copts.local?.groupId).toEqual(5);
+      expect(ComputeOptions.init(copts).local?.groupId).toEqual(5);
+    });
+
+    it("should access all members of init options", () => {
+      copts.udpate(true, { variables: { x: 10 } });
+      expect(copts.idKey).toEqual("_id");
+      expect(copts.scriptEnabled).toEqual(true);
+      expect(copts.useStrictMode).toEqual(true);
+      expect(copts.processingMode).toEqual(ProcessingMode.CLONE_OFF);
+      expect(copts.collation).toBeUndefined();
+      expect(copts.collectionResolver).toBeUndefined();
+      expect(copts.hashFunction).toBeUndefined();
+      expect(copts.jsonSchemaValidator).toBeUndefined();
+      expect(copts.variables).toBeUndefined();
+      expect(copts.local?.variables).toEqual({ x: 10 });
+      expect(copts.root).toEqual(true);
+    });
+  });
   describe("useOperators", () => {
     it("should add new pipeline operator", () => {
       function $pluck(collection: AnyVal, expr: AnyVal): AnyVal {

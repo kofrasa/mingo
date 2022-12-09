@@ -149,8 +149,9 @@ export class ComputeOptions implements Options {
   ): ComputeOptions {
     return options instanceof ComputeOptions
       ? options.udpate(
+          // value can be '0' or 'false'
           isNil(options.root) ? root : options.root,
-          isNil(options.local) ? local : options.local
+          options.local || local
         )
       : new ComputeOptions(options || initOptions(), root, local);
   }
@@ -166,13 +167,11 @@ export class ComputeOptions implements Options {
   get root() {
     return this._root;
   }
-
   get local() {
     return this._local;
   }
-
   get idKey() {
-    return this.options?.idKey || "_id";
+    return this.options?.idKey;
   }
   get collation() {
     return this.options?.collation;
@@ -195,7 +194,6 @@ export class ComputeOptions implements Options {
   get jsonSchemaValidator() {
     return this.options?.jsonSchemaValidator;
   }
-
   get variables() {
     return this.options?.variables;
   }
@@ -479,7 +477,7 @@ export function computeValue(
       context = Object.assign(
         {},
         copts.variables, // global vars
-        copts?.local?.variables, // local vars
+        copts.local?.variables, // local vars
         { this: obj } // current item referred to by '$$this'
       );
       const prefix = arr[0].substr(2);
