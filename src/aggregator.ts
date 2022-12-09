@@ -3,6 +3,7 @@ import {
   initOptions,
   OperatorType,
   Options,
+  PipelineOperator,
   ProcessingMode,
 } from "./core";
 import { Iterator, Lazy, Source } from "./lazy";
@@ -44,13 +45,13 @@ export class Aggregator {
       for (const operator of this.pipeline) {
         const operatorKeys = Object.keys(operator);
         const op = operatorKeys[0];
-        const call = getOperator(OperatorType.PIPELINE, op);
+        const call = getOperator(OperatorType.PIPELINE, op) as PipelineOperator;
         assert(
           operatorKeys.length === 1 && !!call,
           `invalid aggregation operator ${op}`
         );
         pipelineOperators.push(op);
-        iterator = call(iterator, operator[op], this.options) as Iterator;
+        iterator = call(iterator, operator[op], this.options);
       }
     }
 

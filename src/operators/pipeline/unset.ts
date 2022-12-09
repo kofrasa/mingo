@@ -1,4 +1,4 @@
-import { Options } from "../../core";
+import { ComputeOptions } from "../../core";
 import { Iterator } from "../../lazy";
 import { ensureArray } from "../../util";
 import { $project } from "./project";
@@ -14,7 +14,7 @@ import { $project } from "./project";
 export function $unset(
   collection: Iterator,
   expr: string | string[],
-  options?: Options
+  options?: ComputeOptions
 ): Iterator {
   expr = ensureArray(expr) as string[];
   const doc: Record<string, number> = {};

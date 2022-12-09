@@ -1,8 +1,8 @@
 // Custom Aggregation Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#custom-aggregation-expression-operators
 
-import { computeValue, Options } from "../../../core";
-import { AnyVal, Callback, RawArray, RawObject } from "../../../types";
-import { assert } from "../../../util";
+import { ComputeOptions, computeValue, Options } from "../../core";
+import { AnyVal, Callback, RawArray, RawObject } from "../../types";
+import { assert } from "../../util";
 
 interface AccumulatorExpr {
   /** Function used to initialize the state. */
@@ -39,22 +39,24 @@ export function $accumulator(
 
   if (collection.length == 0) return expr.initArgs;
 
+  const copts = ComputeOptions.init(options);
+
   const initArgs = computeValue(
-    options["groupId"] || {},
+    {},
     expr.initArgs || [],
     null,
-    options
+    copts.udpate(copts?.local?.groupId || {})
   ) as RawArray;
 
   let state = expr.init.call(null, ...initArgs) as AnyVal;
 
-  for (let i = 0; i < collection.length; i++) {
+  for (const doc of collection) {
     // get arguments for document
     const args = computeValue(
-      collection[i],
+      doc,
       expr.accumulateArgs,
       null,
-      options
+      copts.udpate(doc)
     ) as RawArray;
     // update the state with each documents value
     state = expr.accumulate.call(null, ...[state, ...args]);

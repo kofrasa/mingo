@@ -1,4 +1,10 @@
-import { computeValue, getOperator, OperatorType, Options } from "../../core";
+import {
+  ComputeOptions,
+  computeValue,
+  getOperator,
+  OperatorType,
+  Options,
+} from "../../core";
 import { Iterator } from "../../lazy";
 import { AnyVal, Predicate, RawObject } from "../../types";
 import {
@@ -59,8 +65,9 @@ export function $project(
     expressionKeys.push(ID_KEY);
   }
 
+  const copts = ComputeOptions.init(options);
   return collection.map((obj: RawObject) =>
-    processObject(obj, expr, options, expressionKeys, idOnlyExcluded)
+    processObject(obj, expr, copts.udpate(obj), expressionKeys, idOnlyExcluded)
   );
 }
 

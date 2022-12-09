@@ -26,7 +26,7 @@ samples.runTestPipeline("operators/pipeline/project", [
       { $limit: 1 },
     ],
     input: samples.studentsData,
-    expected: (result: RawArray) => {
+    expected: (result: Array<RawObject>) => {
       const fields = Object.keys(result[0]);
       expect(fields.length).toEqual(4);
       expect(fields).toContain("type");
@@ -381,5 +381,23 @@ samples.runTestPipeline("operators/pipeline/project", [
       { _id: 2, bestFruit: ["kiwi"] },
       { _id: 3, bestFruit: [] },
     ],
+  },
+
+  // Bug fix: https://github.com/kofrasa/mingo/issues/284
+  {
+    message: "should resolve with root object when available.",
+    pipeline: [
+      {
+        $project: {
+          foo: {
+            bar: {
+              baz: { $abs: "$foo.bar.baz" },
+            },
+          },
+        },
+      },
+    ],
+    input: [{ foo: { bar: { baz: -1 }, baz: -10 }, baz: -100 }],
+    expected: [{ foo: { bar: { baz: 1 } } }],
   },
 ]);

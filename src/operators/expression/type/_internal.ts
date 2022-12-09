@@ -11,7 +11,7 @@ export class TypeConvertError extends Error {
 export function toInteger(
   obj: RawObject,
   expr: AnyVal,
-  options: Options | undefined,
+  options: Options,
   max: number,
   min: number,
   typename: string

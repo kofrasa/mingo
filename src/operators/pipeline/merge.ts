@@ -1,5 +1,5 @@
 import { Aggregator } from "../../aggregator";
-import { computeValue, Options } from "../../core";
+import { ComputeOptions, computeValue, Options } from "../../core";
 import { Iterator } from "../../lazy";
 import { RawObject } from "../../types";
 import { assert, hashCode, isArray, isString, resolve } from "../../util";
@@ -68,32 +68,28 @@ export function $merge(
     hash[k] = [obj, i];
   }
 
+  const copts = ComputeOptions.init(options);
+
   return collection.map((o: RawObject) => {
     const k = getHash(o);
     if (hash[k]) {
       const [target, i] = hash[k];
+
+      // compute variables
+      const variables = computeValue(
+        target,
+        expr.let || { new: "$$ROOT" },
+        null,
+        // 'root' is the item from the iteration.
+        copts.udpate(o)
+      ) as RawObject;
+
       if (isArray(expr.whenMatched)) {
-        const vars = expr.let
-          ? (computeValue(target, expr.let, null, options) as RawObject)
-          : {};
-
-        const newObj: RawObject = {};
-
-        try {
-          const aggregator = new Aggregator(expr.whenMatched, options);
-          target["$new"] = o;
-          for (const [name, val] of Object.entries(vars)) {
-            target[`$${name}`] = val;
-          }
-          Object.assign(newObj, aggregator.run([target])[0]);
-        } finally {
-          delete newObj["$new"];
-          for (const name of Object.keys(vars)) {
-            delete newObj[`$${name}`];
-          }
-        }
-
-        output[i] = newObj;
+        const aggregator = new Aggregator(expr.whenMatched, {
+          ...options,
+          variables,
+        });
+        output[i] = aggregator.run([target])[0];
       } else {
         switch (expr.whenMatched) {
           case "replace":
@@ -107,7 +103,12 @@ export function $merge(
             break;
           case "merge":
           default:
-            output[i] = $mergeObjects(o, [target, o], options) as RawObject;
+            output[i] = $mergeObjects(
+              target,
+              [target, o],
+              // 'root' is the item from the iteration.
+              copts.udpate(o, { variables })
+            ) as RawObject;
             break;
         }
       }

@@ -1,6 +1,6 @@
 // Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
 
-import { computeValue, Options } from "../../../core";
+import { ComputeOptions, computeValue, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
 import { assert, isArray, isNil } from "../../../util";
 
@@ -15,15 +15,22 @@ export function $reduce(
   expr: RawObject,
   options?: Options
 ): AnyVal {
-  const input = computeValue(obj, expr.input, null, options) as AnyVal[];
-  const initialValue = computeValue(obj, expr.initialValue, null, options);
+  const copts = ComputeOptions.init(options, obj);
+  const input = computeValue(obj, expr.input, null, copts) as AnyVal[];
+  const initialValue = computeValue(obj, expr.initialValue, null, copts);
   const inExpr = expr["in"];
 
   if (isNil(input)) return null;
   assert(isArray(input), "$reduce 'input' expression must resolve to an array");
 
-  return input.reduce(
-    (acc, n) => computeValue({ $value: acc, $this: n }, inExpr, null, options),
-    initialValue
-  );
+  return input.reduce((acc, n) => {
+    return computeValue(
+      n,
+      inExpr,
+      null,
+      copts.udpate(obj, {
+        variables: { value: acc },
+      })
+    );
+  }, initialValue);
 }

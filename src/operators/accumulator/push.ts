@@ -1,4 +1,4 @@
-import { computeValue, Options } from "../../core";
+import { ComputeOptions, computeValue, Options } from "../../core";
 import { AnyVal, RawArray, RawObject } from "../../types";
 import { isNil } from "../../util";
 
@@ -16,5 +16,8 @@ export function $push(
   options?: Options
 ): RawArray {
   if (isNil(expr)) return collection;
-  return collection.map((obj) => computeValue(obj, expr, null, options));
+  const copts = ComputeOptions.init(options);
+  return collection.map((obj) =>
+    computeValue(obj, expr, null, copts.udpate(obj))
+  );
 }

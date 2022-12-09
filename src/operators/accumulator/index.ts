@@ -2,6 +2,7 @@
  * Group stage Accumulator Operators. https://docs.mongodb.com/manual/reference/operator/aggregation-
  */
 
+export * from "./accumulator";
 export * from "./addToSet";
 export * from "./avg";
 export * from "./count";

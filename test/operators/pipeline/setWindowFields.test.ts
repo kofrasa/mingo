@@ -5,7 +5,10 @@ import { ProcessingMode } from "../../../src/core";
 
 describe("operators/pipeline/setWindowFields", () => {
   describe("$setWindowFields", () => {
-    const options = { processingMode: ProcessingMode.CLONE_INPUT };
+    const options = {
+      processingMode: ProcessingMode.CLONE_INPUT,
+      scriptEnabled: true,
+    };
     const data = [
       {
         _id: 0,

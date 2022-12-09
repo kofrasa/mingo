@@ -110,16 +110,95 @@ export interface Options {
   readonly collectionResolver?: CollectionResolver;
   /** JSON schema validator to use with the '$jsonSchema' operator. This is required in order to use the operator. */
   readonly jsonSchemaValidator?: JsonSchemaValidator;
+  /** Global variables. */
+  readonly variables?: RawObject;
 }
 
-/** options to core functions computeValue() and redact() */
-interface ComputeOptions extends Options {
-  /** Reference to the root object when processing subgraphs of the object  */
-  readonly root?: RawObject;
-  /** The groupId computed for a group of documents by the $group operator. */
+interface LocalData {
+  /** The groupId computed for a group of documents. */
   readonly groupId?: AnyVal;
-  /** The current time in milliseconds. Remains the same throughout all stages of the aggregation pipeline. */
-  readonly currentTimestamp?: number;
+  /** Local user-defind variables. */
+  readonly variables?: RawObject;
+}
+
+/** Custom type to facilitate type checking for global options */
+export class ComputeOptions implements Options {
+  private constructor(
+    readonly options?: Options,
+    /** Reference to the root object when processing subgraphs of the object. */
+    private _root?: AnyVal,
+    private _local?: LocalData,
+    /** The current time in milliseconds. Remains the same throughout all stages of the aggregation pipeline. */
+    readonly timestamp = Date.now()
+  ) {
+    this.options = options;
+    this.udpate(_root, _local);
+  }
+
+  /**
+   * Initialize new ComputeOptions. Returns the same object modified when the 'options' argument is a ComputeOptions.
+   * @param options
+   * @param root
+   * @param local
+   * @returns
+   */
+  static init(
+    options?: Options,
+    root?: AnyVal,
+    local?: LocalData
+  ): ComputeOptions {
+    return options instanceof ComputeOptions
+      ? options.udpate(
+          isNil(options.root) ? root : options.root,
+          isNil(options.local) ? local : options.local
+        )
+      : new ComputeOptions(options || initOptions(), root, local);
+  }
+
+  /** Updates the internal mutable state. */
+  udpate(root?: AnyVal, local?: LocalData): ComputeOptions {
+    // NOTE: this is done for efficiency to avoid creating too many intermediate options objects.
+    this._root = root;
+    this._local = local;
+    return this;
+  }
+
+  get root() {
+    return this._root;
+  }
+
+  get local() {
+    return this._local;
+  }
+
+  get idKey() {
+    return this.options?.idKey || "_id";
+  }
+  get collation() {
+    return this.options?.collation;
+  }
+  get processingMode() {
+    return this.options?.processingMode || ProcessingMode.CLONE_OFF;
+  }
+  get useStrictMode() {
+    return this.options?.useStrictMode;
+  }
+  get scriptEnabled() {
+    return this.options?.scriptEnabled;
+  }
+  get hashFunction() {
+    return this.options?.hashFunction;
+  }
+  get collectionResolver() {
+    return this.options?.collectionResolver;
+  }
+  get jsonSchemaValidator() {
+    return this.options?.jsonSchemaValidator;
+  }
+
+  get variables() {
+    return this.options?.variables;
+  }
 }
 
 /**
@@ -132,7 +211,6 @@ export function initOptions(options?: Options): Options {
     scriptEnabled: true,
     useStrictMode: true,
     processingMode: ProcessingMode.CLONE_OFF,
-    currentTimestamp: Date.now(),
     ...options,
   });
 }
@@ -150,15 +228,15 @@ export enum OperatorType {
 }
 
 export type AccumulatorOperator = (
-  collection: RawObject[],
+  collection: RawArray,
   expr: AnyVal,
   options?: Options
 ) => AnyVal;
 
 export type ExpressionOperator = (
-  obj: RawObject,
+  obj: AnyVal,
   expr: AnyVal,
-  options?: Options
+  options?: ComputeOptions
 ) => AnyVal;
 
 export type PipelineOperator = (
@@ -264,7 +342,7 @@ const systemVariables: Record<string, Callback<AnyVal>> = {
     return undefined;
   },
   $$NOW(obj: AnyVal, expr: AnyVal, options: ComputeOptions) {
-    return new Date(options.currentTimestamp);
+    return new Date(options.timestamp);
   },
 };
 
@@ -294,7 +372,7 @@ const redactVariables: Record<string, Callback<AnyVal>> = {
           const array: RawArray = [];
           for (let elem of current) {
             if (isObject(elem)) {
-              elem = redact(elem as RawObject, expr, options);
+              elem = redact(elem as RawObject, expr, options.udpate(elem));
             }
             if (!isNil(elem)) {
               array.push(elem);
@@ -302,7 +380,11 @@ const redactVariables: Record<string, Callback<AnyVal>> = {
           }
           result = array;
         } else {
-          result = redact(current as RawObject, expr, options) as ArrayOrObject;
+          result = redact(
+            current as RawObject,
+            expr,
+            options.udpate(current)
+          ) as ArrayOrObject;
         }
 
         if (isNil(result)) {
@@ -330,66 +412,100 @@ export function computeValue(
   obj: AnyVal,
   expr: AnyVal,
   operator?: string,
-  options?: ComputeOptions
+  options?: Options
 ): AnyVal {
   // ensure valid options exist on first invocation
-  options = options || initOptions();
+  const copts = ComputeOptions.init(options, obj);
 
   if (isOperator(operator)) {
     // if the field of the object is a valid operator
-    let call = getOperator(OperatorType.EXPRESSION, operator);
-    if (call) return call(obj, expr, options);
+    const callExpression = getOperator(
+      OperatorType.EXPRESSION,
+      operator
+    ) as ExpressionOperator;
+    if (callExpression) return callExpression(obj, expr, copts);
 
     // we also handle $group accumulator operators
-    call = getOperator(OperatorType.ACCUMULATOR, operator);
-    if (call) {
+    const callAccumulator = getOperator(
+      OperatorType.ACCUMULATOR,
+      operator
+    ) as AccumulatorOperator;
+    if (callAccumulator) {
       // if object is not an array, first try to compute using the expression
       if (!(obj instanceof Array)) {
-        obj = computeValue(obj, expr, null, options);
+        obj = computeValue(obj, expr, null, copts);
         expr = null;
       }
 
       // validate that we have an array
       assert(obj instanceof Array, `'${operator}' target must be an array.`);
 
-      // we pass a null expression because all values have been resolved
-      return call(obj, expr, options);
+      // for accumulators, we use the global options since the root is specific to each element within array.
+      return callAccumulator(
+        obj as RawArray,
+        expr,
+        // reset the root object for accumulators.
+        copts.udpate(null, copts.local)
+      );
     }
 
     // operator was not found
     throw new Error(`operator '${operator}' is not registered`);
   }
 
-  // if expr is a variable for an object field
-  // field not used in this case
+  // if expr is a string and begins with "$$", then we have a variable.
+  //  this can be one of; redact variable, system variable, user-defined variable.
+  //  we check and process them in that order.
+  //
+  // if expr begins only a single "$", then it is a path to a field on the object.
   if (isString(expr) && expr.length > 0 && expr[0] === "$") {
     // we return redact variables as literals
     if (has(redactVariables, expr)) {
       return expr;
     }
 
+    // default to root for resolving path.
+    let context = copts.root;
+
     // handle selectors with explicit prefix
     const arr = expr.split(".");
     if (has(systemVariables, arr[0])) {
       // set 'root' only the first time it is required to be used for all subsequent calls
       // if it already available on the options, it will be used
-      obj = systemVariables[arr[0]](obj, null, { root: obj, ...options });
-      if (arr.length == 1) return obj;
-      expr = expr.substr(arr[0].length); // '.' prefix will be sliced off below
+      context = systemVariables[arr[0]](obj, null, copts) as ArrayOrObject;
+      expr = expr.slice(arr[0].length + 1); //  +1 for '.'
+    } else if (arr[0].substr(0, 2) === "$$") {
+      // handle user-defined variables
+      context = Object.assign(
+        {},
+        copts.variables, // global vars
+        copts?.local?.variables, // local vars
+        { this: obj } // current item referred to by '$$this'
+      );
+      const prefix = arr[0].substr(2);
+      assert(
+        has(context as RawObject, prefix),
+        `Use of undefined variable: ${prefix}`
+      );
+      expr = expr.slice(2);
+    } else {
+      // 'expr' is a path to a field on the object.
+      expr = expr.slice(1);
     }
 
-    return resolve(obj as ArrayOrObject, (expr as string).slice(1));
+    if (expr === "") return context;
+    return resolve(context as ArrayOrObject, expr as string);
   }
 
   // check and return value if already in a resolved state
   if (expr instanceof Array) {
     return (expr as RawArray).map((item: AnyVal) =>
-      computeValue(obj, item, null, options)
+      computeValue(obj, item, null, copts)
     );
   } else if (isObject(expr)) {
     const result: RawObject = {};
     for (const [key, val] of Object.entries(expr as RawObject)) {
-      result[key] = computeValue(obj, val, key, options);
+      result[key] = computeValue(obj, val, key, copts);
       // must run ONLY one aggregate operator per expression
       // if so, return result of the computed value
       if (
@@ -424,8 +540,8 @@ export function redact(
   expr: AnyVal,
   options: ComputeOptions
 ): AnyVal {
-  const result = computeValue(obj, expr, null, options);
-  return has(redactVariables, result as string)
-    ? redactVariables[result as string](obj, expr, { root: obj, ...options })
+  const result = computeValue(obj, expr, null, options) as string;
+  return has(redactVariables, result)
+    ? redactVariables[result](obj, expr, options)
     : result;
 }

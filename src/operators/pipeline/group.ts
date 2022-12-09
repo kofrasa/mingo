@@ -1,7 +1,10 @@
-import { computeValue, Options } from "../../core";
+import { ComputeOptions, computeValue, Options } from "../../core";
 import { Iterator } from "../../lazy";
 import { RawArray, RawObject } from "../../types";
 import { groupBy } from "../../util";
+
+// lookup key for grouping
+const ID_KEY = "_id";
 
 /**
  * Groups documents together for the purpose of calculating aggregate values based on a collection of documents.
@@ -16,15 +19,13 @@ export function $group(
   expr: RawObject,
   options?: Options
 ): Iterator {
-  // lookup key for grouping
-  const ID_KEY = "_id";
-
-  const id = expr[ID_KEY];
+  const idExpr = expr[ID_KEY];
+  const copts = ComputeOptions.init(options);
 
   return collection.transform((coll: RawArray) => {
     const partitions = groupBy(
       coll,
-      (obj) => computeValue(obj, id, null, options),
+      (obj) => computeValue(obj, idExpr, null, options),
       options?.hashFunction
     );
 
@@ -48,10 +49,12 @@ export function $group(
 
       // compute remaining keys in expression
       for (const [key, val] of Object.entries(expr)) {
-        obj[key] = computeValue(partitions.groups[i], val, key, {
-          groupId,
-          ...options,
-        });
+        obj[key] = computeValue(
+          partitions.groups[i],
+          val,
+          key,
+          copts.udpate(null, { groupId })
+        );
       }
 
       return { value: obj, done: false };

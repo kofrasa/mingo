@@ -35,7 +35,7 @@ const WHITESPACE_CHARS = [
 export function trimString(
   obj: RawObject,
   expr: AnyVal,
-  options: Options | undefined,
+  options: Options,
   trimOpts: { left: boolean; right: boolean }
 ): string {
   const val = computeValue(obj, expr, null, options) as RawObject;
@@ -75,7 +75,7 @@ export function trimString(
 export function regexSearch(
   obj: RawObject,
   expr: AnyVal,
-  options: Options | undefined,
+  options: Options,
   reOpts: { global: boolean }
 ): RawArray | undefined {
   const val = computeValue(obj, expr, null, options) as RawObject;

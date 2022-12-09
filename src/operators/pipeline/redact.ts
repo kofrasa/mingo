@@ -1,4 +1,4 @@
-import { Options, redact } from "../../core";
+import { ComputeOptions, Options, redact } from "../../core";
 import { Iterator } from "../../lazy";
 import { RawObject } from "../../types";
 
@@ -12,5 +12,8 @@ export function $redact(
   expr: RawObject,
   options?: Options
 ): Iterator {
-  return collection.map((obj: RawObject) => redact(obj, expr, options));
+  const copts = ComputeOptions.init(options);
+  return collection.map((obj: RawObject) =>
+    redact(obj, expr, copts.udpate(obj))
+  );
 }

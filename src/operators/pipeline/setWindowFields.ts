@@ -138,7 +138,7 @@ export function $setWindowFields(
               return func.left(getItemsFn(obj, index), args, options);
             }
 
-            // OR process window function
+            // OR process 'window' function
             return func.right(
               obj,
               getItemsFn(obj, index),
@@ -148,6 +148,7 @@ export function $setWindowFields(
                 documentNumber: index + 1,
                 field,
               },
+              // must use raw options only since it operates over a collection.
               options
             );
           };
@@ -227,14 +228,18 @@ export function $setWindowFields(
         }
 
         // invoke add fields to get the desired behaviour using a custom function.
-        iterator = $addFields(iterator, {
-          [field]: {
-            $function: {
-              body: (obj: RawObject) => windowResultMap[field](obj),
-              args: ["$$CURRENT"],
+        iterator = $addFields(
+          iterator,
+          {
+            [field]: {
+              $function: {
+                body: (obj: RawObject) => windowResultMap[field](obj),
+                args: ["$$CURRENT"],
+              },
             },
           },
-        });
+          options
+        );
       }
 
       // add to iterator list
