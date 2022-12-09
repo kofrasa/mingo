@@ -2,7 +2,7 @@
  * Variable Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#variable-expression-operators
  */
 
-import { computeValue, Options } from "../../../core";
+import { ComputeOptions, computeValue, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
 
 /**
@@ -24,5 +24,10 @@ export function $let(
     variables[key] = computeValue(obj, val, null, options);
   }
 
-  return computeValue(obj, expr.in, null, { variables, ...options });
+  return computeValue(
+    obj,
+    expr.in,
+    null,
+    ComputeOptions.init(options, obj, { variables })
+  );
 }

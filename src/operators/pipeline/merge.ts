@@ -86,7 +86,7 @@ export function $merge(
 
       if (isArray(expr.whenMatched)) {
         const aggregator = new Aggregator(expr.whenMatched, {
-          ...options,
+          ...copts.options,
           variables,
         });
         output[i] = aggregator.run([target])[0];

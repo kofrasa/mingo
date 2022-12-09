@@ -1,6 +1,6 @@
 // Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
 
-import { computeValue, Options } from "../../../core";
+import { ComputeOptions, computeValue, Options } from "../../../core";
 import { AnyVal, RawArray, RawObject } from "../../../types";
 import { assert, isArray } from "../../../util";
 
@@ -19,12 +19,15 @@ export function $filter(
   const input = computeValue(obj, expr.input, null, options) as RawArray;
   assert(isArray(input), "$filter 'input' expression must resolve to an array");
 
+  const copts = ComputeOptions.init(options, obj);
   const k = expr.as || "this";
   return input.filter(
     (o: AnyVal) =>
-      computeValue(obj, expr.cond, null, {
-        ...options,
-        variables: { [k]: o },
-      }) === true
+      computeValue(
+        o,
+        expr.cond,
+        null,
+        copts.udpate(copts.root, { variables: { [k]: o } })
+      ) === true
   );
 }
