@@ -7,8 +7,8 @@ import { Callback, RawObject } from "../src/types";
 
 const items: Array<RawObject> = [];
 for (let i = 0; i < 100_000; i++) {
-  const books = [];
-  const authors = [];
+  const books: RawObject[] = [];
+  const authors: RawObject[] = [];
   for (let j = 0; j < 10; j++) {
     books.push({
       id: j,
@@ -77,7 +77,7 @@ describe("perf", () => {
 
   describe("sorting", () => {
     function makeid(length: number) {
-      const text = [];
+      const text: string[] = [];
       const possible =
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
       for (let i = 0; i < length; i++) {
@@ -86,7 +86,7 @@ describe("perf", () => {
       return text.join("");
     }
 
-    const arrayToSort = [];
+    const arrayToSort: string[] = [];
     for (let i = 0; i < 5000; i++) {
       arrayToSort.push(makeid(128));
     }
