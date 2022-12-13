@@ -18,7 +18,10 @@ import { assert, cloneDeep, intersection, isEmpty } from "./util";
  * @constructor
  */
 export class Aggregator {
-  constructor(readonly pipeline: Array<RawObject>, readonly options?: Options) {
+  constructor(
+    private readonly pipeline: Array<RawObject>,
+    private readonly options?: Options
+  ) {
     this.options = initOptions(options);
   }
 

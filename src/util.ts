@@ -20,7 +20,7 @@ export const MAX_LONG = Number.MAX_SAFE_INTEGER;
 export const MIN_LONG = Number.MIN_SAFE_INTEGER;
 
 // special value to identify missing items. treated differently from undefined
-const MISSING = Object.freeze({});
+const MISSING = Symbol("missing");
 
 /**
  * Uses the simple hash method as described in Effective Java.
@@ -129,6 +129,9 @@ export function isEmpty(x: AnyVal): boolean {
     (isObject(x) && Object.keys(x).length === 0)
   );
 }
+export function isMissing(m: AnyVal): boolean {
+  return m === MISSING;
+}
 // ensure a value is an array or wrapped within one
 export function ensureArray(x: AnyVal): RawArray {
   return x instanceof Array ? x : [x];
@@ -173,8 +176,8 @@ export function merge(
   options?: MergeOptions
 ): ArrayOrObject {
   // take care of missing inputs
-  if (target === MISSING) return obj;
-  if (obj === MISSING) return target;
+  if (isMissing(target)) return obj;
+  if (isMissing(obj)) return target;
 
   const inputs = [target, obj];
 
@@ -558,6 +561,8 @@ export function hashCode(
  * @param {*} b
  */
 export function compare(a: AnyVal, b: AnyVal): ComparatorResult {
+  if (a === MISSING) a = undefined;
+  if (b === MISSING) b = undefined;
   if (a < b) return -1;
   if (a > b) return 1;
   return 0;
