@@ -5,6 +5,7 @@
 export * from "./accumulator";
 export * from "./addToSet";
 export * from "./avg";
+export * from "./bottom";
 export * from "./bottomN";
 export * from "./count";
 export * from "./covariancePop";
@@ -18,4 +19,5 @@ export * from "./push";
 export * from "./stdDevPop";
 export * from "./stdDevSamp";
 export * from "./sum";
+export * from "./top";
 export * from "./topN";
