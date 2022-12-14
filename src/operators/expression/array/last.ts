@@ -1,8 +1,9 @@
 // Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
 
-import { computeValue, Options } from "../../../core";
+import { ComputeOptions, computeValue, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
-import { assert, isArray } from "../../../util";
+import { assert, isArray, isNil } from "../../../util";
+import { $last as __last } from "../../accumulator";
 
 /**
  * Returns the last element in an array.
@@ -12,9 +13,11 @@ import { assert, isArray } from "../../../util";
  * @return {*}
  */
 export function $last(obj: RawObject, expr: AnyVal, options?: Options): AnyVal {
-  const arr = computeValue(obj, expr, null, options) as AnyVal[];
-  if (arr == null) return null;
+  const copts = ComputeOptions.init(options);
+  if (obj instanceof Array) return __last(obj, expr, copts.udpate());
+
+  const arr = computeValue(obj, expr, null, options) as RawObject[];
+  if (isNil(arr)) return null;
   assert(isArray(arr), "Must resolve to an array/null or missing");
-  if (arr.length > 0) return arr[arr.length - 1];
-  return undefined;
+  return __last(arr, "$$this", options);
 }

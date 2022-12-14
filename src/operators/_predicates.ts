@@ -96,7 +96,7 @@ export function $eq(a: AnyVal, b: AnyVal, options?: PredicateOptions): boolean {
   // check
   if (a instanceof Array) {
     const eq = isEqual.bind(null, b) as Callback<boolean>;
-    return a.some(eq) || flatten(a, options.depth).some(eq);
+    return a.some(eq) || flatten(a, options?.depth).some(eq);
   }
 
   return false;

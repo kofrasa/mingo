@@ -99,4 +99,21 @@ samples.runTestPipeline("operators/accumulator/lastN", [
       { _id: { gameId: "G2" }, gamescores: [80] },
     ],
   },
+  {
+    message: "Using $lastN as an Aggregation Expression",
+    input: [{ array: [10, 20, 30, 40] }],
+    pipeline: [
+      {
+        $project: {
+          lastThreeElements: {
+            $lastN: {
+              input: "$array",
+              n: 3,
+            },
+          },
+        },
+      },
+    ],
+    expected: [{ lastThreeElements: [20, 30, 40] }],
+  },
 ]);

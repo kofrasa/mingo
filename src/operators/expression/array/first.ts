@@ -1,8 +1,9 @@
 // Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
 
-import { computeValue, Options } from "../../../core";
+import { ComputeOptions, computeValue, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
-import { assert, isArray } from "../../../util";
+import { assert, isArray, isNil } from "../../../util";
+import { $first as __first } from "../../accumulator";
 
 /**
  * Returns the first element in an array.
@@ -16,9 +17,11 @@ export function $first(
   expr: AnyVal,
   options?: Options
 ): AnyVal {
-  const arr = computeValue(obj, expr, null, options) as AnyVal[];
-  if (arr == null) return null;
+  const copts = ComputeOptions.init(options);
+  if (obj instanceof Array) return __first(obj, expr, copts.udpate());
+
+  const arr = computeValue(obj, expr, null, options) as RawObject[];
+  if (isNil(arr)) return null;
   assert(isArray(arr), "Must resolve to an array/null or missing");
-  if (arr.length > 0) return arr[0];
-  return undefined;
+  return __first(arr, "$$this", options);
 }
