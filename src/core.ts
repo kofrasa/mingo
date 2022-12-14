@@ -132,7 +132,7 @@ export class ComputeOptions implements Options {
     readonly timestamp = Date.now()
   ) {
     this.options = options;
-    this.udpate(_root, _local);
+    this.update(_root, _local);
   }
 
   /**
@@ -148,7 +148,7 @@ export class ComputeOptions implements Options {
     local?: LocalData
   ): ComputeOptions {
     return options instanceof ComputeOptions
-      ? options.udpate(
+      ? options.update(
           // value can be '0' or 'false'
           isNil(options.root) ? root : options.root,
           options.local || local
@@ -157,7 +157,7 @@ export class ComputeOptions implements Options {
   }
 
   /** Updates the internal mutable state. */
-  udpate(root?: AnyVal, local?: LocalData): ComputeOptions {
+  update(root?: AnyVal, local?: LocalData): ComputeOptions {
     // NOTE: this is done for efficiency to avoid creating too many intermediate options objects.
     this._root = root;
     this._local = local;
@@ -370,7 +370,7 @@ const redactVariables: Record<string, Callback<AnyVal>> = {
           const array: RawArray = [];
           for (let elem of current) {
             if (isObject(elem)) {
-              elem = redact(elem as RawObject, expr, options.udpate(elem));
+              elem = redact(elem as RawObject, expr, options.update(elem));
             }
             if (!isNil(elem)) {
               array.push(elem);
@@ -381,7 +381,7 @@ const redactVariables: Record<string, Callback<AnyVal>> = {
           result = redact(
             current as RawObject,
             expr,
-            options.udpate(current)
+            options.update(current)
           ) as ArrayOrObject;
         }
 
@@ -443,7 +443,7 @@ export function computeValue(
         obj as RawArray,
         expr,
         // reset the root object for accumulators.
-        copts.udpate(null, copts.local)
+        copts.update(null, copts.local)
       );
     }
 

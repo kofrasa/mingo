@@ -45,7 +45,7 @@ export function $accumulator(
     {},
     expr.initArgs || [],
     null,
-    copts.udpate(copts?.local?.groupId || {})
+    copts.update(copts?.local?.groupId || {})
   ) as RawArray;
 
   let state = expr.init.call(null, ...initArgs) as AnyVal;
@@ -56,7 +56,7 @@ export function $accumulator(
       doc,
       expr.accumulateArgs,
       null,
-      copts.udpate(doc)
+      copts.update(doc)
     ) as RawArray;
     // update the state with each documents value
     state = expr.accumulate.call(null, ...[state, ...args]);

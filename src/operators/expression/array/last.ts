@@ -14,7 +14,7 @@ import { $last as __last } from "../../accumulator";
  */
 export function $last(obj: RawObject, expr: AnyVal, options?: Options): AnyVal {
   const copts = ComputeOptions.init(options);
-  if (obj instanceof Array) return __last(obj, expr, copts.udpate());
+  if (obj instanceof Array) return __last(obj, expr, copts.update());
 
   const arr = computeValue(obj, expr, null, options) as RawObject[];
   if (isNil(arr)) return null;

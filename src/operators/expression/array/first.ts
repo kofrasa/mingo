@@ -18,7 +18,7 @@ export function $first(
   options?: Options
 ): AnyVal {
   const copts = ComputeOptions.init(options);
-  if (obj instanceof Array) return __first(obj, expr, copts.udpate());
+  if (obj instanceof Array) return __first(obj, expr, copts.update());
 
   const arr = computeValue(obj, expr, null, options) as RawObject[];
   if (isNil(arr)) return null;

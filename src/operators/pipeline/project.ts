@@ -67,7 +67,7 @@ export function $project(
 
   const copts = ComputeOptions.init(options);
   return collection.map((obj: RawObject) =>
-    processObject(obj, expr, copts.udpate(obj), expressionKeys, idOnlyExcluded)
+    processObject(obj, expr, copts.update(obj), expressionKeys, idOnlyExcluded)
   );
 }
 

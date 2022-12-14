@@ -81,7 +81,7 @@ export function $merge(
         expr.let || { new: "$$ROOT" },
         null,
         // 'root' is the item from the iteration.
-        copts.udpate(o)
+        copts.update(o)
       ) as RawObject;
 
       if (isArray(expr.whenMatched)) {
@@ -107,7 +107,7 @@ export function $merge(
               target,
               [target, o],
               // 'root' is the item from the iteration.
-              copts.udpate(o, { variables })
+              copts.update(o, { variables })
             ) as RawObject;
             break;
         }

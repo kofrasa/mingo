@@ -53,7 +53,7 @@ export function $group(
           partitions.groups[i],
           val,
           key,
-          copts.udpate(null, { groupId })
+          copts.update(null, { groupId })
         );
       }
 

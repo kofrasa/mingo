@@ -14,6 +14,6 @@ export function $redact(
 ): Iterator {
   const copts = ComputeOptions.init(options);
   return collection.map((obj: RawObject) =>
-    redact(obj, expr, copts.udpate(obj))
+    redact(obj, expr, copts.update(obj))
   );
 }

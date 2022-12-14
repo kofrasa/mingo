@@ -18,6 +18,6 @@ export function $push(
   if (isNil(expr)) return collection;
   const copts = ComputeOptions.init(options);
   return collection.map((obj) =>
-    computeValue(obj, expr, null, copts.udpate(obj))
+    computeValue(obj, expr, null, copts.update(obj))
   );
 }

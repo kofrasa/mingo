@@ -28,7 +28,7 @@ export function $reduce(
       n,
       inExpr,
       null,
-      copts.udpate(obj, {
+      copts.update(obj, {
         variables: { value: acc },
       })
     );

@@ -27,7 +27,7 @@ export function $filter(
         o,
         expr.cond,
         null,
-        copts.udpate(copts.root, { variables: { [k]: o } })
+        copts.update(copts.root, { variables: { [k]: o } })
       ) === true
   );
 }

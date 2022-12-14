@@ -25,7 +25,7 @@ export function $map(
       o,
       expr.in,
       null,
-      copts.udpate(obj, {
+      copts.update(obj, {
         variables: { [k]: o },
       })
     );
