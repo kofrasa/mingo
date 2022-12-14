@@ -16,26 +16,26 @@ const copts = ComputeOptions.init();
 
 describe("core", () => {
   afterEach(() => {
-    copts.udpate();
+    copts.update();
   });
 
   describe("ComputeOptions", () => {
     it("should preserve 'root' on init if defined", () => {
       expect(copts.root).toBeUndefined();
-      copts.udpate(false);
+      copts.update(false);
       expect(copts.root).toEqual(false);
       expect(ComputeOptions.init(copts, true).root).toEqual(false);
     });
 
     it("should preserve 'local' on init if defined", () => {
       expect(copts.local).toBeUndefined();
-      copts.udpate(null, { groupId: 5 });
+      copts.update(null, { groupId: 5 });
       expect(copts.local?.groupId).toEqual(5);
       expect(ComputeOptions.init(copts).local?.groupId).toEqual(5);
     });
 
     it("should access all members of init options", () => {
-      copts.udpate(true, { variables: { x: 10 } });
+      copts.update(true, { variables: { x: 10 } });
       expect(copts.idKey).toEqual("_id");
       expect(copts.scriptEnabled).toEqual(true);
       expect(copts.useStrictMode).toEqual(true);
@@ -134,25 +134,25 @@ describe("core", () => {
   describe("redact", () => {
     it("returns object with $$KEEP", () => {
       const obj = { name: "Francis" };
-      const result = redact(obj, "$$KEEP", copts.udpate(obj));
+      const result = redact(obj, "$$KEEP", copts.update(obj));
       expect(result).toStrictEqual(obj);
     });
 
     it("discards object with $$PRUNE", () => {
       const obj = { name: "Francis" };
-      const result = redact(obj, "$$PRUNE", copts.udpate(obj));
+      const result = redact(obj, "$$PRUNE", copts.update(obj));
       expect(result).toStrictEqual(undefined);
     });
 
     it("return input object for $$DESCEND if operator is not $cond", () => {
       const obj = { name: "Francis", level: "$$DESCEND" };
-      const result = redact(obj, "$level", copts.udpate(obj));
+      const result = redact(obj, "$level", copts.update(obj));
       expect(result).toStrictEqual(obj);
     });
 
     it("ignore and return resolved value if not valid redact variable", () => {
       const obj = { name: "Francis" };
-      const result = redact(obj, "unknown", copts.udpate(obj));
+      const result = redact(obj, "unknown", copts.update(obj));
       expect(result).toStrictEqual("unknown");
     });
   });
