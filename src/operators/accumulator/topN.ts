@@ -5,7 +5,7 @@ import { AnyVal, RawObject } from "../../types";
 import { $push } from "./push";
 
 interface InputExpr {
-  n: number;
+  n: AnyVal;
   sortBy: Record<string, number>;
   output: AnyVal;
 }
@@ -30,7 +30,7 @@ export function $topN(
     expr,
     null,
     copts
-  ) as { n: number; sortBy: Record<string, number> };
+  ) as Pick<InputExpr, "n" | "sortBy">;
 
   const result = new Aggregator(
     [{ $sort: sortBy }, { $limit: n }],

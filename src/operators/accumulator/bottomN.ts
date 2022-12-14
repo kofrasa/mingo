@@ -5,7 +5,7 @@ import { AnyVal, RawObject } from "../../types";
 import { $push } from "./push";
 
 interface InputExpr {
-  n: number;
+  n: AnyVal;
   sortBy: Record<string, number>;
   output: AnyVal;
 }
@@ -30,12 +30,13 @@ export function $bottomN(
     expr,
     null,
     copts
-  ) as { n: number; sortBy: Record<string, number> };
+  ) as Pick<InputExpr, "n" | "sortBy">;
 
   const result = new Aggregator([{ $sort: sortBy }], copts.options).run(
     collection
   );
 
   const m = result.length;
-  return $push(n >= m ? result : result.slice(m - n), expr.output, copts);
+  const p = n as number;
+  return $push(m <= p ? result : result.slice(m - p), expr.output, copts);
 }
