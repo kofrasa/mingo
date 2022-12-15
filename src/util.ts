@@ -7,7 +7,6 @@ import {
   ArrayOrObject,
   Callback,
   Comparator,
-  ComparatorResult,
   HashFunction,
   JsType,
   RawArray,
@@ -53,6 +52,38 @@ const JS_SIMPLE_TYPES = new Set<JsType>([
   "date",
   "regexp",
 ]);
+
+/** MongoDB sort comparison order. https://www.mongodb.com/docs/manual/reference/bson-type-comparison-order */
+const SORT_ORDER_BY_TYPE: Record<JsType, number> = {
+  null: 0,
+  undefined: 0,
+  number: 1,
+  string: 2,
+  object: 3,
+  array: 4,
+  boolean: 5,
+  date: 6,
+  regexp: 7,
+  function: 8,
+};
+
+/**
+ * Compare function which adheres to MongoDB comparison order.
+ *
+ * @param a The first value
+ * @param b The second value
+ * @returns {Number}
+ */
+export const DEFAULT_COMPARATOR = (a: AnyVal, b: AnyVal): number => {
+  if (a === MISSING) a = undefined;
+  if (b === MISSING) b = undefined;
+  const u = SORT_ORDER_BY_TYPE[getType(a).toLowerCase() as JsType];
+  const v = SORT_ORDER_BY_TYPE[getType(b).toLowerCase() as JsType];
+  if (u !== v) return u - v;
+  if (a < b) return -1;
+  if (a > b) return 1;
+  return 0;
+};
 
 const OBJECT_PROTOTYPE = Object.getPrototypeOf({}) as AnyVal;
 const OBJECT_TAG = "[object Object]";
@@ -556,19 +587,6 @@ export function hashCode(
 }
 
 /**
- * Default compare function
- * @param {*} a
- * @param {*} b
- */
-export function compare(a: AnyVal, b: AnyVal): ComparatorResult {
-  if (a === MISSING) a = undefined;
-  if (b === MISSING) b = undefined;
-  if (a < b) return -1;
-  if (a > b) return 1;
-  return 0;
-}
-
-/**
  * Returns a (stably) sorted copy of list, ranked in ascending order by the results of running each value through iteratee
  *
  * This implementation treats null/undefined sort keys as less than every other type
@@ -581,43 +599,26 @@ export function compare(a: AnyVal, b: AnyVal): ComparatorResult {
 export function sortBy(
   collection: RawArray,
   keyFn: Callback<AnyVal>,
-  comparator?: Comparator<AnyVal>
+  comparator: Comparator<AnyVal> = DEFAULT_COMPARATOR
 ): RawArray {
-  const sorted = new Array<string>();
-  const result = new Array<AnyVal>();
-  const hash: Record<string, RawArray> = {};
-  comparator = comparator || compare;
+  const sorted = [];
+  const result = [];
 
   if (isEmpty(collection)) return collection;
 
   for (let i = 0; i < collection.length; i++) {
     const obj = collection[i];
-
-    let key = keyFn(obj, i) as string;
-
-    // objects with nil keys will go in first
+    const key = keyFn(obj, i);
     if (isNil(key)) {
       result.push(obj);
     } else {
-      // null suffix to differentiate string keys from native object properties
-      if (isString(key)) key += "\0";
-
-      if (hash[key]) {
-        hash[key].push(obj);
-      } else {
-        hash[key] = [obj];
-        sorted.push(key);
-      }
+      sorted.push([key, obj]);
     }
   }
 
   // use native array sorting but enforce stableness
-  sorted.sort(comparator);
-
-  for (let i = 0; i < sorted.length; i++) {
-    into(result, hash[sorted[i]]);
-  }
-
+  sorted.sort((a: RawArray, b: RawArray) => comparator(a[0], b[0]));
+  result.push(...sorted.map((o: RawArray) => o[1]));
   return result;
 }
 

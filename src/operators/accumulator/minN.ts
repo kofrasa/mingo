@@ -1,7 +1,7 @@
 // https://www.mongodb.com/docs/manual/reference/operator/aggregation/minN
 import { ComputeOptions, computeValue, Options } from "../../core";
 import { AnyVal, RawObject } from "../../types";
-import { compare, isNil } from "../../util";
+import { DEFAULT_COMPARATOR, isNil } from "../../util";
 import { $push } from "./push";
 
 interface InputExpr {
@@ -27,6 +27,6 @@ export function $minN(
   const m = collection.length;
   const n = computeValue(copts?.local?.groupId, expr.n, null, copts) as number;
   const arr = $push(collection, expr.input, options).filter((o) => !isNil(o));
-  arr.sort(compare);
+  arr.sort(DEFAULT_COMPARATOR);
   return m <= n ? arr : arr.slice(0, n);
 }

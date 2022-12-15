@@ -1,7 +1,7 @@
 import { RawObject } from "../src/types";
 import {
   cloneDeep,
-  compare,
+  DEFAULT_COMPARATOR,
   hashCode,
   intersection,
   isEmpty,
@@ -17,9 +17,9 @@ import {
 describe("util", () => {
   describe("compare", () => {
     it("can compare less than, greater than, and equal to", () => {
-      expect(compare(1, 5)).toBe(-1);
-      expect(compare(5, 1)).toBe(1);
-      expect(compare(1, 1)).toBe(0);
+      expect(DEFAULT_COMPARATOR(1, 5)).toBe(-1);
+      expect(DEFAULT_COMPARATOR(5, 1)).toBe(1);
+      expect(DEFAULT_COMPARATOR(1, 1)).toBe(0);
     });
   });
 

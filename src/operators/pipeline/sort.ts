@@ -2,7 +2,7 @@ import { CollationSpec, Options } from "../../core";
 import { Iterator } from "../../lazy";
 import { AnyVal, Comparator, RawArray, RawObject } from "../../types";
 import {
-  compare,
+  DEFAULT_COMPARATOR,
   groupBy,
   into,
   isEmpty,
@@ -27,7 +27,7 @@ export function $sort(
 ): Iterator {
   if (isEmpty(sortKeys) || !isObject(sortKeys)) return collection;
 
-  let cmp = compare;
+  let cmp = DEFAULT_COMPARATOR;
   // check for collation spec on the options
   const collationSpec = options.collation;
 
@@ -114,7 +114,7 @@ function collationComparator(spec: CollationSpec): Comparator<AnyVal> {
 
   return (a: AnyVal, b: AnyVal) => {
     // non strings
-    if (!isString(a) || !isString(b)) return compare(a, b);
+    if (!isString(a) || !isString(b)) return DEFAULT_COMPARATOR(a, b);
 
     // only for strings
     const i = collator.compare(a, b);

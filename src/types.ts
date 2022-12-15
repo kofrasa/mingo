@@ -13,12 +13,9 @@ export interface Predicate<T> {
   (...args: T[]): boolean;
 }
 
-// Result of comparator function
-export type ComparatorResult = -1 | 0 | 1;
-
 // Generic comparator callback
 export interface Comparator<T> {
-  (left: T, right: T): ComparatorResult;
+  (left: T, right: T): number;
 }
 
 /**

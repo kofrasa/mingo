@@ -1,6 +1,7 @@
+import { RawObject } from "../../../src/types";
 import * as samples from "../../support";
 
-const things = [];
+const things: RawObject[] = [];
 for (let i = 0; i < 100; i++) {
   things.push({ _id: i });
 }
