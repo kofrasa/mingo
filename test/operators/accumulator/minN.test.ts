@@ -106,21 +106,4 @@ samples.runTestPipeline("operators/accumulator/minN", [
       { _id: { gameId: "G2" }, gamescores: [[10, "PlayerA"]] },
     ],
   },
-  // {
-  //   message: "Using $minN as an Aggregation Expression",
-  //   input: [{ array: [10, 20, 30, 40] }],
-  //   pipeline: [
-  //     {
-  //       $project: {
-  //         lastThreeElements: {
-  //           $minN: {
-  //             input: "$array",
-  //             n: 3,
-  //           },
-  //         },
-  //       },
-  //     },
-  //   ],
-  //   expected: [{ lastThreeElements: [20, 30, 40] }],
-  // },
 ]);

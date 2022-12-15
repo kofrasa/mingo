@@ -106,21 +106,4 @@ samples.runTestPipeline("operators/accumulator/maxN", [
       { _id: { gameId: "G2" }, gamescores: [[80, "PlayerD"]] },
     ],
   },
-  // {
-  //   message: "Using $maxN as an Aggregation Expression",
-  //   input: [{ array: [10, 20, 30, 40] }],
-  //   pipeline: [
-  //     {
-  //       $project: {
-  //         lastThreeElements: {
-  //           $maxN: {
-  //             input: "$array",
-  //             n: 3,
-  //           },
-  //         },
-  //       },
-  //     },
-  //   ],
-  //   expected: [{ lastThreeElements: [20, 30, 40] }],
-  // },
 ]);
