@@ -16,4 +16,5 @@ export * from "./reduce";
 export * from "./reverseArray";
 export * from "./size";
 export * from "./slice";
+export * from "./sortArray";
 export * from "./zip";
