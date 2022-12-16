@@ -1,8 +1,23 @@
 # Changelog
 
+## 6.2.0 / 2022-12-16
+
+**New**
+
+- Added array expression operators; `$maxN`, `$minN`, `$firstN`, `$lastN`, and `$sortArray`.
+- Added accumulator operators; `$maxN`, `$minN`, `$first`, `$firstN`, `$last`, `$lastN`, `$top`, `$topN`, `$bottom`, and `$bottomN`.
+- Added trignometry operators; `$cosh` and `$sinh`.
+
+**Fixes**
+
+- Correclt handle boundary values for trignometry functions.
+- Nested arrays are projected correctly when excluded in results.
+- Support MongoDB comparison sort order by data type.
+
 ## 6.1.3 / 2022-12-09
 
 **Fixes**
+
 - Use correct context for resolving paths. Closes [284](https://github.com/kofrasa/mingo/issues/284)
 - Support user-defined global variables.
 
