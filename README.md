@@ -255,6 +255,8 @@ interface Options {
   readonly collectionResolver?: CollectionResolver;
   /** JSON schema validator to use with the '$jsonSchema' operator. This is required in order to use the operator. */
   readonly jsonSchemaValidator?: JsonSchemaValidator;
+  /** Global variables. */
+  readonly variables?: Readonly<RawObject>;
 }
 ```
 
