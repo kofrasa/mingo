@@ -400,4 +400,65 @@ samples.runTestPipeline("operators/pipeline/project", [
     input: [{ foo: { bar: { baz: -1 }, baz: -10 }, baz: -100 }],
     expected: [{ foo: { bar: { baz: 1 } } }],
   },
+
+  {
+    message: "should exclude deep nested objects with dot syntax",
+    pipeline: [
+      {
+        $project: {
+          "comments.title": 0,
+          "comments.comments.comments": 0,
+          numbers: 0,
+        },
+      },
+    ],
+    input: [
+      {
+        _id: "639b4a1dc9414e958b1484ba",
+        title: "mingo is cool",
+        numbers: [],
+        owners: [],
+        comments: [
+          {
+            title: "a",
+            body: "body",
+            comments: [],
+          },
+          {
+            title: "b",
+            body: "body",
+            comments: [
+              {
+                title: "c",
+                comments: [],
+              },
+            ],
+          },
+        ],
+        text: "kandinsky",
+      },
+    ],
+    expected: [
+      {
+        _id: "639b4a1dc9414e958b1484ba",
+        comments: [
+          {
+            body: "body",
+            comments: [],
+          },
+          {
+            body: "body",
+            comments: [
+              {
+                title: "c",
+              },
+            ],
+          },
+        ],
+        owners: [],
+        text: "kandinsky",
+        title: "mingo is cool",
+      },
+    ],
+  },
 ]);

@@ -170,7 +170,7 @@ describe("operators/projection", () => {
     });
 
     describe("projecting single key in object", () => {
-      let data = [];
+      let data: RawObject[] = [];
       beforeEach(() => {
         data = [
           {

@@ -877,6 +877,11 @@ export function filterMissing(obj: ArrayOrObject): void {
   }
 }
 
+interface WalkOptions {
+  buildGraph?: boolean;
+  descendArray?: boolean;
+}
+
 /**
  * Walk the object graph and execute the given transform function
  *
@@ -889,7 +894,7 @@ function walk(
   obj: ArrayOrObject,
   selector: string,
   fn: Callback<void>,
-  options?: { buildGraph?: boolean }
+  options?: WalkOptions
 ): void {
   if (isNil(obj)) return;
 
@@ -901,10 +906,26 @@ function walk(
     fn(obj, key);
   } else {
     // force the rest of the graph while traversing
-    if (options?.buildGraph === true && isNil(obj[key])) {
+    if (options?.buildGraph && isNil(obj[key])) {
       obj[key] = {};
     }
-    walk(obj[key] as ArrayOrObject, next, fn, options);
+
+    // get the next item
+    const item = obj[key] as ArrayOrObject;
+    // we peek to see if next key is an array index.
+    const isNextArrayIndex = !!(names.length > 1 && names[1].match(/^\d+$/));
+    // if we have an array value but the next key is not an index and the 'descendArray' option is set,
+    // we walk each item in the array separately. This allows for handling traversing keys for objects
+    // nested within an array.
+    //
+    // Eg: Given { array: [ {k:1}, {k:2}, {k:3} ] }
+    //  - individual objecs can be traversed with "array.k"
+    //  - a specific object can be traversed with "array.1"
+    if (item instanceof Array && options?.descendArray && !isNextArrayIndex) {
+      item.forEach((e: ArrayOrObject) => walk(e, next, fn, options));
+    } else {
+      walk(item, next, fn, options);
+    }
   }
 }
 
@@ -941,23 +962,28 @@ export function setValue(
 export function removeValue(
   obj: ArrayOrObject,
   selector: string,
-  options?: { descendArray: boolean }
+  options?: Pick<WalkOptions, "descendArray">
 ): void {
-  walk(obj, selector, (item: AnyVal, key: string) => {
-    if (item instanceof Array) {
-      if (/^\d+$/.test(key)) {
-        item.splice(parseInt(key), 1);
-      } else if (options && options.descendArray) {
-        for (const elem of item) {
-          if (isObject(elem)) {
-            delete (elem as RawObject)[key];
+  walk(
+    obj,
+    selector,
+    (item: AnyVal, key: string) => {
+      if (item instanceof Array) {
+        if (/^\d+$/.test(key)) {
+          item.splice(parseInt(key), 1);
+        } else if (options && options.descendArray) {
+          for (const elem of item) {
+            if (isObject(elem)) {
+              delete (elem as RawObject)[key];
+            }
           }
         }
+      } else if (isObject(item)) {
+        delete item[key];
       }
-    } else if (isObject(item)) {
-      delete item[key];
-    }
-  });
+    },
+    options
+  );
 }
 
 const OPERATOR_NAME_PATTERN = /^\$[a-zA-Z0-9_]+$/;
