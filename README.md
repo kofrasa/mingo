@@ -7,8 +7,6 @@ MongoDB query language for in-memory objects
 [![build](https://github.com/kofrasa/mingo/actions/workflows/node.js.yml/badge.svg)](https://github.com/kofrasa/mingo/actions/workflows/node.js.yml)
 ![issues](https://img.shields.io/github/issues/kofrasa/mingo)
 [![codecov](https://img.shields.io/codecov/c/github/kofrasa/mingo)](https://codecov.io/gh/kofrasa/mingo)
-[![quality: Javascript](https://img.shields.io/lgtm/grade/javascript/github/kofrasa/mingo)](https://lgtm.com/projects/g/kofrasa/mingo/context:javascript)
-[![alerts](https://img.shields.io/lgtm/alerts/github/kofrasa/mingo)](https://lgtm.com/projects/g/kofrasa/mingo/alerts)
 [![npm downloads](https://img.shields.io/npm/dm/mingo)](https://www.npmjs.org/package/mingo)
 
 ## Install
