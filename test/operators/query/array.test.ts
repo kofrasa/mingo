@@ -400,7 +400,6 @@ describe("operators/query/array", () => {
 
       fixtures.forEach(function (args) {
         const query = new Query({ scores: { $elemMatch: args[0] } });
-        const op = Object.keys(args[0])[0];
         // test if an object matches query
         expect(query.test({ scores: [10, 50, 100] })).toEqual(true);
       });
