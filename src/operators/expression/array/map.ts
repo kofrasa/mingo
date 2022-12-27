@@ -22,10 +22,10 @@ export function $map(
   const k = expr.as || "this";
   return input.map((o: AnyVal) => {
     return computeValue(
-      o,
+      obj,
       expr.in,
       null,
-      copts.update(obj, {
+      copts.update(copts.root, {
         variables: { [k]: o },
       })
     );

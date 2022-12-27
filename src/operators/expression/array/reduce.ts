@@ -15,7 +15,7 @@ export function $reduce(
   expr: RawObject,
   options?: Options
 ): AnyVal {
-  const copts = ComputeOptions.init(options, obj);
+  const copts = ComputeOptions.init(options);
   const input = computeValue(obj, expr.input, null, copts) as AnyVal[];
   const initialValue = computeValue(obj, expr.initialValue, null, copts);
   const inExpr = expr["in"];
@@ -28,7 +28,7 @@ export function $reduce(
       n,
       inExpr,
       null,
-      copts.update(obj, {
+      copts.update(copts.root, {
         variables: { value: acc },
       })
     );

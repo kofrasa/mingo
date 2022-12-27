@@ -24,10 +24,12 @@ export function $filter(
   return input.filter(
     (o: AnyVal) =>
       computeValue(
-        o,
+        obj,
         expr.cond,
         null,
-        copts.update(copts.root, { variables: { [k]: o } })
+        copts.update(copts.root, {
+          variables: { [k]: o },
+        })
       ) === true
   );
 }

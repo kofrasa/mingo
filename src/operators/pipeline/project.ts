@@ -82,7 +82,7 @@ export function $project(
 function processObject(
   obj: RawObject,
   expr: RawObject,
-  options: Options,
+  options: ComputeOptions,
   expressionKeys: string[],
   idOnlyExcluded: boolean
 ): RawObject {

@@ -472,15 +472,16 @@ export function computeValue(
       // if it already available on the options, it will be used
       context = systemVariables[arr[0]](obj, null, copts) as ArrayOrObject;
       expr = expr.slice(arr[0].length + 1); //  +1 for '.'
-    } else if (arr[0].substr(0, 2) === "$$") {
+    } else if (arr[0].slice(0, 2) === "$$") {
       // handle user-defined variables
       context = Object.assign(
         {},
         copts.variables, // global vars
-        copts.local?.variables, // local vars
-        { this: obj } // current item referred to by '$$this'
+        // current item is added before local variables because the binding may be changed.
+        { this: obj },
+        copts.local?.variables // local vars
       );
-      const prefix = arr[0].substr(2);
+      const prefix = arr[0].slice(2);
       assert(
         has(context as RawObject, prefix),
         `Use of undefined variable: ${prefix}`
