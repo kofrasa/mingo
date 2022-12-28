@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.2.1 / 2022-12-28
+
+**Fixes**
+
+- Properly bind `$$this` when resolving fields using array operators. Closes [289](https://github.com/kofrasa/mingo/issues/289)
+
 ## 6.2.0 / 2022-12-16
 
 **New**
