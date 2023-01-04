@@ -2,7 +2,6 @@
   "compilerOptions": {
     "target": "es5",
     "moduleResolution": "node",
-    "lib": ["es6", "es2017", "dom"],
     "declaration": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,

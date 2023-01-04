@@ -4,7 +4,6 @@ const cp = require("child_process");
 const packageJson = require("./package.json");
 
 const LIB_DIR = path.resolve("lib");
-const CMD = process.argv.slice(2).join(" ");
 const npmArgs = process.argv.slice(2);
 
 // .npmignore

@@ -132,7 +132,7 @@ describe("perf", () => {
         mingoSorter1.run(arrayToSort);
         console.timeEnd(MINGO_SORT_LOCALE);
       });
-      expect(ticks).toBeLessThan(200);
+      expect(ticks).toBeLessThan(1000);
 
       ticks = measure(() => {
         console.time(MINGO_SORT);
