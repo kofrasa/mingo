@@ -1,11 +1,11 @@
 {
   "compilerOptions": {
-    "target": "es5",
     "moduleResolution": "node",
     "declaration": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "noEmit": true
+    "noEmit": true,
+    "declarationDir": "./dist/types"
   },
   "include": ["src/**/*.ts", "test/**/*.ts"]
 }

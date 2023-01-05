@@ -1,15 +1,17 @@
 {
   "name": "mingo",
-  "version": "6.2.1",
+  "version": "6.2.2",
   "description": "MongoDB query language for in-memory objects",
-  "main": "lib",
-  "module": "lib",
+  "main": "lib/index.js",
+  "module": "es/index.js",
+  "types": "types/index.d.ts",
   "scripts": {
     "prepare": "husky install",
     "docs": "typedoc --entryPointStrategy expand src/ && touch docs/.nojekyll",
-    "build": "tsc && node ./build.js",
+    "build": "tsc && tsc --build tsconfig.es.json && node ./build.js",
+    "clean": "rm -fr dist",
     "test": "jest",
-    "dist": "npm run build && npm run test && cd lib && npm publish",
+    "dist": "npm run build && npm run test && cd dist && npm publish",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
     "prepublishOnly": "echo \"use 'npm run dist'\" && false",
     "postinstall": "node ./build.js install"

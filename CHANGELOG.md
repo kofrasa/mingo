@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.2.2 / 2023-01/05
+
+- Distribute package for both commongJS and as ES6 module.
+
 ## 6.2.1 / 2022-12-28
 
 **Fixes**

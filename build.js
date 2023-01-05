@@ -3,38 +3,33 @@ const path = require("path");
 const cp = require("child_process");
 const packageJson = require("./package.json");
 
-const LIB_DIR = path.resolve("lib");
+const OUT_DIR = path.resolve("dist");
 const npmArgs = process.argv.slice(2);
 
 // .npmignore
 const NPM_IGNORE = [".*", "*.tgz", "node_modules", "package-lock.json"];
 
 /**
- * Create module in LIB_DIR
+ * Create module in OUT_DIR
  */
 function createModule() {
-  console.log("Creating module at " + LIB_DIR);
+  console.log("Creating module at " + OUT_DIR);
 
   // ensure directory exists
-  if (!fs.existsSync(LIB_DIR)) fs.mkdirSync(LIB_DIR);
+  if (!fs.existsSync(OUT_DIR)) fs.mkdirSync(OUT_DIR);
 
   // write ignore file
-  fs.writeFileSync(path.join(LIB_DIR, ".npmignore"), NPM_IGNORE.join("\n"));
+  fs.writeFileSync(path.join(OUT_DIR, ".npmignore"), NPM_IGNORE.join("\n"));
 
   // copy all the allowed files to the lib directory
   packageJson.files = ["LICENSE", "README.md", "CHANGELOG.md"].reduce(
     (files, p) => {
-      fs.copyFileSync(path.resolve(p), path.join(LIB_DIR, p));
+      fs.copyFileSync(path.resolve(p), path.join(OUT_DIR, p));
       files.push(p);
       return files;
     },
     ["**/*.js", "**/*.ts"]
   );
-
-  // override entry files
-  packageJson.main = "index.js";
-  packageJson.module = packageJson.main;
-  packageJson.typings = "index.d.ts";
 
   // clear all scripts
   packageJson.scripts = {};
@@ -43,7 +38,7 @@ function createModule() {
   let data = JSON.stringify(packageJson, null, 2);
 
   // write new package.json for lib
-  fs.writeFileSync(path.join(LIB_DIR, "package.json"), data);
+  fs.writeFileSync(path.join(OUT_DIR, "package.json"), data);
 }
 
 function main() {
@@ -55,7 +50,7 @@ function main() {
 
     // execute command
     cp.spawnSync("npm", npmArgs, {
-      cwd: LIB_DIR,
+      cwd: OUT_DIR,
       env: process.env,
       stdio: "inherit",
     });
@@ -64,10 +59,10 @@ function main() {
 
     // if we created a tar file, copy to parent directory
     let tarball = packageJson.name + "-" + packageJson.version + ".tgz";
-    let tarballPath = path.join(LIB_DIR, tarball);
+    let tarballPath = path.join(OUT_DIR, tarball);
     if (fs.existsSync(tarballPath)) {
       console.log("Copying", tarball, "to correct folder");
-      fs.renameSync(tarballPath, path.join(path.dirname(LIB_DIR), tarball));
+      fs.renameSync(tarballPath, path.join(path.dirname(OUT_DIR), tarball));
     }
   }
 }
