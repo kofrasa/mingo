@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.2.3 / 2023-01-05
+
+**Fixes**
+
+- Export all module paths explicitly for CommonJS and ES6 formats. Closes [295](https://github.com/kofrasa/mingo/issues/295).
+
 ## 6.2.2 / 2023-01/05
 
 - Distribute package for both commongJS and as ES6 module.
