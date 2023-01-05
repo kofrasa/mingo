@@ -35,7 +35,31 @@ function createModule() {
   packageJson.scripts = {};
   packageJson.devDependencies = {};
 
-  let data = JSON.stringify(packageJson, null, 2);
+  // add exports explicitly
+  const files = cp
+    .spawnSync("find", ["src", "-type", "f"])
+    .stdout.toString()
+    .split("\n");
+
+  packageJson.exports = {};
+  files.forEach((s) => {
+    s = s.replace(/^src/, ".").slice(0, -3);
+    if (s.endsWith("_internal")) return;
+    const typesPath = `./types/${s.slice(2)}.d.ts`;
+    const libPath = `./lib/${s.slice(2)}.js`;
+    const esPath = `./es/${s.slice(2)}.js`;
+    const key = s.endsWith("/index") ? s.slice(0, -6) : s;
+    if (!key) return;
+    packageJson.exports[key] = {
+      types: typesPath,
+      node: libPath,
+      require: libPath,
+      es2015: esPath,
+      default: esPath,
+    };
+  });
+
+  const data = JSON.stringify(packageJson, null, 2);
 
   // write new package.json for lib
   fs.writeFileSync(path.join(OUT_DIR, "package.json"), data);
