@@ -28,7 +28,7 @@ function createModule() {
       files.push(p);
       return files;
     },
-    ["**/*.js", "**/*.ts"]
+    ["**/*.js", "**/*.ts", "**/*.json"]
   );
 
   // clear all scripts
