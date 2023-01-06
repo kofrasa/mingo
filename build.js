@@ -53,6 +53,27 @@ function createModule() {
     const esPath = `./es/${s.slice(2)}.js`;
     const key = s.endsWith("/index") ? s.slice(0, -6) : s;
     if (!key) return;
+
+    // create subpackage package.json
+    if (key !== ".") {
+      const subPackagePath = path.join(OUT_DIR, key);
+      if (!fs.existsSync(subPackagePath)) {
+        fs.mkdirSync(subPackagePath, { recursive: true });
+      }
+      const subPackageJson = {
+        "main": path.relative(subPackagePath, path.join(OUT_DIR, libPath)),
+        "module": path.relative(subPackagePath, path.join(OUT_DIR, esPath)),
+        "es2015": path.relative(subPackagePath, path.join(OUT_DIR, esPath)),
+        "jsnext:main": path.relative(subPackagePath, path.join(OUT_DIR, esPath)),
+        "types": path.relative(subPackagePath, path.join(OUT_DIR, typesPath)),
+        "sideEffects": key.startsWith("./init/")
+      };
+      fs.writeFileSync(
+        path.join(subPackagePath, "package.json"),
+        JSON.stringify(subPackageJson, null, 2)
+      );
+    }
+
     packageJson.exports[key] = {
       types: typesPath,
       node: libPath,
