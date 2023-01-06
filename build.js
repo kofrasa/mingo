@@ -34,7 +34,6 @@ function createModule() {
   // clear all scripts
   packageJson.scripts = {};
   packageJson.devDependencies = {};
-  packageJson.sideEffects = false;
 
   // add exports explicitly
   const files = cp
