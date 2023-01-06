@@ -66,7 +66,7 @@ function createModule() {
         "es2015": path.relative(subPackagePath, path.join(OUT_DIR, esPath)),
         "jsnext:main": path.relative(subPackagePath, path.join(OUT_DIR, esPath)),
         "types": path.relative(subPackagePath, path.join(OUT_DIR, typesPath)),
-        "sideEffects": false
+        "sideEffects": key.startsWith("./init/")
       };
       fs.writeFileSync(
         path.join(subPackagePath, "package.json"),
