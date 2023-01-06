@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.2.5 / 2023-01-06
+
+**Fixes**
+
+- ADD .json files to package.json files array (#299)
+
 ## 6.2.4 / 2023-01-06
 
 **Fixes**
