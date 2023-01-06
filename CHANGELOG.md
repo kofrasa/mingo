@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.2.4 / 2023-01-06
+
+**Fixes**
+
+- Include `package.json` in explicit module exports.
+
 ## 6.2.3 / 2023-01-05
 
 **Fixes**

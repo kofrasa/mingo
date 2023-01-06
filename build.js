@@ -34,6 +34,7 @@ function createModule() {
   // clear all scripts
   packageJson.scripts = {};
   packageJson.devDependencies = {};
+  packageJson.sideEffects = false;
 
   // add exports explicitly
   const files = cp
@@ -41,7 +42,10 @@ function createModule() {
     .stdout.toString()
     .split("\n");
 
-  packageJson.exports = {};
+  packageJson.exports = {
+    "./package.json": "./package.json",
+  };
+
   files.forEach((s) => {
     s = s.replace(/^src/, ".").slice(0, -3);
     if (s.endsWith("_internal")) return;
