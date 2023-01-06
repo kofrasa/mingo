@@ -5,6 +5,7 @@
 **Fixes**
 
 - Include `package.json` in explicit module exports.
+- Create `package.json` files for subpackages to support all ESM bundlers (#298)
 
 ## 6.2.3 / 2023-01-05
 
