@@ -482,7 +482,7 @@ export function computeValue(
         copts.local?.variables // local vars
       );
       const prefix = arr[0].slice(2);
-      console.log(context, copts);
+
       assert(
         has(context as RawObject, prefix),
         `Use of undefined variable: ${prefix}`
