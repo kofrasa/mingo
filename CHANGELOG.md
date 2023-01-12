@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.2.6 / 2023-01-12
+
+**Fixes**
+
+- Ensure all variables are accessible in their local contexts. Closes [302](https://github.com/kofrasa/mingo/issues/302)
+
 ## 6.2.5 / 2023-01-06
 
 **Fixes**

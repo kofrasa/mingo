@@ -11,7 +11,7 @@
     "build": "tsc && tsc --build tsconfig.es.json && node ./build.js",
     "clean": "rm -fr dist",
     "test": "jest",
-    "dist": "npm run build && npm run test && cd dist && npm publish",
+    "dist": "npm run test && npm run build && cd dist && npm publish",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
     "prepublishOnly": "echo \"use 'npm run dist'\" && false",
     "postinstall": "node ./build.js install"
