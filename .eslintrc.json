@@ -19,6 +19,7 @@
   ],
   "plugins": ["simple-import-sort", "import", "unused-imports"],
   "rules": {
+    "no-console": "error",
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error",
     "import/newline-after-import": "error",
