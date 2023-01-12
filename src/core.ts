@@ -151,7 +151,7 @@ export class ComputeOptions implements Options {
       ? options.update(
           // value can be '0' or 'false'
           isNil(options.root) ? root : options.root,
-          options.local || local
+          Object.assign({}, options.local, local)
         )
       : new ComputeOptions(options || initOptions(), root, local);
   }
@@ -482,6 +482,7 @@ export function computeValue(
         copts.local?.variables // local vars
       );
       const prefix = arr[0].slice(2);
+      console.log(context, copts);
       assert(
         has(context as RawObject, prefix),
         `Use of undefined variable: ${prefix}`
