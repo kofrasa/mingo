@@ -13,7 +13,8 @@ export function truncate(
   num = Math.abs(num);
 
   let result = Math.trunc(num);
-  const decimals = num - result;
+  const [_, fraction] = num.toString().split(".");
+  const decimals = parseFloat(`0.${fraction || "0"}`);
 
   if (places === 0) {
     const firstDigit = Math.trunc(10 * decimals);
@@ -33,7 +34,10 @@ export function truncate(
     }
 
     // compute decimal remainder and add to whole number
-    result += remainder / offset;
+    // manually formatting float re
+    result = parseFloat(
+      `${result}.${(remainder / offset).toString().split(".")[1]}`
+    );
   } else if (places < 0) {
     // handle negative decimal places
     const offset = Math.pow(10, -1 * places);

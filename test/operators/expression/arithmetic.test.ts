@@ -99,6 +99,8 @@ support.runTest("operators/expression/arithmetic", {
     [[28.73, 0], 28],
     [[34.32, 0], 34],
     [[-45.39, 0], -45],
+    [[1.6016, 3], 1.602],
+    [[1.6015, 3], 1.601],
   ],
   $sqrt: [
     [{ $sqrt: null }, null],
