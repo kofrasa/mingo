@@ -13,7 +13,7 @@ export function truncate(
   num = Math.abs(num);
 
   let result = Math.trunc(num);
-  const decimals = parseFloat((num - result).toFixed(places + 2));
+  const decimals = parseFloat((num - result).toFixed(places + 1));
 
   if (places === 0) {
     const firstDigit = Math.trunc(10 * decimals);
@@ -26,10 +26,9 @@ export function truncate(
 
     // last digit before cut off
     const lastDigit = Math.trunc(decimals * offset * 10) % 10;
-    const evenRounding = remainder % 2 === 0;
 
     // add one if last digit is greater and equal to 5, but not when rounding even numbers
-    if (roundOff && lastDigit >= 5 && !evenRounding) {
+    if (roundOff && lastDigit > 5) {
       remainder += 1;
     }
 
