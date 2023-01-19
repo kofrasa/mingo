@@ -13,7 +13,7 @@ export function truncate(
   num = Math.abs(num);
 
   let result = Math.trunc(num);
-  const decimals = num - result;
+  const decimals = parseFloat((num - result).toFixed(places + 2));
 
   if (places === 0) {
     const firstDigit = Math.trunc(10 * decimals);
