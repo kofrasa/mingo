@@ -26,14 +26,15 @@ export function truncate(
 
     // last digit before cut off
     const lastDigit = Math.trunc(decimals * offset * 10) % 10;
+    const evenRounding = remainder % 2 === 0;
 
-    // add one if last digit is greater than 5
-    if (roundOff && lastDigit > 5) {
+    // add one if last digit is greater and equal to 5, but not when rounding even numbers
+    if (roundOff && lastDigit >= 5 && !evenRounding) {
       remainder += 1;
     }
 
-    // compute decimal remainder and add to whole number
-    result += remainder / offset;
+    // compute decimal remainder and add to whole number and prevent bit overflow.
+    result = (result * offset + remainder) / offset;
   } else if (places < 0) {
     // handle negative decimal places
     const offset = Math.pow(10, -1 * places);
