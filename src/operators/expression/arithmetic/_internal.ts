@@ -14,7 +14,7 @@ export function truncate(
 
   let result = Math.trunc(num);
   const [_, fraction] = num.toString().split(".");
-  const decimals = parseFloat(`0.${fraction || "0"}`);
+  const decimals = parseFloat((num - result).toFixed(places + 1));
 
   if (places === 0) {
     const firstDigit = Math.trunc(10 * decimals);
@@ -35,9 +35,7 @@ export function truncate(
 
     // compute decimal remainder and add to whole number
     // manually formatting float re
-    result = parseFloat(
-      `${result}.${(remainder / offset).toString().split(".")[1]}`
-    );
+    result = (result * offset + remainder) / offset;
   } else if (places < 0) {
     // handle negative decimal places
     const offset = Math.pow(10, -1 * places);
