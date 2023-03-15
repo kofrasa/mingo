@@ -298,7 +298,7 @@ export function $size(
   b: number,
   options?: PredicateOptions
 ): boolean {
-  return a.length === b;
+  return Array.isArray(a) && a.length === b;
 }
 
 function isNonBooleanOperator(name: string): boolean {
