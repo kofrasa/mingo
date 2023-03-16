@@ -77,8 +77,9 @@ const SORT_ORDER_BY_TYPE: Record<JsType, number> = {
 export const DEFAULT_COMPARATOR = (a: AnyVal, b: AnyVal): number => {
   if (a === MISSING) a = undefined;
   if (b === MISSING) b = undefined;
-  const u = SORT_ORDER_BY_TYPE[getType(a).toLowerCase() as JsType];
-  const v = SORT_ORDER_BY_TYPE[getType(b).toLowerCase() as JsType];
+  const [ta, tb] = [a, b].map((n) => getType(n).toLowerCase() as JsType);
+  const u = SORT_ORDER_BY_TYPE[ta];
+  const v = SORT_ORDER_BY_TYPE[tb];
   if (u !== v) return u - v;
   if (a < b) return -1;
   if (a > b) return 1;
@@ -118,6 +119,9 @@ export function isString(v: AnyVal): v is string {
 }
 export function isNumber(v: AnyVal): v is number {
   return !isNaN(v as number) && typeof v === "number";
+}
+export function isNotNaN(v: AnyVal) {
+  return !(isNaN(v as number) && typeof v === "number");
 }
 export const isArray = Array.isArray;
 export function isObject(v: AnyVal): v is object {

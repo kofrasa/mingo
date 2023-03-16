@@ -75,7 +75,7 @@ samples.runTestPipeline("operators/pipeline/group", [
       {
         _id: 3,
         item: "xyz",
-        price: "5",
+        price: 5,
         quantity: 5,
         date: new Date("2014-02-03T09:05:00Z"),
       },
@@ -102,13 +102,20 @@ samples.runTestPipeline("operators/pipeline/group", [
     ],
 
     pipeline: [
-      { $group: { max: { $max: "$price" }, sum: { $sum: "$price" } } },
+      {
+        $group: {
+          _id: "$item",
+          max: { $max: "$price" },
+          sum: { $sum: "$price" },
+        },
+      },
       { $limit: 1 },
     ],
     expected: [
       {
-        max: 20,
-        sum: 45,
+        _id: "abc",
+        max: 10,
+        sum: 20,
       },
     ],
   },

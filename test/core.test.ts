@@ -94,7 +94,7 @@ describe("core", () => {
         $stddev: (collection: RawArray, expr: AnyVal, options?: Options) => {
           const result = aggregate(
             collection,
-            [{ $group: { avg: { $avg: expr } } }],
+            [{ $group: { _id: null, avg: { $avg: expr } } }],
             options
           );
           const avg = result[0].avg as number;
@@ -112,7 +112,7 @@ describe("core", () => {
 
       const result = aggregate(support.complexGradesData, [
         { $unwind: "$scores" },
-        { $group: { stddev: { $stddev: "$scores.score" } } },
+        { $group: { _id: null, stddev: { $stddev: "$scores.score" } } },
       ]);
       expect(result.length).toBe(1);
       expect(result[0].stddev).toEqual(28.57362029450366);

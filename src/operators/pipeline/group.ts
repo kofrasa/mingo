@@ -1,7 +1,7 @@
 import { ComputeOptions, computeValue, Options } from "../../core";
 import { Iterator } from "../../lazy";
 import { RawArray, RawObject } from "../../types";
-import { groupBy } from "../../util";
+import { assert, groupBy, has } from "../../util";
 
 // lookup key for grouping
 const ID_KEY = "_id";
@@ -19,6 +19,7 @@ export function $group(
   expr: RawObject,
   options?: Options
 ): Iterator {
+  assert(has(expr, ID_KEY), "a group specification must include an _id");
   const idExpr = expr[ID_KEY];
   const copts = ComputeOptions.init(options);
 

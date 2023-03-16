@@ -1,6 +1,6 @@
 import { Options } from "../../core";
 import { AnyVal, RawObject } from "../../types";
-import { DEFAULT_COMPARATOR } from "../../util";
+import { DEFAULT_COMPARATOR, isNotNaN } from "../../util";
 import { $push } from "./push";
 
 /**
@@ -16,7 +16,7 @@ export function $min(
   expr: AnyVal,
   options?: Options
 ): AnyVal {
-  const nums = $push(collection, expr, options) as number[];
+  const nums = $push(collection, expr, options).filter(isNotNaN) as number[];
   const n = nums.reduce(
     (acc, n) => (DEFAULT_COMPARATOR(n, acc) <= 0 ? n : acc),
     Infinity

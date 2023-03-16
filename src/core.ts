@@ -95,7 +95,8 @@ export interface Options {
   readonly processingMode?: ProcessingMode;
   /**
    * Enforces strict MongoDB compatibilty. See readme for differences. @default true.
-   * When disabled, the $elemMatch projection operator returns all matching nested documents instead of only the first.
+   * When disabled, the following behaviours take effect.
+   *  - $elemMatch projection operator returns all matching nested documents instead of only the first.
    */
   readonly useStrictMode?: boolean;
   /**
