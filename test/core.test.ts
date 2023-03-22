@@ -48,6 +48,15 @@ describe("core", () => {
       expect(copts.local?.variables).toEqual({ x: 10 });
       expect(copts.root).toEqual(true);
     });
+
+    it("should merge new variables on update when non-empty", () => {
+      copts.update(true, { variables: { x: 10 } });
+      copts.update(true, { variables: { y: 20 } });
+      expect(copts.local?.variables).toEqual({ x: 10, y: 20 });
+
+      copts.update(true);
+      expect(copts.local?.variables).toBeUndefined();
+    });
   });
   describe("useOperators", () => {
     it("should add new pipeline operator", () => {

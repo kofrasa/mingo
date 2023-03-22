@@ -161,7 +161,16 @@ export class ComputeOptions implements Options {
   update(root?: AnyVal, local?: LocalData): ComputeOptions {
     // NOTE: this is done for efficiency to avoid creating too many intermediate options objects.
     this._root = root;
-    this._local = local;
+    this._local = local
+      ? Object.assign({}, local, {
+          variables: Object.assign(
+            {},
+            this._local?.variables,
+            local?.variables
+          ),
+        })
+      : local;
+
     return this;
   }
 
