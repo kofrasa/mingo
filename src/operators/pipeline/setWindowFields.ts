@@ -63,24 +63,14 @@ export function $setWindowFields(
   }
 
   // then partition collection
-  if (expr.partitionBy) {
-    collection = $group(
-      collection,
-      {
-        _id: expr.partitionBy,
-        items: { $push: "$$CURRENT" },
-      },
-      options
-    );
-  } else {
-    // single partition so we can keep the code uniform
-    collection = Lazy([
-      {
-        _id: 0,
-        items: collection.value(),
-      },
-    ]);
-  }
+  collection = $group(
+    collection,
+    {
+      _id: expr.partitionBy || null,
+      items: { $push: "$$CURRENT" },
+    },
+    options
+  );
 
   // transform values
   return collection.transform((partitions: RawArray) => {

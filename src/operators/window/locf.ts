@@ -26,7 +26,7 @@ export function $locf(
       ComputeOptions.init(options, previous)
     );
   }
-  // TODO: consider using a temporary ramdom field to store observations.
+  // TODO: consider using a temporary random field to store observations.
   obj[expr.field] = lastObserved;
   return lastObserved;
 }
