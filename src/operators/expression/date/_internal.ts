@@ -2,17 +2,6 @@ import { computeValue, Options } from "../../../core";
 import { AnyVal } from "../../../types";
 import { isDate, isNil, isNumber } from "../../../util";
 
-export type Duration =
-  | "year"
-  | "quarter"
-  | "month"
-  | "week"
-  | "day"
-  | "hour"
-  | "minute"
-  | "second"
-  | "millisecond";
-
 const COMMON_YEAR_DAYS_OFFSET = [
   0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334,
 ];

@@ -49,3 +49,15 @@ export type BsonType =
   | "double"
   | "decimal"
   | "regex";
+
+/** Duration for datetime periods */
+export type Duration =
+  | "year"
+  | "quarter"
+  | "month"
+  | "week"
+  | "day"
+  | "hour"
+  | "minute"
+  | "second"
+  | "millisecond";

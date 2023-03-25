@@ -11,10 +11,20 @@ import { compose, Iterator, Lazy } from "../../lazy";
 import { AnyVal, RawArray, RawObject } from "../../types";
 import { assert, isNumber, isOperator, isString } from "../../util";
 import { $dateAdd } from "../expression/date/dateAdd";
-import { SetWindowFieldsInput, WindowOutputOption } from "./_internal";
+import {
+  isUnbounded,
+  SetWindowFieldsInput,
+  WindowOutputOption,
+} from "./_internal";
 import { $addFields } from "./addFields";
 import { $group } from "./group";
 import { $sort } from "./sort";
+
+// Operators that require 'sortBy' option.
+const SORT_REQUIRED_OPS = new Set(["$rank", "$denseRank", "$linearFill"]);
+
+// Operators that require unbounded 'window' option.
+const WINDOW_UNBOUNDED_OPS = new Set(["$rank", "$denseRank", "$shift"]);
 
 /**
  * Randomly selects the specified number of documents from its input. The given iterator must have finite values
@@ -66,7 +76,7 @@ export function $setWindowFields(
   collection = $group(
     collection,
     {
-      _id: expr.partitionBy || null,
+      _id: expr.partitionBy,
       items: { $push: "$$CURRENT" },
     },
     options
@@ -88,17 +98,31 @@ export function $setWindowFields(
     }> = [];
 
     for (const [field, outputExpr] of Object.entries(expr.output)) {
-      const operatorName = Object.keys(outputExpr).find(isOperator);
-      outputConfig.push({
-        operatorName,
+      const op = Object.keys(outputExpr).find(isOperator);
+      const config = {
+        operatorName: op,
         func: {
-          left: getOperator(OperatorType.ACCUMULATOR, operatorName),
-          right: getOperator(OperatorType.WINDOW, operatorName),
+          left: getOperator(OperatorType.ACCUMULATOR, op),
+          right: getOperator(OperatorType.WINDOW, op),
         },
-        args: outputExpr[operatorName],
+        args: outputExpr[op],
         field: field,
         window: outputExpr.window,
-      });
+      };
+      // sortBy option required for specific operators or bounded window.
+      assert(
+        !!expr.sortBy ||
+          !(SORT_REQUIRED_OPS.has(op) || isUnbounded(config.window)),
+        `sortBy option is required for ${
+          SORT_REQUIRED_OPS.has(op) ? op : "bounded window"
+        }.`
+      );
+      // window must be unbounded for specific operators.
+      assert(
+        isUnbounded(config.window) || !WINDOW_UNBOUNDED_OPS.has(op),
+        `window option must be unbounded for ${op}.`
+      );
+      outputConfig.push(config);
     }
 
     // each parition maintains its own closure to process the documents in the window.
@@ -146,11 +170,17 @@ export function $setWindowFields(
 
         if (window) {
           const { documents, range, unit } = window;
+          // TODO: fix the meaning of numeric values in range.
+          //  See definition: https://www.mongodb.com/docs/manual/reference/operator/aggregation/setWindowFields/#std-label-setWindowFields-range
+          //  - A number to add to the value of the sortBy field for the current document.
+          //  - A document is in the window if the sortBy field value is inclusively within the lower and upper boundaries.
+          // TODO: Need to reconcile the two above statments from the doc to implement 'range' option correctly.
           const boundary = documents || range;
-          const begin = boundary[0];
-          const end = boundary[1];
 
-          if (boundary && (begin != "unbounded" || end != "unbounded")) {
+          if (!isUnbounded(window)) {
+            const begin = boundary[0];
+            const end = boundary[1];
+
             const toBeginIndex = (currentIndex: number): number => {
               if (begin == "current") return currentIndex;
               if (begin == "unbounded") return 0;

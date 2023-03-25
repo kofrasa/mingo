@@ -1,5 +1,4 @@
-import { AnyVal } from "../../types";
-import { Duration } from "../expression/date/_internal";
+import { AnyVal, Duration } from "../../types";
 
 type Boundary = "current" | "unbounded" | number;
 
@@ -27,3 +26,11 @@ export interface WindowOperatorInput {
   readonly documentNumber: number;
   readonly field: string;
 }
+
+/** Checks whether the specified window is unbounded. */
+export const isUnbounded = (window: WindowOutputOption): boolean => {
+  const boundary = window?.documents || window?.range;
+  return (
+    !boundary || (boundary[0] === "unbounded" && boundary[1] === "unbounded")
+  );
+};

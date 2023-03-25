@@ -1,11 +1,10 @@
 // Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
+import { AnyVal, Duration, RawObject } from "../../../types";
 import {
   adjustDate,
   computeDate,
-  Duration,
   DURATION_IN_MILLIS,
   parseTimezone,
 } from "./_internal";
