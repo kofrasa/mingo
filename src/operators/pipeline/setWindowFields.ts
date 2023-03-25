@@ -21,7 +21,15 @@ import { $group } from "./group";
 import { $sort } from "./sort";
 
 // Operators that require 'sortBy' option.
-const SORT_REQUIRED_OPS = new Set(["$rank", "$denseRank", "$linearFill"]);
+const SORT_REQUIRED_OPS = new Set([
+  "$denseRank",
+  "$documentNumber",
+  "$first",
+  "$last",
+  "$linearFill",
+  "$rank",
+  "$shift",
+]);
 
 // Operators that require unbounded 'window' option.
 const WINDOW_UNBOUNDED_OPS = new Set(["$rank", "$denseRank", "$shift"]);
