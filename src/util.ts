@@ -7,6 +7,7 @@ import {
   ArrayOrObject,
   Callback,
   Comparator,
+  GroupByOutput,
   HashFunction,
   JsType,
   RawArray,
@@ -637,7 +638,7 @@ export function groupBy(
   collection: RawArray,
   keyFn: Callback<AnyVal>,
   hashFunction: HashFunction = DEFAULT_HASH_FUNCTION
-): { keys: RawArray; groups: RawArray[] } {
+): GroupByOutput {
   const result = {
     keys: new Array<AnyVal>(),
     groups: new Array<RawArray>(),

@@ -1,9 +1,9 @@
 import { Options } from "../../core";
-import { AnyVal, RawObject } from "../../types";
-import { assert, groupBy, isEqual, isOperator } from "../../util";
+import { AnyVal, GroupByOutput, RawArray, RawObject } from "../../types";
+import { assert, groupBy, isEqual } from "../../util";
 import { $push } from "../accumulator";
 import { MILLIS_PER_DAY } from "../expression/date/_internal";
-import { WindowOperatorInput } from "../pipeline/_internal";
+import { isUnbounded, WindowOperatorInput } from "../pipeline/_internal";
 
 export type TimeUnit =
   | "week"
@@ -23,6 +23,40 @@ export const MILLIS_PER_UNIT: Record<TimeUnit, number> = {
   millisecond: 1,
 };
 
+// internal cache to store precomputed series once to avoid O(N^2) calls to over the collection
+const memo = new WeakMap<RawArray, AnyVal>();
+
+/**
+ * Caches all computed values in a window sequence for reuse.
+ * Must only be used with unbounded windows.
+ */
+export function withMemo<T = AnyVal, R = AnyVal>(
+  collection: RawObject[],
+  expr: WindowOperatorInput,
+  cacheFn: () => T,
+  fn: (xs?: T) => R
+) {
+  assert(
+    isUnbounded(expr.parentExpr.output[expr.field].window),
+    "withMemo function should only be used for operators with unbounded windows."
+  );
+  if (!memo.has(collection)) {
+    memo.set(collection, cacheFn());
+  }
+  let failed = false;
+  try {
+    const precomputed = memo.has(collection) ? memo.get(collection) : undefined;
+    return fn(precomputed as T);
+  } catch (e) {
+    failed = true;
+  } finally {
+    // cleanup on failure or last element in collection.
+    if (failed || expr.documentNumber === collection.length) {
+      memo.delete(collection);
+    }
+  }
+}
+
 /** Returns the position of a document in the $setWindowFields stage partition. */
 export function rank(
   obj: RawObject,
@@ -31,35 +65,37 @@ export function rank(
   options: Options,
   dense: boolean
 ): AnyVal {
-  const outputExpr = expr.parentExpr.output[expr.field];
-  const operator = Object.keys(outputExpr).find(isOperator);
-  assert(
-    !outputExpr.window,
-    `$${operator} does not support 'window' option in $setWindowFields`
-  );
-
-  const sortKey = "$" + Object.keys(expr.parentExpr.sortBy)[0];
-  const sortValues = $push(collection, sortKey, options);
-  const partitions = groupBy(
+  return withMemo<{ values: RawArray; groups: GroupByOutput }, number>(
     collection,
-    (_: RawObject, n: number) => sortValues[n],
-    options.hashFunction
-  );
+    expr,
+    () => {
+      const sortKey = "$" + Object.keys(expr.parentExpr.sortBy)[0];
+      const values = $push(collection, sortKey, options);
+      const groups = groupBy(
+        values,
+        (_: RawObject, n: number) => values[n],
+        options.hashFunction
+      );
+      return { values, groups };
+    },
+    (input) => {
+      const { values, groups: partitions } = input;
+      // same number of paritions as lenght means all sort keys are unique
+      if (partitions.keys.length == collection.length) {
+        return expr.documentNumber;
+      }
 
-  // same number of paritions as lenght means all sort keys are unique
-  if (partitions.keys.length == collection.length) {
-    return expr.documentNumber;
-  }
+      let rank = 1;
+      const current = values[expr.documentNumber - 1];
 
-  let rank = 1;
-  const current = sortValues[expr.documentNumber - 1];
-
-  for (let i = 0; i < partitions.keys.length; i++) {
-    if (isEqual(current, partitions.keys[i])) {
-      rank = dense ? i + 1 : rank;
+      for (let i = 0; i < partitions.keys.length; i++) {
+        if (isEqual(current, partitions.keys[i])) {
+          rank = dense ? i + 1 : rank;
+          return rank;
+        }
+        rank += partitions.groups[i].length;
+      }
       return rank;
     }
-    rank += partitions.groups[i].length;
-  }
-  return rank;
+  );
 }

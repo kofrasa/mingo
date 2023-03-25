@@ -178,8 +178,7 @@ export function $setWindowFields(
           const boundary = documents || range;
 
           if (!isUnbounded(window)) {
-            const begin = boundary[0];
-            const end = boundary[1];
+            const [begin, end] = boundary;
 
             const toBeginIndex = (currentIndex: number): number => {
               if (begin == "current") return currentIndex;
