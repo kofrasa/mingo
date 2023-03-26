@@ -35,6 +35,7 @@ const SORT_REQUIRED_OPS = new Set([
 const WINDOW_UNBOUNDED_OPS = new Set([
   "$denseRank",
   "$expMovingAvg",
+  "$linearFill",
   "$rank",
   "$shift",
 ]);
