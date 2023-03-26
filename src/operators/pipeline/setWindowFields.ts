@@ -54,14 +54,14 @@ export function $setWindowFields(
     assert(
       !!getOperator(OperatorType.WINDOW, op) ||
         !!getOperator(OperatorType.ACCUMULATOR, op),
-      `${op} is not a valid window operator`
+      `'${op}' is not a valid window operator`
     );
 
     assert(
       keys.length > 0 &&
         keys.length <= 2 &&
         (keys.length == 1 || keys.includes("window")),
-      "$setWindowFields 'output' values should have a single window operator."
+      "'output' option should have a single window operator."
     );
 
     if (outputExpr?.window) {
@@ -70,7 +70,7 @@ export function $setWindowFields(
         (!!documents && !range) ||
           (!documents && !!range) ||
           (!documents && !range),
-        "$setWindowFields 'output.window' option supports only one of 'documents' or 'range'."
+        "'window' option supports only one of 'documents' or 'range'."
       );
     }
   }
@@ -121,14 +121,14 @@ export function $setWindowFields(
       assert(
         !!expr.sortBy ||
           !(SORT_REQUIRED_OPS.has(op) || isUnbounded(config.window)),
-        `sortBy option is required for ${
-          SORT_REQUIRED_OPS.has(op) ? op : "bounded window"
-        }.`
+        `${
+          SORT_REQUIRED_OPS.has(op) ? `'${op}'` : "bounded window operation"
+        } requires a sortBy.`
       );
       // window must be unbounded for specific operators.
       assert(
         isUnbounded(config.window) || !WINDOW_UNBOUNDED_OPS.has(op),
-        `window option must be unbounded for ${op}.`
+        `${op} does not accept a 'window' field.`
       );
       outputConfig.push(config);
     }
