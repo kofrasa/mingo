@@ -32,7 +32,12 @@ const SORT_REQUIRED_OPS = new Set([
 ]);
 
 // Operators that require unbounded 'window' option.
-const WINDOW_UNBOUNDED_OPS = new Set(["$rank", "$denseRank", "$shift"]);
+const WINDOW_UNBOUNDED_OPS = new Set([
+  "$denseRank",
+  "$expMovingAvg",
+  "$rank",
+  "$shift",
+]);
 
 /**
  * Randomly selects the specified number of documents from its input. The given iterator must have finite values
@@ -119,15 +124,14 @@ export function $setWindowFields(
       };
       // sortBy option required for specific operators or bounded window.
       assert(
-        !!expr.sortBy ||
-          !(SORT_REQUIRED_OPS.has(op) || isUnbounded(config.window)),
+        !!expr.sortBy || !(SORT_REQUIRED_OPS.has(op) || !config.window),
         `${
           SORT_REQUIRED_OPS.has(op) ? `'${op}'` : "bounded window operation"
         } requires a sortBy.`
       );
       // window must be unbounded for specific operators.
       assert(
-        isUnbounded(config.window) || !WINDOW_UNBOUNDED_OPS.has(op),
+        !config.window || !WINDOW_UNBOUNDED_OPS.has(op),
         `${op} does not accept a 'window' field.`
       );
       outputConfig.push(config);

@@ -1,6 +1,6 @@
 import { Options } from "../../core";
 import { AnyVal, GroupByOutput, RawArray, RawObject } from "../../types";
-import { assert, groupBy, isEqual } from "../../util";
+import { groupBy, isEqual } from "../../util";
 import { $push } from "../accumulator";
 import { MILLIS_PER_DAY } from "../expression/date/_internal";
 import { isUnbounded, WindowOperatorInput } from "../pipeline/_internal";
@@ -28,25 +28,25 @@ const memo = new WeakMap<RawArray, AnyVal>();
 
 /**
  * Caches all computed values in a window sequence for reuse.
- * Must only be used with unbounded windows.
+ * This is only useful for operations with unbounded documents.
  */
 export function withMemo<T = AnyVal, R = AnyVal>(
   collection: RawObject[],
   expr: WindowOperatorInput,
   cacheFn: () => T,
-  fn: (xs?: T) => R
+  fn: (xs: T) => R
 ) {
-  assert(
-    isUnbounded(expr.parentExpr.output[expr.field].window),
-    "withMemo function should only be used for operators with unbounded windows."
-  );
+  // no caching done for bounded inputs
+  if (!isUnbounded(expr.parentExpr.output[expr.field].window)) {
+    return fn(cacheFn());
+  }
+
   if (!memo.has(collection)) {
     memo.set(collection, cacheFn());
   }
   let failed = false;
   try {
-    const precomputed = memo.has(collection) ? memo.get(collection) : undefined;
-    return fn(precomputed as T);
+    return fn(memo.get(collection) as T);
   } catch (e) {
     failed = true;
   } finally {

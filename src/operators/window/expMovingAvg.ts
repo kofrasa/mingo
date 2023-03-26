@@ -1,47 +1,48 @@
 import { Options } from "../../core";
 import { AnyVal, RawObject } from "../../types";
-import { hashCode } from "../../util";
+import { assert, isNumber } from "../../util";
 import { $push } from "../accumulator";
 import { WindowOperatorInput } from "../pipeline/_internal";
-
-// internal cache to store precomputed series once to avoid O(N^2) calls to over the collection
-const cache: Record<string, number[]> = {};
+import { withMemo } from "./_internal";
 
 /**
  * Returns the exponential moving average of numeric expressions applied to documents
  * in a partition defined in the $setWindowFields stage.
  */
 export function $expMovingAvg(
-  obj: RawObject,
+  _: RawObject,
   collection: RawObject[],
   expr: WindowOperatorInput,
   options?: Options
 ): AnyVal {
-  const key = hashCode(collection[0]);
-  try {
-    const { input, N, alpha } = expr.inputExpr as {
-      input: AnyVal;
-      N: number;
-      alpha: number;
-    };
+  const { input, N, alpha } = expr.inputExpr as {
+    input: AnyVal;
+    N: number;
+    alpha: number;
+  };
 
-    // compute the entire series once and cache
-    if (expr.documentNumber === 1) {
-      cache[key] = $push(collection, input, options) as number[];
+  assert(
+    !(N && alpha),
+    `You must specify either N or alpha. You cannot specify both.`
+  );
+
+  return withMemo(
+    collection,
+    expr,
+    () => {
+      const series = $push(collection, input, options).filter(isNumber);
+      return series.length === collection.length ? series : null;
+    },
+    (series: number[]) => {
+      // return null if there are incompatible values
+      if (series === null) return null;
+      // first item
+      if (expr.documentNumber == 1) return series[0];
+      const weight = N != undefined ? 2 / (N + 1) : alpha;
+      const i = expr.documentNumber - 1;
+      // update series with moving average
+      series[i] = series[i] * weight + series[i - 1] * (1 - weight);
+      return series[i];
     }
-
-    const series = cache[key].slice(0, expr.documentNumber);
-    let result = series[0];
-    const weight = N != undefined ? 2 / (N + 1) : alpha;
-
-    for (let i = 1; i < series.length; i++) {
-      result = series[i] * weight + result * (1 - weight);
-    }
-
-    return result;
-  } finally {
-    if (expr.documentNumber == collection.length) {
-      delete cache[key];
-    }
-  }
+  );
 }

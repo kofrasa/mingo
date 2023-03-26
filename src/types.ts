@@ -18,6 +18,11 @@ export interface Comparator<T> {
   (left: T, right: T): number;
 }
 
+export interface GroupByOutput {
+  keys: RawArray;
+  groups: RawArray[];
+}
+
 /**
  * Custom function to hash values to improve faster comparaisons
  */
