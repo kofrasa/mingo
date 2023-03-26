@@ -22,7 +22,7 @@ const interpolate = (
  * Fills null and missing fields in a window using linear interpolation based on surrounding field values.
  */
 export function $linearFill(
-  obj: RawObject,
+  _: RawObject,
   collection: RawObject[],
   expr: WindowOperatorInput,
   options?: Options

@@ -36,6 +36,7 @@ const WINDOW_UNBOUNDED_OPS = new Set([
   "$denseRank",
   "$expMovingAvg",
   "$linearFill",
+  "$locf",
   "$rank",
   "$shift",
 ]);
