@@ -41,18 +41,26 @@ export function withMemo<T = AnyVal, R = AnyVal>(
     return fn(cacheFn());
   }
 
+  // first time using collection
   if (!memo.has(collection)) {
-    memo.set(collection, cacheFn());
+    memo.set(collection, { [expr.field]: cacheFn() });
+  }
+  const data = memo.get(collection) as RawObject;
+
+  // subsequent computations over the same collection.
+  if (data[expr.field] === undefined) {
+    data[expr.field] = cacheFn();
   }
   let failed = false;
   try {
-    return fn(memo.get(collection) as T);
+    return fn(data[expr.field] as T);
   } catch (e) {
     failed = true;
   } finally {
     // cleanup on failure or last element in collection.
     if (failed || expr.documentNumber === collection.length) {
-      memo.delete(collection);
+      delete data[expr.field];
+      if (Object.keys(data).length === 0) memo.delete(collection);
     }
   }
 }
