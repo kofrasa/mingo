@@ -1,5 +1,18 @@
 # Changelog
 
+## 6.3.0 / 2023/03/26
+**Fixes**
+- Fix `$size` predicate failing when applied to undefined array. [313](https://github.com/kofrasa/mingo/issues/313)
+- Fix `$min` and `$max` operators to consider type sorting order.
+- Fix `$group` operator to enforce `_id` in spec.
+- Correctly propagate variables from parent to children. [315](https://github.com/kofrasa/mingo/issues/315)
+- Add missing validations for `$setWindowFields` operators.
+
+**New**
+- Add support for `$locf`.
+- Add support for `$linearFill`.
+
+
 ## 6.2.7 / 2023-01-12
 
 **Fixes**
