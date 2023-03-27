@@ -7,6 +7,7 @@ export * from "./bucket";
 export * from "./bucketAuto";
 export * from "./count";
 export * from "./facet";
+export * from "./fill";
 export * from "./group";
 export * from "./limit";
 export * from "./lookup";
