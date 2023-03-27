@@ -1,6 +1,6 @@
 # Changelog
 
-## 6.3.0 / 2023-03-xx
+## 6.3.0 / 2023-03-27
 **Fixes**
 - Fix `$size` predicate failing when applied to undefined array. [313](https://github.com/kofrasa/mingo/issues/313)
 - Fix `$min` and `$max` operators to consider type sorting order.
