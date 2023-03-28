@@ -2,7 +2,8 @@
 
 ## 6.3.1 / 2023-03-28
 **Fixes**
-- Fix `$filter` to properly handle truthy values.
+- Fix `$filter` to properly handle truthy values. [320](https://github.com/kofrasa/mingo/issues/320)
+- Fix `$arrayToObject` to flatten array before converting to objects.
 
 ## 6.3.0 / 2023-03-27
 **Fixes**
