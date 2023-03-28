@@ -16,6 +16,9 @@ export function $arrayToObject(
   assert(isArray(arr), "$arrayToObject expression must resolve to an array");
 
   return arr.reduce((newObj: RawObject, val: AnyVal) => {
+    // flatten
+    while (isArray(val) && val.length === 1) val = val[0];
+
     if (val instanceof Array && val.length == 2) {
       newObj[val[0] as string] = val[1];
     } else {
