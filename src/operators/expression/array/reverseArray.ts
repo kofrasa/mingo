@@ -2,7 +2,7 @@
 
 import { computeValue, Options } from "../../../core";
 import { AnyVal, RawArray, RawObject } from "../../../types";
-import { assert, into, isArray, isNil } from "../../../util";
+import { assert, isArray, isNil } from "../../../util";
 
 /**
  * Returns an array with the elements in reverse order.
@@ -21,9 +21,7 @@ export function $reverseArray(
   if (isNil(arr)) return null;
   assert(isArray(arr), "$reverseArray expression must resolve to an array");
 
-  const result: RawArray = [];
-  into(result, arr);
+  const result = arr.slice(0);
   result.reverse();
-
   return result;
 }

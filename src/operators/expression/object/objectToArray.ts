@@ -1,7 +1,7 @@
 // Object Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#object-expression-operators
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, RawArray, RawObject } from "../../../types";
+import { AnyVal, RawObject } from "../../../types";
 import { assert, isObject } from "../../../util";
 
 /**
@@ -18,9 +18,11 @@ export function $objectToArray(
 ): AnyVal {
   const val = computeValue(obj, expr, null, options) as RawObject;
   assert(isObject(val), "$objectToArray expression must resolve to an object");
-  const result: RawArray = [];
-  for (const [k, v] of Object.entries(val)) {
-    result.push({ k, v });
+  const entries = Object.entries(val);
+  const result = new Array<AnyVal>(entries.length);
+  let i = 0;
+  for (const [k, v] of entries) {
+    result[i++] = { k, v };
   }
   return result;
 }
