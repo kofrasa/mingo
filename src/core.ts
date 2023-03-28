@@ -96,7 +96,8 @@ export interface Options {
   /**
    * Enforces strict MongoDB compatibilty. See readme for differences. @default true.
    * When disabled, the following behaviours take effect.
-   *  - $elemMatch projection operator returns all matching nested documents instead of only the first.
+   *  * $elemMatch projection operator returns all matching nested documents instead of only the first.
+   *  * $filter expression treats empty string "" as falsey consistent with Javascript.
    */
   readonly useStrictMode?: boolean;
   /**

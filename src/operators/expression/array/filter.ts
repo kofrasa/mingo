@@ -7,9 +7,9 @@ import { assert, isArray } from "../../../util";
 /**
  * Selects a subset of the array to return an array with only the elements that match the filter condition.
  *
- * @param  {Object} obj  [description]
- * @param  {*} expr [description]
- * @return {*}      [description]
+ * @param  {Object} obj The current document
+ * @param  {*} expr The filter spec
+ * @return {*}
  */
 export function $filter(
   obj: RawObject,
@@ -21,15 +21,18 @@ export function $filter(
 
   const copts = ComputeOptions.init(options, obj);
   const k = expr.as || "this";
-  return input.filter(
-    (o: AnyVal) =>
-      computeValue(
-        obj,
-        expr.cond,
-        null,
-        copts.update(copts.root, {
-          variables: { [k]: o },
-        })
-      ) === true
-  );
+  const local = {
+    variables: { [k]: null },
+  };
+  return input.filter((o: AnyVal) => {
+    local.variables[k] = o;
+    const b = computeValue(
+      obj,
+      expr.cond,
+      null,
+      copts.update(copts.root, local)
+    );
+    // allow empty strings only in strict MongoDB mode (default).
+    return !!b || (b === "" && options.useStrictMode);
+  });
 }
