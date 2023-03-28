@@ -28,7 +28,7 @@
 <ul class="tsd-hierarchy">
 <li><a href="../classes/core.ComputeOptions.html" class="tsd-signature-type" data-tsd-kind="Class">ComputeOptions</a></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/3426cde/src/core.ts#L89">src/core.ts:89</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/6874d36/src/core.ts#L88">src/core.ts:88</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary">
@@ -54,76 +54,71 @@
 <div class="tsd-comment tsd-typography"><p>The collation specification for string sorting operations.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/3426cde/src/core.ts#L93">src/core.ts:93</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/6874d36/src/core.ts#L92">src/core.ts:92</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="collectionResolver" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>collection<wbr/>Resolver</span><a href="#collectionResolver" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">collection<wbr/>Resolver<span class="tsd-signature-symbol">?:</span> <a href="../types/core.CollectionResolver.html" class="tsd-signature-type" data-tsd-kind="Type alias">CollectionResolver</a></div>
 <div class="tsd-comment tsd-typography"><p>Function to resolve strings to arrays for use with operators that reference other collections such as; <code>$lookup</code>, <code>$out</code> and <code>$merge</code>.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/3426cde/src/core.ts#L111">src/core.ts:111</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/6874d36/src/core.ts#L102">src/core.ts:102</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="hashFunction" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>hash<wbr/>Function</span><a href="#hashFunction" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">hash<wbr/>Function<span class="tsd-signature-symbol">?:</span> <a href="../types/types.HashFunction.html" class="tsd-signature-type" data-tsd-kind="Type alias">HashFunction</a></div>
-<div class="tsd-comment tsd-typography"><p>Hash function to replace the somewhat weaker default implementation.</p>
+<div class="tsd-comment tsd-typography"><p>Hash function to replace the Effective Java default implementation.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/3426cde/src/core.ts#L109">src/core.ts:109</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/6874d36/src/core.ts#L100">src/core.ts:100</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="idKey" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>id<wbr/>Key</span><a href="#idKey" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">id<wbr/>Key<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span></div>
 <div class="tsd-comment tsd-typography"><p>The key that is used to lookup the ID value of a document.</p>
 
-<h3>Default</h3><p>&quot;_id&quot;</p>
+<h3>Default</h3><p>&quot;_id&quot;.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/3426cde/src/core.ts#L91">src/core.ts:91</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/6874d36/src/core.ts#L90">src/core.ts:90</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="jsonSchemaValidator" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>json<wbr/>Schema<wbr/>Validator</span><a href="#jsonSchemaValidator" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">json<wbr/>Schema<wbr/>Validator<span class="tsd-signature-symbol">?:</span> <a href="../types/core.JsonSchemaValidator.html" class="tsd-signature-type" data-tsd-kind="Type alias">JsonSchemaValidator</a></div>
-<div class="tsd-comment tsd-typography"><p>JSON schema validator to use with the &#39;$jsonSchema&#39; operator. This is required in order to use the operator.</p>
+<div class="tsd-comment tsd-typography"><p>JSON schema validator to use with the &#39;$jsonSchema&#39; operator. Required in order to use the operator.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/3426cde/src/core.ts#L113">src/core.ts:113</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/6874d36/src/core.ts#L104">src/core.ts:104</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="processingMode" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>processing<wbr/>Mode</span><a href="#processingMode" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">processing<wbr/>Mode<span class="tsd-signature-symbol">?:</span> <a href="../enums/core.ProcessingMode.html" class="tsd-signature-type" data-tsd-kind="Enumeration">ProcessingMode</a></div>
 <div class="tsd-comment tsd-typography"><p>Determines how to treat inputs and outputs.</p>
 
-<h3>Default</h3><p>ProcessingMode.CLONE_OFF</p>
+<h3>Default</h3><p>ProcessingMode.CLONE_OFF.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/3426cde/src/core.ts#L95">src/core.ts:95</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/6874d36/src/core.ts#L94">src/core.ts:94</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="scriptEnabled" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>script<wbr/>Enabled</span><a href="#scriptEnabled" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">script<wbr/>Enabled<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div>
-<div class="tsd-comment tsd-typography"><p>Enables or disables custom script execution.
-When disabled, you cannot use operations that execute custom code, such as the $where, $accumulator, and $function.</p>
+<div class="tsd-comment tsd-typography"><p>Enable or disable custom script execution via $where, $accumulator, and $function operators.</p>
 
-<h3>Default</h3><p>true</p>
+<h3>Default</h3><p>true.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/3426cde/src/core.ts#L107">src/core.ts:107</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/6874d36/src/core.ts#L98">src/core.ts:98</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="useStrictMode" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>use<wbr/>Strict<wbr/>Mode</span><a href="#useStrictMode" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">use<wbr/>Strict<wbr/>Mode<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div>
-<div class="tsd-comment tsd-typography"><p>Enforces strict MongoDB compatibilty. See readme for differences.</p>
+<div class="tsd-comment tsd-typography"><p>Enforces strict MongoDB compatibilty. See README.</p>
 
-<h3>Default</h3><p>true.
-When disabled, the following behaviours take effect.</p>
-<ul>
-<li>$elemMatch projection operator returns all matching nested documents instead of only the first.</li>
-</ul>
+<h3>Default</h3><p>true.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/3426cde/src/core.ts#L101">src/core.ts:101</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/6874d36/src/core.ts#L96">src/core.ts:96</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="variables" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>variables</span><a href="#variables" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">variables<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../types/types.RawObject.html" class="tsd-signature-type" data-tsd-kind="Type alias">RawObject</a><span class="tsd-signature-symbol">&gt;</span></div>
 <div class="tsd-comment tsd-typography"><p>Global variables.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/3426cde/src/core.ts#L115">src/core.ts:115</a></li></ul></aside></section></section></div>
+<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/6874d36/src/core.ts#L106">src/core.ts:106</a></li></ul></aside></section></section></div>
 <div class="col-4 col-menu menu-sticky-wrap menu-highlight">
 <div class="tsd-navigation settings">
 <details class="tsd-index-accordion"><summary class="tsd-accordion-summary">

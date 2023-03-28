@@ -136,8 +136,70 @@ No default implementation is provided out of the box so users can use a library 
   <h2>Options</h2>
 </a>
 <p>Query and aggregation operations can be configured with options to enabled different features or customize how documents are processed. Some options are only relevant to specific operators and need not be specified if not required.</p>
-<pre><code class="language-js"><span class="hl-5">interface</span><span class="hl-2"> </span><span class="hl-9">Options</span><span class="hl-2"> {</span><br/><span class="hl-2">  </span><span class="hl-0">/** The key that is used to lookup the ID value of a document. </span><span class="hl-5">@default</span><span class="hl-0"> </span><span class="hl-3">&quot;</span><span class="hl-3">_id</span><span class="hl-3">&quot;</span><span class="hl-0"> */</span><br/><span class="hl-2">  </span><span class="hl-5">readonly</span><span class="hl-2"> </span><span class="hl-3">idKey</span><span class="hl-2">?: </span><span class="hl-9">string</span><span class="hl-2">;</span><br/><span class="hl-2">  </span><span class="hl-0">/** The collation specification for string sorting operations. */</span><br/><span class="hl-2">  </span><span class="hl-5">readonly</span><span class="hl-2"> </span><span class="hl-3">collation</span><span class="hl-2">?: </span><span class="hl-9">CollationSpec</span><span class="hl-2">;</span><br/><span class="hl-2">  </span><span class="hl-0">/** Determines how to treat inputs and outputs. </span><span class="hl-5">@default</span><span class="hl-0"> </span><span class="hl-3">ProcessingMode.CLONE_OFF</span><span class="hl-0"> */</span><br/><span class="hl-2">  </span><span class="hl-5">readonly</span><span class="hl-2"> </span><span class="hl-3">processingMode</span><span class="hl-2">?: </span><span class="hl-9">ProcessingMode</span><span class="hl-2">;</span><br/><span class="hl-2">  </span><span class="hl-0">/**</span><br/><span class="hl-0">   * Enforces strict MongoDB compatibilty. See readme for differences. </span><span class="hl-5">@default</span><span class="hl-0"> </span><span class="hl-3">true.</span><br/><span class="hl-0">   * When disabled, the $elemMatch projection operator returns all matching nested documents instead of only the first.</span><br/><span class="hl-0">   */</span><br/><span class="hl-2">  </span><span class="hl-5">readonly</span><span class="hl-2"> </span><span class="hl-3">useStrictMode</span><span class="hl-2">?: </span><span class="hl-9">boolean</span><span class="hl-2">;</span><br/><span class="hl-2">  </span><span class="hl-0">/**</span><br/><span class="hl-0">   * Enables or disables custom script execution.</span><br/><span class="hl-0">   * When disabled, you cannot use operations that execute custom code, such as the $where, $accumulator, and $function.</span><br/><span class="hl-0">   * </span><span class="hl-5">@default</span><span class="hl-0"> </span><span class="hl-3">true</span><br/><span class="hl-0">   */</span><br/><span class="hl-2">  </span><span class="hl-5">readonly</span><span class="hl-2"> </span><span class="hl-3">scriptEnabled</span><span class="hl-2">?: </span><span class="hl-9">boolean</span><span class="hl-2">;</span><br/><span class="hl-2">  </span><span class="hl-0">/** Hash function to replace the somewhat weaker default implementation. */</span><br/><span class="hl-2">  </span><span class="hl-5">readonly</span><span class="hl-2"> </span><span class="hl-3">hashFunction</span><span class="hl-2">?: </span><span class="hl-9">HashFunction</span><span class="hl-2">;</span><br/><span class="hl-2">  </span><span class="hl-0">/** Function to resolve strings to arrays for use with operators that reference other collections such as; `$lookup`, `$out` and `$merge`. */</span><br/><span class="hl-2">  </span><span class="hl-5">readonly</span><span class="hl-2"> </span><span class="hl-3">collectionResolver</span><span class="hl-2">?: </span><span class="hl-9">CollectionResolver</span><span class="hl-2">;</span><br/><span class="hl-2">  </span><span class="hl-0">/** JSON schema validator to use with the &#39;$jsonSchema&#39; operator. This is required in order to use the operator. */</span><br/><span class="hl-2">  </span><span class="hl-5">readonly</span><span class="hl-2"> </span><span class="hl-3">jsonSchemaValidator</span><span class="hl-2">?: </span><span class="hl-9">JsonSchemaValidator</span><span class="hl-2">;</span><br/><span class="hl-2">  </span><span class="hl-0">/** Global variables. */</span><br/><span class="hl-2">  </span><span class="hl-5">readonly</span><span class="hl-2"> </span><span class="hl-3">variables</span><span class="hl-2">?: </span><span class="hl-9">Readonly</span><span class="hl-2">&lt;</span><span class="hl-9">RawObject</span><span class="hl-2">&gt;;</span><br/><span class="hl-2">}</span>
-</code></pre>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+<th>Default</th>
+<th>Behaviour</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>idKey</td>
+<td>The key that is used to lookup the ID value of a document.</td>
+<td>&quot;_id&quot;</td>
+<td></td>
+</tr>
+<tr>
+<td>collation</td>
+<td><a href="http://kofrasa.net/mingo/interfaces/core.CollationSpec.html">Collation</a> specification for string sorting operations.</td>
+<td><em>none</em></td>
+<td>See <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Collator">Intl.Collator</a></td>
+</tr>
+<tr>
+<td>processingMode</td>
+<td>Determines copy rules for inputs and outputs.</td>
+<td><a href="http://kofrasa.net/mingo/enums/core.ProcessingMode.html">CLONE_OFF</a></td>
+<td>Turn off cloning and modifies the input collection as needed. <br>This option will also return output objects with shared paths in their graph when specific operators are used. Provides the greatest speedup by minizing cloning. When using the aggregation pipeline, you can use the <code>$out</code> operator to collect immutable intermediate results.</td>
+</tr>
+<tr>
+<td>useStrictMode</td>
+<td>Enforces strict MongoDB compatibilty.</td>
+<td>true</td>
+<td>When disabled, behaviour changes as follows. <ul><li><code>$elemMatch</code> returns all matching nested documents instead of only the first.</li><li><code>$filter</code> treats empty string <code>&quot;&quot;</code> as falsey, consistent with Javascript semantics.</li><ul></td>
+</tr>
+<tr>
+<td>scriptEnabled</td>
+<td>Enable or disable using custom script execution.</td>
+<td>true</td>
+<td>When disabled, operators that execute custom code are disallowed such as; <code>$where</code>, <code>$accumulator</code>, and <code>$function</code>.</td>
+</tr>
+<tr>
+<td>hashFunction</td>
+<td>Custom hash function to replace the default based on &quot;Effective Java&quot; hashCode.</td>
+<td><em>default</em></td>
+<td>Expects function <code>(value: unknown) =&gt; number</code>.</td>
+</tr>
+<tr>
+<td>collectionResolver</td>
+<td>Function to resolve strings to arrays for use with operators that reference other collections such as; <code>$lookup</code>, <code>$out</code> and <code>$merge</code>.</td>
+<td><em>none</em></td>
+<td>Expects function <code>(name: string) =&gt; Array&lt;RawObject&gt;</code></td>
+</tr>
+<tr>
+<td>jsonSchemaValidator</td>
+<td>JSON schema validator to use for the <code>$jsonSchema</code> operator.</td>
+<td><em>none</em></td>
+<td>Expects function <code>(schema: RawObject) =&gt; (document: &lt;RawObject&gt;) =&gt; boolean</code>.<br> The <code>$jsonSchema</code> operation would fail if a validator is not provided.</td>
+</tr>
+<tr>
+<td>variables</td>
+<td>Global variables to pass to all operators</td>
+<td><em>none</em></td>
+<td></td>
+</tr>
+</tbody></table>
 
 <a href="#adding-custom-operators" id="adding-custom-operators" style="color: inherit; text-decoration: none;">
   <h2>Adding Custom Operators</h2>
