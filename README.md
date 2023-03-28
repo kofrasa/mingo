@@ -228,35 +228,18 @@ let result = agg.run(collection);
 
 Query and aggregation operations can be configured with options to enabled different features or customize how documents are processed. Some options are only relevant to specific operators and need not be specified if not required.
 
-```js
-interface Options {
-  /** The key that is used to lookup the ID value of a document. @default "_id" */
-  readonly idKey?: string;
-  /** The collation specification for string sorting operations. */
-  readonly collation?: CollationSpec;
-  /** Determines how to treat inputs and outputs. @default ProcessingMode.CLONE_OFF */
-  readonly processingMode?: ProcessingMode;
-  /**
-   * Enforces strict MongoDB compatibilty. See readme for differences. @default true.
-   * When disabled, the $elemMatch projection operator returns all matching nested documents instead of only the first.
-   */
-  readonly useStrictMode?: boolean;
-  /**
-   * Enables or disables custom script execution.
-   * When disabled, you cannot use operations that execute custom code, such as the $where, $accumulator, and $function.
-   * @default true
-   */
-  readonly scriptEnabled?: boolean;
-  /** Hash function to replace the somewhat weaker default implementation. */
-  readonly hashFunction?: HashFunction;
-  /** Function to resolve strings to arrays for use with operators that reference other collections such as; `$lookup`, `$out` and `$merge`. */
-  readonly collectionResolver?: CollectionResolver;
-  /** JSON schema validator to use with the '$jsonSchema' operator. This is required in order to use the operator. */
-  readonly jsonSchemaValidator?: JsonSchemaValidator;
-  /** Global variables. */
-  readonly variables?: Readonly<RawObject>;
-}
-```
+| Name | Description | Default | Behaviour |
+|------|-------------|-----------|---------|
+| idKey | The key that is used to lookup the ID value of a document. | "_id" ||
+| collation | [Collation](http://kofrasa.net/mingo/interfaces/core.CollationSpec.html) specification for string sorting operations. | _none_ | See [Intl.Collator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Collator) |
+| processingMode | Determines copy rules for inputs and outputs. | [CLONE_OFF](http://kofrasa.net/mingo/enums/core.ProcessingMode.html) | Turn off cloning and modifies the input collection as needed. <br>This option will also return output objects with shared paths in their graph when specific operators are used. Provides the greatest speedup by minizing cloning. When using the aggregation pipeline, you can use the `$out` operator to collect immutable intermediate results. |
+| useStrictMode | Enforces strict MongoDB compatibilty. | true | When disabled, behaviour changes as follows. <ul><li>`$elemMatch` returns all matching nested documents instead of only the first.</li><li>`$filter` treats empty string `""` as falsey, consistent with Javascript semantics.</li><ul> |
+|
+| scriptEnabled | Enable or disable using custom script execution. | true | When disabled, operators that execute custom code are disallowed such as; `$where`, `$accumulator`, and `$function`. |
+| hashFunction | Custom hash function to replace the default based on "Effective Java" hashCode. | _default_ | Expects function `(value: unknown) => number`. |
+| collectionResolver | Function to resolve strings to arrays for use with operators that reference other collections such as; `$lookup`, `$out` and `$merge`. | _none_ | Expects `(name: string) => Array<RawObject>` |
+| jsonSchemaValidator | JSON schema validator to use for the `$jsonSchema` operator. | _none_ | Expects function `(schema: RawObject) => (document: <RawObject>) => boolean`.<br> The `$jsonSchema` operation would fail if a validator is not provided. |
+| variables | Global variables to pass to all operators | _none_ ||
 
 ## Adding Custom Operators
 Custom operators can be added with the [useOperators(type, operatorMap)](http://kofrasa.net/mingo/modules/core.html#useOperators) where

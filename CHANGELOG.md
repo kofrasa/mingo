@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.3.1 / 2023-03-28
+**Fixes**
+- Fix `$filter` to properly handle truthy values.
+
 ## 6.3.0 / 2023-03-27
 **Fixes**
 - Fix `$size` predicate failing when applied to undefined array. [313](https://github.com/kofrasa/mingo/issues/313)

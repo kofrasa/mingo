@@ -74,9 +74,8 @@ export enum ProcessingMode {
   /**
    * Turn off cloning and modifies the input collection as needed.
    * This option will also return output objects with shared paths in their graph when specific operators are used.
-   *
-   * This option provides the greatest speedup for the biggest tradeoff. When using the aggregation pipeline, you can use
-   * the "$out" operator to collect immutable intermediate results.
+   * This option provides the greatest speedup for the biggest tradeoff.
+   * When using the aggregation pipeline, you can use the "$out" operator to collect immutable intermediate results.
    *
    * @default
    */
@@ -87,30 +86,21 @@ export enum ProcessingMode {
  * Generic options interface passed down to all operators
  */
 export interface Options {
-  /** The key that is used to lookup the ID value of a document. @default "_id" */
+  /** The key that is used to lookup the ID value of a document. @default "_id". */
   readonly idKey?: string;
   /** The collation specification for string sorting operations. */
   readonly collation?: CollationSpec;
-  /** Determines how to treat inputs and outputs. @default ProcessingMode.CLONE_OFF */
+  /** Determines how to treat inputs and outputs. @default ProcessingMode.CLONE_OFF. */
   readonly processingMode?: ProcessingMode;
-  /**
-   * Enforces strict MongoDB compatibilty. See readme for differences. @default true.
-   * When disabled, the following behaviours take effect.
-   *  * $elemMatch projection operator returns all matching nested documents instead of only the first.
-   *  * $filter expression treats empty string "" as falsey consistent with Javascript.
-   */
+  /** Enforces strict MongoDB compatibilty. See README. @default true. */
   readonly useStrictMode?: boolean;
-  /**
-   * Enables or disables custom script execution.
-   * When disabled, you cannot use operations that execute custom code, such as the $where, $accumulator, and $function.
-   * @default true
-   */
+  /** Enable or disable custom script execution via $where, $accumulator, and $function operators. @default true. */
   readonly scriptEnabled?: boolean;
-  /** Hash function to replace the somewhat weaker default implementation. */
+  /** Hash function to replace the Effective Java default implementation. */
   readonly hashFunction?: HashFunction;
   /** Function to resolve strings to arrays for use with operators that reference other collections such as; `$lookup`, `$out` and `$merge`. */
   readonly collectionResolver?: CollectionResolver;
-  /** JSON schema validator to use with the '$jsonSchema' operator. This is required in order to use the operator. */
+  /** JSON schema validator to use with the '$jsonSchema' operator. Required in order to use the operator. */
   readonly jsonSchemaValidator?: JsonSchemaValidator;
   /** Global variables. */
   readonly variables?: Readonly<RawObject>;
