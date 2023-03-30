@@ -2,7 +2,7 @@
 
 import { ComputeOptions, computeValue, Options } from "../../../core";
 import { AnyVal, RawArray, RawObject } from "../../../types";
-import { assert, isArray } from "../../../util";
+import { assert, isArray, truthy } from "../../../util";
 
 /**
  * Selects a subset of the array to return an array with only the elements that match the filter condition.
@@ -33,6 +33,6 @@ export function $filter(
       copts.update(copts.root, local)
     );
     // allow empty strings only in strict MongoDB mode (default).
-    return !!b || (b === "" && options.useStrictMode);
+    return truthy(b, options.useStrictMode);
   });
 }

@@ -40,6 +40,7 @@ import {
   MIN_INT,
   MIN_LONG,
   resolve,
+  truthy,
 } from "../util";
 
 type PredicateOptions = Options & { depth: number };
@@ -228,7 +229,8 @@ export function $regex(
   options?: PredicateOptions
 ): boolean {
   const lhs = ensureArray(a);
-  const match = (x: string) => isString(x) && !!b.exec(x);
+  const match = (x: string) =>
+    isString(x) && truthy(b.exec(x), options.useStrictMode);
   return lhs.some(match) || flatten(lhs, 1).some(match);
 }
 

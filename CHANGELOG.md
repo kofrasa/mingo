@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.3.2 / 2023-03-29
+**Fixes**
+- Coerce empty string `""` to `true` for applicable operators when using strict MongoDB compatibility mode. [321](https://github.com/kofrasa/mingo/issues/321)
+
 ## 6.3.1 / 2023-03-28
 **Fixes**
 - Fix `$filter` to properly handle truthy values. [320](https://github.com/kofrasa/mingo/issues/320)

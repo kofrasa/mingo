@@ -11,6 +11,7 @@ import {
   resolve,
   resolveGraph,
   sortBy,
+  truthy,
   unique,
 } from "../src/util";
 
@@ -237,5 +238,35 @@ describe("util", () => {
       ]);
       expect(res).toEqual([[2], 3]);
     });
+  });
+
+  describe("truthy", () => {
+    // [value, strict, result]
+    for (const [v, b, r] of Array.from<[unknown, boolean, boolean]>([
+      ["", true, true],
+      ["", false, false],
+      ["s", true, true],
+      ["s", false, true],
+      [0, true, false],
+      [0, false, false],
+      [1, true, true],
+      [1, false, true],
+      [[], true, true],
+      [[], false, true],
+      [false, true, false],
+      [false, false, false],
+      [true, true, true],
+      [true, false, true],
+      [null, true, false],
+      [null, false, false],
+      [undefined, true, false],
+      [undefined, false, false],
+    ])) {
+      it(`should return ${String(r)} for '${JSON.stringify(
+        v
+      )}' with strict=${String(b)}.`, () => {
+        expect(truthy(v, b)).toEqual(r);
+      });
+    }
   });
 });

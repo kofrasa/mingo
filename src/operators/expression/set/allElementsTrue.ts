@@ -18,5 +18,5 @@ export function $allElementsTrue(
 ): AnyVal {
   // mongodb nests the array expression in another
   const args = computeValue(obj, expr, null, options)[0] as RawArray;
-  return args.every(truthy);
+  return args.every((v) => truthy(v, options.useStrictMode));
 }

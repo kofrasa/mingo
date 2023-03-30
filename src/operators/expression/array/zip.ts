@@ -2,7 +2,7 @@
 
 import { computeValue, Options } from "../../../core";
 import { AnyVal, RawArray, RawObject } from "../../../types";
-import { assert, isArray, isBoolean, isNil, truthy } from "../../../util";
+import { assert, isArray, isBoolean, isNil } from "../../../util";
 
 /**
  * Merge two lists together.
@@ -32,7 +32,7 @@ export function $zip(
 
   if (isArray(expr.defaults)) {
     assert(
-      truthy(useLongestLength),
+      useLongestLength,
       "'useLongestLength' must be set to true to use 'defaults'"
     );
   }

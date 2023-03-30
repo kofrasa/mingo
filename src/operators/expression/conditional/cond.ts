@@ -4,7 +4,7 @@
 
 import { computeValue, Options } from "../../../core";
 import { AnyVal, ArrayOrObject, RawObject } from "../../../types";
-import { assert, isObject } from "../../../util";
+import { assert, isObject, truthy } from "../../../util";
 
 /**
  * A ternary operator that evaluates one expression,
@@ -33,6 +33,9 @@ export function $cond(
     thenExpr = expr.then;
     elseExpr = expr.else;
   }
-  const condition = computeValue(obj, ifExpr, null, options);
+  const condition = truthy(
+    computeValue(obj, ifExpr, null, options),
+    options.useStrictMode
+  );
   return computeValue(obj, condition ? thenExpr : elseExpr, null, options);
 }

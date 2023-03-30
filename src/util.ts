@@ -154,8 +154,8 @@ export function inArray(arr: AnyVal[], item: AnyVal): boolean {
 export function notInArray(arr: RawArray, item: AnyVal): boolean {
   return !inArray(arr, item);
 }
-export function truthy(arg: AnyVal): boolean {
-  return !!arg;
+export function truthy(arg: AnyVal, strict: boolean): boolean {
+  return !!arg || (strict && arg === "");
 }
 export function isEmpty(x: AnyVal): boolean {
   return (

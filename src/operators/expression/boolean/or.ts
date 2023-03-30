@@ -13,5 +13,6 @@ import { truthy } from "../../../util";
  */
 export function $or(obj: RawObject, expr: AnyVal, options?: Options): AnyVal {
   const value = computeValue(obj, expr, null, options) as RawArray;
-  return truthy(value) && value.some(truthy);
+  const strict = options.useStrictMode;
+  return truthy(value, strict) && value.some((v) => truthy(v, strict));
 }
