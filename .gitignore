@@ -2,7 +2,6 @@
 *.lcov
 *.tgz
 *.code-workspace
-package-lock.json
 coverage/
 node_modules
 npm-debug.log
