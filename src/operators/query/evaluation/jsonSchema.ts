@@ -11,7 +11,7 @@ import { AnyVal, Predicate, RawObject } from "../../../types";
  * @returns {Function}
  */
 export function $jsonSchema(
-  selector: string,
+  _: string,
   schema: AnyVal,
   options?: Options
 ): Predicate<AnyVal> {

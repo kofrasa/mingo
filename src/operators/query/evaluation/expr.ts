@@ -7,13 +7,13 @@ import { AnyVal, Callback } from "../../../types";
  * Allows the use of aggregation expressions within the query language.
  *
  * @param selector
- * @param value
+ * @param rhs
  * @returns {Function}
  */
 export function $expr(
-  selector: string,
-  value: AnyVal,
+  _: string,
+  rhs: AnyVal,
   options?: Options
 ): Callback<boolean> {
-  return (obj) => computeValue(obj, value, null, options) as boolean;
+  return (obj) => computeValue(obj, rhs, null, options) as boolean;
 }

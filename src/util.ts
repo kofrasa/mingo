@@ -78,9 +78,9 @@ const SORT_ORDER_BY_TYPE: Record<JsType, number> = {
 export const DEFAULT_COMPARATOR = (a: AnyVal, b: AnyVal): number => {
   if (a === MISSING) a = undefined;
   if (b === MISSING) b = undefined;
-  const [ta, tb] = [a, b].map((n) => getType(n).toLowerCase() as JsType);
-  const u = SORT_ORDER_BY_TYPE[ta];
-  const v = SORT_ORDER_BY_TYPE[tb];
+  const [u, v] = [a, b].map(
+    (n) => SORT_ORDER_BY_TYPE[getType(n).toLowerCase() as JsType]
+  );
   if (u !== v) return u - v;
   if (a < b) return -1;
   if (a > b) return 1;

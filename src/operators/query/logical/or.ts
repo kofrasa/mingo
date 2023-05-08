@@ -9,27 +9,15 @@ import { assert, isArray } from "../../../util";
  * Joins query clauses with a logical OR returns all documents that match the conditions of either clause.
  *
  * @param selector
- * @param value
+ * @param rhs
  * @returns {Function}
  */
 export function $or(
-  selector: string,
-  value: Array<RawObject>,
+  _: string,
+  rhs: Array<RawObject>,
   options?: Options
 ): Callback<boolean> {
-  assert(
-    isArray(value),
-    "Invalid expression. $or expects value to be an Array"
-  );
-
-  const queries = value.map((expr) => new Query(expr, options));
-
-  return (obj: RawObject) => {
-    for (let i = 0; i < queries.length; i++) {
-      if (queries[i].test(obj)) {
-        return true;
-      }
-    }
-    return false;
-  };
+  assert(isArray(rhs), "Invalid expression. $or expects value to be an Array");
+  const queries = rhs.map((expr) => new Query(expr, options));
+  return (obj: RawObject) => queries.some((q) => q.test(obj));
 }

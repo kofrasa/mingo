@@ -9,28 +9,18 @@ import { assert, isArray } from "../../../util";
  * Joins query clauses with a logical AND returns all documents that match the conditions of both clauses.
  *
  * @param selector
- * @param value
+ * @param rhs
  * @returns {Function}
  */
 export function $and(
-  selector: string,
-  value: Array<RawObject>,
+  _: string,
+  rhs: Array<RawObject>,
   options?: Options
 ): Callback<boolean> {
   assert(
-    isArray(value),
-    "Invalid expression: $and expects value to be an Array"
+    isArray(rhs),
+    "Invalid expression: $and expects value to be an Array."
   );
-
-  const queries = new Array<Query>();
-  value.forEach((expr) => queries.push(new Query(expr, options)));
-
-  return (obj: RawObject) => {
-    for (let i = 0; i < queries.length; i++) {
-      if (!queries[i].test(obj)) {
-        return false;
-      }
-    }
-    return true;
-  };
+  const queries = rhs.map((expr) => new Query(expr, options));
+  return (obj: RawObject) => queries.every((q) => q.test(obj));
 }

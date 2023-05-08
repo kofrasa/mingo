@@ -9,18 +9,18 @@ import { $or } from "./or";
  * Joins query clauses with a logical NOR returns all documents that fail to match both clauses.
  *
  * @param selector
- * @param value
+ * @param rhs
  * @returns {Function}
  */
 export function $nor(
-  selector: string,
-  value: Array<RawObject>,
+  _: string,
+  rhs: Array<RawObject>,
   options?: Options
 ): Callback<boolean> {
   assert(
-    isArray(value),
-    "Invalid expression. $nor expects value to be an Array"
+    isArray(rhs),
+    "Invalid expression. $nor expects value to be an array."
   );
-  const f: Callback<boolean> = $or("$or", value, options);
+  const f: Callback<boolean> = $or("$or", rhs, options);
   return (obj: AnyVal) => !f(obj);
 }

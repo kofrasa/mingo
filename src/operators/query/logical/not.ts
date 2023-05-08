@@ -9,16 +9,16 @@ import { normalize } from "../../../util";
  * Inverts the effect of a query expression and returns documents that do not match the query expression.
  *
  * @param selector
- * @param value
+ * @param rhs
  * @returns {Function}
  */
 export function $not(
   selector: string,
-  value: AnyVal,
+  rhs: AnyVal,
   options?: Options
 ): Callback<boolean> {
   const criteria = {};
-  criteria[selector] = normalize(value);
+  criteria[selector] = normalize(rhs);
   const query = new Query(criteria, options);
   return (obj: RawObject) => !query.test(obj);
 }
