@@ -13,7 +13,7 @@ import { assert, isArray, isNil } from "../../../util";
 export function $reduce(
   obj: RawObject,
   expr: RawObject,
-  options?: Options
+  options: Options
 ): AnyVal {
   const copts = ComputeOptions.init(options);
   const input = computeValue(obj, expr.input, null, copts) as AnyVal[];
@@ -29,7 +29,7 @@ export function $reduce(
       inExpr,
       null,
       copts.update(copts.root, {
-        variables: { value: acc },
+        variables: { value: acc }
       })
     );
   }, initialValue);

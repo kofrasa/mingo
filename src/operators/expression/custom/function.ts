@@ -20,7 +20,7 @@ interface FunctionExpr {
 export function $function(
   obj: RawObject,
   expr: FunctionExpr,
-  options?: Options
+  options: Options
 ): AnyVal {
   assert(
     options.scriptEnabled,

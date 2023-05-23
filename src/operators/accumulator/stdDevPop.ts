@@ -15,7 +15,7 @@ import { $push } from "./push";
 export function $stdDevPop(
   collection: RawObject[],
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): number {
   return stddev($push(collection, expr, options).filter(isNumber), false);
 }

@@ -14,7 +14,7 @@ import { $bottomN } from "./bottomN";
 export function $bottom(
   collection: RawObject[],
   expr: { sortBy: Record<string, number>; output: AnyVal },
-  options?: Options
+  options: Options
 ): AnyVal[] {
   return $bottomN(collection, { ...expr, n: 1 }, options);
 }

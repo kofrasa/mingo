@@ -1,5 +1,5 @@
 import { Options } from "../../core";
-import { AnyVal, RawObject } from "../../types";
+import { AnyVal, Callback, RawObject } from "../../types";
 import { assert, isNumber } from "../../util";
 import { $push } from "../accumulator";
 import { WindowOperatorInput } from "../pipeline/_internal";
@@ -13,7 +13,7 @@ export function $expMovingAvg(
   _: RawObject,
   collection: RawObject[],
   expr: WindowOperatorInput,
-  options?: Options
+  options: Options
 ): AnyVal {
   const { input, N, alpha } = expr.inputExpr as {
     input: AnyVal;
@@ -29,10 +29,10 @@ export function $expMovingAvg(
   return withMemo(
     collection,
     expr,
-    () => {
+    (() => {
       const series = $push(collection, input, options).filter(isNumber);
       return series.length === collection.length ? series : null;
-    },
+    }) as Callback<number[]>,
     (series: number[]) => {
       // return null if there are incompatible values
       if (series === null) return null;

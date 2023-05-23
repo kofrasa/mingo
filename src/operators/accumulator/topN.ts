@@ -5,7 +5,7 @@ import { AnyVal, RawObject } from "../../types";
 import { $push } from "./push";
 
 interface InputExpr {
-  n: AnyVal;
+  n: number;
   sortBy: Record<string, number>;
   output: AnyVal;
 }
@@ -22,7 +22,7 @@ interface InputExpr {
 export function $topN(
   collection: RawObject[],
   expr: InputExpr,
-  options?: Options
+  options: Options
 ): AnyVal[] {
   const copts = ComputeOptions.init(options);
   const { n, sortBy } = computeValue(

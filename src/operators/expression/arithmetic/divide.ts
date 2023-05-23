@@ -13,7 +13,7 @@ import { AnyVal, RawObject } from "../../../types";
 export function $divide(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): number {
   const args = computeValue(obj, expr, null, options) as number[];
   return args[0] / args[1];

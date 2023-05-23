@@ -20,7 +20,7 @@ interface InputExpr {
 export function $maxN(
   obj: RawObject,
   expr: InputExpr,
-  options?: Options
+  options: Options
 ): AnyVal {
   // first try the accumulator if input is an array.
   if (obj instanceof Array) return __maxN(obj, expr, options);

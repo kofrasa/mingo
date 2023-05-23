@@ -12,7 +12,7 @@ import { AnyVal, RawObject } from "../../types";
 export function $last(
   collection: RawObject[],
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): AnyVal {
   return collection.length > 0
     ? computeValue(collection[collection.length - 1], expr, null, options)

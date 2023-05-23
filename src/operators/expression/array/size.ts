@@ -10,7 +10,7 @@ import { isArray } from "../../../util";
  * @param obj
  * @param expr
  */
-export function $size(obj: RawObject, expr: AnyVal, options?: Options): AnyVal {
+export function $size(obj: RawObject, expr: AnyVal, options: Options): AnyVal {
   const value = computeValue(obj, expr, null, options) as RawArray;
   return isArray(value) ? value.length : undefined;
 }

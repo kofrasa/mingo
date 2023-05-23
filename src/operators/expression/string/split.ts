@@ -14,11 +14,7 @@ import { assert, isNil, isString } from "../../../util";
  * @param  {Array} expr
  * @return {Array} Returns an array of substrings.
  */
-export function $split(
-  obj: RawObject,
-  expr: AnyVal,
-  options?: Options
-): AnyVal {
+export function $split(obj: RawObject, expr: AnyVal, options: Options): AnyVal {
   const args = computeValue(obj, expr, null, options) as Array<string>;
   if (isNil(args[0])) return null;
   assert(

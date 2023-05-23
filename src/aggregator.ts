@@ -3,11 +3,10 @@ import {
   initOptions,
   OperatorType,
   Options,
-  PipelineOperator,
-  ProcessingMode,
+  ProcessingMode
 } from "./core";
 import { Iterator, Lazy, Source } from "./lazy";
-import { RawObject } from "./types";
+import { Callback, RawObject } from "./types";
 import { assert, cloneDeep, intersection, isEmpty } from "./util";
 
 /**
@@ -18,9 +17,10 @@ import { assert, cloneDeep, intersection, isEmpty } from "./util";
  * @constructor
  */
 export class Aggregator {
+  private readonly options: Options;
   constructor(
     private readonly pipeline: Array<RawObject>,
-    private readonly options?: Options
+    options?: Partial<Options>
   ) {
     this.options = initOptions(options);
   }
@@ -48,7 +48,10 @@ export class Aggregator {
       for (const operator of this.pipeline) {
         const operatorKeys = Object.keys(operator);
         const op = operatorKeys[0];
-        const call = getOperator(OperatorType.PIPELINE, op) as PipelineOperator;
+        const call = getOperator(
+          OperatorType.PIPELINE,
+          op
+        ) as Callback<Iterator>;
         assert(
           operatorKeys.length === 1 && !!call,
           `invalid aggregation operator ${op}`
@@ -78,6 +81,6 @@ export class Aggregator {
    * @param {*} query
    */
   run(collection: Source): RawObject[] {
-    return this.stream(collection).value() as RawObject[];
+    return this.stream(collection).value();
   }
 }

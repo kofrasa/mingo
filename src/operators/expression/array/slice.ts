@@ -11,11 +11,7 @@ import { assert, isNil } from "../../../util";
  * @param  {*} expr
  * @return {*}
  */
-export function $slice(
-  obj: RawObject,
-  expr: AnyVal,
-  options?: Options
-): AnyVal {
+export function $slice(obj: RawObject, expr: AnyVal, options: Options): AnyVal {
   const args = computeValue(obj, expr, null, options) as RawArray;
   const arr = args[0] as RawArray;
   let skip = args[1] as number;

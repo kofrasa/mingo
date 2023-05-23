@@ -15,7 +15,7 @@ import { adjustDate, isoWeek, isoWeekYear, parseTimezone } from "./_internal";
 export function $dateToParts(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): AnyVal {
   const args = computeValue(obj, expr, null, options) as {
     date: Date;
@@ -31,20 +31,20 @@ export function $dateToParts(
     hour: d.getUTCHours(),
     minute: d.getUTCMinutes(),
     second: d.getUTCSeconds(),
-    millisecond: d.getUTCMilliseconds(),
+    millisecond: d.getUTCMilliseconds()
   };
 
   if (args.iso8601 == true) {
     return Object.assign(timePart, {
       isoWeekYear: isoWeekYear(d),
       isoWeek: isoWeek(d),
-      isoDayOfWeek: d.getUTCDay() || 7,
+      isoDayOfWeek: d.getUTCDay() || 7
     });
   }
 
   return Object.assign(timePart, {
     year: d.getUTCFullYear(),
     month: d.getUTCMonth() + 1,
-    day: d.getUTCDate(),
+    day: d.getUTCDate()
   });
 }

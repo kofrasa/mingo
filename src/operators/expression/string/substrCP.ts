@@ -9,7 +9,7 @@ import { $substr } from "./substr";
 export function $substrCP(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): AnyVal {
   return $substr(obj, expr, options);
 }

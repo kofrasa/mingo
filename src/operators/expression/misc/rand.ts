@@ -10,8 +10,5 @@ import { AnyVal, RawObject } from "../../../types";
  * @param {*} expr The right-hand side of the operator
  * @param {Options} options Options to use for operation
  */
-export const $rand = (
-  obj: RawObject,
-  expr: AnyVal,
-  options?: Options
-): number => Math.random();
+export const $rand = (obj: RawObject, expr: AnyVal, options: Options): number =>
+  Math.random();

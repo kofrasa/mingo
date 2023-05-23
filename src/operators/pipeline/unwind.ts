@@ -1,13 +1,13 @@
 import { Options } from "../../core";
 import { Iterator, Lazy } from "../../lazy";
-import { AnyVal, RawObject } from "../../types";
+import { AnyVal, Callback, RawObject } from "../../types";
 import {
   isEmpty,
   isString,
   removeValue,
   resolve,
   resolveGraph,
-  setValue,
+  setValue
 } from "../../util";
 
 /**
@@ -27,16 +27,16 @@ export function $unwind(
         includeArrayIndex?: string;
         preserveNullAndEmptyArrays?: boolean;
       },
-  options?: Options
+  options: Options
 ): Iterator {
   if (isString(expr)) expr = { path: expr };
 
   const path = expr.path;
-  const field = path.substr(1);
+  const field = path.substring(1);
   const includeArrayIndex = expr?.includeArrayIndex || false;
   const preserveNullAndEmptyArrays = expr.preserveNullAndEmptyArrays || false;
 
-  const format = (o: RawObject, i: number) => {
+  const format = (o: RawObject, i: number | null) => {
     if (includeArrayIndex !== false) o[includeArrayIndex] = i;
     return o;
   };
@@ -69,13 +69,13 @@ export function $unwind(
           return { value: format(obj, null), done: false };
         } else {
           // construct a lazy sequence for elements per value
-          value = Lazy(value).map((item, i: number) => {
+          value = Lazy(value).map(((item, i: number) => {
             const newObj = resolveGraph(obj, field, {
-              preserveKeys: true,
+              preserveKeys: true
             }) as RawObject;
             setValue(newObj, field, item);
             return format(newObj, i);
-          });
+          }) as Callback);
         }
       } else if (!isEmpty(value) || preserveNullAndEmptyArrays === true) {
         return { value: format(obj, null), done: false };

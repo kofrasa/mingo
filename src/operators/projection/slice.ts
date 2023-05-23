@@ -16,7 +16,7 @@ export function $slice(
   obj: RawObject,
   expr: AnyVal,
   field: string,
-  options?: Options
+  options: Options
 ): AnyVal {
   const xs = resolve(obj, field);
   const exprAsArray = expr as RawArray;

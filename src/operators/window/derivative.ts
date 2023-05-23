@@ -1,5 +1,5 @@
 import { Options } from "../../core";
-import { AnyVal, RawObject } from "../../types";
+import { AnyVal, Callback, RawObject } from "../../types";
 import { isNumber } from "../../util";
 import { $push } from "../accumulator";
 import { WindowOperatorInput } from "../pipeline/_internal";
@@ -12,7 +12,7 @@ export function $derivative(
   _: RawObject,
   collection: RawObject[],
   expr: WindowOperatorInput,
-  options?: Options
+  options: Options
 ): AnyVal {
   // need 2 points to compute derivative
   if (collection.length < 2) return null;
@@ -24,7 +24,7 @@ export function $derivative(
   const sortKey = "$" + Object.keys(expr.parentExpr.sortBy)[0];
   const values = [collection[0], collection[collection.length - 1]];
   const points = $push(values, [sortKey, input], options).filter(
-    ([x, y]: number[]) => isNumber(+x) && isNumber(+y)
+    (([x, y]: number[]) => isNumber(+x) && isNumber(+y)) as Callback
   ) as number[][];
 
   // invalid values encountered

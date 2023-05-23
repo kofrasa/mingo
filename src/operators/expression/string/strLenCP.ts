@@ -15,7 +15,7 @@ import { AnyVal, RawArray, RawObject } from "../../../types";
 export function $strLenCP(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): AnyVal {
   return (computeValue(obj, expr, null, options) as RawArray).length;
 }

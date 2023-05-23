@@ -17,7 +17,7 @@ import { isString } from "../../../util";
 export function $substr(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): AnyVal {
   const args = computeValue(obj, expr, null, options) as RawArray;
   const s = args[0] as string;

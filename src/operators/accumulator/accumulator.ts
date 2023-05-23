@@ -30,10 +30,10 @@ interface AccumulatorExpr {
 export function $accumulator(
   collection: RawObject[],
   expr: AccumulatorExpr,
-  options?: Options
+  options: Options
 ): AnyVal {
   assert(
-    options.scriptEnabled,
+    !!options && options.scriptEnabled,
     "$accumulator operator requires 'scriptEnabled' option to be true"
   );
 
@@ -59,7 +59,8 @@ export function $accumulator(
       copts.update(doc)
     ) as RawArray;
     // update the state with each documents value
-    state = expr.accumulate.call(null, ...[state, ...args]);
+    // eslint-disable-next-line
+    state = expr.accumulate.call(null, ...[state, ...args]) as AnyVal;
   }
 
   return (expr.finalize ? expr.finalize.call(null, state) : state) as AnyVal;

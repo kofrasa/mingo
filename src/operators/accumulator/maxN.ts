@@ -1,7 +1,7 @@
 // https://www.mongodb.com/docs/manual/reference/operator/aggregation/maxN
 import { ComputeOptions, computeValue, Options } from "../../core";
 import { AnyVal, RawObject } from "../../types";
-import { DEFAULT_COMPARATOR, isNil } from "../../util";
+import { compare, isNil } from "../../util";
 import { $push } from "./push";
 
 interface InputExpr {
@@ -21,13 +21,12 @@ interface InputExpr {
 export function $maxN(
   collection: RawObject[],
   expr: InputExpr,
-  options?: Options
+  options: Options
 ): AnyVal[] {
   const copts = ComputeOptions.init(options);
   const m = collection.length;
   const n = computeValue(copts?.local?.groupId, expr.n, null, copts) as number;
-  const arr = $push(collection, expr.input, options).filter((o) => !isNil(o));
-  arr.sort(DEFAULT_COMPARATOR);
-  arr.reverse();
+  const arr = $push(collection, expr.input, options).filter(o => !isNil(o));
+  arr.sort((a, b) => -1 * compare(a, b));
   return m <= n ? arr : arr.slice(0, n);
 }

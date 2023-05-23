@@ -1,7 +1,7 @@
 import { computeValue, Options } from "../../core";
 import { Iterator, Lazy } from "../../lazy";
-import { AnyVal, RawArray, RawObject } from "../../types";
-import { assert, getType, into, isNil } from "../../util";
+import { AnyVal, Callback, RawArray, RawObject } from "../../types";
+import { assert, compare, getType, into, isNil } from "../../util";
 
 /**
  * Categorizes incoming documents into groups, called buckets, based on a specified expression and bucket boundaries.
@@ -19,7 +19,7 @@ export function $bucket(
     default: AnyVal;
     output?: RawObject;
   },
-  options?: Options
+  options: Options
 ): Iterator {
   const boundaries = [...expr.boundaries];
   const defaultKey = expr.default as string;
@@ -39,7 +39,7 @@ export function $bucket(
       "$bucket 'boundaries' must all be of the same type"
     );
     assert(
-      boundaries[i] < boundaries[i + 1],
+      compare(boundaries[i], boundaries[i + 1]) < 0,
       "$bucket 'boundaries' must be sorted in ascending order"
     );
   }
@@ -47,7 +47,7 @@ export function $bucket(
   !isNil(defaultKey) &&
     getType(expr.default) === getType(lower) &&
     assert(
-      expr.default >= upper || expr.default < lower,
+      compare(expr.default, upper) >= 0 || compare(expr.default, lower) < 0,
       "$bucket 'default' expression must be out of boundaries range"
     );
 
@@ -59,14 +59,14 @@ export function $bucket(
   // add default key if provided
   if (!isNil(defaultKey)) grouped[defaultKey] = [];
 
-  let iterator: Iterator = null;
+  let iterator: Iterator | undefined;
 
   return Lazy(() => {
-    if (iterator === null) {
-      collection.each((obj: RawObject) => {
+    if (!iterator) {
+      collection.each(((obj: RawObject) => {
         const key = computeValue(obj, expr.groupBy, null, options);
 
-        if (isNil(key) || key < lower || key >= upper) {
+        if (isNil(key) || compare(key, lower) < 0 || compare(key, upper) >= 0) {
           assert(
             !isNil(defaultKey),
             "$bucket require a default for out of range values"
@@ -74,28 +74,28 @@ export function $bucket(
           grouped[defaultKey].push(obj);
         } else {
           assert(
-            key >= lower && key < upper,
+            compare(key, lower) >= 0 && compare(key, upper) < 0,
             "$bucket 'groupBy' expression must resolve to a value in range of boundaries"
           );
           const index = findInsertIndex(boundaries, key);
           const boundKey = boundaries[Math.max(0, index - 1)] as string;
           grouped[boundKey].push(obj);
         }
-      });
+      }) as Callback);
 
       // upper bound is exclusive so we remove it
       boundaries.pop();
       if (!isNil(defaultKey)) boundaries.push(defaultKey);
 
-      iterator = Lazy(boundaries).map((key: string) => {
+      iterator = Lazy(boundaries).map(((key: string) => {
         const acc = computeValue(
           grouped[key],
           outputExpr,
           null,
           options
-        ) as RawObject;
+        ) as RawObject[];
         return into(acc, { _id: key });
-      });
+      }) as Callback<RawArray>);
     }
 
     return iterator.next();
@@ -114,9 +114,9 @@ function findInsertIndex(sorted: RawArray, item: AnyVal): number {
   let hi = sorted.length - 1;
   while (lo <= hi) {
     const mid = Math.round(lo + (hi - lo) / 2);
-    if (item < sorted[mid]) {
+    if (compare(item, sorted[mid]) < 0) {
       hi = mid - 1;
-    } else if (item > sorted[mid]) {
+    } else if (compare(item, sorted[mid]) > 0) {
       lo = mid + 1;
     } else {
       return mid;

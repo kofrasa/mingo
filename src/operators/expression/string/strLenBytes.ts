@@ -15,7 +15,7 @@ import { AnyVal, RawObject } from "../../../types";
 export function $strLenBytes(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): AnyVal {
   return ~-encodeURI(computeValue(obj, expr, null, options) as string).split(
     /%..|./

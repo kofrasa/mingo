@@ -1,6 +1,6 @@
 import { ComputeOptions, Options, redact } from "../../core";
 import { Iterator } from "../../lazy";
-import { RawObject } from "../../types";
+import { Callback, RawObject } from "../../types";
 
 /**
  * Restricts the contents of the documents based on information stored in the documents themselves.
@@ -10,10 +10,9 @@ import { RawObject } from "../../types";
 export function $redact(
   collection: Iterator,
   expr: RawObject,
-  options?: Options
+  options: Options
 ): Iterator {
   const copts = ComputeOptions.init(options);
-  return collection.map((obj: RawObject) =>
-    redact(obj, expr, copts.update(obj))
-  );
+  return collection.map(((obj: RawObject) =>
+    redact(obj, expr, copts.update(obj))) as Callback);
 }

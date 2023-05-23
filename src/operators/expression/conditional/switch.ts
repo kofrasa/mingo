@@ -17,7 +17,7 @@ import { truthy } from "../../../util";
 export function $switch(
   obj: RawObject,
   expr: { branches: Array<{ case: AnyVal; then: AnyVal }>; default: AnyVal },
-  options?: Options
+  options: Options
 ): AnyVal {
   let thenExpr = null;
   // Array.prototype.find not supported in IE, hence the '.some()' proxy

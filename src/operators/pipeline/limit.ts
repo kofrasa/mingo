@@ -12,7 +12,7 @@ import { Iterator } from "../../lazy";
 export function $limit(
   collection: Iterator,
   expr: number,
-  options?: Options
+  options: Options
 ): Iterator {
   return collection.take(expr);
 }

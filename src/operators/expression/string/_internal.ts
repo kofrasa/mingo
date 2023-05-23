@@ -2,6 +2,8 @@ import { computeValue, Options } from "../../../core";
 import { AnyVal, RawArray, RawObject } from "../../../types";
 import { assert, isNil, isString } from "../../../util";
 
+/* eslint-disable*/
+
 const WHITESPACE_CHARS = [
   0x0000, // '\0' Null character
   0x0020, // ' ', Space
@@ -22,7 +24,7 @@ const WHITESPACE_CHARS = [
   0x2007, // Figure space
   0x2008, // Punctuation space
   0x2009, // Thin space
-  0x200a, // Hair space
+  0x200a // Hair space
 ];
 
 /**
@@ -37,9 +39,12 @@ export function trimString(
   expr: AnyVal,
   options: Options,
   trimOpts: { left: boolean; right: boolean }
-): string {
-  const val = computeValue(obj, expr, null, options) as RawObject;
-  const s = val.input as string;
+): string | null {
+  const val = computeValue(obj, expr, null, options) as {
+    input: string;
+    chars: string;
+  };
+  const s = val.input;
   if (isNil(s)) return null;
 
   const codepoints = isNil(val.chars)
@@ -78,11 +83,15 @@ export function regexSearch(
   options: Options,
   reOpts: { global: boolean }
 ): RawArray | undefined {
-  const val = computeValue(obj, expr, null, options) as RawObject;
+  const val = computeValue(obj, expr, null, options) as {
+    input: string;
+    regex: string;
+    options: string;
+  };
 
   if (!isString(val.input)) return [];
 
-  const regexOptions = val.options as string;
+  const regexOptions = val.options;
 
   if (regexOptions) {
     assert(
@@ -93,27 +102,26 @@ export function regexSearch(
   }
 
   let input = val.input;
-  const re = new RegExp(val.regex as string, regexOptions);
+  const re = new RegExp(val.regex, regexOptions);
 
-  let m: RegExpMatchArray;
-  const matches = [];
+  let m: RegExpMatchArray | null;
+  const matches = new Array<AnyVal>();
   let offset = 0;
   while ((m = re.exec(input))) {
-    const result: { match: string; idx: number; captures: Array<string> } = {
+    const result: { match: string; idx: number; captures: Array<string|null> } = {
       match: m[0],
-      idx: m.index + offset,
-      captures: [],
+      idx: (m.index as number) + offset,
+      captures: []
     };
-    for (let i = 1; i < m.length; i++) {
-      result.captures.push(m[i] || null);
-    }
-
+    for (let i = 1; i < m.length; i++) result.captures.push(m[i] || null);
     matches.push(result);
     if (!reOpts.global) break;
 
-    offset = m.index + m[0].length;
-    input = input.substr(offset);
+    offset = (m.index as number) + m[0].length;
+    input = input.substring(offset);
   }
 
   return matches;
 }
+
+/*eslint-enable*/

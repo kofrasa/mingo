@@ -13,7 +13,7 @@ import { $push } from "./push";
 export function $stdDevSamp(
   collection: RawObject[],
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): number {
   return stddev($push(collection, expr, options).filter(isNumber), true);
 }

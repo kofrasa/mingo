@@ -15,7 +15,7 @@ import { regexSearch } from "./_internal";
 export function $regexFindAll(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): AnyVal {
   return regexSearch(obj, expr, options, { global: true });
 }

@@ -15,7 +15,7 @@ import { isNumber } from "../../../util";
 export function $isNumber(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): boolean | null {
   const n = computeValue(obj, expr, null, options);
   return isNumber(n);

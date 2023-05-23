@@ -15,12 +15,12 @@ import { assert, isArray } from "../../../util";
 export function $and(
   _: string,
   rhs: Array<RawObject>,
-  options?: Options
+  options: Options
 ): Callback<boolean> {
   assert(
     isArray(rhs),
     "Invalid expression: $and expects value to be an Array."
   );
-  const queries = rhs.map((expr) => new Query(expr, options));
-  return (obj: RawObject) => queries.every((q) => q.test(obj));
+  const queries = rhs.map(expr => new Query(expr, options));
+  return (obj: RawObject) => queries.every(q => q.test(obj));
 }

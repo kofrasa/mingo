@@ -15,9 +15,9 @@ import { assert, isArray } from "../../../util";
 export function $or(
   _: string,
   rhs: Array<RawObject>,
-  options?: Options
+  options: Options
 ): Callback<boolean> {
   assert(isArray(rhs), "Invalid expression. $or expects value to be an Array");
-  const queries = rhs.map((expr) => new Query(expr, options));
-  return (obj: RawObject) => queries.some((q) => q.test(obj));
+  const queries = rhs.map(expr => new Query(expr, options));
+  return (obj: RawObject) => queries.some(q => q.test(obj));
 }

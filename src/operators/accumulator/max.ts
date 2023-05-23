@@ -1,6 +1,6 @@
 import { Options } from "../../core";
 import { AnyVal, RawObject } from "../../types";
-import { DEFAULT_COMPARATOR, isNotNaN } from "../../util";
+import { compare, isNotNaN } from "../../util";
 import { $push } from "./push";
 
 /**
@@ -14,11 +14,11 @@ import { $push } from "./push";
 export function $max(
   collection: RawObject[],
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): AnyVal {
   const nums = $push(collection, expr, options).filter(isNotNaN) as number[];
   const n = nums.reduce(
-    (acc, n) => (DEFAULT_COMPARATOR(n, acc) >= 0 ? n : acc),
+    (acc, n) => (compare(n, acc) >= 0 ? n : acc),
     -Infinity
   );
   return n === -Infinity ? undefined : n;

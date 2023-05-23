@@ -13,7 +13,7 @@ import { AnyVal, Predicate, RawObject } from "../../../types";
 export function $jsonSchema(
   _: string,
   schema: AnyVal,
-  options?: Options
+  options: Options
 ): Predicate<AnyVal> {
   if (!options?.jsonSchemaValidator) {
     throw new Error(

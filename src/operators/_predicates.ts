@@ -6,7 +6,7 @@ import {
   computeValue,
   ExpressionOperator,
   Options,
-  QueryOperator,
+  QueryOperator
 } from "../core";
 import { Query } from "../query";
 import {
@@ -16,9 +16,10 @@ import {
   JsType,
   Predicate,
   RawArray,
-  RawObject,
+  RawObject
 } from "../types";
 import {
+  compare as mingoCmp,
   ensureArray,
   flatten,
   getType,
@@ -40,7 +41,7 @@ import {
   MIN_INT,
   MIN_LONG,
   resolve,
-  truthy,
+  truthy
 } from "../util";
 
 type PredicateOptions = Options & { depth: number };
@@ -55,7 +56,7 @@ type ConversionType = number | JsType | BsonType;
 export function createQueryOperator(
   predicate: Predicate<AnyVal>
 ): QueryOperator {
-  return (selector: string, value: AnyVal, options?: Options) => {
+  const f = (selector: string, value: AnyVal, options: Options) => {
     const opts = { unwrapArray: true };
     const depth = Math.max(1, selector.split(".").length - 1);
     return (obj: RawObject): boolean => {
@@ -64,6 +65,8 @@ export function createQueryOperator(
       return predicate(lhs, value, { ...options, depth });
     };
   };
+  f.op = "query";
+  return f; // as QueryOperator;
 }
 
 /**
@@ -74,7 +77,7 @@ export function createQueryOperator(
 export function createExpressionOperator(
   predicate: Predicate<AnyVal>
 ): ExpressionOperator {
-  return (obj: RawObject, expr: AnyVal, options?: Options) => {
+  return (obj: RawObject, expr: AnyVal, options: Options) => {
     const args = computeValue(obj, expr, null, options) as RawArray;
     return predicate(...args);
   };
@@ -127,7 +130,7 @@ export function $in(
   options?: PredicateOptions
 ): boolean {
   // queries for null should be able to find undefined fields
-  if (isNil(a)) return b.some((v) => v === null);
+  if (isNil(a)) return b.some(v => v === null);
 
   return intersection([ensureArray(a), b], options?.hashFunction).length > 0;
 }
@@ -155,7 +158,7 @@ export function $nin(
  * @returns {boolean}
  */
 export function $lt(a: AnyVal, b: AnyVal, options?: PredicateOptions): boolean {
-  return compare(a, b, (x: AnyVal, y: AnyVal) => x < y);
+  return compare(a, b, (x: AnyVal, y: AnyVal) => mingoCmp(x, y) < 0);
 }
 
 /**
@@ -170,7 +173,7 @@ export function $lte(
   b: AnyVal,
   options?: PredicateOptions
 ): boolean {
-  return compare(a, b, (x: AnyVal, y: AnyVal) => x <= y);
+  return compare(a, b, (x: AnyVal, y: AnyVal) => mingoCmp(x, y) <= 0);
 }
 
 /**
@@ -181,7 +184,7 @@ export function $lte(
  * @returns {boolean}
  */
 export function $gt(a: AnyVal, b: AnyVal, options?: PredicateOptions): boolean {
-  return compare(a, b, (x: AnyVal, y: AnyVal) => x > y);
+  return compare(a, b, (x: AnyVal, y: AnyVal) => mingoCmp(x, y) > 0);
 }
 
 /**
@@ -196,7 +199,7 @@ export function $gte(
   b: AnyVal,
   options?: PredicateOptions
 ): boolean {
-  return compare(a, b, (x: AnyVal, y: AnyVal) => x >= y);
+  return compare(a, b, (x: AnyVal, y: AnyVal) => mingoCmp(x, y) >= 0);
 }
 
 /**
@@ -212,7 +215,7 @@ export function $mod(
   options?: PredicateOptions
 ): boolean {
   return ensureArray(a).some(
-    (x: number) => b.length === 2 && x % b[0] === b[1]
+    ((x: number) => b.length === 2 && x % b[0] === b[1]) as Callback
   );
 }
 
@@ -228,10 +231,10 @@ export function $regex(
   b: RegExp,
   options?: PredicateOptions
 ): boolean {
-  const lhs = ensureArray(a);
+  const lhs = ensureArray(a) as string[];
   const match = (x: string) =>
-    isString(x) && truthy(b.exec(x), options.useStrictMode);
-  return lhs.some(match) || flatten(lhs, 1).some(match);
+    isString(x) && truthy(b.exec(x), options?.useStrictMode);
+  return lhs.some(match) || flatten(lhs, 1).some(match as Callback);
 }
 
 /**
@@ -280,9 +283,9 @@ export function $all(
     if (isObject(query) && inArray(Object.keys(query), "$elemMatch")) {
       matched = $elemMatch(values, query["$elemMatch"] as RawObject, options);
     } else if (query instanceof RegExp) {
-      matched = values.some((s) => typeof s === "string" && query.test(s));
+      matched = values.some(s => typeof s === "string" && query.test(s));
     } else {
-      matched = values.some((v) => isEqual(query, v));
+      matched = values.some(v => isEqual(query, v));
     }
   }
   return matched;
@@ -328,7 +331,7 @@ export function $elemMatch(
     // like $and/$or/$nor; as otherwise, this faking will break our query.
     if (Object.keys(b).every(isNonBooleanOperator)) {
       criteria = { temp: b };
-      format = (x) => ({ temp: x });
+      format = x => ({ temp: x });
     }
 
     const query = new Query(criteria, options);
@@ -387,7 +390,7 @@ const compareFuncs: Record<ConversionType, Predicate<AnyVal>> = {
   11: isRegExp,
   16: isInt,
   18: isLong,
-  19: isNumber, //decimal
+  19: isNumber //decimal
 };
 
 /**
@@ -419,10 +422,10 @@ export function $type(
   options?: PredicateOptions
 ): boolean {
   return Array.isArray(b)
-    ? b.findIndex((t) => compareType(a, t, options)) >= 0
+    ? b.findIndex(t => compareType(a, t, options)) >= 0
     : compareType(a, b, options);
 }
 
 function compare(a: AnyVal, b: AnyVal, f: Predicate<AnyVal>): boolean {
-  return ensureArray(a).some((x) => getType(x) === getType(b) && f(x, b));
+  return ensureArray(a).some(x => getType(x) === getType(b) && f(x, b));
 }

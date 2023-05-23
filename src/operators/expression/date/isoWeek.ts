@@ -13,7 +13,7 @@ import { computeDate, isoWeek } from "./_internal";
 export function $isoWeek(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): number {
   return isoWeek(computeDate(obj, expr, options));
 }

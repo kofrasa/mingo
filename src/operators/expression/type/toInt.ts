@@ -15,7 +15,7 @@ import { toInteger } from "./_internal";
 export function $toInt(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): number | null {
   return toInteger(obj, expr, options, MAX_INT, MIN_INT, "int");
 }

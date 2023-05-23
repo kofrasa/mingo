@@ -3,10 +3,10 @@ import {
   computeValue,
   getOperator,
   OperatorType,
-  Options,
+  Options
 } from "../../core";
 import { Iterator } from "../../lazy";
-import { AnyVal, Predicate, RawObject } from "../../types";
+import { AnyVal, Callback, Predicate, RawObject } from "../../types";
 import {
   assert,
   ensureArray,
@@ -24,7 +24,7 @@ import {
   notInArray,
   removeValue,
   resolveGraph,
-  setValue,
+  setValue
 } from "../../util";
 
 /**
@@ -39,7 +39,7 @@ import {
 export function $project(
   collection: Iterator,
   expr: RawObject,
-  options?: Options
+  options: Options
 ): Iterator {
   if (isEmpty(expr)) return collection;
 
@@ -66,9 +66,14 @@ export function $project(
   }
 
   const copts = ComputeOptions.init(options);
-  return collection.map((obj: RawObject) =>
-    processObject(obj, expr, copts.update(obj), expressionKeys, idOnlyExcluded)
-  );
+  return collection.map(((obj: RawObject) =>
+    processObject(
+      obj,
+      expr,
+      copts.update(obj),
+      expressionKeys,
+      idOnlyExcluded
+    )) as Callback);
 }
 
 /**
@@ -114,7 +119,7 @@ function processObject(
     } else if (inArray([1, true], subExpr)) {
       // For direct projections, we use the resolved object value
     } else if (subExpr instanceof Array) {
-      value = subExpr.map((v) => {
+      value = subExpr.map(v => {
         const r = computeValue(obj, v, null, options);
         if (isNil(r)) return null;
         return r;
@@ -122,7 +127,7 @@ function processObject(
     } else if (isObject(subExpr)) {
       const subExprObj = subExpr as RawObject;
       const subExprKeys = Object.keys(subExpr);
-      const operator = subExprKeys.length == 1 ? subExprKeys[0] : null;
+      const operator = subExprKeys.length == 1 ? subExprKeys[0] : "";
 
       // first try a projection operator
       const call = getOperator(OperatorType.PROJECTION, operator);
@@ -132,7 +137,7 @@ function processObject(
           // $slice is handled differently for aggregation and projection operations
           if (ensureArray(subExprObj[operator]).every(isNumber)) {
             // $slice for projection operation
-            value = call(obj, subExprObj[operator], key);
+            value = call(obj, subExprObj[operator], key, options);
             foundSlice = true;
           } else {
             // $slice for aggregation operation
@@ -173,13 +178,13 @@ function processObject(
 
     // get value with object graph
     const objPathGraph = resolveGraph(obj, key, {
-      preserveMissing: true,
+      preserveMissing: true
     }) as RawObject;
 
     // add the value at the path
     if (objPathGraph !== undefined) {
       merge(newObj, objPathGraph, {
-        flatten: true,
+        flatten: true
       });
     }
 
@@ -218,10 +223,10 @@ function processObject(
  *
  * @param {Object} expr The expression given for the projection
  */
-function validateExpression(expr: RawObject, options?: Options): void {
+function validateExpression(expr: RawObject, options: Options): void {
   const check = [false, false];
   for (const [k, v] of Object.entries(expr)) {
-    if (k === options.idKey) return;
+    if (k === options?.idKey) return;
     if (v === 0 || v === false) {
       check[0] = true;
     } else if (v === 1 || v === true) {

@@ -1,5 +1,5 @@
 import { Options } from "../../core";
-import { AnyVal, RawObject } from "../../types";
+import { AnyVal, Callback, RawObject } from "../../types";
 import { isNumber } from "../../util";
 import { $push } from "../accumulator";
 import { WindowOperatorInput } from "../pipeline/_internal";
@@ -25,18 +25,18 @@ export function $linearFill(
   _: RawObject,
   collection: RawObject[],
   expr: WindowOperatorInput,
-  options?: Options
+  options: Options
 ): AnyVal {
   return withMemo(
     collection,
     expr,
-    () => {
+    (() => {
       const sortKey = "$" + Object.keys(expr.parentExpr.sortBy)[0];
       const points = $push(
         collection,
         [sortKey, expr.inputExpr],
         options
-      ).filter(([x, _]: number[]) => isNumber(+x)) as number[][];
+      ).filter((([x, _]: number[]) => isNumber(+x)) as Callback) as number[][];
 
       if (points.length !== collection.length) return null;
 
@@ -74,7 +74,7 @@ export function $linearFill(
         lindex = rindex;
       }
       return points.map(([_, y]) => y);
-    },
+    }) as Callback<number[]>,
     (values: number[]) => values[expr.documentNumber - 1]
   );
 }

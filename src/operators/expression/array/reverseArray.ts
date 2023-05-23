@@ -14,7 +14,7 @@ import { assert, isArray, isNil } from "../../../util";
 export function $reverseArray(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): AnyVal {
   const arr = computeValue(obj, expr, null, options) as RawArray;
 

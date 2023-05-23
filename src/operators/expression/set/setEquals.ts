@@ -14,7 +14,7 @@ import { intersection, unique } from "../../../util";
 export function $setEquals(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): AnyVal {
   const args = computeValue(obj, expr, null, options) as RawArray[];
   const xs = unique(args[0], options?.hashFunction);

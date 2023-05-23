@@ -3,7 +3,7 @@
  */
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, RawArray, RawObject } from "../../../types";
+import { AnyVal, Callback, RawArray, RawObject } from "../../../types";
 import { inArray } from "../../../util";
 
 /**
@@ -16,10 +16,13 @@ import { inArray } from "../../../util";
 export function $concat(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): AnyVal {
   const args = computeValue(obj, expr, null, options) as RawArray;
   // does not allow concatenation with nulls
-  if ([null, undefined].some(inArray.bind(null, args))) return null;
+  if (
+    ([null, undefined] as RawArray).some(inArray.bind(null, args) as Callback)
+  )
+    return null;
   return args.join("");
 }

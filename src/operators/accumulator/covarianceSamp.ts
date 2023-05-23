@@ -12,7 +12,7 @@ import { $push } from "./push";
 export function $covarianceSamp(
   collection: RawObject[],
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): number {
   return covariance($push(collection, expr, options) as number[][], true);
 }

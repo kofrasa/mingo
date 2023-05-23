@@ -12,7 +12,7 @@ import { computeDate } from "./_internal";
 export function $isoWeekYear(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): number {
   const d = computeDate(obj, expr, options);
   return (

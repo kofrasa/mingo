@@ -14,7 +14,7 @@ import { $push } from "./push";
 export function $avg(
   collection: RawObject[],
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): number {
   const data = $push(collection, expr, options).filter(isNumber);
   const sum = data.reduce<number>((acc: number, n: number) => acc + n, 0);

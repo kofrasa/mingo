@@ -12,7 +12,7 @@ import { computeDate, getDayOfYear } from "./_internal";
 export function $dayOfYear(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): number {
   return getDayOfYear(computeDate(obj, expr, options));
 }

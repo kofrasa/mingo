@@ -20,7 +20,7 @@ interface InputExpr {
 export function $setField(
   obj: RawObject,
   expr: InputExpr,
-  options?: Options
+  options: Options
 ): AnyVal {
   const args = computeValue(obj, expr, null, options) as InputExpr;
   if (isNil(args.input)) return null;

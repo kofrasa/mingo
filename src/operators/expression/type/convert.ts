@@ -29,7 +29,7 @@ interface ConvertOptions {
 export function $convert(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): AnyVal {
   const args = computeValue(obj, expr, null, options) as ConvertOptions;
 

@@ -10,7 +10,7 @@ import {
   MINUTES_PER_HOUR,
   parseTimezone,
   regexQuote,
-  regexStrip,
+  regexStrip
 } from "./_internal";
 
 interface InputExpr {
@@ -29,7 +29,7 @@ const buildMap = (letters: string, sign: number): Record<string, number> => {
 const TZ_LETTER_OFFSETS = {
   ...buildMap("ABCDEFGHIKLM", 1),
   ...buildMap("NOPQRSTUVWXY", -1),
-  Z: 0,
+  Z: 0
 };
 
 /**
@@ -40,7 +40,7 @@ const TZ_LETTER_OFFSETS = {
 export function $dateFromString(
   obj: RawObject,
   expr: InputExpr,
-  options?: Options
+  options: Options
 ): AnyVal {
   const args = computeValue(obj, expr, null, options) as InputExpr;
 

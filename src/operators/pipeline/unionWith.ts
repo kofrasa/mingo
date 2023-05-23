@@ -19,10 +19,10 @@ interface InputExpr {
 export function $unionWith(
   collection: Iterator,
   expr: InputExpr,
-  options?: Options
+  options: Options
 ): Iterator {
   const array = isString(expr.coll)
-    ? options?.collectionResolver(expr.coll)
+    ? options.collectionResolver(expr.coll)
     : expr.coll;
 
   const iterators = [collection];

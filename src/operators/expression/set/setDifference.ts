@@ -3,7 +3,7 @@
  */
 
 import { computeValue, Options } from "../../../core";
-import { AnyVal, RawArray, RawObject } from "../../../types";
+import { AnyVal, Callback, RawArray, RawObject } from "../../../types";
 import { notInArray } from "../../../util";
 
 /**
@@ -14,8 +14,8 @@ import { notInArray } from "../../../util";
 export function $setDifference(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): AnyVal {
-  const args = computeValue(obj, expr, null, options) as Array<RawArray>;
-  return args[0].filter(notInArray.bind(null, args[1]));
+  const args = computeValue(obj, expr, null, options) as RawArray[];
+  return args[0].filter(notInArray.bind(null, args[1]) as Callback);
 }

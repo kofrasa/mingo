@@ -16,14 +16,14 @@ import { isObject } from "./util";
  */
 export class Cursor {
   private readonly operators: Array<RawObject> = [];
-  private result: Iterator = null;
+  private result: Iterator | null = null;
   private buffer: RawObject[] = [];
 
   constructor(
     readonly source: Source,
     readonly predicate: Predicate<AnyVal>,
     readonly projection: RawObject,
-    private options: Options
+    private options?: Options
   ) {}
 
   /** Returns the iterator from running the query */

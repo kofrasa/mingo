@@ -12,7 +12,7 @@ import { $last as __last } from "../../accumulator";
  * @param  {*} expr
  * @return {*}
  */
-export function $last(obj: RawObject, expr: AnyVal, options?: Options): AnyVal {
+export function $last(obj: RawObject, expr: AnyVal, options: Options): AnyVal {
   const copts = ComputeOptions.init(options);
   if (obj instanceof Array) return __last(obj, expr, copts.update());
 

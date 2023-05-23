@@ -17,7 +17,7 @@ import { assert, isNil, isNumber, isString } from "../../../util";
 export function $indexOfBytes(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): AnyVal {
   const arr = computeValue(obj, expr, null, options);
   const errorMsg = "$indexOfBytes expression resolves to invalid an argument";

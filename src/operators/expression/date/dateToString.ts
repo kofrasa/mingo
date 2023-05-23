@@ -11,7 +11,7 @@ import {
   DatePartFormatter,
   formatTimezone,
   padDigits,
-  parseTimezone,
+  parseTimezone
 } from "./_internal";
 import { $dayOfMonth } from "./dayOfMonth";
 import { $hour } from "./hour";
@@ -43,7 +43,7 @@ const DATE_FUNCTIONS: Record<string, Callback<number>> = {
   "%L": $millisecond,
   "%u": $isoDayOfWeek,
   "%U": $week,
-  "%V": $isoWeek,
+  "%V": $isoWeek
 };
 
 /**
@@ -69,7 +69,7 @@ const DATE_FUNCTIONS: Record<string, Callback<number>> = {
 export function $dateToString(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): string {
   const args = computeValue(obj, expr, null, options) as DateOptions;
 

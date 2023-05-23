@@ -14,7 +14,7 @@ import { assert, isArray, isNil, isNumber } from "../../../util";
 export function $log(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): number | null {
   const args = computeValue(obj, expr, null, options) as number[];
   const msg = "$log expression must resolve to array(2) of numbers";

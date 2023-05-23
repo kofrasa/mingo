@@ -14,7 +14,7 @@ import { $push } from "./push";
 export function $addToSet(
   collection: RawObject[],
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): RawObject[] {
   return unique(
     $push(collection, expr, options),

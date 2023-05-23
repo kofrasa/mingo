@@ -6,7 +6,7 @@ import {
   DATE_PART_INTERVAL,
   isLeapYear,
   MINUTES_PER_HOUR,
-  parseTimezone,
+  parseTimezone
 } from "./_internal";
 
 interface DateArgs {
@@ -38,7 +38,7 @@ const getDaysInMonth = (date: DateArgs): number => {
 export function $dateFromParts(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): AnyVal {
   const args = computeValue(obj, expr, null, options) as DateArgs;
   const minuteOffset = parseTimezone(args.timezone);

@@ -15,7 +15,7 @@ import { truncate } from "./_internal";
 export function $trunc(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): number | null {
   const arr = computeValue(obj, expr, null, options) as RawArray;
   const num = arr[0] as number;

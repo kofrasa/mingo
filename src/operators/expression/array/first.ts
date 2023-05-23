@@ -12,11 +12,7 @@ import { $first as __first } from "../../accumulator";
  * @param  {*} expr
  * @return {*}
  */
-export function $first(
-  obj: RawObject,
-  expr: AnyVal,
-  options?: Options
-): AnyVal {
+export function $first(obj: RawObject, expr: AnyVal, options: Options): AnyVal {
   const copts = ComputeOptions.init(options);
   if (obj instanceof Array) return __first(obj, expr, copts.update());
 

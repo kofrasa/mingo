@@ -9,7 +9,7 @@ import { isNil } from "../../../util";
 export function $atan2(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): number | null {
   const [y, x] = computeValue(obj, expr, null, options) as number[];
   if (isNaN(y) || isNil(y)) return y;

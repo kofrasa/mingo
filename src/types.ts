@@ -9,7 +9,7 @@ export interface Callback<R = AnyVal, T = AnyVal> {
 }
 
 // Generic predicate
-export interface Predicate<T> {
+export interface Predicate<T = AnyVal> {
   (...args: T[]): boolean;
 }
 

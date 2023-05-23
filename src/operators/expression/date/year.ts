@@ -9,6 +9,6 @@ import { computeDate } from "./_internal";
  * @param obj
  * @param expr
  */
-export function $year(obj: RawObject, expr: AnyVal, options?: Options): number {
+export function $year(obj: RawObject, expr: AnyVal, options: Options): number {
   return computeDate(obj, expr, options).getUTCFullYear();
 }

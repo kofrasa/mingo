@@ -16,7 +16,7 @@ import { AnyVal, RawObject } from "../../../types";
 export function $let(
   obj: RawObject,
   expr: { vars: RawObject; in: AnyVal },
-  options?: Options
+  options: Options
 ): AnyVal {
   // resolve vars
   const variables = {};

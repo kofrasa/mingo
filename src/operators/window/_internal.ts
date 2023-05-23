@@ -1,5 +1,11 @@
 import { Options } from "../../core";
-import { AnyVal, GroupByOutput, RawArray, RawObject } from "../../types";
+import {
+  AnyVal,
+  Callback,
+  GroupByOutput,
+  RawArray,
+  RawObject
+} from "../../types";
 import { groupBy, isEqual } from "../../util";
 import { $push } from "../accumulator";
 import { MILLIS_PER_DAY } from "../expression/date/_internal";
@@ -20,7 +26,7 @@ export const MILLIS_PER_UNIT: Record<TimeUnit, number> = {
   hour: MILLIS_PER_DAY / 24,
   minute: 60000,
   second: 1000,
-  millisecond: 1,
+  millisecond: 1
 };
 
 // internal cache to store precomputed series once to avoid O(N^2) calls to over the collection
@@ -33,8 +39,8 @@ const memo = new WeakMap<RawArray, AnyVal>();
 export function withMemo<T = AnyVal, R = AnyVal>(
   collection: RawObject[],
   expr: WindowOperatorInput,
-  cacheFn: () => T,
-  fn: (xs: T) => R
+  cacheFn: Callback<T>,
+  fn: Callback<R, T>
 ) {
   // no caching done for bounded inputs
   if (!isUnbounded(expr.parentExpr.output[expr.field].window)) {
@@ -81,12 +87,12 @@ export function rank(
       const values = $push(collection, sortKey, options);
       const groups = groupBy(
         values,
-        (_: RawObject, n: number) => values[n],
+        ((_: RawObject, n: number) => values[n]) as Callback,
         options.hashFunction
       );
       return { values, groups };
     },
-    (input) => {
+    input => {
       const { values, groups: partitions } = input;
       // same number of paritions as lenght means all sort keys are unique
       if (partitions.keys.length == collection.length) {

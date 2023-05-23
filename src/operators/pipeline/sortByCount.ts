@@ -18,7 +18,7 @@ import { $sort } from "./sort";
 export function $sortByCount(
   collection: Iterator,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): Iterator {
   const newExpr: RawObject = { count: { $sum: 1 } };
 

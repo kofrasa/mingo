@@ -10,7 +10,7 @@ import { AnyVal, RawObject } from "../../../types";
  * @param expr
  * @returns {number}
  */
-export function $cmp(obj: RawObject, expr: AnyVal, options?: Options): AnyVal {
+export function $cmp(obj: RawObject, expr: AnyVal, options: Options): AnyVal {
   const args = computeValue(obj, expr, null, options);
   if (args[0] > args[1]) return 1;
   if (args[0] < args[1]) return -1;

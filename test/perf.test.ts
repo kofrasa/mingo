@@ -3,7 +3,10 @@ import "../src/init/system";
 import { performance } from "perf_hooks";
 
 import { aggregate, Aggregator } from "../src";
+import { initOptions } from "../src/core";
 import { Callback, RawObject } from "../src/types";
+
+/* eslint-disable no-console */
 
 const items: Array<RawObject> = [];
 for (let i = 0; i < 100_000; i++) {
@@ -12,11 +15,11 @@ for (let i = 0; i < 100_000; i++) {
   for (let j = 0; j < 10; j++) {
     books.push({
       id: j,
-      title: `book ${j}`,
+      title: `book ${j}`
     });
     authors.push({
       id: j,
-      name: `author ${j}`,
+      name: `author ${j}`
     });
   }
   items.push({
@@ -24,7 +27,7 @@ for (let i = 0; i < 100_000; i++) {
     name: `item ${i}`,
     active: true,
     books,
-    authors,
+    authors
   });
 }
 describe("perf", () => {
@@ -34,42 +37,42 @@ describe("perf", () => {
       aggregate(items, [
         {
           $match: {
-            active: true,
-          },
+            active: true
+          }
         },
         {
           $project: {
             booksSize: {
-              $size: "$books",
+              $size: "$books"
             },
             authorsSize: {
-              $size: "$authors",
-            },
-          },
+              $size: "$authors"
+            }
+          }
         },
         {
           $group: {
             _id: void 0,
             maxBooksCount: {
-              $max: "$booksSize",
+              $max: "$booksSize"
             },
             allBooksSum: {
-              $sum: "$booksSize",
+              $sum: "$booksSize"
             },
             avgBooksCount: {
-              $avg: "$booksSize",
+              $avg: "$booksSize"
             },
             maxAuthorsCount: {
-              $max: "$authorsSize",
+              $max: "$authorsSize"
             },
             allAuthorsSum: {
-              $sum: "$authorsSize",
+              $sum: "$authorsSize"
             },
             avgAuthorsCount: {
-              $avg: "$authorsSize",
-            },
-          },
-        },
+              $avg: "$authorsSize"
+            }
+          }
+        }
       ]);
       console.timeEnd("AGGREGATE_PERF");
     });
@@ -95,23 +98,23 @@ describe("perf", () => {
       [
         {
           $sort: {
-            number: 1,
-          },
-        },
+            number: 1
+          }
+        }
       ],
-      {
+      initOptions({
         collation: {
           locale: "en",
-          strength: 1,
-        },
-      }
+          strength: 1
+        }
+      })
     );
     const mingoSorter2 = new Aggregator([
       {
         $sort: {
-          number: 1,
-        },
-      },
+          number: 1
+        }
+      }
     ]);
 
     const MINGO_SORT = "MINGO SORT";
@@ -147,7 +150,7 @@ describe("perf", () => {
       console.time(NATIVE_SORT_LOCALE);
       nativeLocaleSort.sort((a: string, b: string) => {
         const r = a.localeCompare(b, "en", {
-          sensitivity: "base",
+          sensitivity: "base"
         });
         if (r < 0) return -1;
         if (r > 0) return 1;
@@ -161,3 +164,5 @@ describe("perf", () => {
     });
   });
 });
+
+/* eslint-enable no-console */

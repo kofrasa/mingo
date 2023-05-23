@@ -12,7 +12,7 @@ import { AnyVal, RawObject } from "../../types";
 export function $literal(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): AnyVal {
   return expr;
 }

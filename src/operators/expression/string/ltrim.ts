@@ -12,10 +12,6 @@ import { trimString } from "./_internal";
  * @param obj
  * @param expr
  */
-export function $ltrim(
-  obj: RawObject,
-  expr: AnyVal,
-  options?: Options
-): AnyVal {
+export function $ltrim(obj: RawObject, expr: AnyVal, options: Options): AnyVal {
   return trimString(obj, expr, options, { left: true, right: false });
 }

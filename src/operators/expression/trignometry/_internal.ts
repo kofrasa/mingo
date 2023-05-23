@@ -8,7 +8,7 @@ const FIXED_POINTS = {
   null: null,
   NaN: NaN,
   Infinity: new Error(),
-  "-Infinity": new Error(),
+  "-Infinity": new Error()
 } as Record<string, null | number | Error>;
 
 /**
@@ -22,7 +22,7 @@ export function createTrignometryOperator(
 ): ExpressionOperator {
   const fp = Object.assign({}, FIXED_POINTS, fixedPoints);
   const keySet = new Set(Object.keys(fp));
-  return (obj: RawObject, expr: AnyVal, options?: Options): number | null => {
+  return (obj: RawObject, expr: AnyVal, options: Options): number | null => {
     const n = computeValue(obj, expr, null, options) as number;
     if (keySet.has(`${n}`)) {
       const res = fp[`${n}`];

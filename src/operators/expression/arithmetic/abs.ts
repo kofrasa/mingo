@@ -14,7 +14,7 @@ import { isNil } from "../../../util";
 export function $abs(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): number | null {
   const n = computeValue(obj, expr, null, options) as number;
   return isNil(n) ? null : Math.abs(n);

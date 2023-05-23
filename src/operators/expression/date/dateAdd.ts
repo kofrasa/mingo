@@ -6,7 +6,7 @@ import {
   adjustDate,
   computeDate,
   DURATION_IN_MILLIS,
-  parseTimezone,
+  parseTimezone
 } from "./_internal";
 
 /**
@@ -17,7 +17,7 @@ import {
 export function $dateAdd(
   obj: RawObject,
   expr: RawObject,
-  options?: Options
+  options: Options
 ): AnyVal {
   const args = computeValue(obj, expr, null, options) as {
     startDate: AnyVal;

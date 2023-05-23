@@ -15,7 +15,7 @@ import { assert, isNil, isString } from "../../../util";
 export function $replaceOne(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): AnyVal {
   const args = computeValue(obj, expr, null, options) as {
     input: string;

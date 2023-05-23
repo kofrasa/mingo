@@ -16,8 +16,8 @@ import { isNil } from "../../../util";
 export function $ifNull(
   obj: RawObject,
   expr: RawArray,
-  options?: Options
+  options: Options
 ): AnyVal {
   const args = computeValue(obj, expr, null, options) as RawArray[];
-  return args.find((arg) => !isNil(arg));
+  return args.find(arg => !isNil(arg));
 }

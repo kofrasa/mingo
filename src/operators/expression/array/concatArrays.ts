@@ -14,7 +14,7 @@ import { assert, into, isArray, isNil } from "../../../util";
 export function $concatArrays(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): AnyVal {
   const arr = computeValue(obj, expr, null, options) as AnyVal[];
   assert(isArray(arr), "$concatArrays must resolve to an array");

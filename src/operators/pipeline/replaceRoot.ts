@@ -17,9 +17,9 @@ import { assert, isObject } from "../../util";
 export function $replaceRoot(
   collection: Iterator,
   expr: RawObject,
-  options?: Options
+  options: Options
 ): Iterator {
-  return collection.map((obj) => {
+  return collection.map(obj => {
     obj = computeValue(obj, expr.newRoot, null, options);
     assert(isObject(obj), "$replaceRoot expression must return an object");
     return obj;

@@ -14,7 +14,7 @@ import { assert, isArray } from "../../../util";
 export function $map(
   obj: RawObject,
   expr: { input: RawArray; as: string; in: AnyVal },
-  options?: Options
+  options: Options
 ): AnyVal {
   const input = computeValue(obj, expr.input, null, options) as RawArray;
   assert(isArray(input), `$map 'input' expression must resolve to an array`);
@@ -26,7 +26,7 @@ export function $map(
       expr.in,
       null,
       copts.update(copts.root, {
-        variables: { [k]: o },
+        variables: { [k]: o }
       })
     );
   });

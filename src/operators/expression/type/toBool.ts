@@ -15,7 +15,7 @@ import { isNil, isString } from "../../../util";
 export function $toBool(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): boolean | null {
   const val = computeValue(obj, expr, null, options);
   if (isNil(val)) return null;

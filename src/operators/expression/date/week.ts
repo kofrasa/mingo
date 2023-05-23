@@ -10,7 +10,7 @@ import { computeDate, isoWeek } from "./_internal";
  * @param obj
  * @param expr
  */
-export function $week(obj: RawObject, expr: AnyVal, options?: Options): number {
+export function $week(obj: RawObject, expr: AnyVal, options: Options): number {
   const d = computeDate(obj, expr, options);
   const result = isoWeek(d);
   // check for starting of year and adjust accordingly

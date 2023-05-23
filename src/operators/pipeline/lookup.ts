@@ -18,7 +18,7 @@ export function $lookup(
     foreignField: string;
     as: string;
   },
-  options?: Options
+  options: Options
 ): Iterator {
   const joinColl = isString(expr.from)
     ? options?.collectionResolver(expr.from)

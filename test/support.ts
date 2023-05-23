@@ -30,7 +30,7 @@ export const groupByObjectsData = [
       hour: 18,
       minute: 17,
       sec: 3,
-      hour_minute: "18:17",
+      hour_minute: "18:17"
     },
     "Keyword ID": "sr3_4VzRD3sp",
     "Creative ID": "5184986203",
@@ -39,13 +39,13 @@ export const groupByObjectsData = [
     Device: "m",
     Conversions: [
       1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0, 1, 0, 0, 0, 0, 0, 0,
+      0, 1, 0, 0, 0, 0, 0, 0
     ],
     Revenues: [
       1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0, 1, 0, 0, 0, 0, 0, 0,
+      0, 1, 0, 0, 0, 0, 0, 0
     ],
-    account_id: "baron",
+    account_id: "baron"
   },
   {
     date_buckets: {
@@ -54,7 +54,7 @@ export const groupByObjectsData = [
       hour: 18,
       minute: 17,
       sec: 3,
-      hour_minute: "18:17",
+      hour_minute: "18:17"
     },
     "Keyword ID": "sr3_K1iQOeXy",
     "Creative ID": "5184986241",
@@ -63,13 +63,13 @@ export const groupByObjectsData = [
     Device: "c",
     Conversions: [
       5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0, 5, 0, 0, 0, 0, 0, 0,
+      0, 5, 0, 0, 0, 0, 0, 0
     ],
     Revenues: [
       5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0, 5, 0, 0, 0, 0, 0, 0,
+      0, 5, 0, 0, 0, 0, 0, 0
     ],
-    account_id: "baron",
+    account_id: "baron"
   },
   {
     date_buckets: {
@@ -78,7 +78,7 @@ export const groupByObjectsData = [
       hour: 18,
       minute: 17,
       sec: 3,
-      hour_minute: "18:17",
+      hour_minute: "18:17"
     },
     "Keyword ID": "sr3_sl0C3VAYk",
     "Creative ID": "44210589597",
@@ -87,13 +87,13 @@ export const groupByObjectsData = [
     Device: "c",
     Conversions: [
       4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0, 4, 0, 0, 0, 0, 0, 0,
+      0, 4, 0, 0, 0, 0, 0, 0
     ],
     Revenues: [
       4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0, 4, 0, 0, 0, 0, 0, 0,
+      0, 4, 0, 0, 0, 0, 0, 0
     ],
-    account_id: "baron",
+    account_id: "baron"
   },
   {
     date_buckets: {
@@ -102,7 +102,7 @@ export const groupByObjectsData = [
       hour: 18,
       minute: 17,
       sec: 3,
-      hour_minute: "18:17",
+      hour_minute: "18:17"
     },
     "Keyword ID": "sr3_4VzRD3sp",
     "Creative ID": "5184986204",
@@ -111,13 +111,13 @@ export const groupByObjectsData = [
     Device: "c",
     Conversions: [
       1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0, 1, 0, 0, 0, 0, 0, 0,
+      0, 1, 0, 0, 0, 0, 0, 0
     ],
     Revenues: [
       1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0, 1, 0, 0, 0, 0, 0, 0,
+      0, 1, 0, 0, 0, 0, 0, 0
     ],
-    account_id: "baron",
+    account_id: "baron"
   },
   {
     date_buckets: {
@@ -126,7 +126,7 @@ export const groupByObjectsData = [
       hour: 18,
       minute: 17,
       sec: 3,
-      hour_minute: "18:17",
+      hour_minute: "18:17"
     },
     "Keyword ID": "sr3_HZAarvKy",
     "Creative ID": "6074827333",
@@ -135,7 +135,7 @@ export const groupByObjectsData = [
     Device: "c",
     Conversions: [1, 0, 0, 1, 0, 0, 0, 0, 0],
     Revenues: [5, 0, 0, 5, 0, 0, 0, 0, 0],
-    account_id: "baron",
+    account_id: "baron"
   },
   {
     date_buckets: {
@@ -144,7 +144,7 @@ export const groupByObjectsData = [
       hour: 18,
       minute: 17,
       sec: 3,
-      hour_minute: "18:17",
+      hour_minute: "18:17"
     },
     "Keyword ID": "sr3_irU8fFk0",
     "Creative ID": "6074827289",
@@ -153,29 +153,29 @@ export const groupByObjectsData = [
     Device: "c",
     Conversions: [1, 0, 0, 1, 0, 0, 0, 0, 0],
     Revenues: [5, 0, 0, 5, 0, 0, 0, 0, 0],
-    account_id: "baron",
-  },
+    account_id: "baron"
+  }
 ];
 
 export function runTest(
   description: string,
   suite: Record<string, RawArray>
 ): void {
-  Object.entries(suite).forEach((arr) => {
+  Object.entries(suite).forEach(arr => {
     const operator = arr[0];
     const examples = arr[1] as Array<Array<unknown>>;
     describe(description, () => {
       describe(operator, () => {
-        examples.forEach((val) => {
+        examples.forEach(val => {
           let input = val[0] as RawObject;
           let expected = val[1];
           const ctx = (val[2] || { err: false }) as RawObject;
           const obj = ctx?.obj || {};
 
-          let field: string | undefined = operator;
+          let field: string | null = operator;
           // use the operator as field if not present in input
           if (!!input && input.constructor === Object) {
-            field = Object.keys(input).find((s) => s[0] === "$");
+            field = Object.keys(input).find(s => s[0] === "$") || null;
             if (!field) {
               field = operator;
             } else {
@@ -210,7 +210,7 @@ interface PipelineTestSuite {
   pipeline: Array<RawObject>;
   expected: AnyVal | Callback<AnyVal>;
   message: string;
-  options?: Options;
+  options?: Partial<Options>;
 }
 /**
  * run pipeline test
@@ -220,7 +220,7 @@ export function runTestPipeline(
   suite: Array<PipelineTestSuite>
 ): void {
   describe(description, () => {
-    suite.forEach((unitTest) => {
+    suite.forEach(unitTest => {
       const { input, pipeline, expected, message, options } = unitTest;
       const actual = aggregate(
         input,

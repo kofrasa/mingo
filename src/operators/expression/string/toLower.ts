@@ -16,7 +16,7 @@ import { isEmpty } from "../../../util";
 export function $toLower(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): AnyVal {
   const value = computeValue(obj, expr, null, options) as string;
   return isEmpty(value) ? "" : value.toLowerCase();

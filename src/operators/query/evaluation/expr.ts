@@ -13,7 +13,7 @@ import { AnyVal, Callback } from "../../../types";
 export function $expr(
   _: string,
   rhs: AnyVal,
-  options?: Options
+  options: Options
 ): Callback<boolean> {
-  return (obj) => computeValue(obj, rhs, null, options) as boolean;
+  return obj => computeValue(obj, rhs, null, options) as boolean;
 }

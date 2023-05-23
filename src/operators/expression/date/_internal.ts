@@ -3,11 +3,11 @@ import { AnyVal } from "../../../types";
 import { isDate, isNil, isNumber } from "../../../util";
 
 const COMMON_YEAR_DAYS_OFFSET = [
-  0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334,
+  0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334
 ];
 
 const LEAP_YEAR_DAYS_OFFSET = [
-  0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335,
+  0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335
 ];
 
 // https://en.wikipedia.org/wiki/ISO_week_date
@@ -49,7 +49,7 @@ export const DURATION_IN_MILLIS: Record<string, number> = {
   hour: 1000 * 60 * 60,
   minute: 1000 * 60,
   second: 1000,
-  millisecond: 1,
+  millisecond: 1
 };
 
 // default format if unspecified
@@ -63,7 +63,7 @@ export const DATE_PART_INTERVAL = [
   ["hour", 0, 23],
   ["minute", 0, 59],
   ["second", 0, 59],
-  ["millisecond", 0, 999],
+  ["millisecond", 0, 999]
 ];
 
 export interface DatePartFormatter {
@@ -88,9 +88,9 @@ export const DATE_SYM_TABLE: Record<string, DatePartFormatter> = {
   "%z": {
     name: "timezone",
     padding: 2,
-    re: /(([+-][01][0-9]|2[0-3]):?([0-5][0-9])?)/,
+    re: /(([+-][01][0-9]|2[0-3]):?([0-5][0-9])?)/
   },
-  "%Z": { name: "minuteOffset", padding: 3, re: /([+-][0-9]{3})/ },
+  "%Z": { name: "minuteOffset", padding: 3, re: /([+-][0-9]{3})/ }
   // "%%": "%",
 };
 
@@ -137,11 +137,7 @@ export function adjustDate(d: Date, minuteOffset: number): void {
  * @param obj The target object
  * @param expr Any value that resolves to a valid date expression. Valid expressions include a number, Date, or Object{date: number|Date, timezone?: string}
  */
-export function computeDate(
-  obj: AnyVal,
-  expr: AnyVal,
-  options?: Options
-): Date {
+export function computeDate(obj: AnyVal, expr: AnyVal, options: Options): Date {
   const d = computeValue(obj, expr, null, options) as
     | Date
     | number

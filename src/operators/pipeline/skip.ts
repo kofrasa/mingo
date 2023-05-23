@@ -12,7 +12,7 @@ import { Iterator } from "../../lazy";
 export function $skip(
   collection: Iterator,
   expr: number,
-  options?: Options
+  options: Options
 ): Iterator {
   return collection.drop(expr);
 }

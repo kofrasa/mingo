@@ -14,7 +14,7 @@ import { intersection } from "../../../util";
 export function $setIsSubset(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): AnyVal {
   const args = computeValue(obj, expr, null, options) as RawArray[];
   return intersection(args, options?.hashFunction).length === args[0].length;

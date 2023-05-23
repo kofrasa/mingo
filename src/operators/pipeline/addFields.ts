@@ -1,6 +1,6 @@
 import { computeValue, Options } from "../../core";
 import { Iterator } from "../../lazy";
-import { RawObject } from "../../types";
+import { Callback, RawObject } from "../../types";
 import { removeValue, setValue } from "../../util";
 
 /**
@@ -14,13 +14,13 @@ import { removeValue, setValue } from "../../util";
 export function $addFields(
   collection: Iterator,
   expr: RawObject,
-  options?: Options
+  options: Options
 ): Iterator {
   const newFields = Object.keys(expr);
 
   if (newFields.length === 0) return collection;
 
-  return collection.map((obj: RawObject) => {
+  return collection.map(((obj: RawObject) => {
     const newObj = { ...obj };
     for (const field of newFields) {
       const newValue = computeValue(obj, expr[field], null, options);
@@ -31,5 +31,5 @@ export function $addFields(
       }
     }
     return newObj;
-  });
+  }) as Callback<RawObject>);
 }

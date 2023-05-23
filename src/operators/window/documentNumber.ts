@@ -7,7 +7,7 @@ export function $documentNumber(
   obj: RawObject,
   collection: RawObject[],
   expr: WindowOperatorInput,
-  options?: Options
+  options: Options
 ): AnyVal {
   return expr.documentNumber;
 }

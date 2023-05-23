@@ -14,7 +14,7 @@ import { assert, isNil, isNumber } from "../../../util";
 export function $sqrt(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): number | null {
   const n = computeValue(obj, expr, null, options) as number;
   if (isNil(n)) return null;

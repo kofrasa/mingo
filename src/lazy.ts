@@ -70,14 +70,14 @@ enum Action {
   MAP,
   FILTER,
   TAKE,
-  DROP,
+  DROP
 }
 
 function createCallback(
   nextFn: Callback,
   iteratees: Iteratee[],
   buffer: RawArray
-): Callback<IteratorResult> {
+): Callback<IteratorResult, boolean> {
   let done = false;
   let index = -1;
   let bufferIndex = 0; // index for the buffer
@@ -139,7 +139,7 @@ function createCallback(
 export class Iterator {
   private readonly iteratees: Iteratee[] = [];
   private readonly yieldedValues: RawArray = [];
-  private getNext: Callback<IteratorResult>;
+  private getNext: Callback<IteratorResult, boolean>;
 
   private isDone = false;
 
@@ -214,7 +214,7 @@ export class Iterator {
    * @param {Function} pred
    */
   filter<T = AnyVal>(predicate: Predicate<T>): Iterator {
-    return this.push(Action.FILTER, predicate);
+    return this.push(Action.FILTER, predicate as Callback<T>);
   }
 
   /**
@@ -259,11 +259,11 @@ export class Iterator {
    * The return value will be an array unless `lazy.first()` was used.
    * The realized values are cached for subsequent calls
    */
-  value(): AnyVal {
+  value<T>(): T[] {
     if (!this.isDone) {
       this.isDone = this.getNext(true).done;
     }
-    return this.yieldedValues;
+    return this.yieldedValues as T[];
   }
 
   /**
@@ -288,12 +288,10 @@ export class Iterator {
    */
   reduce<T = AnyVal>(f: Callback<T>, initialValue?: AnyVal): T {
     let o = this.next();
-    let i = 0;
 
     if (initialValue === undefined && !o.done) {
       initialValue = o.value as T;
       o = this.next();
-      i++;
     }
 
     while (!o.done) {
@@ -308,7 +306,10 @@ export class Iterator {
    * Returns the number of matched items in the sequence
    */
   size(): number {
-    return this.reduce((acc: number, _: number) => ++acc, 0);
+    return this.reduce(
+      ((acc: number, _: number) => ++acc) as Callback<number>,
+      0
+    );
   }
 
   [Symbol.iterator](): Iterator {

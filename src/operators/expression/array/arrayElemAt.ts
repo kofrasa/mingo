@@ -14,7 +14,7 @@ import { assert, isNil } from "../../../util";
 export function $arrayElemAt(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): AnyVal {
   const args = computeValue(obj, expr, null, options) as RawArray;
   assert(

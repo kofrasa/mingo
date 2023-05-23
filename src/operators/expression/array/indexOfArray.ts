@@ -15,7 +15,7 @@ import { assert, isArray, isEqual, isNil } from "../../../util";
 export function $indexOfArray(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): number {
   const args = computeValue(obj, expr, null, options) as RawArray;
   if (isNil(args)) return null;

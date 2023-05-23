@@ -11,7 +11,7 @@ import { assert, isArray, isNumber } from "../../../util";
  * @param expr
  * @returns {Object}
  */
-export function $pow(obj: RawObject, expr: AnyVal, options?: Options): number {
+export function $pow(obj: RawObject, expr: AnyVal, options: Options): number {
   const args = computeValue(obj, expr, null, options) as number[];
 
   assert(

@@ -13,7 +13,7 @@ import { AnyVal, RawObject } from "../../../types";
 export function $multiply(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): number {
   const args = computeValue(obj, expr, null, options) as number[];
   return args.reduce((acc, num) => acc * num, 1);

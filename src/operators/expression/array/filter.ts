@@ -14,7 +14,7 @@ import { assert, isArray, truthy } from "../../../util";
 export function $filter(
   obj: RawObject,
   expr: { input: RawArray; as: string; cond: AnyVal },
-  options?: Options
+  options: Options
 ): RawArray {
   const input = computeValue(obj, expr.input, null, options) as RawArray;
   assert(isArray(input), "$filter 'input' expression must resolve to an array");
@@ -22,7 +22,7 @@ export function $filter(
   const copts = ComputeOptions.init(options, obj);
   const k = expr.as || "this";
   const local = {
-    variables: { [k]: null },
+    variables: { [k]: null }
   };
   return input.filter((o: AnyVal) => {
     local.variables[k] = o;

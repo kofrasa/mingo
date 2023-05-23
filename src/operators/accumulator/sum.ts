@@ -13,7 +13,7 @@ import { $push } from "./push";
 export function $sum(
   collection: RawObject[],
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): number {
   if (!isArray(collection)) return 0;
 

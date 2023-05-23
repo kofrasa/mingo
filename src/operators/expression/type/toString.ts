@@ -10,7 +10,7 @@ import { $dateToString } from "../date/dateToString";
 export function $toString(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): string | null {
   const val = computeValue(obj, expr, null, options);
   if (isNil(val)) return null;
@@ -18,7 +18,7 @@ export function $toString(
   if (val instanceof Date) {
     const dateExpr = {
       date: expr,
-      format: "%Y-%m-%dT%H:%M:%S.%LZ",
+      format: "%Y-%m-%dT%H:%M:%S.%LZ"
     };
     return $dateToString(obj, dateExpr, options);
   } else {

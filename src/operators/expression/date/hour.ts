@@ -9,6 +9,6 @@ import { computeDate } from "./_internal";
  * @param obj
  * @param expr
  */
-export function $hour(obj: RawObject, expr: AnyVal, options?: Options): number {
+export function $hour(obj: RawObject, expr: AnyVal, options: Options): number {
   return computeDate(obj, expr, options).getUTCHours();
 }

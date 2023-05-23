@@ -1,7 +1,7 @@
 import "../../src/init/system";
 
 import { find } from "../../src";
-import { Options, ProcessingMode } from "../../src/core";
+import { ProcessingMode } from "../../src/core";
 import { RawArray, RawObject } from "../../src/types";
 import { ObjectId, personData } from "../support";
 
@@ -16,33 +16,33 @@ describe("operators/projection", () => {
       students: [
         { name: "john", school: 102, age: 10 },
         { name: "jess", school: 102, age: 11 },
-        { name: "jeff", school: 108, age: 15 },
-      ],
+        { name: "jeff", school: 108, age: 15 }
+      ]
     },
     {
       _id: 2,
       zipcode: "63110",
       students: [
         { name: "ajax", school: 100, age: 7 },
-        { name: "achilles", school: 100, age: 8 },
-      ],
+        { name: "achilles", school: 100, age: 8 }
+      ]
     },
     {
       _id: 3,
       zipcode: "63109",
       students: [
         { name: "ajax", school: 100, age: 7 },
-        { name: "achilles", school: 100, age: 8 },
-      ],
+        { name: "achilles", school: 100, age: 8 }
+      ]
     },
     {
       _id: 4,
       zipcode: "63109",
       students: [
         { name: "barney", school: 102, age: 7 },
-        { name: "ruth", school: 102, age: 16 },
-      ],
-    },
+        { name: "ruth", school: 102, age: 16 }
+      ]
+    }
   ];
 
   describe("$elemMatch", () => {
@@ -55,7 +55,7 @@ describe("operators/projection", () => {
       expect(result).toEqual([
         { _id: 1, students: [{ name: "john", school: 102, age: 10 }] },
         { _id: 3 },
-        { _id: 4, students: [{ name: "barney", school: 102, age: 7 }] },
+        { _id: 4, students: [{ name: "barney", school: 102, age: 7 }] }
       ]);
     });
 
@@ -71,17 +71,17 @@ describe("operators/projection", () => {
           _id: 1,
           students: [
             { name: "john", school: 102, age: 10 },
-            { name: "jess", school: 102, age: 11 },
-          ],
+            { name: "jess", school: 102, age: 11 }
+          ]
         },
         { _id: 3 },
         {
           _id: 4,
           students: [
             { name: "barney", school: 102, age: 7 },
-            { name: "ruth", school: 102, age: 16 },
-          ],
-        },
+            { name: "ruth", school: 102, age: 16 }
+          ]
+        }
       ]);
     });
 
@@ -94,7 +94,7 @@ describe("operators/projection", () => {
       expect(result).toEqual([
         { _id: 1, students: [{ name: "jess", school: 102, age: 11 }] },
         { _id: 3 },
-        { _id: 4, students: [{ name: "ruth", school: 102, age: 16 }] },
+        { _id: 4, students: [{ name: "ruth", school: 102, age: 16 }] }
       ]);
     });
   });
@@ -128,13 +128,13 @@ describe("operators/projection", () => {
 
       expect(result["languages"]["programming"]).toEqual([
         "Javascript",
-        "Bash",
+        "Bash"
       ]);
     });
   });
 
   describe("field selectors", () => {
-    const options: Options = { processingMode: ProcessingMode.CLONE_INPUT };
+    const options = { processingMode: ProcessingMode.CLONE_INPUT };
 
     it("should project only selected object graph from nested arrays", () => {
       // special tests
@@ -145,16 +145,16 @@ describe("operators/projection", () => {
             {
               key1: [
                 [[{ key2: [{ a: "value2" }, { a: "dummy" }, { b: 20 }] }]],
-                { key2: "value" },
+                { key2: "value" }
               ],
-              key1a: { key2a: "value2a" },
-            },
-          ],
-        },
+              key1a: { key2a: "value2a" }
+            }
+          ]
+        }
       ];
 
       const expected = {
-        key0: [{ key1: [[[{ key2: [{ a: "value2" }, { a: "dummy" }] }]]] }],
+        key0: [{ key1: [[[{ key2: [{ a: "value2" }, { a: "dummy" }] }]]] }]
       };
 
       const result = find(
@@ -176,8 +176,8 @@ describe("operators/projection", () => {
           {
             name: "Steve",
             age: 15,
-            features: { hair: "brown", eyes: "brown" },
-          },
+            features: { hair: "brown", eyes: "brown" }
+          }
         ];
       });
 
@@ -198,7 +198,7 @@ describe("operators/projection", () => {
         expect(result).toEqual({
           name: "Steve",
           age: 15,
-          features: { eyes: "brown" },
+          features: { eyes: "brown" }
         });
 
         //should not modify original
@@ -208,7 +208,7 @@ describe("operators/projection", () => {
 
     describe("project nested elements in array", () => {
       const data = [
-        { name: "Steve", age: 15, features: ["hair", "eyes", "nose"] },
+        { name: "Steve", age: 15, features: ["hair", "eyes", "nose"] }
       ];
 
       it("should omit second element in array", () => {
@@ -216,7 +216,7 @@ describe("operators/projection", () => {
         expect(result).toEqual({
           name: "Steve",
           age: 15,
-          features: ["hair", "nose"],
+          features: ["hair", "nose"]
         });
         // should not modify original
         expect(data[0]).not.toEqual(result);
@@ -232,7 +232,7 @@ describe("operators/projection", () => {
         const result = find(
           [
             { id: 1, sub: [{ id: 11, name: "OneOne", test: true }] },
-            { id: 2, sub: [{ id: 22, name: "TwoTwo", test: false }] },
+            { id: 2, sub: [{ id: 22, name: "TwoTwo", test: false }] }
           ],
           {},
           { "sub.id": 1, "sub.name": 1 }

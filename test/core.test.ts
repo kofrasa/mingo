@@ -6,7 +6,7 @@ import {
   Options,
   ProcessingMode,
   redact,
-  useOperators,
+  useOperators
 } from "../src/core";
 import { AnyVal, RawArray, RawObject } from "../src/types";
 import { isNumber, resolve } from "../src/util";
@@ -63,14 +63,14 @@ describe("core", () => {
       function $pluck(collection: AnyVal, expr: AnyVal): AnyVal {
         const array = collection as Array<{ __temp__: AnyVal }>;
         const agg = new Aggregator([{ $project: { __temp__: expr } }]);
-        return agg.stream(array).map((item) => (item as RawObject)["__temp__"]);
+        return agg.stream(array).map(item => (item as RawObject)["__temp__"]);
       }
 
       useOperators(OperatorType.PIPELINE, { $pluck });
 
       const result = aggregate(support.complexGradesData, [
         { $unwind: "$scores" },
-        { $pluck: "$scores.score" },
+        { $pluck: "$scores.score" }
       ]);
 
       expect(isNumber(result[0])).toBe(true);
@@ -92,7 +92,7 @@ describe("core", () => {
         { a: 1, b: 1 },
         { a: 7, b: 1 },
         { a: 10, b: 6 },
-        { a: 20, b: 10 },
+        { a: 20, b: 10 }
       ];
       const result = find(coll, { a: { $between: [5, 10] } }).all();
       expect(result.length).toBe(2);
@@ -107,8 +107,8 @@ describe("core", () => {
             options
           );
           const avg = result[0].avg as number;
-          const diffs = collection.map((item) => {
-            const v = (computeValue(item, expr) as number) - avg;
+          const diffs = collection.map(item => {
+            const v = (computeValue(item, expr, null) as number) - avg;
             return v * v;
           });
           const variance =
@@ -116,12 +116,12 @@ describe("core", () => {
               return memo + val;
             }, 0) / diffs.length;
           return Math.sqrt(variance);
-        },
+        }
       });
 
       const result = aggregate(support.complexGradesData, [
         { $unwind: "$scores" },
-        { $group: { _id: null, stddev: { $stddev: "$scores.score" } } },
+        { $group: { _id: null, stddev: { $stddev: "$scores.score" } } }
       ]);
       expect(result.length).toBe(1);
       expect(result[0].stddev).toEqual(28.57362029450366);
@@ -134,7 +134,9 @@ describe("core", () => {
     });
 
     it("computes current timestamp using $$NOW", () => {
-      const result = computeValue({}, { date: "$$NOW" }) as { date: Date };
+      const result = computeValue({}, { date: "$$NOW" }, null) as {
+        date: Date;
+      };
       expect(result.date).toBeInstanceOf(Date);
       expect(result.date.getTime()).toBeLessThanOrEqual(Date.now());
     });

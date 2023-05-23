@@ -11,10 +11,10 @@ import { truthy } from "../../../util";
  * @param expr
  * @returns {boolean}
  */
-export function $and(obj: RawObject, expr: AnyVal, options?: Options): AnyVal {
+export function $and(obj: RawObject, expr: AnyVal, options: Options): AnyVal {
   const value = computeValue(obj, expr, null, options) as RawArray;
   return (
     truthy(value, options.useStrictMode) &&
-    value.every((v) => truthy(v, options.useStrictMode))
+    value.every(v => truthy(v, options.useStrictMode))
   );
 }

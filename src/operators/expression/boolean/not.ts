@@ -11,7 +11,7 @@ import { ensureArray } from "../../../util";
  * @param expr Right hand side expression of operator
  * @returns {boolean}
  */
-export function $not(obj: RawObject, expr: AnyVal, options?: Options): AnyVal {
+export function $not(obj: RawObject, expr: AnyVal, options: Options): AnyVal {
   const booleanExpr = ensureArray(expr);
   // array values are truthy so an emty array is false
   if (booleanExpr.length == 0) return false;

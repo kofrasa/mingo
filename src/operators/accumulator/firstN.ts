@@ -20,7 +20,7 @@ interface InputExpr {
 export function $firstN(
   collection: RawObject[],
   expr: InputExpr,
-  options?: Options
+  options: Options
 ): AnyVal[] {
   const copts = ComputeOptions.init(options);
   const m = collection.length;

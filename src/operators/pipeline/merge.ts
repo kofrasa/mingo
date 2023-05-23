@@ -35,7 +35,7 @@ interface InputExpr {
 export function $merge(
   collection: Iterator,
   expr: InputExpr,
-  options?: Options
+  options: Options
 ): Iterator {
   const output: RawObject[] = isString(expr.into)
     ? options?.collectionResolver(expr.into)
@@ -51,7 +51,7 @@ export function $merge(
   const getHash = (o: RawObject) => {
     const val = isString(onField)
       ? resolve(o, onField)
-      : onField.map((s) => resolve(o, s));
+      : onField.map(s => resolve(o, s));
     return hashCode(val, options.hashFunction);
   };
 
@@ -87,7 +87,7 @@ export function $merge(
       if (isArray(expr.whenMatched)) {
         const aggregator = new Aggregator(expr.whenMatched, {
           ...copts.options,
-          variables,
+          variables
         });
         output[i] = aggregator.run([target])[0];
       } else {

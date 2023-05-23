@@ -13,5 +13,6 @@ import { RawObject } from "../../../types";
 export const $sampleRate = (
   obj: RawObject,
   expr: number,
-  options?: Options
-): boolean => Math.random() <= computeValue(obj, expr, null, options);
+  options: Options
+): boolean =>
+  Math.random() <= (computeValue(obj, expr, null, options) as number);

@@ -16,7 +16,7 @@ import { assert, isObject, truthy } from "../../../util";
 export function $cond(
   obj: RawObject,
   expr: ArrayOrObject,
-  options?: Options
+  options: Options
 ): AnyVal {
   let ifExpr: AnyVal;
   let thenExpr: AnyVal;

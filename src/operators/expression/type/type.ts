@@ -9,9 +9,9 @@ import { getType, MAX_INT, MIN_INT } from "../../../util";
 export function $type(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): BsonType {
-  const val = computeValue(obj, expr, null, options);
+  const val = computeValue(obj, expr, null, options) as number;
   const typename = getType(val);
   const nativeType = typename.toLowerCase() as JsType;
   switch (nativeType) {

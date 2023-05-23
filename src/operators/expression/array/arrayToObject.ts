@@ -10,7 +10,7 @@ import { assert, has, isArray, isObject } from "../../../util";
 export function $arrayToObject(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): RawObject {
   const arr = computeValue(obj, expr, null, options) as Array<RawArray>;
   assert(isArray(arr), "$arrayToObject expression must resolve to an array");

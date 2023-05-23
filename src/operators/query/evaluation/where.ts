@@ -16,7 +16,7 @@ import { assert, isFunction, truthy } from "../../../util";
 export function $where(
   _: string,
   rhs: AnyVal,
-  options?: Options
+  options: Options
 ): Callback<boolean> {
   assert(
     options.scriptEnabled,

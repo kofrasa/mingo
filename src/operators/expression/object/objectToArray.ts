@@ -14,7 +14,7 @@ import { assert, isObject } from "../../../util";
 export function $objectToArray(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): AnyVal {
   const val = computeValue(obj, expr, null, options) as RawObject;
   assert(isObject(val), "$objectToArray expression must resolve to an object");

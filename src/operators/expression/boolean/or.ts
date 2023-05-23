@@ -11,8 +11,8 @@ import { truthy } from "../../../util";
  * @param expr
  * @returns {boolean}
  */
-export function $or(obj: RawObject, expr: AnyVal, options?: Options): AnyVal {
+export function $or(obj: RawObject, expr: AnyVal, options: Options): AnyVal {
   const value = computeValue(obj, expr, null, options) as RawArray;
   const strict = options.useStrictMode;
-  return truthy(value, strict) && value.some((v) => truthy(v, strict));
+  return truthy(value, strict) && value.some(v => truthy(v, strict));
 }

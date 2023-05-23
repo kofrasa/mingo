@@ -13,11 +13,11 @@ import { isNil } from "../../util";
 export function $push(
   collection: RawObject[],
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): RawArray {
   if (isNil(expr)) return collection;
   const copts = ComputeOptions.init(options);
-  return collection.map((obj) =>
+  return collection.map(obj =>
     computeValue(obj, expr, null, copts.update(obj))
   );
 }

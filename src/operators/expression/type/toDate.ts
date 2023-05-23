@@ -16,7 +16,7 @@ import { TypeConvertError } from "./_internal";
 export function $toDate(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): Date | null {
   const val = computeValue(obj, expr, null, options) as string | number | Date;
 

@@ -15,8 +15,8 @@ import { regexSearch } from "./_internal";
 export function $regexFind(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): AnyVal {
   const result = regexSearch(obj, expr, options, { global: false });
-  return result.length === 0 ? null : result[0];
+  return result && result.length > 0 ? result[0] : null;
 }

@@ -14,9 +14,9 @@ import { into } from "../../../util";
 export function $mergeObjects(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): AnyVal {
-  const docs = computeValue(obj, expr, null, options);
+  const docs = computeValue(obj, expr, null, options) as RawObject[];
   return docs instanceof Array
     ? docs.reduce((memo, o) => into(memo, o), {})
     : {};

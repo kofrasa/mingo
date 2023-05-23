@@ -12,7 +12,7 @@ import { $dateAdd } from "./dateAdd";
 export function $dateSubtract(
   obj: RawObject,
   expr: RawObject,
-  options?: Options
+  options: Options
 ): AnyVal {
   const amount = computeValue(obj, expr?.amount, null, options) as number;
   return $dateAdd(obj, { ...expr, amount: -1 * amount }, options);

@@ -14,9 +14,9 @@ import { truthy } from "../../../util";
 export function $anyElementTrue(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): AnyVal {
   // mongodb nests the array expression in another
   const args = computeValue(obj, expr, null, options)[0] as RawArray;
-  return args.some((v) => truthy(v, options.useStrictMode));
+  return args.some(v => truthy(v, options.useStrictMode));
 }

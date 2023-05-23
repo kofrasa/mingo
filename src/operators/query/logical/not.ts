@@ -15,7 +15,7 @@ import { normalize } from "../../../util";
 export function $not(
   selector: string,
   rhs: AnyVal,
-  options?: Options
+  options: Options
 ): Callback<boolean> {
   const criteria = {};
   criteria[selector] = normalize(rhs);

@@ -15,7 +15,7 @@ import { $or } from "./or";
 export function $nor(
   _: string,
   rhs: Array<RawObject>,
-  options?: Options
+  options: Options
 ): Callback<boolean> {
   assert(
     isArray(rhs),

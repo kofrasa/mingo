@@ -1,6 +1,6 @@
 import { AnyVal, Duration } from "../../types";
 
-type Boundary = "current" | "unbounded" | number;
+export type Boundary = "current" | "unbounded" | number;
 
 export interface WindowOutputOption {
   readonly documents?: [Boundary, Boundary];

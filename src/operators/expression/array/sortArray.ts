@@ -3,13 +3,7 @@
 import { Aggregator } from "../../../aggregator";
 import { computeValue, Options } from "../../../core";
 import { AnyVal, RawArray, RawObject } from "../../../types";
-import {
-  assert,
-  DEFAULT_COMPARATOR,
-  isArray,
-  isNil,
-  isObject,
-} from "../../../util";
+import { assert, compare, isArray, isNil, isObject } from "../../../util";
 
 /**
  * Sorts an array based on its elements. The sort order is user specified.
@@ -22,7 +16,7 @@ import {
 export function $sortArray(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): AnyVal {
   const { input, sortBy } = computeValue(obj, expr, null, options) as {
     input: RawArray;
@@ -37,7 +31,7 @@ export function $sortArray(
   }
 
   const result = [...input];
-  result.sort(DEFAULT_COMPARATOR);
+  result.sort(compare);
   if (sortBy === -1) result.reverse();
   return result;
 }

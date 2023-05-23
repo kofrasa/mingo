@@ -19,7 +19,7 @@ interface InputExpr {
 export function $getField(
   obj: RawObject,
   expr: InputExpr | string,
-  options?: Options
+  options: Options
 ): AnyVal {
   const args = computeValue(obj, expr, null, options) as InputExpr | string;
   let input = obj;

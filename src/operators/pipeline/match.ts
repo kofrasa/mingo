@@ -15,7 +15,7 @@ import { RawObject } from "../../types";
 export function $match(
   collection: Iterator,
   expr: RawObject,
-  options?: Options
+  options: Options
 ): Iterator {
   const q = new Query(expr, options);
   return collection.filter((o: RawObject) => q.test(o));

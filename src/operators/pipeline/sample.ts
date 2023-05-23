@@ -1,8 +1,8 @@
 // $sample operator -  https://docs.mongodb.com/manual/reference/operator/aggregation/sample/
 
 import { Options } from "../../core";
-import { Iterator } from "../../lazy";
-import { RawArray } from "../../types";
+import { Iterator, Source } from "../../lazy";
+import { Callback, RawArray } from "../../types";
 
 /**
  * Randomly selects the specified number of documents from its input. The given iterator must have finite values
@@ -15,9 +15,9 @@ import { RawArray } from "../../types";
 export function $sample(
   collection: Iterator,
   expr: { size: number },
-  options?: Options
+  options: Options
 ): Iterator {
-  return collection.transform((xs: RawArray) => {
+  return collection.transform(((xs: RawArray) => {
     const len = xs.length;
     let i = -1;
     return () => {
@@ -25,5 +25,5 @@ export function $sample(
       const n = Math.floor(Math.random() * len);
       return { value: xs[n], done: false };
     };
-  });
+  }) as Callback<Source>);
 }

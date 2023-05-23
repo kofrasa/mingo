@@ -1,6 +1,6 @@
 import { ComputeOptions, computeValue, Options } from "../../core";
-import { Iterator } from "../../lazy";
-import { RawArray, RawObject } from "../../types";
+import { Iterator, Source } from "../../lazy";
+import { Callback, RawArray, RawObject } from "../../types";
 import { assert, groupBy, has } from "../../util";
 
 // lookup key for grouping
@@ -17,16 +17,16 @@ const ID_KEY = "_id";
 export function $group(
   collection: Iterator,
   expr: RawObject,
-  options?: Options
+  options: Options
 ): Iterator {
   assert(has(expr, ID_KEY), "a group specification must include an _id");
   const idExpr = expr[ID_KEY];
   const copts = ComputeOptions.init(options);
 
-  return collection.transform((coll: RawArray) => {
+  return collection.transform(((coll: RawArray) => {
     const partitions = groupBy(
       coll,
-      (obj) => computeValue(obj, idExpr, null, options),
+      obj => computeValue(obj, idExpr, null, options),
       options?.hashFunction
     );
 
@@ -60,5 +60,5 @@ export function $group(
 
       return { value: obj, done: false };
     };
-  });
+  }) as Callback<Source>);
 }

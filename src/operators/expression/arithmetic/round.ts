@@ -13,7 +13,7 @@ import { truncate } from "./_internal";
 export function $round(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): number | null {
   const args = computeValue(obj, expr, null, options) as RawArray;
   const num = args[0] as number;

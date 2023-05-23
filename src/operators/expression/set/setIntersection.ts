@@ -14,7 +14,7 @@ import { assert, intersection, isArray } from "../../../util";
 export function $setIntersection(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): AnyVal {
   const args = computeValue(obj, expr, null, options) as RawArray[];
   assert(

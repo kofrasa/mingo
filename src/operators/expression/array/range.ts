@@ -10,11 +10,7 @@ import { AnyVal, RawObject } from "../../../types";
  * @param  {*} expr
  * @return {*}
  */
-export function $range(
-  obj: RawObject,
-  expr: AnyVal,
-  options?: Options
-): AnyVal {
+export function $range(obj: RawObject, expr: AnyVal, options: Options): AnyVal {
   const arr = computeValue(obj, expr, null, options);
   const start = arr[0] as number;
   const end = arr[1] as number;

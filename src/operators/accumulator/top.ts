@@ -14,7 +14,7 @@ import { $topN } from "./topN";
 export function $top(
   collection: RawObject[],
   expr: { sortBy: Record<string, number>; output: AnyVal },
-  options?: Options
+  options: Options
 ): AnyVal[] {
   return $topN(collection, { ...expr, n: 1 }, options);
 }

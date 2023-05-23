@@ -13,7 +13,6 @@ export function truncate(
   num = Math.abs(num);
 
   let result = Math.trunc(num);
-  const [_, fraction] = num.toString().split(".");
   const decimals = parseFloat((num - result).toFixed(places + 1));
 
   if (places === 0) {

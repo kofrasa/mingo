@@ -14,7 +14,7 @@ import { assert, isArray, unique } from "../../../util";
 export function $setUnion(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): AnyVal {
   const args = computeValue(obj, expr, null, options) as RawArray[];
   assert(

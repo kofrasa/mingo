@@ -26,7 +26,7 @@ export function $bucketAuto(
     output?: RawObject;
     granularity: string;
   },
-  options?: Options
+  options: Options
 ): Iterator {
   const outputExpr = expr.output || { count: { $sum: 1 } };
   const groupByExpr = expr.groupBy;
@@ -45,7 +45,7 @@ export function $bucketAuto(
     const grouped: Record<string, RawArray> = {};
     const remaining: RawArray = [];
 
-    const sorted = sortBy(coll, (o) => {
+    const sorted = sortBy(coll, o => {
       const key = computeValueOptimized(
         o,
         groupByExpr,
@@ -110,7 +110,7 @@ export function $bucketAuto(
 
       result.push(
         into(values, {
-          _id: boundaries,
+          _id: boundaries
         }) as RawObject
       );
     }

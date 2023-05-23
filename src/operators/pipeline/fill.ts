@@ -1,4 +1,4 @@
-import { OperatorType, Options, useOperators } from "../../core";
+import { OperatorMap, OperatorType, Options, useOperators } from "../../core";
 import { Iterator } from "../../lazy";
 import { AnyVal } from "../../types";
 import { assert, has, isObject } from "../../util";
@@ -15,11 +15,11 @@ interface InputExpr {
 
 const FILL_METHODS: Record<string, string> = {
   locf: "$locf",
-  linear: "$linearFill",
+  linear: "$linearFill"
 };
 
 // ensure $ifNull expression is loaded.
-useOperators(OperatorType.EXPRESSION, { $ifNull });
+useOperators(OperatorType.EXPRESSION, { $ifNull } as OperatorMap);
 
 /**
  * Populates null and missing field values within documents.
@@ -31,11 +31,11 @@ useOperators(OperatorType.EXPRESSION, { $ifNull });
 export function $fill(
   collection: Iterator,
   expr: InputExpr,
-  options?: Options
+  options: Options
 ): Iterator {
   assert(!expr.sortBy || isObject(expr.sortBy), "sortBy must be an object.");
   assert(
-    !!expr.sortBy || Object.values(expr.output).every((m) => has(m, "value")),
+    !!expr.sortBy || Object.values(expr.output).every(m => has(m, "value")),
     "sortBy required if any output field specifies a 'method'."
   );
   assert(
@@ -44,12 +44,12 @@ export function $fill(
   );
   assert(
     !expr.partitionByFields ||
-      expr?.partitionByFields?.every((s) => s[0] !== "$"),
+      expr?.partitionByFields?.every(s => s[0] !== "$"),
     "fields in partitionByFields cannot begin with '$'."
   );
 
   const partitionExpr =
-    expr.partitionBy || expr?.partitionByFields?.map((s) => `$${s}`);
+    expr.partitionBy || expr?.partitionByFields?.map(s => `$${s}`);
 
   // collect and remove all output fields using 'value' instead of 'method'.
   // if there are any fields remaining, process collection using $setWindowFields.
@@ -74,9 +74,9 @@ export function $fill(
     collection = $setWindowFields(
       collection,
       {
-        sortBy: expr.sortBy,
+        sortBy: expr.sortBy || {},
         partitionBy: partitionExpr,
-        output: methodExpr,
+        output: methodExpr
       },
       options
     );

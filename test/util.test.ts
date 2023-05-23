@@ -1,7 +1,8 @@
 import { RawObject } from "../src/types";
 import {
   cloneDeep,
-  DEFAULT_COMPARATOR,
+  compare,
+  has,
   hashCode,
   intersection,
   isEmpty,
@@ -13,14 +14,15 @@ import {
   sortBy,
   truthy,
   unique,
+  walk
 } from "../src/util";
 
 describe("util", () => {
   describe("compare", () => {
     it("can compare less than, greater than, and equal to", () => {
-      expect(DEFAULT_COMPARATOR(1, 5)).toBe(-1);
-      expect(DEFAULT_COMPARATOR(5, 1)).toBe(1);
-      expect(DEFAULT_COMPARATOR(1, 1)).toBe(0);
+      expect(compare(1, 5)).toBe(-1);
+      expect(compare(5, 1)).toBe(1);
+      expect(compare(1, 1)).toBe(0);
     });
   });
 
@@ -40,12 +42,12 @@ describe("util", () => {
       [
         { date: { year: 2013, month: 9, day: 25 } },
         { date: { year: 2013, month: 9, day: 25 } },
-        true,
+        true
       ],
       [() => void {}, () => void {}, false],
-      [RegExp, RegExp, true],
+      [RegExp, RegExp, true]
     ];
-    fixture.forEach((arr) => {
+    fixture.forEach(arr => {
       it(`check: ${JSON.stringify(arr[0])} == ${JSON.stringify(
         arr[1]
       )}`, () => {
@@ -78,7 +80,7 @@ describe("util", () => {
     it("flattens objects in target array", () => {
       const target = [{ a: 1 }, { a: 2 }];
       const result = merge(target, [{ b: 3 }, { b: 4 }, { c: 5 }], {
-        flatten: true,
+        flatten: true
       });
       expect(result).toBe(target);
       expect(result).toStrictEqual([{ a: 1, b: 3 }, { a: 2, b: 4 }, { c: 5 }]);
@@ -88,7 +90,7 @@ describe("util", () => {
   describe("sortBy", () => {
     it("can sortBy hash key", () => {
       expect(
-        sortBy(["cat", "ant", "function", "ant", "constructor"], (k) => k)
+        sortBy(["cat", "ant", "function", "ant", "constructor"], k => k)
       ).toEqual(["ant", "ant", "cat", "constructor", "function"]);
     });
   });
@@ -123,10 +125,10 @@ describe("util", () => {
       [arrayWithNullProto, false, "array with null proto"],
       [Object.create({}), false, "object with object literal as proto"],
       [[3, 2, 1], false, "array instance"],
-      [new Foo(), false, "custom object instance"],
+      [new Foo(), false, "custom object instance"]
     ];
 
-    fixtures.forEach((arr) => {
+    fixtures.forEach(arr => {
       it(arr[2] as string, () => {
         expect(isObject(arr[0])).toEqual(arr[1]);
       });
@@ -190,7 +192,7 @@ describe("util", () => {
       const res = intersection([
         [1, 2, 3],
         [4, 5, 6],
-        [5, 6, 7],
+        [5, 6, 7]
       ]);
       expect(res).toEqual([]);
     });
@@ -198,7 +200,7 @@ describe("util", () => {
     it("should find one intersection", () => {
       const res = intersection([
         [1, 2, 3],
-        [4, 5, 3],
+        [4, 5, 3]
       ]);
       expect(res).toEqual([3]);
     });
@@ -207,7 +209,7 @@ describe("util", () => {
       const res = intersection([
         [1, 2, 3],
         [3, 6, 2],
-        [4, 5, 3],
+        [4, 5, 3]
       ]);
       expect(res).toEqual([3]);
     });
@@ -216,7 +218,7 @@ describe("util", () => {
       const res = intersection([
         [1, 2, 3, 6],
         [4, 5, 3],
-        [3, 5, 3, 1],
+        [3, 5, 3, 1]
       ]);
       expect(res).toEqual([3]);
     });
@@ -225,7 +227,7 @@ describe("util", () => {
       const res = intersection([
         [1, [2], 3, 3],
         [4, 5, 3, [2]],
-        [[2], 4, 5, 3, 1],
+        [[2], 4, 5, 3, 1]
       ]);
       expect(res).toEqual([[2], 3]);
     });
@@ -234,7 +236,7 @@ describe("util", () => {
       const res = intersection([
         [1, [2], 3, 3, 9, 10, 11],
         [4, 5, 3, [2]],
-        [[2], 4, 5, 3, 1],
+        [[2], 4, 5, 3, 1]
       ]);
       expect(res).toEqual([[2], 3]);
     });
@@ -260,7 +262,7 @@ describe("util", () => {
       [null, true, false],
       [null, false, false],
       [undefined, true, false],
-      [undefined, false, false],
+      [undefined, false, false]
     ])) {
       it(`should return ${String(r)} for '${JSON.stringify(
         v
@@ -268,5 +270,41 @@ describe("util", () => {
         expect(truthy(v, b)).toEqual(r);
       });
     }
+  });
+
+  describe("walk", () => {
+    let o: RawObject = {};
+    beforeEach(() => {
+      o = {
+        a: { b: { c: [{ x: 1 }, { x: 4 }] } }
+      };
+    });
+    it("should return undefined for missing path", () => {
+      let counter = 0;
+      walk(o, "a.c.e", () => counter++);
+      expect(counter).toEqual(0);
+    });
+
+    it("should navigate selector and invoke callback", () => {
+      let counter = 0;
+      walk(o, "a.b.c.x", () => counter++);
+      expect(counter).toEqual(0);
+
+      walk(o, "a.b.c.x", () => counter++, { descendArray: true });
+      // invoke for each item in array
+      expect(counter).toEqual(2);
+
+      walk(o, "a.b.c", () => counter++);
+      expect(counter).toEqual(3);
+    });
+
+    it("should build path if options provided", () => {
+      let counter = 0;
+      walk(o, "a.b.d.e", () => counter++);
+      expect(has(o["a"]!["b"] as RawObject, "d")).toEqual(false);
+
+      walk(o, "a.b.d.e", () => counter++, { buildGraph: true });
+      expect(has(o["a"]!["b"] as RawObject, "d")).toEqual(true);
+    });
   });
 });

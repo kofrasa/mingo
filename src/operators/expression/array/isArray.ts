@@ -13,7 +13,7 @@ import { AnyVal, RawObject } from "../../../types";
 export function $isArray(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): AnyVal {
   return computeValue(obj, expr[0], null, options) instanceof Array;
 }

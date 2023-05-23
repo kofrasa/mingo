@@ -17,7 +17,7 @@ export function $elemMatch(
   obj: RawObject,
   expr: RawObject,
   field: string,
-  options?: Options
+  options: Options
 ): AnyVal {
   const arr = resolve(obj, field) as Array<RawObject>;
   const query = new Query(expr, options);

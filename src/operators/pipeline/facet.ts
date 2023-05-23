@@ -1,7 +1,7 @@
 import { Aggregator } from "../../aggregator";
 import { Options, ProcessingMode } from "../../core";
 import { Iterator } from "../../lazy";
-import { RawObject } from "../../types";
+import { Callback, RawObject } from "../../types";
 import { objectMap } from "../../util";
 
 /**
@@ -11,16 +11,16 @@ import { objectMap } from "../../util";
 export function $facet(
   collection: Iterator,
   expr: RawObject,
-  options?: Options
+  options: Options
 ): Iterator {
-  return collection.transform((array: RawObject[]) => {
+  return collection.transform(((array: RawObject[]) => {
     return [
-      objectMap(expr, (pipeline: Array<RawObject>) =>
-        new Aggregator(pipeline, {
+      objectMap(expr, ((pipeline: Array<RawObject>) => {
+        return new Aggregator(pipeline, {
           ...options,
-          processingMode: ProcessingMode.CLONE_INPUT,
-        }).run(array)
-      ),
+          processingMode: ProcessingMode.CLONE_INPUT
+        }).run(array);
+      }) as Callback)
     ];
-  });
+  }) as Callback<RawObject[]>);
 }

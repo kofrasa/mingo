@@ -25,7 +25,7 @@ export function find(
   collection: Source,
   criteria: RawObject,
   projection?: RawObject,
-  options?: Options
+  options?: Partial<Options>
 ): Cursor {
   return new Query(criteria, options).find(collection, projection);
 }
@@ -58,7 +58,7 @@ export function remove(
 export function aggregate(
   collection: Source,
   pipeline: RawObject[],
-  options?: Options
+  options?: Partial<Options>
 ): RawObject[] {
   return new Aggregator(pipeline, options).run(collection);
 }
@@ -69,5 +69,5 @@ export default {
   Query,
   aggregate,
   find,
-  remove,
+  remove
 };

@@ -16,7 +16,7 @@ import { TypeConvertError } from "./_internal";
 export function $toDouble(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): number | null {
   const val = computeValue(obj, expr, null, options) as
     | string

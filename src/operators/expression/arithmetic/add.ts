@@ -14,7 +14,7 @@ import { assert, isDate } from "../../../util";
 export function $add(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): number | Date {
   const args = computeValue(obj, expr, null, options) as AnyVal[];
   let foundDate = false;

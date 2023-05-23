@@ -12,7 +12,7 @@ import { computeDate } from "./_internal";
 export function $minute(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): number {
   return computeDate(obj, expr, options).getUTCMinutes();
 }

@@ -12,7 +12,7 @@ export function $locf(
   _: RawObject,
   collection: RawObject[],
   expr: WindowOperatorInput,
-  options?: Options
+  options: Options
 ): AnyVal {
   return withMemo(
     collection,

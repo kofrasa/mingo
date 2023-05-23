@@ -12,7 +12,7 @@ import { computeDate } from "./_internal";
 export function $second(
   obj: RawObject,
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): number {
   return computeDate(obj, expr, options).getUTCSeconds();
 }

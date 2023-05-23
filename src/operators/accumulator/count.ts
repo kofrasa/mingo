@@ -11,7 +11,7 @@ import { AnyVal, RawObject } from "../../types";
 export function $count(
   collection: RawObject[],
   expr: AnyVal,
-  options?: Options
+  options: Options
 ): AnyVal {
   return collection.length;
 }

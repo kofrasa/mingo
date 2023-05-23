@@ -19,7 +19,7 @@ import { assert, cloneDeep, isString } from "../../util";
 export function $out(
   collection: Iterator,
   expr: string | RawObject[],
-  options?: Options
+  options: Options
 ): Iterator {
   const outputColl: RawObject[] = isString(expr)
     ? options?.collectionResolver(expr)

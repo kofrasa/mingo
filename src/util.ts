@@ -11,7 +11,7 @@ import {
   HashFunction,
   JsType,
   RawArray,
-  RawObject,
+  RawObject
 } from "./types";
 
 export const MAX_INT = 2147483647;
@@ -51,7 +51,7 @@ const JS_SIMPLE_TYPES = new Set<JsType>([
   "number",
   "string",
   "date",
-  "regexp",
+  "regexp"
 ]);
 
 /** MongoDB sort comparison order. https://www.mongodb.com/docs/manual/reference/bson-type-comparison-order */
@@ -65,7 +65,7 @@ const SORT_ORDER_BY_TYPE: Record<JsType, number> = {
   boolean: 5,
   date: 6,
   regexp: 7,
-  function: 8,
+  function: 8
 };
 
 /**
@@ -75,15 +75,15 @@ const SORT_ORDER_BY_TYPE: Record<JsType, number> = {
  * @param b The second value
  * @returns {Number}
  */
-export const DEFAULT_COMPARATOR = (a: AnyVal, b: AnyVal): number => {
+export const compare = (a: AnyVal, b: AnyVal): number => {
   if (a === MISSING) a = undefined;
   if (b === MISSING) b = undefined;
   const [u, v] = [a, b].map(
-    (n) => SORT_ORDER_BY_TYPE[getType(n).toLowerCase() as JsType]
+    n => SORT_ORDER_BY_TYPE[getType(n).toLowerCase() as JsType]
   );
   if (u !== v) return u - v;
-  if (a < b) return -1;
-  if (a > b) return 1;
+  if ((a as string) < (b as string)) return -1;
+  if ((a as string) > (b as string)) return 1;
   return 0;
 };
 
@@ -110,7 +110,7 @@ export function cloneDeep(obj: AnyVal): AnyVal {
  * @param v A value
  */
 export function getType(v: AnyVal): string {
-  return OBJECT_TYPE_RE.exec(Object.prototype.toString.call(v) as string)[1];
+  return OBJECT_TYPE_RE.exec(Object.prototype.toString.call(v) as string)![1];
 }
 export function isBoolean(v: AnyVal): v is boolean {
   return typeof v === "boolean";
@@ -154,7 +154,7 @@ export function inArray(arr: AnyVal[], item: AnyVal): boolean {
 export function notInArray(arr: RawArray, item: AnyVal): boolean {
   return !inArray(arr, item);
 }
-export function truthy(arg: AnyVal, strict: boolean): boolean {
+export function truthy(arg: AnyVal, strict = true): boolean {
   return !!arg || (strict && arg === "");
 }
 export function isEmpty(x: AnyVal): boolean {
@@ -241,7 +241,7 @@ export function merge(
       into(result, input);
     }
   } else {
-    Object.keys(obj).forEach((k) => {
+    Object.keys(obj).forEach(k => {
       if (has(obj as RawObject, k)) {
         if (has(target, k)) {
           target[k] = merge(
@@ -309,7 +309,7 @@ export function intersection(
   hashFunction: HashFunction = DEFAULT_HASH_FUNCTION
 ): RawArray {
   // if any array is empty, there is no intersection
-  if (input.some((arr) => arr.length == 0)) return [];
+  if (input.some(arr => arr.length == 0)) return [];
 
   // sort input arrays by size
   const sortedIndex = input.map((a, i) => [i, a.length]);
@@ -320,13 +320,13 @@ export function intersection(
 
   const smallestArray = input[sortedIndex[0][0]];
   const root: BNode = {
-    key: hashCode(smallestArray[0], hashFunction),
-    indexes: [0],
+    key: hashCode(smallestArray[0], hashFunction)!,
+    indexes: [0]
   };
 
   for (let i = 1; i < smallestArray.length; i++) {
     const val = smallestArray[i];
-    const h = hashCode(val, hashFunction);
+    const h = hashCode(val, hashFunction)!;
     addIndex(root, h, i);
   }
 
@@ -340,7 +340,7 @@ export function intersection(
     // number of matched items
     let size = 0;
     for (let j = 0; j < data.length; j++) {
-      const h = hashCode(data[j], hashFunction);
+      const h = hashCode(data[j], hashFunction)!;
       const indexes = getIndexes(root, h);
 
       // not included.
@@ -348,8 +348,8 @@ export function intersection(
 
       // check items equality to mitigate hash collisions and select the matching index.
       const idx = indexes
-        .map((n) => smallestArray[n])
-        .findIndex((v) => isEqual(v, data[j]));
+        .map(n => smallestArray[n])
+        .findIndex(v => isEqual(v, data[j]));
 
       // not included
       if (idx == -1) continue;
@@ -380,8 +380,8 @@ export function intersection(
   const freq: Record<number, number> = {};
 
   // count occurrences
-  result.forEach((m) => {
-    Object.keys(m).forEach((k) => {
+  result.forEach(m => {
+    Object.keys(m).forEach(k => {
       const n = parseFloat(k);
       freq[n] = freq[n] || 0;
       freq[n]++;
@@ -397,8 +397,8 @@ export function intersection(
   }
 
   return keys
-    .filter((n) => freq[n] == input.length - 1)
-    .map((n) => smallestArray[n]);
+    .filter(n => freq[n] == input.length - 1)
+    .map(n => smallestArray[n]);
 }
 
 /**
@@ -407,8 +407,8 @@ export function intersection(
  * @param  {Array} xs The array to flatten
  * @param {Number} depth The number of nested lists to iterate
  */
-export function flatten(xs: RawArray, depth: number): RawArray {
-  const arr = [];
+export function flatten(xs: RawArray, depth = 0): RawArray {
+  const arr = new Array<AnyVal>();
   function flatten2(ys: RawArray, n: number) {
     for (let i = 0, len = ys.length; i < len; i++) {
       if (isArray(ys[i]) && (n > 0 || n < 0)) {
@@ -456,8 +456,8 @@ export function isEqual(a: AnyVal, b: AnyVal): boolean {
       into(rhs, ys);
     } else if (nativeType === "object") {
       // deep compare objects
-      const aKeys = Object.keys(a);
-      const bKeys = Object.keys(b);
+      const aKeys = Object.keys(a as RawObject);
+      const bKeys = Object.keys(b as RawObject);
 
       // check length of keys early
       if (aKeys.length !== bKeys.length) return false;
@@ -468,8 +468,8 @@ export function isEqual(a: AnyVal, b: AnyVal): boolean {
         // not found
         if (!has(b as RawObject, k)) return false;
         // key found
-        lhs.push(a[k]);
-        rhs.push(b[k]);
+        lhs.push((a as RawObject)[k]);
+        rhs.push((b as RawObject)[k]);
       }
     } else {
       // compare encoded values
@@ -491,13 +491,13 @@ export function unique(
   if (xs.length == 0) return [];
 
   const root: BNode = {
-    key: hashCode(xs[0], hashFunction),
-    indexes: [0],
+    key: hashCode(xs[0], hashFunction)!,
+    indexes: [0]
   };
 
   // hash items on to tree to track collisions
   for (let i = 1; i < xs.length; i++) {
-    addIndex(root, hashCode(xs[i], hashFunction), i);
+    addIndex(root, hashCode(xs[i], hashFunction)!, i);
   }
 
   const result: number[] = [];
@@ -505,7 +505,7 @@ export function unique(
   // walk tree and remove duplicates
   const stack = [root];
   while (stack.length > 0) {
-    const node = stack.pop();
+    const node = stack.pop()!;
     if (node.indexes.length == 1) {
       result.push(node.indexes[0]);
     } else {
@@ -523,7 +523,7 @@ export function unique(
           }
         }
         // add the unique item
-        result.push(arr.pop());
+        result.push(arr.pop()!);
       }
     }
 
@@ -536,7 +536,7 @@ export function unique(
   result.sort();
 
   // return the unique items
-  return result.map((i) => xs[i]);
+  return result.map(i => xs[i]);
 }
 
 /**
@@ -551,7 +551,7 @@ export function stringify(value: AnyVal): string {
     case "boolean":
     case "number":
     case "regexp":
-      return value.toString();
+      return (value as string).toString();
     case "string":
       return JSON.stringify(value);
     case "date":
@@ -566,11 +566,13 @@ export function stringify(value: AnyVal): string {
   }
   // default case
   const prefix = type === "object" ? "" : `${getType(value)}`;
-  const objKeys = Object.keys(value);
+  const objKeys = Object.keys(value as RawObject);
   objKeys.sort();
   return (
     `${prefix}{` +
-    objKeys.map((k) => `${stringify(k)}:${stringify(value[k])}`).join(",") +
+    objKeys
+      .map(k => `${stringify(k)}:${stringify((value as RawObject)[k])}`)
+      .join(",") +
     "}"
   );
 }
@@ -604,10 +606,10 @@ export function hashCode(
 export function sortBy(
   collection: RawArray,
   keyFn: Callback<AnyVal>,
-  comparator: Comparator<AnyVal> = DEFAULT_COMPARATOR
+  comparator: Comparator<AnyVal> = compare
 ): RawArray {
-  const sorted = [];
-  const result = [];
+  const sorted = new Array<[AnyVal, AnyVal]>();
+  const result = new Array<AnyVal>();
 
   if (isEmpty(collection)) return collection;
 
@@ -641,7 +643,7 @@ export function groupBy(
 ): GroupByOutput {
   const result = {
     keys: new Array<AnyVal>(),
-    groups: new Array<RawArray>(),
+    groups: new Array<RawArray>()
   };
 
   const lookup: Record<string, number> = {};
@@ -649,7 +651,7 @@ export function groupBy(
   for (let i = 0; i < collection.length; i++) {
     const obj = collection[i];
     const key = keyFn(obj, i);
-    const hash = hashCode(key, hashFunction);
+    const hash = hashCode(key, hashFunction) || "";
     let index = -1;
 
     if (lookup[hash] === undefined) {
@@ -681,19 +683,22 @@ export function into(
   ...rest: Array<ArrayOrObject>
 ): ArrayOrObject {
   if (target instanceof Array) {
-    return rest.reduce((acc, arr: RawArray) => {
-      // push arrary in batches to handle large inputs
-      let i = Math.ceil(arr.length / MAX_ARRAY_PUSH);
-      let begin = 0;
-      while (i-- > 0) {
-        Array.prototype.push.apply(
-          acc,
-          arr.slice(begin, begin + MAX_ARRAY_PUSH)
-        );
-        begin += MAX_ARRAY_PUSH;
-      }
-      return acc;
-    }, target);
+    return rest.reduce(
+      ((acc, arr: RawArray) => {
+        // push arrary in batches to handle large inputs
+        let i = Math.ceil(arr.length / MAX_ARRAY_PUSH);
+        let begin = 0;
+        while (i-- > 0) {
+          Array.prototype.push.apply(
+            acc,
+            arr.slice(begin, begin + MAX_ARRAY_PUSH)
+          );
+          begin += MAX_ARRAY_PUSH;
+        }
+        return acc;
+      }) as Callback<typeof target>,
+      target
+    );
   } else {
     // merge objects. same behaviour as Object.assign
     return rest.filter(isObjectLike).reduce((acc, item) => {
@@ -717,7 +722,7 @@ export function memoize(
 ): Callback<AnyVal> {
   return ((memo: RawObject) => {
     return (...args: RawArray): AnyVal => {
-      const key = hashCode(args, hashFunction);
+      const key = hashCode(args, hashFunction) || "";
       if (!has(memo, key)) {
         memo[key] = fn.apply(this, args) as AnyVal;
       }
@@ -815,7 +820,7 @@ export function resolveGraph(
   obj: ArrayOrObject,
   selector: string,
   options?: ResolveOptions
-): ArrayOrObject {
+): ArrayOrObject | undefined {
   const names: string[] = selector.split(".");
   const key = names[0];
   // get the next part of the selector
@@ -853,7 +858,7 @@ export function resolveGraph(
     }
     if (value === undefined) return undefined;
     result = options?.preserveKeys ? { ...obj } : {};
-    result[key] = value;
+    (result as RawObject)[key] = value;
   }
 
   return result as ArrayOrObject;
@@ -887,28 +892,31 @@ interface WalkOptions {
   descendArray?: boolean;
 }
 
+const NUMBER_RE = /^\d+$/;
+
 /**
  * Walk the object graph and execute the given transform function
  *
- * @param  {Object|Array} obj   The object to traverse
- * @param  {String} selector    The selector
- * @param  {Function} fn Function to execute for value at the end the traversal
+ * @param  {Object|Array} obj   The object to traverse.
+ * @param  {String} selector    The selector to navigate.
+ * @param  {Callback} fn Callback to execute for value at the end the traversal.
+ * @param  {WalkOptions} Options to use for the function.
  * @return {*}
  */
-function walk(
+export function walk(
   obj: ArrayOrObject,
   selector: string,
   fn: Callback<void>,
   options?: WalkOptions
 ): void {
-  if (isNil(obj)) return;
-
   const names = selector.split(".");
   const key = names[0];
   const next = names.slice(1).join(".");
 
   if (names.length === 1) {
-    fn(obj, key);
+    if (isObject(obj) || (isArray(obj) && NUMBER_RE.test(key))) {
+      fn(obj, key);
+    }
   } else {
     // force the rest of the graph while traversing
     if (options?.buildGraph && isNil(obj[key])) {
@@ -917,8 +925,10 @@ function walk(
 
     // get the next item
     const item = obj[key] as ArrayOrObject;
+    // nothing more to do
+    if (!item) return;
     // we peek to see if next key is an array index.
-    const isNextArrayIndex = !!(names.length > 1 && names[1].match(/^\d+$/));
+    const isNextArrayIndex = !!(names.length > 1 && NUMBER_RE.test(names[1]));
     // if we have an array value but the next key is not an index and the 'descendArray' option is set,
     // we walk each item in the array separately. This allows for handling traversing keys for objects
     // nested within an array.
@@ -927,7 +937,8 @@ function walk(
     //  - individual objecs can be traversed with "array.k"
     //  - a specific object can be traversed with "array.1"
     if (item instanceof Array && options?.descendArray && !isNextArrayIndex) {
-      item.forEach((e: ArrayOrObject) => walk(e, next, fn, options));
+      item.forEach(((e: ArrayOrObject) =>
+        walk(e, next, fn, options)) as Callback<void>);
     } else {
       walk(item, next, fn, options);
     }
@@ -949,9 +960,9 @@ export function setValue(
   walk(
     obj,
     selector,
-    (item: RawObject, key: string) => {
+    ((item: RawObject, key: string) => {
       item[key] = value;
-    },
+    }) as Callback<void>,
     { buildGraph: true }
   );
 }
@@ -972,7 +983,7 @@ export function removeValue(
   walk(
     obj,
     selector,
-    (item: AnyVal, key: string) => {
+    ((item: AnyVal, key: string) => {
       if (item instanceof Array) {
         if (/^\d+$/.test(key)) {
           item.splice(parseInt(key), 1);
@@ -986,7 +997,7 @@ export function removeValue(
       } else if (isObject(item)) {
         delete item[key];
       }
-    },
+    }) as Callback<void>,
     options
   );
 }
@@ -1014,8 +1025,9 @@ export function normalize(expr: AnyVal): AnyVal {
 
   // normalize object expression. using ObjectLike handles custom types
   if (isObjectLike(expr)) {
+    const exprObj = expr as RawObject;
     // no valid query operator found, so we do simple comparison
-    if (!Object.keys(expr).some(isOperator)) {
+    if (!Object.keys(exprObj).some(isOperator)) {
       return { $eq: expr };
     }
 
@@ -1023,9 +1035,9 @@ export function normalize(expr: AnyVal): AnyVal {
     if (has(expr as RawObject, "$regex")) {
       return {
         $regex: new RegExp(
-          expr["$regex"] as string,
-          expr["$options"] as string
-        ),
+          exprObj["$regex"] as string,
+          exprObj["$options"] as string
+        )
       };
     }
   }

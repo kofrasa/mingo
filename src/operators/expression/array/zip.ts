@@ -17,7 +17,7 @@ import { assert, isArray, isBoolean, isNil } from "../../../util";
 export function $zip(
   obj: RawObject,
   expr: { inputs: RawArray; useLongestLength: boolean; defaults: AnyVal },
-  options?: Options
+  options: Options
 ): AnyVal {
   const inputs = computeValue(
     obj,

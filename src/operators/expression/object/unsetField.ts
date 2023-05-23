@@ -20,13 +20,13 @@ interface InputExpr {
 export function $unsetField(
   obj: RawObject,
   expr: InputExpr,
-  options?: Options
+  options: Options
 ): AnyVal {
   return $setField(
     obj,
     {
       ...expr,
-      value: "$$REMOVE",
+      value: "$$REMOVE"
     },
     options
   );
