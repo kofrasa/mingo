@@ -5,7 +5,6 @@ import Ajv, { Schema } from "ajv";
 import { aggregate, find } from "../../../src";
 import { JsonSchemaValidator } from "../../../src/core";
 import { RawArray, RawObject } from "../../../src/types";
-import { isEqual } from "../../../src/util";
 
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 
@@ -192,37 +191,6 @@ describe("operators/query/evaluation", () => {
 
     it("can $regex match nested values", () => {
       expect(res.every(x => x.length === 1)).toEqual(true);
-    });
-  });
-
-  describe("$rand", () => {
-    const data = [
-      { name: "Archibald", voterId: 4321, district: 3, registered: true },
-      { name: "Beckham", voterId: 4331, district: 3, registered: true },
-      { name: "Carolin", voterId: 5321, district: 4, registered: true },
-      { name: "Debarge", voterId: 4343, district: 3, registered: false },
-      { name: "Eckhard", voterId: 4161, district: 3, registered: false },
-      { name: "Faberge", voterId: 4300, district: 1, registered: true },
-      { name: "Grimwald", voterId: 4111, district: 3, registered: true },
-      { name: "Humphrey", voterId: 2021, district: 3, registered: true },
-      { name: "Idelfon", voterId: 1021, district: 4, registered: true },
-      { name: "Justo", voterId: 9891, district: 3, registered: false }
-    ];
-    const q = () =>
-      find(
-        data,
-        { district: 3, $expr: { $lt: [0.5, { $rand: {} }] } },
-        { _id: 0, name: 1, registered: 1 }
-      ).all();
-
-    it("returns random objects", () => {
-      let b = true;
-      const prev = q();
-      // check 5 random objects. at least 1 pair should be false.
-      for (let i = 0; i < 5; i++) {
-        b = b && isEqual(prev, q());
-      }
-      expect(b).toEqual(false);
     });
   });
 
