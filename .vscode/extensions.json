@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "kakumei.ts-debug",
+    "aaron-bond.better-comments",
+    "github.vscode-github-actions",
+    "cschlosser.doxdocgen"
+  ]
+}
