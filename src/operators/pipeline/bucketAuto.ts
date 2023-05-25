@@ -42,21 +42,16 @@ export function $bucketAuto(
   return collection.transform((coll: RawObject[]) => {
     const approxBucketSize = Math.max(1, Math.round(coll.length / bucketCount));
     const computeValueOptimized = memoize(computeValue, options?.hashFunction);
-    const grouped: Record<string, RawArray> = {};
+    const grouped = new Map<AnyVal, RawArray>();
     const remaining: RawArray = [];
 
     const sorted = sortBy(coll, o => {
-      const key = computeValueOptimized(
-        o,
-        groupByExpr,
-        null,
-        options
-      ) as string;
+      const key = computeValueOptimized(o, groupByExpr, null, options);
       if (isNil(key)) {
         remaining.push(o);
       } else {
-        grouped[key] || (grouped[key] = []);
-        grouped[key].push(o);
+        if (!grouped.has(key)) grouped.set(key, []);
+        grouped.get(key).push(o);
       }
       return key;
     });
@@ -79,10 +74,10 @@ export function $bucketAuto(
         if (isNil(key)) key = null;
 
         // populate current bucket with all values for current key
-        into(bucketItems, isNil(key) ? remaining : grouped[key]);
+        into(bucketItems, isNil(key) ? remaining : grouped.get(key));
 
         // increase sort index by number of items added
-        index += isNil(key) ? remaining.length : grouped[key].length;
+        index += isNil(key) ? remaining.length : grouped.get(key).length;
 
         // set the min key boundary if not already present
         if (!has(boundaries, "min")) boundaries.min = key;

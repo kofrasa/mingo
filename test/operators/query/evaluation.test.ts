@@ -5,6 +5,7 @@ import Ajv, { Schema } from "ajv";
 import { aggregate, find } from "../../../src";
 import { JsonSchemaValidator } from "../../../src/core";
 import { RawArray, RawObject } from "../../../src/types";
+import { isEqual } from "../../../src/util";
 
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 
@@ -16,21 +17,21 @@ describe("operators/query/evaluation", () => {
           username: "User1",
           projects: [
             { name: "Project 1", rating: { complexity: 6 } },
-            { name: "Project 2", rating: { complexity: 2 } },
+            { name: "Project 2", rating: { complexity: 2 } }
           ],
           color: "green",
-          number: 42,
-        },
+          number: 42
+        }
       },
       {
         user: {
           username: "User2",
           projects: [
             { name: "Project 1", rating: { complexity: 6 } },
-            { name: "Project 2", rating: { complexity: 8 } },
-          ],
-        },
-      },
+            { name: "Project 2", rating: { complexity: 8 } }
+          ]
+        }
+      }
     ];
 
     it("can safely reference properties on 'this'", () => {
@@ -39,7 +40,7 @@ describe("operators/query/evaluation", () => {
         "user.number": { $exists: true },
         $where: function () {
           return this.user.color === "green" && this.user.number === 42;
-        },
+        }
       };
 
       // It should return one user object
@@ -55,14 +56,14 @@ describe("operators/query/evaluation", () => {
           {
             $where: function () {
               return this.user.color === "green";
-            },
+            }
           },
           {
             $where: function () {
               return this.user.number === 42;
-            },
-          },
-        ],
+            }
+          }
+        ]
       };
       // It should return one user object
       const result = find(data, criteria).count();
@@ -80,7 +81,7 @@ describe("operators/query/evaluation", () => {
           { _id: 2, category: "drinks", budget: 100, spent: 150 },
           { _id: 3, category: "clothes", budget: 100, spent: 50 },
           { _id: 4, category: "misc", budget: 500, spent: 300 },
-          { _id: 5, category: "travel", budget: 200, spent: 650 },
+          { _id: 5, category: "travel", budget: 200, spent: 650 }
         ],
         { $expr: { $gt: ["$spent", "$budget"] } }
       ).all();
@@ -88,7 +89,7 @@ describe("operators/query/evaluation", () => {
       expect(res).toEqual([
         { _id: 1, category: "food", budget: 400, spent: 450 },
         { _id: 2, category: "drinks", budget: 100, spent: 150 },
-        { _id: 5, category: "travel", budget: 200, spent: 650 },
+        { _id: 5, category: "travel", budget: 200, spent: 650 }
       ]);
     });
 
@@ -98,7 +99,7 @@ describe("operators/query/evaluation", () => {
           { _id: 1, item: "binder", qty: 100, price: 12 },
           { _id: 2, item: "notebook", qty: 200, price: 8 },
           { _id: 3, item: "pencil", qty: 50, price: 6 },
-          { _id: 4, item: "eraser", qty: 150, price: 3 },
+          { _id: 4, item: "eraser", qty: 150, price: 3 }
         ],
         {
           $expr: {
@@ -107,19 +108,19 @@ describe("operators/query/evaluation", () => {
                 $cond: {
                   if: { $gte: ["$qty", 100] },
                   then: { $divide: ["$price", 2] },
-                  else: { $divide: ["$price", 4] },
-                },
+                  else: { $divide: ["$price", 4] }
+                }
               },
-              5,
-            ],
-          },
+              5
+            ]
+          }
         }
       ).all();
 
       expect(res).toEqual([
         { _id: 2, item: "notebook", qty: 200, price: 8 },
         { _id: 3, item: "pencil", qty: 50, price: 6 },
-        { _id: 4, item: "eraser", qty: 150, price: 3 },
+        { _id: 4, item: "eraser", qty: 150, price: 3 }
       ]);
     });
   });
@@ -131,23 +132,23 @@ describe("operators/query/evaluation", () => {
       [
         { item: null },
         [{ _id: 1, item: null }, { _id: 2 }],
-        "should return all documents",
+        "should return all documents"
       ],
       [
         { item: { $type: 10 } },
         [{ _id: 1, item: null }],
-        "should return one document with null field",
+        "should return one document with null field"
       ],
       [
         { item: { $exists: false } },
         [{ _id: 2 }],
-        "should return one document without null field",
+        "should return one document without null field"
       ],
       [
         { item: { $in: [null, false] } },
         [{ _id: 1, item: null }, { _id: 2 }],
-        "$in should return all documents",
-      ],
+        "$in should return all documents"
+      ]
     ];
 
     for (let i = 0; i < fixtures.length; i++) {
@@ -164,33 +165,33 @@ describe("operators/query/evaluation", () => {
     const res: Array<RawArray> = [];
     res.push(
       find([{ l1: [{ tags: ["tag1", "tag2"] }, { notags: "yep" }] }], {
-        "l1.tags": "tag1",
+        "l1.tags": "tag1"
       }).all()
     );
 
     // with regex - but searched property is not an array: ok
     res.push(
       find([{ l1: [{ tags: "tag1" }, { notags: "yep" }] }], {
-        "l1.tags": { $regex: ".*tag.*", $options: "i" },
+        "l1.tags": { $regex: ".*tag.*", $options: "i" }
       }).all()
     );
 
     // with regex - but searched property is an array, with all elements matching: not ok - expected 1, returned 0
     res.push(
       find([{ l1: [{ tags: ["tag1", "tag2"] }, { tags: ["tag66"] }] }], {
-        "l1.tags": { $regex: "tag", $options: "i" },
+        "l1.tags": { $regex: "tag", $options: "i" }
       }).all()
     );
 
     // with regex - but searched property is an array, only one element matching: not ok - returns 0 elements - expected 1
     res.push(
       find([{ l1: [{ tags: ["tag1", "tag2"] }, { notags: "yep" }] }], {
-        "l1.tags": { $regex: "tag", $options: "i" },
+        "l1.tags": { $regex: "tag", $options: "i" }
       }).all()
     );
 
     it("can $regex match nested values", () => {
-      expect(res.every((x) => x.length === 1)).toEqual(true);
+      expect(res.every(x => x.length === 1)).toEqual(true);
     });
   });
 
@@ -205,7 +206,7 @@ describe("operators/query/evaluation", () => {
       { name: "Grimwald", voterId: 4111, district: 3, registered: true },
       { name: "Humphrey", voterId: 2021, district: 3, registered: true },
       { name: "Idelfon", voterId: 1021, district: 4, registered: true },
-      { name: "Justo", voterId: 9891, district: 3, registered: false },
+      { name: "Justo", voterId: 9891, district: 3, registered: false }
     ];
     const q = () =>
       find(
@@ -215,7 +216,13 @@ describe("operators/query/evaluation", () => {
       ).all();
 
     it("returns random objects", () => {
-      expect(q()).not.toEqual(q());
+      let b = true;
+      const prev = q();
+      // check 5 random objects. at least 1 pair should be false.
+      for (let i = 0; i < 5; i++) {
+        b = b && isEqual(prev, q());
+      }
+      expect(b).toEqual(false);
     });
   });
 
@@ -225,34 +232,34 @@ describe("operators/query/evaluation", () => {
         item: "journal",
         qty: 25,
         size: { h: 14, w: 21, uom: "cm" },
-        instock: true,
+        instock: true
       },
       {
         item: "notebook",
         qty: 50,
         size: { h: 8.5, w: 11, uom: "in" },
-        instock: true,
+        instock: true
       },
       {
         item: "paper",
         qty: 100,
         size: { h: 8.5, w: 11, uom: "in" },
-        instock: 1,
+        instock: 1
       },
       {
         item: "planner",
         qty: 75,
         size: { h: 22.85, w: 30, uom: "cm" },
-        instock: 1,
+        instock: 1
       },
       {
         item: "postcard",
         qty: 45,
         size: { h: 10, w: 15.25, uom: "cm" },
-        instock: true,
+        instock: true
       },
       { item: "apple", qty: 45, status: "A", instock: true },
-      { item: "pears", qty: 50, status: "A", instock: true },
+      { item: "pears", qty: 50, status: "A", instock: true }
     ];
 
     const schema = {
@@ -267,11 +274,11 @@ describe("operators/query/evaluation", () => {
           properties: {
             uom: { type: "string" },
             h: { type: "number" },
-            w: { type: "number" },
-          },
+            w: { type: "number" }
+          }
         },
-        instock: { type: "boolean" },
-      },
+        instock: { type: "boolean" }
+      }
     };
 
     const jsonSchemaValidator: JsonSchemaValidator = (s: RawObject) => {

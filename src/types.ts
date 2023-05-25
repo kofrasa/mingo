@@ -14,14 +14,11 @@ export interface Predicate<T = AnyVal> {
 }
 
 // Generic comparator callback
-export interface Comparator<T> {
+export interface Comparator<T = AnyVal> {
   (left: T, right: T): number;
 }
 
-export interface GroupByOutput {
-  keys: RawArray;
-  groups: RawArray[];
-}
+export type GroupByOutput = Map<AnyVal, Array<AnyVal>>;
 
 /**
  * Custom function to hash values to improve faster comparaisons

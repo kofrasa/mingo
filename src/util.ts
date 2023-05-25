@@ -82,8 +82,17 @@ export const compare = (a: AnyVal, b: AnyVal): number => {
     n => SORT_ORDER_BY_TYPE[getType(n).toLowerCase() as JsType]
   );
   if (u !== v) return u - v;
-  if ((a as string) < (b as string)) return -1;
-  if ((a as string) > (b as string)) return 1;
+  // number | string | date
+  if (u === 1 || u === 2 || u === 6) {
+    if ((a as number) < (b as number)) return -1;
+    if ((a as number) > (b as number)) return 1;
+    return 0;
+  }
+  // check for equivalence equality
+  if (isEqual(a, b)) return 0;
+  if ((a as number) < (b as number)) return -1;
+  if ((a as number) > (b as number)) return 1;
+  // if we get here we are comparing a type that does not make sense.
   return 0;
 };
 
@@ -260,38 +269,38 @@ export function merge(
 }
 
 // A tree to support O(logN) search
-interface BNode {
-  left?: BNode;
-  right?: BNode;
+interface BNode<T = AnyVal> {
+  left?: BNode<T>;
+  right?: BNode<T>;
   readonly key: string;
-  readonly indexes: number[];
+  readonly values: T[];
 }
 
-function addIndex(root: BNode, key: string, index: number) {
+function addNode<T = AnyVal>(root: BNode<T>, key: string, value: T) {
   if (root.key < key) {
     if (root.right) {
-      addIndex(root.right, key, index);
+      addNode<T>(root.right, key, value);
     } else {
-      root.right = { key, indexes: [index] } as BNode;
+      root.right = { key, values: [value] } as typeof root;
     }
   } else if (root.key > key) {
     if (root.left) {
-      addIndex(root.left, key, index);
+      addNode<T>(root.left, key, value);
     } else {
-      root.left = { key, indexes: [index] } as BNode;
+      root.left = { key, values: [value] } as typeof root;
     }
   } else {
-    root.indexes.push(index);
+    root.values.push(value);
   }
 }
 
-function getIndexes(root: BNode, key: string): number[] | undefined {
-  if (root.key == key) {
-    return root.indexes;
+function getNodes<T = AnyVal>(root: BNode<T>, key: string): T[] | undefined {
+  if (root.key === key) {
+    return root.values;
   } else if (root.key < key) {
-    return root.right ? getIndexes(root.right, key) : undefined;
+    return root.right ? getNodes<T>(root.right, key) : undefined;
   } else if (root.key > key) {
-    return root.left ? getIndexes(root.left, key) : undefined;
+    return root.left ? getNodes<T>(root.left, key) : undefined;
   }
   return undefined;
 }
@@ -319,15 +328,15 @@ export function intersection(
   const result: Array<Record<number, boolean>> = [];
 
   const smallestArray = input[sortedIndex[0][0]];
-  const root: BNode = {
+  const root: BNode<number> = {
     key: hashCode(smallestArray[0], hashFunction)!,
-    indexes: [0]
+    values: [0]
   };
 
   for (let i = 1; i < smallestArray.length; i++) {
     const val = smallestArray[i];
     const h = hashCode(val, hashFunction)!;
-    addIndex(root, h, i);
+    addNode(root, h, i);
   }
 
   let maxResultSize = sortedIndex[0][1];
@@ -341,7 +350,7 @@ export function intersection(
     let size = 0;
     for (let j = 0; j < data.length; j++) {
       const h = hashCode(data[j], hashFunction)!;
-      const indexes = getIndexes(root, h);
+      const indexes = getNodes(root, h);
 
       // not included.
       if (!indexes) continue;
@@ -490,14 +499,14 @@ export function unique(
 ): RawArray {
   if (xs.length == 0) return [];
 
-  const root: BNode = {
+  const root: BNode<number> = {
     key: hashCode(xs[0], hashFunction)!,
-    indexes: [0]
+    values: [0]
   };
 
   // hash items on to tree to track collisions
   for (let i = 1; i < xs.length; i++) {
-    addIndex(root, hashCode(xs[i], hashFunction)!, i);
+    addNode(root, hashCode(xs[i], hashFunction)!, i);
   }
 
   const result: number[] = [];
@@ -506,11 +515,11 @@ export function unique(
   const stack = [root];
   while (stack.length > 0) {
     const node = stack.pop()!;
-    if (node.indexes.length == 1) {
-      result.push(node.indexes[0]);
+    if (node.values.length == 1) {
+      result.push(node.values[0]);
     } else {
       // handle collisions by matching all items
-      const arr = node.indexes;
+      const arr = node.values;
       // we start by search from the back so we maintain the smaller index when there is a duplicate.
       while (arr.length > 0) {
         for (let j = 1; j < arr.length; j++) {
@@ -587,8 +596,9 @@ export function stringify(value: AnyVal): string {
  */
 export function hashCode(
   value: AnyVal,
-  hashFunction: HashFunction = DEFAULT_HASH_FUNCTION
+  hashFunction?: HashFunction
 ): string | null {
+  hashFunction = hashFunction || DEFAULT_HASH_FUNCTION;
   if (isNil(value)) return null;
   return hashFunction(value).toString();
 }
@@ -603,12 +613,13 @@ export function hashCode(
  * @param {Function} comparator The comparator function to use for comparing keys. Defaults to standard comparison via `compare(...)`
  * @return {Array} Returns a new sorted array by the given key and comparator function
  */
-export function sortBy(
+export function sortBy<T = AnyVal>(
   collection: RawArray,
-  keyFn: Callback<AnyVal>,
-  comparator: Comparator<AnyVal> = compare
+  keyFn: Callback<T>,
+  comparator: Comparator<T> = compare
 ): RawArray {
-  const sorted = new Array<[AnyVal, AnyVal]>();
+  type Pair = [T, AnyVal];
+  const sorted = new Array<Pair>();
   const result = new Array<AnyVal>();
 
   if (isEmpty(collection)) return collection;
@@ -624,7 +635,7 @@ export function sortBy(
   }
 
   // use native array sorting but enforce stableness
-  sorted.sort((a: RawArray, b: RawArray) => comparator(a[0], b[0]));
+  sorted.sort((a: Pair, b: Pair) => comparator(a[0], b[0]));
   result.push(...sorted.map((o: RawArray) => o[1]));
   return result;
 }
@@ -641,28 +652,46 @@ export function groupBy(
   keyFn: Callback<AnyVal>,
   hashFunction: HashFunction = DEFAULT_HASH_FUNCTION
 ): GroupByOutput {
-  const result = {
-    keys: new Array<AnyVal>(),
-    groups: new Array<RawArray>()
-  };
+  if (collection.length < 1) return new Map();
 
-  const lookup: Record<string, number> = {};
+  // map of hash to collided values
+  const lookup = new Map<string, Array<AnyVal>>();
+  // map of raw key values to objects.
+  const result = new Map<AnyVal, Array<AnyVal>>();
 
   for (let i = 0; i < collection.length; i++) {
     const obj = collection[i];
     const key = keyFn(obj, i);
-    const hash = hashCode(key, hashFunction) || "";
-    let index = -1;
+    const hash = hashCode(key, hashFunction);
 
-    if (lookup[hash] === undefined) {
-      index = result.keys.length;
-      lookup[hash] = index;
-      result.keys.push(key);
-      result.groups.push([]);
+    if (hash === null) {
+      if (result.has(null)) {
+        result.get(null).push(obj);
+      } else {
+        result.set(null, [obj]);
+      }
+    } else {
+      // find if we can match a hash for which the value is equivalent.
+      // this is used to deal with collisions.
+      const existingKey = lookup.has(hash)
+        ? lookup.get(hash).find(k => isEqual(k, key))
+        : null;
+
+      // collision detected or first time seeing key
+      if (isNil(existingKey)) {
+        // collision detected or first entry so we create a new group.
+        result.set(key, [obj]);
+        // upload the lookup with the collided key
+        if (lookup.has(hash)) {
+          lookup.get(hash).push(key);
+        } else {
+          lookup.set(hash, [key]);
+        }
+      } else {
+        // key exists
+        result.get(existingKey).push(obj);
+      }
     }
-
-    index = lookup[hash];
-    result.groups[index].push(obj);
   }
 
   return result;

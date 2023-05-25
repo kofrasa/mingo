@@ -27,7 +27,7 @@ export function $group(
     const partitions = groupBy(
       coll,
       obj => computeValue(obj, idExpr, null, options),
-      options?.hashFunction
+      options.hashFunction
     );
 
     // remove the group key
@@ -35,12 +35,13 @@ export function $group(
     delete expr[ID_KEY];
 
     let i = -1;
-    const size = partitions.keys.length;
+    const partitionKeys = Array.from(partitions.keys());
+    const size = partitions.size;
 
     return () => {
       if (++i === size) return { done: true };
 
-      const groupId = partitions.keys[i];
+      const groupId = partitionKeys[i];
       const obj: RawObject = {};
 
       // exclude undefined key value
@@ -51,7 +52,7 @@ export function $group(
       // compute remaining keys in expression
       for (const [key, val] of Object.entries(expr)) {
         obj[key] = computeValue(
-          partitions.groups[i],
+          partitions.get(groupId),
           val,
           key,
           copts.update(null, { groupId })

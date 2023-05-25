@@ -13,7 +13,7 @@ import { assert, isString } from "../../util";
 export function $count(
   collection: Iterator,
   expr: string,
-  options: Options
+  _: Options
 ): Iterator {
   assert(
     isString(expr) &&

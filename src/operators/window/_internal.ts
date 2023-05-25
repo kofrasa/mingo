@@ -73,7 +73,7 @@ export function withMemo<T = AnyVal, R = AnyVal>(
 
 /** Returns the position of a document in the $setWindowFields stage partition. */
 export function rank(
-  obj: RawObject,
+  _: RawObject,
   collection: RawObject[],
   expr: WindowOperatorInput,
   options: Options,
@@ -94,22 +94,27 @@ export function rank(
     },
     input => {
       const { values, groups: partitions } = input;
-      // same number of paritions as lenght means all sort keys are unique
-      if (partitions.keys.length == collection.length) {
+      // same number of paritions as length means all sort keys are unique
+      if (partitions.size == collection.length) {
         return expr.documentNumber;
       }
 
-      let rank = 1;
       const current = values[expr.documentNumber - 1];
 
-      for (let i = 0; i < partitions.keys.length; i++) {
-        if (isEqual(current, partitions.keys[i])) {
-          rank = dense ? i + 1 : rank;
-          return rank;
+      let i = 0;
+      let offset = 0;
+      // partition keys are already dense so just return the value on match
+      for (const key of partitions.keys()) {
+        if (isEqual(current, key)) {
+          return dense ? i + 1 : offset + 1;
         }
-        rank += partitions.groups[i].length;
+        i++;
+        offset += partitions.get(key).length;
       }
-      return rank;
+      // should be unreachable
+      throw new Error(
+        "rank: invalid return value. please submit a bug report."
+      );
     }
   );
 }

@@ -8,8 +8,7 @@ import {
   isEmpty,
   isObject,
   isString,
-  resolve,
-  sortBy
+  resolve
 } from "../../util";
 
 /**
@@ -38,31 +37,23 @@ export function $sort(
 
   return collection.transform(((coll: RawArray) => {
     const modifiers = Object.keys(sortKeys);
-
     for (const key of modifiers.reverse()) {
-      const grouped = groupBy(
+      const groups = groupBy(
         coll,
-        ((obj: RawObject) => resolve(obj, key)) as Callback,
-        options?.hashFunction
+        (obj: RawObject) => resolve(obj, key),
+        options.hashFunction
       );
-      const sortedIndex: Record<string, number> = {};
+      const sortedKeys = Array.from(groups.keys()).sort(cmp);
+      if (sortKeys[key] === -1) sortedKeys.reverse();
 
-      const indexKeys = sortBy(
-        grouped.keys,
-        ((k: string, i: number) => {
-          sortedIndex[k] = i;
-          return k;
-        }) as Callback,
-        cmp
-      );
-
-      if (sortKeys[key] === -1) indexKeys.reverse();
+      // reuse collection so the data is available for the next iteration of the sort modifiers.
       coll = [];
-      for (const k of indexKeys) {
-        into(coll, grouped.groups[sortedIndex[k as string]]);
-      }
+      sortedKeys.reduce((acc: RawArray, key: AnyVal) => {
+        const arr = groups.get(key);
+        into(acc, arr);
+        return acc;
+      }, coll);
     }
-
     return coll;
   }) as Callback<RawArray>);
 }
