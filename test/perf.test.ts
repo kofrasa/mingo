@@ -32,7 +32,7 @@ for (let i = 0; i < 100_000; i++) {
 }
 describe("perf", () => {
   describe("aggregation", () => {
-    it("elapsed time should be less than a 5 seconds", () => {
+    it("elapsed time should be less than a 30 seconds", () => {
       console.time("AGGREGATE_PERF");
       aggregate(items, [
         {

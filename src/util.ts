@@ -268,50 +268,30 @@ export function merge(
   return target;
 }
 
-// A tree to support O(logN) search
-interface BNode<T = AnyVal> {
-  left?: BNode<T>;
-  right?: BNode<T>;
-  readonly key: string;
-  readonly values: T[];
-}
-
-function addNode<T = AnyVal>(root: BNode<T>, key: string, value: T) {
-  if (root.key < key) {
-    if (root.right) {
-      addNode<T>(root.right, key, value);
+function buildHashIndex(
+  arr: RawArray,
+  hashFunction: HashFunction = DEFAULT_HASH_FUNCTION
+): Map<string, number[]> {
+  const map = new Map<string, number[]>();
+  arr.forEach((o, i) => {
+    const h = hashCode(o, hashFunction);
+    if (map.has(h)) {
+      if (!map.get(h).some(j => isEqual(arr[j], o))) {
+        map.get(h).push(i);
+      }
     } else {
-      root.right = { key, values: [value] } as typeof root;
+      map.set(h, [i]);
     }
-  } else if (root.key > key) {
-    if (root.left) {
-      addNode<T>(root.left, key, value);
-    } else {
-      root.left = { key, values: [value] } as typeof root;
-    }
-  } else {
-    root.values.push(value);
-  }
-}
-
-function getNodes<T = AnyVal>(root: BNode<T>, key: string): T[] | undefined {
-  if (root.key === key) {
-    return root.values;
-  } else if (root.key < key) {
-    return root.right ? getNodes<T>(root.right, key) : undefined;
-  } else if (root.key > key) {
-    return root.left ? getNodes<T>(root.left, key) : undefined;
-  }
-  return undefined;
+  });
+  return map;
 }
 
 /**
  * Returns the intersection of multiple arrays.
  *
- * @param  {Array} a The first array
- * @param  {Array} b The second array
+ * @param  {Array} input An array of arrays from which to find intersection.
  * @param  {Function} hashFunction Custom function to hash values, default the hashCode method
- * @return {Array}    Result array
+ * @return {Array} Array of intersecting values.
  */
 export function intersection(
   input: RawArray[],
@@ -319,95 +299,85 @@ export function intersection(
 ): RawArray {
   // if any array is empty, there is no intersection
   if (input.some(arr => arr.length == 0)) return [];
+  if (input.length === 1) return Array.from(input);
 
-  // sort input arrays by size
-  const sortedIndex = input.map((a, i) => [i, a.length]);
-  sortedIndex.sort((a, b) => a[1] - b[1]);
+  // sort input arrays by to get smallest array
+  // const sorted = sortBy(input, (a: RawArray) => a.length) as RawArray[];
+  const sortedIndex = sortBy(
+    input.map((a, i) => [i, a.length]),
+    (a: [number, number]) => a[1]
+  ) as Array<[number, number]>;
+  // get the smallest
+  const smallest = input[sortedIndex[0][0]];
+  // get hash index of smallest array
+  const map = buildHashIndex(smallest, hashFunction);
+  // hashIndex for remaining arrays.
+  const rmap = new Map<number, Map<string, number[]>>();
+  // final intersection results and index of first occurrence.
+  const results = new Array<[AnyVal, [number, number]]>();
+  map.forEach((v, k) => {
+    const lhs = v.map(j => smallest[j]);
+    const res = lhs.map(_ => 0);
+    // used to track first occurence of value in order of the original input array.
+    const stable = lhs.map(_ => [sortedIndex[0][0], 0]);
+    let found = false;
+    for (let i = 1; i < input.length; i++) {
+      const [currIndex, _] = sortedIndex[i];
+      const arr = input[currIndex];
+      if (!rmap.has(i)) rmap.set(i, buildHashIndex(arr));
+      // we found a match. let's confirm.
+      if (rmap.get(i).has(k)) {
+        const rhs = rmap
+          .get(i)
+          .get(k)
+          .map(j => arr[j]);
 
-  // matched items index of first array for all other arrays.
-  const result: Array<Record<number, boolean>> = [];
-
-  const smallestArray = input[sortedIndex[0][0]];
-  const root: BNode<number> = {
-    key: hashCode(smallestArray[0], hashFunction)!,
-    values: [0]
-  };
-
-  for (let i = 1; i < smallestArray.length; i++) {
-    const val = smallestArray[i];
-    const h = hashCode(val, hashFunction)!;
-    addNode(root, h, i);
-  }
-
-  let maxResultSize = sortedIndex[0][1];
-  const orderedIndexes: number[] = [];
-
-  for (let i = 1; i < sortedIndex.length; i++) {
-    const arrayIndex = sortedIndex[i][0];
-    const data = input[arrayIndex];
-
-    // number of matched items
-    let size = 0;
-    for (let j = 0; j < data.length; j++) {
-      const h = hashCode(data[j], hashFunction)!;
-      const indexes = getNodes(root, h);
-
-      // not included.
-      if (!indexes) continue;
-
-      // check items equality to mitigate hash collisions and select the matching index.
-      const idx = indexes
-        .map(n => smallestArray[n])
-        .findIndex(v => isEqual(v, data[j]));
-
-      // not included
-      if (idx == -1) continue;
-
-      // item matched. ensure map exist for marking index
-      if (result.length < i) result.push({});
-
-      // map to index of the actual value and set position
-      result[result.length - 1][indexes[idx]] = true;
-
-      // if we have seen max result items we can stop.
-      size = Object.keys(result[result.length - 1]).length;
-
-      // ensure stabilty
-      if (arrayIndex == 0) {
-        if (orderedIndexes.indexOf(indexes[idx]) == -1) {
-          orderedIndexes.push(indexes[idx]);
-        }
+        // confirm the intersection with an equivalence check.
+        found = lhs
+          .map((s, n) =>
+            rhs.some((t, m) => {
+              // we expect only one to match here since these are just collisions.
+              const p = res[n];
+              if (isEqual(s, t)) {
+                res[n]++;
+                // track position of value ordering for stability.
+                if (currIndex < stable[n][0]) {
+                  stable[n] = [currIndex, rmap.get(i).get(k)[m]];
+                }
+              }
+              return p < res[n];
+            })
+          )
+          .some(Boolean);
       }
+
+      // found nothing, so exclude value. this was just a hash collision.
+      if (!found) return;
     }
-    // no intersection if nothing found
-    if (size == 0) return [];
 
-    // new max result size
-    maxResultSize = Math.min(maxResultSize, size);
-  }
-
-  const freq: Record<number, number> = {};
-
-  // count occurrences
-  result.forEach(m => {
-    Object.keys(m).forEach(k => {
-      const n = parseFloat(k);
-      freq[n] = freq[n] || 0;
-      freq[n]++;
-    });
+    // extract value into result if we found an intersection.
+    // we find an intersection if the frequency counter matches the count of the remaining arrays.
+    if (found) {
+      into(
+        results,
+        res
+          .map((n, i) => {
+            return n === input.length - 1 ? [lhs[i], stable[i]] : MISSING;
+          })
+          .filter(n => n !== MISSING)
+      );
+    }
   });
 
-  const keys = orderedIndexes;
-
-  if (keys.length == 0) {
-    // note: cannot use parseInt due to second argument for radix.
-    keys.push(...Object.keys(freq).map(parseFloat));
-    keys.sort();
-  }
-
-  return keys
-    .filter(n => freq[n] == input.length - 1)
-    .map(n => smallestArray[n]);
+  return results
+    .sort((a, b) => {
+      const [_i, [u, m]] = a;
+      const [_j, [v, n]] = b;
+      const r = compare(u, v);
+      if (r !== 0) return r;
+      return compare(m, n);
+    })
+    .map(v => v[0]);
 }
 
 /**
@@ -490,62 +460,18 @@ export function isEqual(a: AnyVal, b: AnyVal): boolean {
 
 /**
  * Return a new unique version of the collection
- * @param  {Array} xs The input collection
+ * @param  {Array} input The input collection
  * @return {Array}
  */
 export function unique(
-  xs: RawArray,
+  input: RawArray,
   hashFunction: HashFunction = DEFAULT_HASH_FUNCTION
 ): RawArray {
-  if (xs.length == 0) return [];
-
-  const root: BNode<number> = {
-    key: hashCode(xs[0], hashFunction)!,
-    values: [0]
-  };
-
-  // hash items on to tree to track collisions
-  for (let i = 1; i < xs.length; i++) {
-    addNode(root, hashCode(xs[i], hashFunction)!, i);
-  }
-
-  const result: number[] = [];
-
-  // walk tree and remove duplicates
-  const stack = [root];
-  while (stack.length > 0) {
-    const node = stack.pop()!;
-    if (node.values.length == 1) {
-      result.push(node.values[0]);
-    } else {
-      // handle collisions by matching all items
-      const arr = node.values;
-      // we start by search from the back so we maintain the smaller index when there is a duplicate.
-      while (arr.length > 0) {
-        for (let j = 1; j < arr.length; j++) {
-          // if last item matches any remove the last item.
-          if (isEqual(xs[arr[arr.length - 1]], xs[arr[arr.length - 1 - j]])) {
-            // remove last item
-            arr.pop();
-            // reset position
-            j = 0;
-          }
-        }
-        // add the unique item
-        result.push(arr.pop()!);
-      }
-    }
-
-    // add children
-    if (node.left) stack.push(node.left);
-    if (node.right) stack.push(node.right);
-  }
-
-  // sort indexes for stability
-  result.sort();
-
-  // return the unique items
-  return result.map(i => xs[i]);
+  const result: RawArray = input.map(_ => MISSING);
+  buildHashIndex(input, hashFunction).forEach((v, _) => {
+    v.forEach(i => (result[i] = input[i]));
+  });
+  return result.filter(v => v !== MISSING);
 }
 
 /**
@@ -618,11 +544,11 @@ export function sortBy<T = AnyVal>(
   keyFn: Callback<T>,
   comparator: Comparator<T> = compare
 ): RawArray {
+  if (isEmpty(collection)) return collection;
+
   type Pair = [T, AnyVal];
   const sorted = new Array<Pair>();
   const result = new Array<AnyVal>();
-
-  if (isEmpty(collection)) return collection;
 
   for (let i = 0; i < collection.length; i++) {
     const obj = collection[i];
@@ -635,9 +561,11 @@ export function sortBy<T = AnyVal>(
   }
 
   // use native array sorting but enforce stableness
-  sorted.sort((a: Pair, b: Pair) => comparator(a[0], b[0]));
-  result.push(...sorted.map((o: RawArray) => o[1]));
-  return result;
+  sorted.sort((a, b) => comparator(a[0], b[0]));
+  return into(
+    result,
+    sorted.map((o: RawArray) => o[1])
+  ) as RawArray;
 }
 
 /**
@@ -645,7 +573,7 @@ export function sortBy<T = AnyVal>(
  *
  * @param collection
  * @param keyFn {Function} to compute the group key of an item in the collection
- * @returns {{keys: Array, groups: Array}}
+ * @returns {GroupByOutput}
  */
 export function groupBy(
   collection: RawArray,

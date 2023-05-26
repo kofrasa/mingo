@@ -94,9 +94,9 @@ export interface Options {
   readonly collation?: CollationSpec;
   /** Determines how to treat inputs and outputs. @default ProcessingMode.CLONE_OFF. */
   readonly processingMode: ProcessingMode;
-  /** Enforces strict MongoDB compatibilty. See README. @default false. */
+  /** Enforces strict MongoDB compatibilty. See README. @default true. */
   readonly useStrictMode: boolean;
-  /** Enable or disable custom script execution via $where, $accumulator, and $function operators. @default false. */
+  /** Enable or disable custom script execution via $where, $accumulator, and $function operators. @default true. */
   readonly scriptEnabled: boolean;
   /** Hash function to replace the Effective Java default implementation. */
   readonly hashFunction?: HashFunction;

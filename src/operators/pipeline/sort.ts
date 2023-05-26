@@ -1,6 +1,6 @@
 import { CollationSpec, Options } from "../../core";
 import { Iterator } from "../../lazy";
-import { AnyVal, Callback, Comparator, RawArray, RawObject } from "../../types";
+import { AnyVal, Comparator, RawArray, RawObject } from "../../types";
 import {
   compare,
   groupBy,
@@ -35,7 +35,7 @@ export function $sort(
     cmp = collationComparator(collationSpec);
   }
 
-  return collection.transform(((coll: RawArray) => {
+  return collection.transform((coll: RawArray) => {
     const modifiers = Object.keys(sortKeys);
     for (const key of modifiers.reverse()) {
       const groups = groupBy(
@@ -48,14 +48,13 @@ export function $sort(
 
       // reuse collection so the data is available for the next iteration of the sort modifiers.
       coll = [];
-      sortedKeys.reduce((acc: RawArray, key: AnyVal) => {
-        const arr = groups.get(key);
-        into(acc, arr);
-        return acc;
-      }, coll);
+      sortedKeys.reduce(
+        (acc: RawArray, key: AnyVal) => into(acc, groups.get(key)),
+        coll
+      );
     }
     return coll;
-  }) as Callback<RawArray>);
+  });
 }
 
 // MongoDB collation strength to JS localeCompare sensitivity mapping.
