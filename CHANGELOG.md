@@ -1,6 +1,6 @@
 # Changelog
 
-## 6.3.3 / 2023-05-26
+## 6.3.4 / 2023-05-26
 **Fixes**
 - Fixed hash collision resolution for `$sort` and `$group`. Closes [332](https://github.com/kofrasa/mingo/issues/332).
 - Support MongoDB compatibility truth check for `$where` operator.
@@ -9,6 +9,9 @@
 - Export `walk` util function.
 - Flatten module exports to expose only `index` roots.
 - Update dependencies.
+
+## 6.3.3 / 2023-05-26 (deprecated)
+* Deprecated due to invalid operator imports.
 
 ## 6.3.2 / 2023-03-29
 **Fixes**
