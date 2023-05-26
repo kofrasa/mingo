@@ -1,10 +1,10 @@
 {
   "name": "mingo",
-  "version": "6.3.2",
+  "version": "6.3.3",
   "description": "MongoDB query language for in-memory objects",
-  "main": "cjs/index.js",
-  "module": "esm/index.js",
-  "types": "types/index.d.ts",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
   "scripts": {
     "prepare": "husky install",
     "docs": "typedoc --entryPointStrategy expand src/ && touch docs/.nojekyll",
@@ -22,7 +22,6 @@
     "url": "https://github.com/kofrasa/mingo.git"
   },
   "files": [
-    "lib/",
     "LICENSE",
     "README.md",
     "CHANGELOG.md"

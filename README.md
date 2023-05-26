@@ -91,7 +91,7 @@ useOperators(OperatorType.EXPRESSION, { $trunc });
 useOperators(OperatorType.PIPELINE, { $bucket });
 ```
 
-### ES5
+### CommonJS
 
 ```js
 const core = require("mingo/core");
