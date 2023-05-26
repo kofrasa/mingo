@@ -72,7 +72,7 @@ function createModule() {
 
     if (key != ".") {
       // create subpackage package.json
-      const subPackagePath = path.join(OUT_DIR, outFile);
+      const subPackagePath = path.join(OUT_DIR, name);
       if (!fs.existsSync(subPackagePath)) {
         fs.mkdirSync(subPackagePath, { recursive: true });
       }
