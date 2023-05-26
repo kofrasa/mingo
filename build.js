@@ -1,9 +1,10 @@
 const fs = require("fs");
 const path = require("path");
 const cp = require("child_process");
+const glob = require("glob").globSync;
 const packageJson = require("./package.json");
 
-const OUT_DIR = path.resolve("dist");
+const OUT_DIR = path.resolve("build");
 const npmArgs = process.argv.slice(2);
 
 // .npmignore
@@ -36,37 +37,50 @@ function createModule() {
   packageJson.devDependencies = {};
 
   // add exports explicitly
-  const files = cp
-    .spawnSync("find", ["src", "-type", "f"])
-    .stdout.toString()
-    .split("\n");
+  const files = Array.from(
+    new Set(
+      glob("./src/**/*.ts")
+        .filter(s => !s.includes("_"))
+        .map(s => {
+          const d = path.dirname(s);
+          if (d === "src") return path.basename(s).slice(0, -3);
+          if (d.includes("init")) return s.slice(4, -3);
+          return d.slice(4);
+        })
+    )
+  );
+
+  // console.log(files);
 
   packageJson.exports = {
-    "./package.json": "./package.json",
+    "./package.json": "./package.json"
   };
 
-  files.forEach((s) => {
-    s = s.replace(/^src/, ".").slice(0, -3);
-    if (s.endsWith("_internal")) return;
-    const typesPath = `./types/${s.slice(2)}.d.ts`;
-    const libPath = `./lib/${s.slice(2)}.js`;
-    const esPath = `./es/${s.slice(2)}.js`;
-    const key = s.endsWith("/index") ? s.slice(0, -6) : s;
-    if (!key) return;
+  files.forEach(name => {
+    const [outFile, key] =
+      name == "index" // root
+        ? [name, "."]
+        : name.startsWith("init") // side-effects
+        ? [name, `./${name}`]
+        : !name.includes("/") // top-level
+        ? [name, `./${name}`]
+        : [`${name}/index`, `./${name}`]; //nested parents
 
-    // create subpackage package.json
-    if (key !== ".") {
-      const subPackagePath = path.join(OUT_DIR, key);
+    const typesPath = `./dist/types/${outFile}.d.ts`;
+    const cjsPath = `./dist/cjs/${outFile}.js`;
+    const esmPath = `./dist/esm/${outFile}.js`;
+
+    if (key != ".") {
+      // create subpackage package.json
+      const subPackagePath = path.join(OUT_DIR, outFile);
       if (!fs.existsSync(subPackagePath)) {
         fs.mkdirSync(subPackagePath, { recursive: true });
       }
       const subPackageJson = {
-        "main": path.relative(subPackagePath, path.join(OUT_DIR, libPath)),
-        "module": path.relative(subPackagePath, path.join(OUT_DIR, esPath)),
-        "es2015": path.relative(subPackagePath, path.join(OUT_DIR, esPath)),
-        "jsnext:main": path.relative(subPackagePath, path.join(OUT_DIR, esPath)),
-        "types": path.relative(subPackagePath, path.join(OUT_DIR, typesPath)),
-        "sideEffects": key.startsWith("./init/")
+        main: path.relative(subPackagePath, path.join(OUT_DIR, cjsPath)),
+        module: path.relative(subPackagePath, path.join(OUT_DIR, esmPath)),
+        types: path.relative(subPackagePath, path.join(OUT_DIR, typesPath)),
+        sideEffects: outFile.startsWith("init")
       };
       fs.writeFileSync(
         path.join(subPackagePath, "package.json"),
@@ -76,10 +90,9 @@ function createModule() {
 
     packageJson.exports[key] = {
       types: typesPath,
-      node: libPath,
-      require: libPath,
-      es2015: esPath,
-      default: esPath,
+      node: cjsPath,
+      require: cjsPath,
+      default: esmPath
     };
   });
 
@@ -100,7 +113,7 @@ function main() {
     cp.spawnSync("npm", npmArgs, {
       cwd: OUT_DIR,
       env: process.env,
-      stdio: "inherit",
+      stdio: "inherit"
     });
 
     console.log("\nCompleted command\n");

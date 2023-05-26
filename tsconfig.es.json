@@ -1,9 +1,0 @@
-{
-  "extends": "./tsconfig.lint.json",
-  "compilerOptions": {
-    "target": "ESNext",
-    "outDir": "./dist/es",
-    "noEmit": false
-  },
-  "include": ["./src/**/*.ts"]
-}
