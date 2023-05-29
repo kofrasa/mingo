@@ -13,13 +13,12 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
-        node-version:
-          - 14.x
-          - 19.x
+        os: [ubuntu-latest, macos-latest]
+        node-version: [18.x, 20.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
@@ -33,5 +32,11 @@ jobs:
         run: npm ci
       - run: npm run build --if-present
       - run: npm test
-      - run: mkdir -p .nyc_output
-      - run: npm run coverage
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+          verbose: true
