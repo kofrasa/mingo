@@ -7,7 +7,7 @@ import { assert, inArray, isObject, isOperator, normalize } from "./util";
 /**
  * An object used to filter input documents
  *
- * @param {Object} criteria The criteria for constructing predicates
+ * @param {Object} condition The condition for constructing predicates
  * @param {Options} options Options for use by operators
  * @constructor
  */
@@ -16,7 +16,7 @@ export class Query {
   private readonly options: Options;
 
   constructor(
-    private readonly criteria: RawObject,
+    private readonly condition: RawObject,
     options?: Partial<Options>
   ) {
     this.options = initOptions(options);
@@ -25,11 +25,11 @@ export class Query {
   }
 
   private compile(): void {
-    assert(isObject(this.criteria), "query criteria must be an object");
+    assert(isObject(this.condition), "query criteria must be an object");
 
     const whereOperator: { field?: string; expr?: AnyVal } = {};
 
-    for (const [field, expr] of Object.entries(this.criteria)) {
+    for (const [field, expr] of Object.entries(this.condition)) {
       if ("$where" === field) {
         Object.assign(whereOperator, { field: field, expr: expr });
       } else if (

@@ -15,8 +15,8 @@ MongoDB query language for in-memory objects
 
 ## Features
 
-- Supports dot notation for both _`<array>.<index>`_ and _`<document>.<field>`_ selectors
-- Query and Projection Operators
+- Supports dot notation for both _`<array>.<index>`_ and _`<document>.<field>`_ selectors.
+- Query and Projection Operators.
   - [Array Operators](https://docs.mongodb.com/manual/reference/operator/query-array/)
   - [Bitwise Operators](https://docs.mongodb.com/manual/reference/operator/query-bitwise/)
   - [Comparisons Operators](https://docs.mongodb.com/manual/reference/operator/query-comparison/)
@@ -46,8 +46,9 @@ MongoDB query language for in-memory objects
   - [Window Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/setWindowFields/#window-operators)
 - Supports aggregaion variables; [`$$ROOT`, `$$CURRENT`, `$$DESCEND`, `$$PRUNE`, `$$KEEP`, `$$REMOVE`, `$$NOW`](https://docs.mongodb.com/manual/reference/aggregation-variables/)
 - Filtering and aggregation using streaming.
+- ✨**NEW**✨ Support for [Update Operators](https://www.mongodb.com/docs/manual/reference/operator/update/).
 
-For documentation on using query operators see [mongodb](http://docs.mongodb.org/manual/reference/operator/query/)
+For documentation on using operators see [mongodb](http://docs.mongodb.org/manual/reference/operator/)
 
 Browse [package docs](http://kofrasa.net/mingo/) for modules.
 
@@ -113,7 +114,7 @@ import { Query } from "mingo";
 // find all grades for homework with score >= 50
 let query = new Query({
   type: "homework",
-  score: { $gte: 50 },
+  score: { $gte: 50 }
 });
 
 // test if an object matches query
@@ -214,7 +215,7 @@ useOperators(OperatorType.ACCUMULATOR, { $min });
 let agg = new Aggregator([
   { $match: { type: "homework" } },
   { $group: { _id: "$student_id", score: { $min: "$score" } } },
-  { $sort: { _id: 1, score: 1 } },
+  { $sort: { _id: 1, score: 1 } }
 ]);
 
 // return an iterator for streaming results
@@ -228,19 +229,20 @@ let result = agg.run(collection);
 
 Query and aggregation operations can be configured with options to enabled different features or customize how documents are processed. Some options are only relevant to specific operators and need not be specified if not required.
 
-| Name | Description | Default | Behaviour |
-|------|-------------|-----------|---------|
-| idKey | The key that is used to lookup the ID value of a document. | "_id" ||
-| collation | [Collation](http://kofrasa.net/mingo/interfaces/core.CollationSpec.html) specification for string sorting operations. | _none_ | See [Intl.Collator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Collator) |
-| processingMode | Determines copy rules for inputs and outputs. | [CLONE_OFF](http://kofrasa.net/mingo/enums/core.ProcessingMode.html) | Turn off cloning and modifies the input collection as needed. <br>This option will also return output objects with shared paths in their graph when specific operators are used. Provides the greatest speedup by minizing cloning. When using the aggregation pipeline, you can use the `$out` operator to collect immutable intermediate results. |
-| useStrictMode | Enforces strict MongoDB compatibilty. | true | When disabled, behaviour changes as follows. <ul><li>`$elemMatch` returns all matching nested documents instead of only the first.</li><li>Empty string `""` is coerced to false during boolean checking in supported operators which is consistent with Javascript semantics.</li><ul> |
-| scriptEnabled | Enable or disable using custom script execution. | true | When disabled, operators that execute custom code are disallowed such as; `$where`, `$accumulator`, and `$function`. |
-| hashFunction | Custom hash function to replace the default based on "Effective Java" hashCode. | _default_ | Expects function `(value: unknown) => number`. |
-| collectionResolver | Function to resolve strings to arrays for use with operators that reference other collections such as; `$lookup`, `$out` and `$merge`. | _none_ | Expects function `(name: string) => Array<RawObject>` |
-| jsonSchemaValidator | JSON schema validator to use for the `$jsonSchema` operator. | _none_ | Expects function `(schema: RawObject) => (document: <RawObject>) => boolean`.<br> The `$jsonSchema` operation would fail if a validator is not provided. |
-| variables | Global variables to pass to all operators | _none_ ||
+| Name                | Description                                                                                                                            | Default                                                              | Behaviour                                                                                                                                                                                                                                                                                                                                           |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| idKey               | The key that is used to lookup the ID value of a document.                                                                             | "\_id"                                                               |                                                                                                                                                                                                                                                                                                                                                     |
+| collation           | [Collation](http://kofrasa.net/mingo/interfaces/core.CollationSpec.html) specification for string sorting operations.                  | _none_                                                               | See [Intl.Collator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Collator)                                                                                                                                                                                                                                 |
+| processingMode      | Determines copy rules for inputs and outputs.                                                                                          | [CLONE_OFF](http://kofrasa.net/mingo/enums/core.ProcessingMode.html) | Turn off cloning and modifies the input collection as needed. <br>This option will also return output objects with shared paths in their graph when specific operators are used. Provides the greatest speedup by minizing cloning. When using the aggregation pipeline, you can use the `$out` operator to collect immutable intermediate results. |
+| useStrictMode       | Enforces strict MongoDB compatibilty.                                                                                                  | true                                                                 | When disabled, behaviour changes as follows. <ul><li>`$elemMatch` returns all matching nested documents instead of only the first.</li><li>Empty string `""` is coerced to false during boolean checking in supported operators which is consistent with Javascript semantics.</li><ul>                                                             |
+| scriptEnabled       | Enable or disable using custom script execution.                                                                                       | true                                                                 | When disabled, operators that execute custom code are disallowed such as; `$where`, `$accumulator`, and `$function`.                                                                                                                                                                                                                                |
+| hashFunction        | Custom hash function to replace the default based on "Effective Java" hashCode.                                                        | _default_                                                            | Expects function `(value: unknown) => number`.                                                                                                                                                                                                                                                                                                      |
+| collectionResolver  | Function to resolve strings to arrays for use with operators that reference other collections such as; `$lookup`, `$out` and `$merge`. | _none_                                                               | Expects function `(name: string) => Array<RawObject>`                                                                                                                                                                                                                                                                                               |
+| jsonSchemaValidator | JSON schema validator to use for the `$jsonSchema` operator.                                                                           | _none_                                                               | Expects function `(schema: RawObject) => (document: <RawObject>) => boolean`.<br> The `$jsonSchema` operation would fail if a validator is not provided.                                                                                                                                                                                            |
+| variables           | Global variables to pass to all operators                                                                                              | _none_                                                               |                                                                                                                                                                                                                                                                                                                                                     |
 
 ## Adding Custom Operators
+
 Custom operators can be added with the [useOperators(type, operatorMap)](http://kofrasa.net/mingo/modules/core.html#useOperators) where
 `type` is the kind of operators to add, and `operatorMap` is mapping of function names beginning with `$` to their implementations for the specific operator type.
 
@@ -256,10 +258,47 @@ Each operator type function has a different signature and must be registered cor
 - [QueryOperator](http://kofrasa.net/mingo/modules/core.html#QueryOperator)
 
 Pre-loaded operators defined [here](https://github.com/kofrasa/mingo/blob/master/src/init/basic.ts) cannot be overridden. These include;
+
 - All [query](http://kofrasa.net/mingo/modules/operators_query.html) operators.
 - All [projection](http://kofrasa.net/mingo/modules/operators_projection.html) operators.
 - Expression operators for [boolean](http://kofrasa.net/mingo/modules/operators_expression_boolean.html) and [comparison](http://kofrasa.net/mingo/modules/operators_expression_comparison.html).
 - Pipeline [operators](http://kofrasa.net/mingo/modules/operators_pipeline.html); `$project`, `$skip`, `$limit`, and `$sort`.
+
+> _Adding custom update operators is not supported._
+
+## Updating Documents
+
+An update operation can be performed using the `updateObject` function from the `mingo/updater` module. Unlike other operations in the library, this only works operates on a single object.
+The query and aggregation operators are powerful enough to use for transforming arrays of documents and should be preferred when dealing with multiple objects.
+`updateObject` returns an array of paths that were updated if the object changed supports [arrayFilters](https://www.mongodb.com/docs/manual/release-notes/3.6/#std-label-3.6-arrayFilters). To detect whether a change occured you can check the length of the returned array.
+
+All operators as of MongoDB 5.0 are supported except the positional array operator `$`.
+
+### Example
+
+```ts
+import { updateObject } from "mingo/updater";
+// all update operators are automatically loaded.
+
+const obj = {
+  firstName: "John",
+  lastName: "Wick",
+  age: 40,
+  friends: ["Scooby", "Shagy", "Fred"]
+};
+
+// returns array of modified paths if value changed.
+updateObject(obj, { $set: { firstName: "Bob", lastName: "Doe" } }); // ["firstName", "lastName"]
+
+// update nested values.
+updateObject(obj, { $pop: { friends: 1 } }); // ["friends"] => friends: ["Scooby", "Shagy"]
+// update nested value path
+updateObject(obj, { $unset: { "friends.1": "" } }); // ["friends.1"] => friends: ["Scooby", null]
+// update with condition
+updateObject(obj, { $set: { "friends.$[e]": "Velma" } }, [{ e: null }]); // ["friends"] => friends: ["Scooby", "Velma"]
+// empty array returned if value has not changed.
+updateObject(obj, { $set: { fristName: "Bob" } }); // [] => no change to object.
+```
 
 ## Differences from MongoDB
 
@@ -267,7 +306,8 @@ Pre-loaded operators defined [here](https://github.com/kofrasa/mingo/blob/master
 1. Does not support server specific operators. E.g. `$collStat`, `$planCacheStats`, `$listSessions`.
 1. Does not support GeoJSON query operators.
 1. Does not support query operators; `$comment`, `$meta`, `$text`.
-1. Does not support aggregation expression operators; `$toObjectId`, `$binarySize`, `bsonSize`.
+1. Does not support positional query or update operator `$`.
+1. Does not support server specific expression operators; `$toObjectId`, `$binarySize`, `bsonSize`.
 1. Agregation pipeline operator `$merge` enforces unique constraint on the lookup field at runtime.
 1. Custom function evaluation operators; `$where`, `$function`, and `$accumulator`, do not accept strings as the function body.
 1. Custom function evaluation operators are enabled by default. They can be disabled with the `scriptEnabled` option.
@@ -276,9 +316,11 @@ Pre-loaded operators defined [here](https://github.com/kofrasa/mingo/blob/master
 
 ## Benefits
 
-- Better alternative to writing custom code for transforming collection of objects
-- Quick validation of MongoDB queries without the need for a database
-- MongoDB query language is among the best in the market and is well documented
+- Declarative data driven API.
+- Usable on both frontend and backend.
+- Provides an alternative to writing custom code for transforming objects.
+- Validate MongoDB queries without running a server.
+- Well documented. MongoDB query language is among the best available and has great documentation.
 
 ## Contributing
 
@@ -286,7 +328,7 @@ Pre-loaded operators defined [here](https://github.com/kofrasa/mingo/blob/master
 - Run `npm test` to build and execute unit tests
 - Submit pull request
 
-To validate correct behaviour and semantics of operators, you may also test against [mongoplayground.net](https://mongoplayground.net/).
+To validate correct behaviour and semantics of operators, you may also test against [mongoplayground.net](https://mongoplayground.net/). _Credit to the author_.
 
 ## License
 
