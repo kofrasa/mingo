@@ -1,5 +1,12 @@
 # Changelog
 
+## 6.4.0 / 2023-06-06
+**New**
+- Added support for update operators accessible via `updateObject` from `mingo/updater`. Includes;
+  - Field Update Operators: `$currentDate`, `$inc`, `$max`, `$min`, `$mul`, `$set`, `$unset`, `$rename`.
+  - Array Update Operators: `$[]`, `$[<identifier>]`, `$addToSet`, `$pop`, `$push`, `$pull`, `$pushAll`.
+  - Bitwise Update Operators: `$bit`.
+
 ## 6.3.4 / 2023-05-26
 **Fixes**
 - Fixed hash collision resolution for `$sort` and `$group`. Closes [332](https://github.com/kofrasa/mingo/issues/332).

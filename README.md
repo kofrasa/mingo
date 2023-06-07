@@ -46,7 +46,7 @@ MongoDB query language for in-memory objects
   - [Window Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/setWindowFields/#window-operators)
 - Supports aggregaion variables; [`$$ROOT`, `$$CURRENT`, `$$DESCEND`, `$$PRUNE`, `$$KEEP`, `$$REMOVE`, `$$NOW`](https://docs.mongodb.com/manual/reference/aggregation-variables/)
 - Filtering and aggregation using streaming.
-- ✨**NEW**✨ Support for [Update Operators](https://www.mongodb.com/docs/manual/reference/operator/update/).
+- ✨**NEW**✨ Support for [Update Operators](https://www.mongodb.com/docs/manual/reference/operator/update/). See [Updating Documents](#updating-documents).
 
 For documentation on using operators see [mongodb](http://docs.mongodb.org/manual/reference/operator/)
 
