@@ -1,14 +1,7 @@
+import { UpdateOptions } from "../../core";
 import { AnyVal, ArrayOrObject, RawArray, RawObject } from "../../types";
-import {
-  cloneDeep,
-  compare,
-  has,
-  isEqual,
-  isNumber,
-  isObject,
-  resolve
-} from "../../util";
-import { Action, applyUpdate, walkExpression } from "./_internal";
+import { compare, has, isEqual, isNumber, isObject, resolve } from "../../util";
+import { Action, applyUpdate, clone, walkExpression } from "./_internal";
 
 const OPERATOR_MODIFIERS = Object.freeze([
   "$each",
@@ -21,9 +14,10 @@ const OPERATOR_MODIFIERS = Object.freeze([
 export const $push = (
   obj: RawObject,
   expr: RawObject,
-  arrayFilters: RawObject[] = []
+  arrayFilters: RawObject[] = [],
+  options: UpdateOptions = {}
 ) => {
-  return walkExpression(expr, arrayFilters, ((val, node, queries) => {
+  return walkExpression(expr, arrayFilters, options, ((val, node, queries) => {
     const args: {
       $each: RawArray;
       $slice?: number;
@@ -52,7 +46,11 @@ export const $push = (
         const pos = isNumber(args.$position) ? args.$position : arr.length;
 
         // insert new items
-        arr.splice(pos, 0, ...(cloneDeep(args.$each) as RawArray));
+        arr.splice(
+          pos,
+          0,
+          ...(clone(options.cloneMode, args.$each) as RawArray)
+        );
 
         if (args.$sort) {
           /* eslint-disable @typescript-eslint/no-unsafe-assignment */

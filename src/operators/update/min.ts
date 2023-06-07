@@ -1,3 +1,4 @@
+import { UpdateOptions } from "../../core";
 import { ArrayOrObject, RawObject } from "../../types";
 import { compare } from "../../util";
 import { Action, applyUpdate, walkExpression } from "./_internal";
@@ -6,9 +7,10 @@ import { Action, applyUpdate, walkExpression } from "./_internal";
 export const $min = (
   obj: RawObject,
   expr: RawObject,
-  arrayFilters: RawObject[] = []
+  arrayFilters: RawObject[] = [],
+  options: UpdateOptions = {}
 ) => {
-  return walkExpression(expr, arrayFilters, ((val, node, queries) => {
+  return walkExpression(expr, arrayFilters, options, ((val, node, queries) => {
     return applyUpdate(
       obj,
       node,

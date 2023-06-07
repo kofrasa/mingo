@@ -1,3 +1,4 @@
+import { UpdateOptions } from "../../core";
 import { ArrayOrObject, RawObject } from "../../types";
 import { Action, applyUpdate, walkExpression } from "./_internal";
 
@@ -5,10 +6,11 @@ import { Action, applyUpdate, walkExpression } from "./_internal";
 export const $currentDate = (
   obj: RawObject,
   expr: Record<string, true>,
-  arrayFilters: RawObject[] = []
+  arrayFilters: RawObject[] = [],
+  options: UpdateOptions = {}
 ) => {
   const now = Date.now();
-  return walkExpression(expr, arrayFilters, ((_, node, queries) => {
+  return walkExpression(expr, arrayFilters, options, ((_, node, queries) => {
     return applyUpdate(
       obj,
       node,

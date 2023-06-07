@@ -1,3 +1,4 @@
+import { CloneMode, UpdateOptions } from "../../core";
 import { Query } from "../../query";
 import {
   AnyVal,
@@ -6,7 +7,18 @@ import {
   RawArray,
   RawObject
 } from "../../types";
-import { assert, isArray, resolve, walk } from "../../util";
+import { assert, cloneDeep, isArray, resolve, walk } from "../../util";
+
+export const clone = (mode: CloneMode, val: AnyVal): AnyVal => {
+  switch (mode) {
+    case "deep":
+      return cloneDeep(val);
+    case "structured":
+      return structuredClone ? structuredClone(val) : cloneDeep(val);
+    default:
+      return val;
+  }
+};
 
 const FILTER_IDENT_RE = /^[a-z]+[a-zA-Z0-9]*$/;
 
@@ -86,6 +98,7 @@ export type Action<T = AnyVal> = (
 export function walkExpression<T>(
   expr: RawObject,
   arrayFilter: RawObject[],
+  options: UpdateOptions,
   callback: Action<T>
 ): string[] {
   const res: string[] = [];
@@ -108,9 +121,8 @@ export function walkExpression<T>(
       });
       // create queries for each identifier
       const queries: Record<string, Query> = {};
-      const options = { useStrictMode: false };
       for (const [k, condition] of Object.entries(conditions)) {
-        queries[k] = new Query(condition, options);
+        queries[k] = new Query(condition, options.queryOptions);
       }
 
       if (callback(val as T, node, queries)) res.push(node.parent);

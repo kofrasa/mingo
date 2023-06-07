@@ -213,6 +213,21 @@ export function initOptions(options?: Partial<Options>): Options {
 }
 
 /**
+ * Supported cloning modes.
+ * - "structured": Uses the 'structuredClone' method if available otherwise performs a "deep" clone.
+ * - "deep": Performs a recursive deep clone of the object.
+ * - "none": No cloning. Uses the value as given.
+ */
+export type CloneMode = "structured" | "deep" | "none";
+
+export interface UpdateOptions {
+  /** Specifies whether to deep clone values to persist in the internal store. @default "none". */
+  readonly cloneMode?: CloneMode;
+  /** Options to use for processing queries. Unless overriden 'useStrictMode' is false.  */
+  readonly queryOptions?: Partial<Options>;
+}
+
+/**
  * The different groups of operators
  */
 export enum OperatorType {

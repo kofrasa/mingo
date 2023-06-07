@@ -22,6 +22,10 @@ export const MIN_LONG = Number.MIN_SAFE_INTEGER;
 // special value to identify missing items. treated differently from undefined
 const MISSING = Symbol("missing");
 
+const OBJECT_PROTOTYPE = Object.getPrototypeOf({}) as AnyVal;
+const OBJECT_TAG = "[object Object]";
+const OBJECT_TYPE_RE = /^\[object ([a-zA-Z0-9]+)\]$/;
+
 /**
  * Uses the simple hash method as described in Effective Java.
  * @see https://stackoverflow.com/a/113600/1370481
@@ -96,10 +100,6 @@ export const compare = (a: AnyVal, b: AnyVal): number => {
   return 0;
 };
 
-const OBJECT_PROTOTYPE = Object.getPrototypeOf({}) as AnyVal;
-const OBJECT_TAG = "[object Object]";
-const OBJECT_TYPE_RE = /^\[object ([a-zA-Z0-9]+)\]$/;
-
 export function assert(condition: boolean, message: string): void {
   if (!condition) throw new Error(message);
 }
@@ -107,83 +107,59 @@ export function assert(condition: boolean, message: string): void {
 /**
  * Deep clone an object
  */
-export function cloneDeep(obj: AnyVal): AnyVal {
+export const cloneDeep = (obj: AnyVal): AnyVal => {
   if (obj instanceof Array) return obj.map(cloneDeep);
   if (obj instanceof Date) return new Date(obj);
   if (isObject(obj)) return objectMap(obj as RawObject, cloneDeep);
   return obj;
-}
+};
 
 /**
  * Returns the name of type as specified in the tag returned by a call to Object.prototype.toString
  * @param v A value
  */
-export function getType(v: AnyVal): string {
-  return OBJECT_TYPE_RE.exec(Object.prototype.toString.call(v) as string)![1];
-}
-export function isBoolean(v: AnyVal): v is boolean {
-  return typeof v === "boolean";
-}
-export function isString(v: AnyVal): v is string {
-  return typeof v === "string";
-}
-export function isNumber(v: AnyVal): v is number {
-  return !isNaN(v as number) && typeof v === "number";
-}
-export function isNotNaN(v: AnyVal) {
-  return !(isNaN(v as number) && typeof v === "number");
-}
+export const getType = (v: AnyVal): string =>
+  OBJECT_TYPE_RE.exec(Object.prototype.toString.call(v) as string)![1];
+export const isBoolean = (v: AnyVal): v is boolean => typeof v === "boolean";
+export const isString = (v: AnyVal): v is string => typeof v === "string";
+export const isNumber = (v: AnyVal): v is number =>
+  !isNaN(v as number) && typeof v === "number";
+export const isNotNaN = (v: AnyVal) =>
+  !(isNaN(v as number) && typeof v === "number");
 export const isArray = Array.isArray;
-export function isObject(v: AnyVal): v is object {
+export const isObject = (v: AnyVal): v is object => {
   if (!v) return false;
   const proto = Object.getPrototypeOf(v) as AnyVal;
   return (
     (proto === OBJECT_PROTOTYPE || proto === null) &&
     OBJECT_TAG === Object.prototype.toString.call(v)
   );
-}
-export function isObjectLike(v: AnyVal): boolean {
-  return v === Object(v);
-} // objects, arrays, functions, date, custom object
-export function isDate(v: AnyVal): v is Date {
-  return v instanceof Date;
-}
-export function isRegExp(v: AnyVal): v is RegExp {
-  return v instanceof RegExp;
-}
-export function isFunction(v: AnyVal): boolean {
-  return typeof v === "function";
-}
-export function isNil(v: AnyVal): boolean {
-  return v === null || v === undefined;
-}
-export function inArray(arr: AnyVal[], item: AnyVal): boolean {
-  return arr.includes(item);
-}
-export function notInArray(arr: RawArray, item: AnyVal): boolean {
-  return !inArray(arr, item);
-}
-export function truthy(arg: AnyVal, strict = true): boolean {
-  return !!arg || (strict && arg === "");
-}
-export function isEmpty(x: AnyVal): boolean {
-  return (
-    isNil(x) ||
-    (isString(x) && !x) ||
-    (x instanceof Array && x.length === 0) ||
-    (isObject(x) && Object.keys(x).length === 0)
-  );
-}
-export function isMissing(m: AnyVal): boolean {
-  return m === MISSING;
-}
-// ensure a value is an array or wrapped within one
-export function ensureArray(x: AnyVal): RawArray {
-  return x instanceof Array ? x : [x];
-}
-export function has(obj: RawObject, prop: string): boolean {
-  return !!obj && (Object.prototype.hasOwnProperty.call(obj, prop) as boolean);
-}
+};
+//  objects, arrays, functions, date, custom object
+export const isObjectLike = (v: AnyVal): boolean => v === Object(v);
+export const isDate = (v: AnyVal): v is Date => v instanceof Date;
+export const isRegExp = (v: AnyVal): v is RegExp => v instanceof RegExp;
+export const isFunction = (v: AnyVal): boolean => typeof v === "function";
+export const isNil = (v: AnyVal): boolean => v === null || v === undefined;
+export const inArray = (arr: AnyVal[], item: AnyVal): boolean =>
+  arr.includes(item);
+export const notInArray = (arr: RawArray, item: AnyVal): boolean =>
+  !inArray(arr, item);
+export const truthy = (arg: AnyVal, strict = true): boolean =>
+  !!arg || (strict && arg === "");
+export const isEmpty = (x: AnyVal): boolean =>
+  isNil(x) ||
+  (isString(x) && !x) ||
+  (x instanceof Array && x.length === 0) ||
+  (isObject(x) && Object.keys(x).length === 0);
+
+export const isMissing = (v: AnyVal): boolean => v === MISSING;
+/** ensure a value is an array or wrapped within one. */
+export const ensureArray = (x: AnyVal): RawArray =>
+  x instanceof Array ? x : [x];
+
+export const has = (obj: RawObject, prop: string): boolean =>
+  !!obj && (Object.prototype.hasOwnProperty.call(obj, prop) as boolean);
 
 /**
  * Transform values in an object
@@ -383,7 +359,7 @@ export function intersection(
 /**
  * Flatten the array
  *
- * @param  {Array} xs The array to flatten
+ * @param {Array} xs The array to flatten
  * @param {Number} depth The number of nested lists to iterate
  */
 export function flatten(xs: RawArray, depth = 0): RawArray {

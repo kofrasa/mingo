@@ -1,3 +1,4 @@
+import { UpdateOptions } from "../../core";
 import { RawArray, RawObject } from "../../types";
 import { $pull } from "./pull";
 
@@ -5,11 +6,12 @@ import { $pull } from "./pull";
 export const $pullAll = (
   obj: RawObject,
   expr: Record<string, RawArray>,
-  arrayFilters: RawObject[] = []
+  arrayFilters: RawObject[] = [],
+  options: UpdateOptions = {}
 ) => {
   const pullExpr: Record<string, RawObject> = {};
   Object.entries(expr).forEach(([k, v]) => {
     pullExpr[k] = { $in: v };
   });
-  return $pull(obj, pullExpr, arrayFilters);
+  return $pull(obj, pullExpr, arrayFilters, options);
 };

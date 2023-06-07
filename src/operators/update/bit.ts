@@ -1,3 +1,4 @@
+import { UpdateOptions } from "../../core";
 import { ArrayOrObject, RawObject } from "../../types";
 import { assert, isNumber } from "../../util";
 import { Action, applyUpdate, walkExpression } from "./_internal";
@@ -8,9 +9,10 @@ const BIT_OPS = ["and", "or", "xor"];
 export const $bit = (
   obj: RawObject,
   expr: RawObject,
-  arrayFilters: RawObject[] = []
+  arrayFilters: RawObject[] = [],
+  options: UpdateOptions = {}
 ) => {
-  return walkExpression(expr, arrayFilters, ((val, node, queries) => {
+  return walkExpression(expr, arrayFilters, options, ((val, node, queries) => {
     return applyUpdate(obj, node, queries, (o: ArrayOrObject, k: number) => {
       const op = Object.keys(val);
       assert(

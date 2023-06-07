@@ -1,3 +1,4 @@
+import { UpdateOptions } from "../../core";
 import { Query } from "../../query";
 import { AnyVal, ArrayOrObject, RawArray, RawObject } from "../../types";
 import { Action, applyUpdate, walkExpression } from "./_internal";
@@ -6,10 +7,11 @@ import { Action, applyUpdate, walkExpression } from "./_internal";
 export const $pull = (
   obj: RawObject,
   expr: RawObject,
-  arrayFilters: RawObject[] = []
+  arrayFilters: RawObject[] = [],
+  options: UpdateOptions = {}
 ) => {
-  return walkExpression(expr, arrayFilters, ((val, node, queries) => {
-    const query = new Query({ k: val });
+  return walkExpression(expr, arrayFilters, options, ((val, node, queries) => {
+    const query = new Query({ k: val }, options.queryOptions);
     const pred = (v: AnyVal) => query.test({ k: v });
     return applyUpdate(obj, node, queries, (o: ArrayOrObject, k: string) => {
       const prev = o[k] as RawArray;

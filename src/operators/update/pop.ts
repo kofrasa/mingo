@@ -1,3 +1,4 @@
+import { UpdateOptions } from "../../core";
 import { ArrayOrObject, RawArray, RawObject } from "../../types";
 import { Action, applyUpdate, walkExpression } from "./_internal";
 
@@ -5,9 +6,10 @@ import { Action, applyUpdate, walkExpression } from "./_internal";
 export const $pop = (
   obj: RawObject,
   expr: Record<string, 1 | -1>,
-  arrayFilters: RawObject[] = []
+  arrayFilters: RawObject[] = [],
+  options: UpdateOptions = {}
 ) => {
-  return walkExpression(expr, arrayFilters, ((val, node, queries) => {
+  return walkExpression(expr, arrayFilters, options, ((val, node, queries) => {
     return applyUpdate(obj, node, queries, (o: ArrayOrObject, k: string) => {
       const arr = o[k] as RawArray;
       if (!arr.length) return false;
