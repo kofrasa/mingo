@@ -1,5 +1,6 @@
 import "./support";
 
+import { clone } from "../src/operators/update/_internal";
 import { updateObject } from "../src/updater";
 
 describe("updateObject", () => {
@@ -37,5 +38,12 @@ describe("updateObject", () => {
       updateObject(obj, { $set: { name: "Fred" } }, [], { age: { $gt: 10 } })
     ).toEqual(["name"]);
     expect(obj).toEqual({ name: "Fred", age: 30 });
+  });
+
+  // adding for completeness
+  it("should clone with valid option", () => {
+    expect(clone("deep", { a: 1 })).toEqual({ a: 1 });
+    expect(clone("structured", { a: 1 })).toEqual({ a: 1 });
+    expect(clone("none", { a: 1 })).toEqual({ a: 1 });
   });
 });

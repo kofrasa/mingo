@@ -2,7 +2,6 @@ import { Aggregator } from "../../aggregator";
 import { Options, ProcessingMode } from "../../core";
 import { Iterator } from "../../lazy";
 import { Callback, RawObject } from "../../types";
-import { objectMap } from "../../util";
 
 /**
  * Processes multiple aggregation pipelines within a single stage on the same set of input documents.
@@ -10,17 +9,17 @@ import { objectMap } from "../../util";
  */
 export function $facet(
   collection: Iterator,
-  expr: RawObject,
+  expr: Record<string, RawObject[]>,
   options: Options
 ): Iterator {
   return collection.transform(((array: RawObject[]) => {
-    return [
-      objectMap(expr, ((pipeline: Array<RawObject>) => {
-        return new Aggregator(pipeline, {
-          ...options,
-          processingMode: ProcessingMode.CLONE_INPUT
-        }).run(array);
-      }) as Callback)
-    ];
+    const o: RawObject = {};
+    for (const [k, pipeline] of Object.entries(expr)) {
+      o[k] = new Aggregator(pipeline, {
+        ...options,
+        processingMode: ProcessingMode.CLONE_INPUT
+      }).run(array);
+    }
+    return [o];
   }) as Callback<RawObject[]>);
 }

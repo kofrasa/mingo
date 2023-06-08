@@ -105,13 +105,32 @@ export function assert(condition: boolean, message: string): void {
 }
 
 /**
- * Deep clone an object
+ * Deep clone an object. Value types and immutable objects are returned as is.
  */
 export const cloneDeep = (obj: AnyVal): AnyVal => {
-  if (obj instanceof Array) return obj.map(cloneDeep);
-  if (obj instanceof Date) return new Date(obj);
-  if (isObject(obj)) return objectMap(obj as RawObject, cloneDeep);
-  return obj;
+  const m = new Map();
+  const add = (v: AnyVal) => {
+    if (m.has(v)) throw new Error("cycle detected during clone operation.");
+    m.set(v, true);
+  };
+  const clone = (val: AnyVal) => {
+    if (val instanceof Date) return new Date(val);
+    if (isArray(val)) {
+      add(val);
+      const res = new Array<AnyVal>(val.length);
+      const len = val.length;
+      for (let i = 0; i < len; i++) res[i] = clone(val[i]);
+      return res;
+    }
+    if (isObject(val)) {
+      add(val);
+      const res = {};
+      for (const k in val) res[k] = clone(val[k]);
+      return res;
+    }
+    return val;
+  };
+  return clone(obj);
 };
 
 /**
@@ -160,23 +179,6 @@ export const ensureArray = (x: AnyVal): RawArray =>
 
 export const has = (obj: RawObject, prop: string): boolean =>
   !!obj && (Object.prototype.hasOwnProperty.call(obj, prop) as boolean);
-
-/**
- * Transform values in an object
- *
- * @param  {Object}   obj   An object whose values to transform
- * @param  {Function} fn The transform function
- * @return {Array|Object} Result object after applying the transform
- */
-export function objectMap(obj: RawObject, fn: Callback<AnyVal>): RawObject {
-  const o = {};
-  const objKeys = Object.keys(obj);
-  for (let i = 0; i < objKeys.length; i++) {
-    const k = objKeys[i];
-    o[k] = fn(obj[k], k);
-  }
-  return o;
-}
 
 /** Options to merge function */
 interface MergeOptions {
