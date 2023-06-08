@@ -300,6 +300,27 @@ updateObject(obj, { $set: { "friends.$[e]": "Velma" } }, [{ e: null }]); // ["fr
 updateObject(obj, { $set: { fristName: "Bob" } }); // [] => no change to object.
 ```
 
+You can also create a preconfigured updater function.
+
+```ts
+import { createUpdater } from "mingo/updater";
+
+// configure updater to deep clone passed values.
+const updateObject = createUpdater({ cloneMode: "deep" })
+
+const state = { people: ["Fred", "John"] }
+const newPeople = ["Amy", "Mark"]
+
+console.log(state.people) // ["Fred", "John"]
+
+updateObject(state, { $set: { people: newPeople } })
+
+newPeople.push("Jason")
+
+console.log(state.people) // ["Amy", "Mark"]
+console.log(newPeople) // ["Amy", "Mark", "Jason"]
+```
+
 ## Differences from MongoDB
 
 1. There is no concept of a collection. Input data is either an array of objects or a generator function to support streaming.

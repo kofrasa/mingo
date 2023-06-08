@@ -84,6 +84,7 @@ export function createUpdater(defaultOptions: UpdateOptions): Updater {
  * @param expr The update expressions.
  * @param arrayFilters Filters to apply to nested items.
  * @param conditions Conditions to validate before performing update.
+ * @param options Update options to override defaults.
  * @returns {Array<string>} A list of modified field paths in the object.
  */
 export const updateObject = createUpdater({});

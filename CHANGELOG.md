@@ -1,5 +1,12 @@
 # Changelog
 
+## 6.4.1 / 2023-06-08
+**New**
+- Add options support for `updateObject`.
+- Add `createUpdater` for creating updater functions with default options.
+- Default to no cloning of inputs to update operators.
+- Provide clone method configuration via `cloneMode` option.
+
 ## 6.4.0 / 2023-06-06
 **New**
 - Added support for update operators accessible via `updateObject` from `mingo/updater`. Includes;
