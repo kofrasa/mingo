@@ -16,13 +16,13 @@
 <li><a href="../modules/updater.html">updater</a></li>
 <li><a href="updater.UpdateOperator.html">UpdateOperator</a></li></ul>
 <h1>Type alias UpdateOperator</h1></div>
-<div class="tsd-signature"><span class="tsd-kind-type-alias">Update<wbr/>Operator</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">obj</span>, <span class="tsd-kind-parameter">expr</span>, <span class="tsd-kind-parameter">arrayFilters</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span></div>
+<div class="tsd-signature"><span class="tsd-kind-type-alias">Update<wbr/>Operator</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">obj</span>, <span class="tsd-kind-parameter">expr</span>, <span class="tsd-kind-parameter">arrayFilters</span>, <span class="tsd-kind-parameter">options</span><span class="tsd-signature-symbol">?</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span></div>
 <div class="tsd-type-declaration">
 <h4>Type declaration</h4>
 <ul class="tsd-parameters">
 <li class="tsd-parameter-signature">
 <ul class="tsd-signatures">
-<li class="tsd-signature" id="__type.__type-1"><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">obj</span>, <span class="tsd-kind-parameter">expr</span>, <span class="tsd-kind-parameter">arrayFilters</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></li>
+<li class="tsd-signature" id="__type.__type-1"><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">obj</span>, <span class="tsd-kind-parameter">expr</span>, <span class="tsd-kind-parameter">arrayFilters</span>, <span class="tsd-kind-parameter">options</span><span class="tsd-signature-symbol">?</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>Interface for update operators</p>
 </div>
@@ -34,11 +34,13 @@
 <li>
 <h5><span class="tsd-kind-parameter">expr</span>: <a href="types.RawObject.html" class="tsd-signature-type tsd-kind-type-alias">RawObject</a></h5></li>
 <li>
-<h5><span class="tsd-kind-parameter">arrayFilters</span>: <a href="types.RawObject.html" class="tsd-signature-type tsd-kind-type-alias">RawObject</a><span class="tsd-signature-symbol">[]</span></h5></li></ul></div>
+<h5><span class="tsd-kind-parameter">arrayFilters</span>: <a href="types.RawObject.html" class="tsd-signature-type tsd-kind-type-alias">RawObject</a><span class="tsd-signature-symbol">[]</span></h5></li>
+<li>
+<h5><code class="tsd-tag ts-flagOptional">Optional</code> <span class="tsd-kind-parameter">options</span>: <a href="../interfaces/core.UpdateOptions.html" class="tsd-signature-type tsd-kind-interface">UpdateOptions</a></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h4>
 <div class="tsd-comment tsd-typography"></div></li></ul></li></ul></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/8f153cc/src/updater.ts#L17">src/updater.ts:17</a></li></ul></aside></div>
+<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/27fbfbc/src/updater.ts#L18">src/updater.ts:18</a></li></ul></aside></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
@@ -340,7 +342,9 @@
 <ul class="tsd-nested-navigation">
 <li><a href="updater.UpdateExpression.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><g id="icon-4194304"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-type-alias)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6"></rect><path d="M11.31 16V8.224H8.91V7.24H14.79V8.224H12.39V16H11.31Z" fill="var(--color-text)"></path></g></svg><span>Update<wbr/>Expression</span></a></li>
 <li><a href="updater.UpdateOperator.html" class="current"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4194304"></use></svg><span>Update<wbr/>Operator</span></a></li>
-<li><a href="../functions/updater.updateObject.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><g id="icon-64"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-function)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6"></rect><path d="M9.39 16V7.24H14.55V8.224H10.446V11.128H14.238V12.112H10.47V16H9.39Z" fill="var(--color-text)"></path></g></svg><span>update<wbr/>Object</span></a></li></ul></div></details></li>
+<li><a href="updater.Updater.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4194304"></use></svg><span>Updater</span></a></li>
+<li><a href="../functions/updater.createUpdater.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><g id="icon-64"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-function)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6"></rect><path d="M9.39 16V7.24H14.55V8.224H10.446V11.128H14.238V12.112H10.47V16H9.39Z" fill="var(--color-text)"></path></g></svg><span>create<wbr/>Updater</span></a></li>
+<li><a href="../functions/updater.updateObject.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-64"></use></svg><span>update<wbr/>Object</span></a></li></ul></div></details></li>
 <li><a href="../modules/util.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>util</span></a></li></ul></nav></div></div></div>
 <div class="tsd-generator">
 <p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></div>

@@ -18,7 +18,7 @@
 <h1>Function walkExpression</h1></div>
 <section class="tsd-panel">
 <ul class="tsd-signatures">
-<li class="tsd-signature tsd-anchor-link" id="walkExpression"><span class="tsd-kind-call-signature">walk<wbr/>Expression</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">expr</span>, <span class="tsd-kind-parameter">arrayFilter</span>, <span class="tsd-kind-parameter">callback</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><a href="#walkExpression" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><g stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" id="icon-anchor"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5"></path><path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5"></path></g></svg></a></li>
+<li class="tsd-signature tsd-anchor-link" id="walkExpression"><span class="tsd-kind-call-signature">walk<wbr/>Expression</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">expr</span>, <span class="tsd-kind-parameter">arrayFilter</span>, <span class="tsd-kind-parameter">options</span>, <span class="tsd-kind-parameter">callback</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><a href="#walkExpression" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><g stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" id="icon-anchor"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5"></path><path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5"></path></g></svg></a></li>
 <li class="tsd-description">
 <section class="tsd-panel">
 <h4>Type Parameters</h4>
@@ -33,10 +33,12 @@
 <li>
 <h5><span class="tsd-kind-parameter">arrayFilter</span>: <a href="../types/types.RawObject.html" class="tsd-signature-type tsd-kind-type-alias">RawObject</a><span class="tsd-signature-symbol">[]</span></h5></li>
 <li>
+<h5><span class="tsd-kind-parameter">options</span>: <a href="../interfaces/core.UpdateOptions.html" class="tsd-signature-type tsd-kind-interface">UpdateOptions</a></h5></li>
+<li>
 <h5><span class="tsd-kind-parameter">callback</span>: <a href="../types/operators_update__internal.Action.html" class="tsd-signature-type tsd-kind-type-alias">Action</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">T</span><span class="tsd-signature-symbol">&gt;</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/8f153cc/src/operators/update/_internal.ts#L86">src/operators/update/_internal.ts:86</a></li></ul></aside></li></ul></section></div>
+<li>Defined in <a href="https://github.com/kofrasa/mingo/blob/27fbfbc/src/operators/update/_internal.ts#L98">src/operators/update/_internal.ts:98</a></li></ul></aside></li></ul></section></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
@@ -311,6 +313,7 @@
 <li><a href="../types/operators_update__internal.Action.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><g id="icon-4194304"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-type-alias)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6"></rect><path d="M11.31 16V8.224H8.91V7.24H14.79V8.224H12.39V16H11.31Z" fill="var(--color-text)"></path></g></svg><span>Action</span></a></li>
 <li><a href="../types/operators_update__internal.PathNode.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4194304"></use></svg><span>Path<wbr/>Node</span></a></li>
 <li><a href="operators_update__internal.applyUpdate.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><g id="icon-64"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-function)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6"></rect><path d="M9.39 16V7.24H14.55V8.224H10.446V11.128H14.238V12.112H10.47V16H9.39Z" fill="var(--color-text)"></path></g></svg><span>apply<wbr/>Update</span></a></li>
+<li><a href="operators_update__internal.clone.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-64"></use></svg><span>clone</span></a></li>
 <li><a href="operators_update__internal.tokenizePath.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-64"></use></svg><span>tokenize<wbr/>Path</span></a></li>
 <li><a href="operators_update__internal.walkExpression.html" class="current"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-64"></use></svg><span>walk<wbr/>Expression</span></a></li></ul></div></details></li>
 <li><a href="../modules/operators_update_addToSet.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>operators/update/add<wbr/>To<wbr/>Set</span></a></li>
