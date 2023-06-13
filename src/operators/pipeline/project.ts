@@ -3,7 +3,8 @@ import {
   computeValue,
   getOperator,
   OperatorType,
-  Options
+  Options,
+  ProjectionOperator
 } from "../../core";
 import { Iterator } from "../../lazy";
 import { AnyVal, Callback, Predicate, RawObject } from "../../types";
@@ -130,7 +131,11 @@ function processObject(
       const operator = subExprKeys.length == 1 ? subExprKeys[0] : "";
 
       // first try a projection operator
-      const call = getOperator(OperatorType.PROJECTION, operator);
+      const call = getOperator(
+        OperatorType.PROJECTION,
+        operator,
+        options?.context
+      ) as ProjectionOperator;
       if (call) {
         // apply the projection operator on the operator expression for the key
         if (operator === "$slice") {

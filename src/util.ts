@@ -182,44 +182,51 @@ export const has = (obj: RawObject, prop: string): boolean =>
 
 /** Options to merge function */
 interface MergeOptions {
-  readonly flatten?: boolean;
+  flatten?: boolean;
+  skipValidation?: boolean;
 }
+
+const mergeable = (left: AnyVal, right: AnyVal): boolean =>
+  (isObject(left) && isObject(right)) || (isArray(left) && isArray(right));
 
 /**
  * Deep merge objects or arrays.
- * When the inputs have unmergeable types, the source value (right hand side) is returned.
- * If inputs are arrays of same length and all elements are mergable, elements in the same position are merged together.
- * If AnyVal of the elements are unmergeable, elements in the source are appended to the target.
+ * When the inputs have unmergeable types, the  right hand value is returned.
+ * If inputs are arrays and options.flatten is set, elements in the same position are merged together. Remaining elements are appended to the target object.
+ * If options.flatten is false, the right hand value is just appended to the left-hand value.
  * @param target {Object|Array} the target to merge into
  * @param obj {Object|Array} the source object
  */
 export function merge(
-  target: ArrayOrObject,
-  obj: ArrayOrObject,
+  target: AnyVal,
+  obj: AnyVal,
   options?: MergeOptions
-): ArrayOrObject {
-  // take care of missing inputs
-  if (isMissing(target)) return obj;
-  if (isMissing(obj)) return target;
-
-  const inputs = [target, obj];
-
-  if (!(inputs.every(isObject) || inputs.every(isArray))) {
-    throw Error("mismatched types. must both be array or object");
-  }
-
+): AnyVal {
   // default options
   options = options || { flatten: false };
 
+  // take care of missing inputs
+  if (isMissing(target) || isNil(target)) return obj;
+  if (isMissing(obj) || isNil(obj)) return target;
+
+  // fail only on initial input.
+  if (!mergeable(target, obj)) {
+    if (options.skipValidation) return obj || target;
+    throw Error("mismatched types. must both be array or object");
+  }
+
+  // skip validation after initial input.
+  options.skipValidation = true;
+
   if (isArray(target)) {
-    const result = target as Array<ArrayOrObject>;
-    const input = obj as Array<ArrayOrObject>;
+    const result = target as RawArray;
+    const input = obj as RawArray;
 
     if (options.flatten) {
       let i = 0;
       let j = 0;
       while (i < result.length && j < input.length) {
-        result[i] = merge(result[i++], input[j++], options);
+        result[i] = merge(result[i++], input[j++], options) as RawArray;
       }
       while (j < input.length) {
         result.push(obj[j++] as ArrayOrObject);
@@ -228,19 +235,13 @@ export function merge(
       into(result, input);
     }
   } else {
-    Object.keys(obj).forEach(k => {
-      if (has(obj as RawObject, k)) {
-        if (has(target, k)) {
-          target[k] = merge(
-            target[k] as ArrayOrObject,
-            obj[k] as ArrayOrObject,
-            options
-          );
-        } else {
-          target[k] = obj[k] as AnyVal;
-        }
-      }
-    });
+    for (const k in obj as RawObject) {
+      target[k] = merge(
+        target[k] as ArrayOrObject,
+        obj[k] as ArrayOrObject,
+        options
+      );
+    }
   }
 
   return target;

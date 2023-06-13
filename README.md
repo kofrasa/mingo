@@ -240,15 +240,13 @@ Query and aggregation operations can be configured with options to enabled diffe
 | collectionResolver  | Function to resolve strings to arrays for use with operators that reference other collections such as; `$lookup`, `$out` and `$merge`. | _none_                                                               | Expects function `(name: string) => Array<RawObject>`                                                                                                                                                                                                                                                                                               |
 | jsonSchemaValidator | JSON schema validator to use for the `$jsonSchema` operator.                                                                           | _none_                                                               | Expects function `(schema: RawObject) => (document: <RawObject>) => boolean`.<br> The `$jsonSchema` operation would fail if a validator is not provided.                                                                                                                                                                                            |
 | variables           | Global variables to pass to all operators                                                                                              | _none_                                                               |                                                                                                                                                                                                                                                                                                                                                     |
+| context             | The primary lookup table of operator references before falling back to globally registered ones.                                       | _none_                                                               | This option allow users to load only desired operators or register custom operators which need not be available globally.                                                                                                                                                                                                                           |
 
 ## Adding Custom Operators
 
-Custom operators can be added with the [useOperators(type, operatorMap)](http://kofrasa.net/mingo/modules/core.html#useOperators) where
-`type` is the kind of operators to add, and `operatorMap` is mapping of function names beginning with `$` to their implementations for the specific operator type.
+Custom operators can be registered using `OperatorContext` via the `context` option which is the recommended way from `6.6.0`. The `OperatorContext` is a table of operator functions by type, that the execution engine will use to process queries. Previously, the [useOperators(...)](http://kofrasa.net/mingo/modules/core.html#useOperators) function was used to register operators globally but that is no longer preferred.The difference between the two is that a globally registered operator cannot be overwritten whereas a new context may be created and used at anytime.
 
-Once an operator has been registered the function referenced cannot be replaced. This ensures that behaviour of `mingo` remain consistent at runtime.
-
-Each operator type function has a different signature and must be registered correctly otherwise the result will be unexpected.
+Each operator type has a specific interface to which an implementation must conform to be valid.
 
 - [AccumulatorOperator](http://kofrasa.net/mingo/modules/core.html#AccumulatorOperator)
 - [ExpressionOperator](http://kofrasa.net/mingo/modules/core.html#ExpressionOperator)
@@ -264,7 +262,7 @@ Pre-loaded operators defined [here](https://github.com/kofrasa/mingo/blob/master
 - Expression operators for [boolean](http://kofrasa.net/mingo/modules/operators_expression_boolean.html) and [comparison](http://kofrasa.net/mingo/modules/operators_expression_comparison.html).
 - Pipeline [operators](http://kofrasa.net/mingo/modules/operators_pipeline.html); `$project`, `$skip`, `$limit`, and `$sort`.
 
-> _Adding custom update operators is not supported._
+> NB: _Update operators is not supported in OperatorContext._
 
 ## Updating Documents
 
@@ -306,19 +304,19 @@ You can also create a preconfigured updater function.
 import { createUpdater } from "mingo/updater";
 
 // configure updater to deep clone passed values.
-const updateObject = createUpdater({ cloneMode: "deep" })
+const updateObject = createUpdater({ cloneMode: "deep" });
 
-const state = { people: ["Fred", "John"] }
-const newPeople = ["Amy", "Mark"]
+const state = { people: ["Fred", "John"] };
+const newPeople = ["Amy", "Mark"];
 
-console.log(state.people) // ["Fred", "John"]
+console.log(state.people); // ["Fred", "John"]
 
-updateObject(state, { $set: { people: newPeople } })
+updateObject(state, { $set: { people: newPeople } });
 
-newPeople.push("Jason")
+newPeople.push("Jason");
 
-console.log(state.people) // ["Amy", "Mark"]
-console.log(newPeople) // ["Amy", "Mark", "Jason"]
+console.log(state.people); // ["Amy", "Mark"]
+console.log(newPeople); // ["Amy", "Mark", "Jason"]
 ```
 
 ## Differences from MongoDB

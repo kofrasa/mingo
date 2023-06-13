@@ -1,7 +1,12 @@
-import { OperatorMap, OperatorType, Options, useOperators } from "../../core";
+import {
+  initOptions,
+  OperatorContext,
+  OperatorType,
+  Options
+} from "../../core";
 import { Iterator } from "../../lazy";
 import { AnyVal } from "../../types";
-import { assert, has, isObject } from "../../util";
+import { assert, has, isObject, merge } from "../../util";
 import { $ifNull } from "../expression/conditional/ifNull";
 import { $addFields } from "./addFields";
 import { $setWindowFields } from "./setWindowFields";
@@ -18,9 +23,6 @@ const FILL_METHODS: Record<string, string> = {
   linear: "$linearFill"
 };
 
-// ensure $ifNull expression is loaded.
-useOperators(OperatorType.EXPRESSION, { $ifNull } as OperatorMap);
-
 /**
  * Populates null and missing field values within documents.
  *
@@ -33,6 +35,13 @@ export function $fill(
   expr: InputExpr,
   options: Options
 ): Iterator {
+  const opts = initOptions({
+    ...options,
+    context: merge(
+      { [OperatorType.EXPRESSION]: { $ifNull } },
+      options.context
+    ) as OperatorContext
+  });
   assert(!expr.sortBy || isObject(expr.sortBy), "sortBy must be an object.");
   assert(
     !!expr.sortBy || Object.values(expr.output).every(m => has(m, "value")),
@@ -78,13 +87,13 @@ export function $fill(
         partitionBy: partitionExpr,
         output: methodExpr
       },
-      options
+      opts
     );
   }
 
   // fill with values
   if (Object.keys(valueExpr).length > 0) {
-    collection = $addFields(collection, valueExpr, options);
+    collection = $addFields(collection, valueExpr, opts);
   }
 
   return collection;

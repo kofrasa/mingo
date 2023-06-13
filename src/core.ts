@@ -2,11 +2,11 @@ import { Iterator } from "./lazy";
 import {
   AnyVal,
   ArrayOrObject,
-  Callback,
   HashFunction,
   Predicate,
   RawArray,
-  RawObject
+  RawObject,
+  WindowOperatorInput
 } from "./types";
 import {
   assert,
@@ -106,6 +106,8 @@ export interface Options {
   readonly jsonSchemaValidator?: JsonSchemaValidator;
   /** Global variables. */
   readonly variables?: Readonly<RawObject>;
+  /** Extra references to operators to be used for processing. */
+  readonly context?: OperatorContext;
 }
 
 interface LocalData {
@@ -145,9 +147,9 @@ export class ComputeOptions implements Options {
       ? options.update(
           // value can be '0' or 'false'
           isNil(options.root) ? root : options.root,
-          Object.assign({}, options.local, local || {})
+          Object.assign({}, options.local, local)
         )
-      : new ComputeOptions(options || initOptions(), root, local);
+      : new ComputeOptions(initOptions(options), root, local);
   }
 
   /** Updates the internal mutable state. */
@@ -196,6 +198,9 @@ export class ComputeOptions implements Options {
   get variables() {
     return this.options?.variables;
   }
+  get context() {
+    return this.options?.context;
+  }
 }
 
 /**
@@ -242,7 +247,7 @@ export enum OperatorType {
 export type AccumulatorOperator = (
   collection: RawObject[],
   expr: AnyVal,
-  options?: Options
+  options: Options
 ) => AnyVal;
 
 export type ExpressionOperator = (
@@ -273,16 +278,19 @@ export type QueryOperator = (
 export type WindowOperator = (
   obj: RawObject,
   array: RawObject[],
-  expr: {
-    parentExpr: AnyVal;
-    inputExpr: AnyVal;
-    documentNumber: number;
-    field: string;
-  },
+  expr: WindowOperatorInput,
   options: Options
 ) => AnyVal;
 
-type Operator =
+/** Interface for update operators */
+export type UpdateOperator = (
+  obj: RawObject,
+  expr: RawObject,
+  arrayFilters: RawObject[],
+  options: UpdateOptions
+) => string[];
+
+type OperatorFunction =
   | AccumulatorOperator
   | ExpressionOperator
   | PipelineOperator
@@ -291,10 +299,21 @@ type Operator =
   | WindowOperator;
 
 /** Map of operator functions */
-export type OperatorMap = Record<string, Operator>;
+export type OperatorMap = Record<string, OperatorFunction>;
+
+type OperatorName = `$${string}`;
+
+export type OperatorContext = Partial<{
+  [OperatorType.ACCUMULATOR]: Record<OperatorName, AccumulatorOperator>;
+  [OperatorType.EXPRESSION]: Record<OperatorName, ExpressionOperator>;
+  [OperatorType.PIPELINE]: Record<OperatorName, PipelineOperator>;
+  [OperatorType.PROJECTION]: Record<OperatorName, ProjectionOperator>;
+  [OperatorType.QUERY]: Record<OperatorName, QueryOperator>;
+  [OperatorType.WINDOW]: Record<OperatorName, WindowOperator>;
+}>;
 
 // operator definitions
-const OPERATORS: Record<OperatorType, OperatorMap> = {
+const OPERATORS: OperatorContext = {
   [OperatorType.ACCUMULATOR]: {},
   [OperatorType.EXPRESSION]: {},
   [OperatorType.PIPELINE]: {},
@@ -315,7 +334,7 @@ export function useOperators(type: OperatorType, operators: OperatorMap): void {
       isFunction(fn) && isOperator(name),
       `'${name}' is not a valid operator`
     );
-    const currentFn = getOperator(type, name);
+    const currentFn = getOperator(type, name, {});
     assert(
       !currentFn || fn === currentFn,
       `${name} already exists for '${type}' operators. Cannot change operator function once registered.`
@@ -330,8 +349,15 @@ export function useOperators(type: OperatorType, operators: OperatorMap): void {
  * @param type Type of operator
  * @param operator Name of the operator
  */
-export function getOperator(type: OperatorType, operator: string): Callback {
-  return OPERATORS[type][operator];
+export function getOperator(
+  type: OperatorType,
+  operator: string,
+  context: Partial<OperatorContext>
+): OperatorFunction {
+  const fn = (
+    context && context[type] ? context[type][operator] : null
+  ) as OperatorFunction;
+  return (fn ? fn : OPERATORS[type][operator]) as OperatorFunction;
 }
 
 /* eslint-disable unused-imports/no-unused-vars-ts */
@@ -429,11 +455,19 @@ export function computeValue(
 
   if (isOperator(operator)) {
     // if the field of the object is a valid operator
-    const callExpression = getOperator(OperatorType.EXPRESSION, operator);
+    const callExpression = getOperator(
+      OperatorType.EXPRESSION,
+      operator,
+      options?.context
+    ) as ExpressionOperator;
     if (callExpression) return callExpression(obj as RawObject, expr, copts);
 
     // we also handle $group accumulator operators
-    const callAccumulator = getOperator(OperatorType.ACCUMULATOR, operator);
+    const callAccumulator = getOperator(
+      OperatorType.ACCUMULATOR,
+      operator,
+      options?.context
+    ) as AccumulatorOperator;
     if (callAccumulator) {
       // if object is not an array, first try to compute using the expression
       if (!(obj instanceof Array)) {
@@ -517,8 +551,8 @@ export function computeValue(
       // must run ONLY one aggregate operator per expression
       // if so, return result of the computed value
       if (
-        [OperatorType.EXPRESSION, OperatorType.ACCUMULATOR].some(c =>
-          has(OPERATORS[c], key)
+        [OperatorType.EXPRESSION, OperatorType.ACCUMULATOR].some(
+          t => !!getOperator(t, key, options?.context)
         )
       ) {
         // there should be only one operator

@@ -4,12 +4,13 @@ import {
   Callback,
   GroupByOutput,
   RawArray,
-  RawObject
+  RawObject,
+  WindowOperatorInput
 } from "../../types";
 import { groupBy, isEqual } from "../../util";
 import { $push } from "../accumulator";
 import { MILLIS_PER_DAY } from "../expression/date/_internal";
-import { isUnbounded, WindowOperatorInput } from "../pipeline/_internal";
+import { isUnbounded } from "../pipeline/_internal";
 
 export type TimeUnit =
   | "week"

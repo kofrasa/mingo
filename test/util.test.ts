@@ -72,7 +72,7 @@ describe("util", () => {
       expect(result).toStrictEqual({ a: 1, b: 2 });
     });
 
-    it("throws for mismatched input and output types", () => {
+    it("should accept rvalue for mismatched inputs", () => {
       const target = { a: 1 };
       expect(() => merge(target, [])).toThrowError();
     });

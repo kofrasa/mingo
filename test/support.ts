@@ -1,3 +1,21 @@
+// load all operators
+// import { OperatorContext, OperatorType } from "../src/core";
+// import * as accumulatorOperators from "../src/operators/accumulator";
+// import * as expressionOperators from "../src/operators/expression";
+// import * as pipelineOperators from "../src/operators/pipeline";
+// import * as projectionOperators from "../src/operators/projection";
+// import * as queryOperators from "../src/operators/query";
+// import * as windowOperators from "../src/operators/window";
+
+/** The full context of all operators defined in the library. */
+// export const FULL_CONTEXT: OperatorContext = {
+//   [OperatorType.ACCUMULATOR]: accumulatorOperators,
+//   [OperatorType.EXPRESSION]: expressionOperators,
+//   [OperatorType.PIPELINE]: pipelineOperators,
+//   [OperatorType.PROJECTION]: projectionOperators,
+//   [OperatorType.QUERY]: queryOperators,
+//   [OperatorType.WINDOW]: windowOperators
+// };
 import "../src/init/system";
 
 import { aggregate } from "../src";

@@ -1,4 +1,10 @@
-import { getOperator, initOptions, OperatorType, Options } from "./core";
+import {
+  getOperator,
+  initOptions,
+  OperatorType,
+  Options,
+  QueryOperator
+} from "./core";
 import { Cursor } from "./cursor";
 import { Source } from "./lazy";
 import { AnyVal, Callback, Predicate, RawObject } from "./types";
@@ -61,11 +67,15 @@ export class Query {
     operator: string,
     value: AnyVal
   ): void {
-    const call = getOperator(OperatorType.QUERY, operator);
+    const call = getOperator(
+      OperatorType.QUERY,
+      operator,
+      this.options?.context
+    ) as QueryOperator;
     if (!call) {
       throw new Error(`unknown operator ${operator}`);
     }
-    const fn = call(field, value, this.options) as Callback<AnyVal>;
+    const fn = call(field, value, this.options) as Callback<boolean, RawObject>;
     this.compiled.push(fn);
   }
 

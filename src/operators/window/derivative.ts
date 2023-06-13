@@ -1,8 +1,7 @@
 import { Options } from "../../core";
-import { AnyVal, Callback, RawObject } from "../../types";
+import { AnyVal, Callback, RawObject, WindowOperatorInput } from "../../types";
 import { isNumber } from "../../util";
 import { $push } from "../accumulator";
-import { WindowOperatorInput } from "../pipeline/_internal";
 import { MILLIS_PER_UNIT, TimeUnit } from "./_internal";
 
 /**

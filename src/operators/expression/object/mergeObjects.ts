@@ -15,9 +15,9 @@ export function $mergeObjects(
   obj: RawObject,
   expr: AnyVal,
   options: Options
-): AnyVal {
+): RawObject {
   const docs = computeValue(obj, expr, null, options) as RawObject[];
   return docs instanceof Array
-    ? docs.reduce((memo, o) => into(memo, o), {})
+    ? docs.reduce((memo, o) => into(memo, o) as RawObject, {})
     : {};
 }

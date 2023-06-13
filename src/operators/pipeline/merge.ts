@@ -3,7 +3,7 @@ import { ComputeOptions, computeValue, Options } from "../../core";
 import { Iterator } from "../../lazy";
 import { RawObject } from "../../types";
 import { assert, hashCode, isArray, isString, resolve } from "../../util";
-import { $mergeObjects } from "../accumulator";
+import { $mergeObjects } from "../expression";
 
 interface InputExpr {
   readonly into: string | RawObject[];
@@ -108,7 +108,7 @@ export function $merge(
               [target, o],
               // 'root' is the item from the iteration.
               copts.update(o, { variables })
-            ) as RawObject;
+            );
             break;
         }
       }

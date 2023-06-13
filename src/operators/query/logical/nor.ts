@@ -1,6 +1,6 @@
 // Query Logical Operators: https://docs.mongodb.com/manual/reference/operator/query-logical/
 
-import { Options } from "../../../core";
+import { Options, QueryOperator } from "../../../core";
 import { AnyVal, Callback, RawObject } from "../../../types";
 import { assert, isArray } from "../../../util";
 import { $or } from "./or";
@@ -12,15 +12,15 @@ import { $or } from "./or";
  * @param rhs
  * @returns {Function}
  */
-export function $nor(
+export const $nor: QueryOperator = (
   _: string,
   rhs: Array<RawObject>,
   options: Options
-): Callback<boolean> {
+): Callback<boolean> => {
   assert(
     isArray(rhs),
     "Invalid expression. $nor expects value to be an array."
   );
   const f: Callback<boolean> = $or("$or", rhs, options);
   return (obj: AnyVal) => !f(obj);
-}
+};

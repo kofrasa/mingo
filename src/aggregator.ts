@@ -3,10 +3,11 @@ import {
   initOptions,
   OperatorType,
   Options,
+  PipelineOperator,
   ProcessingMode
 } from "./core";
 import { Iterator, Lazy, Source } from "./lazy";
-import { Callback, RawObject } from "./types";
+import { RawObject } from "./types";
 import { assert, cloneDeep, intersection, isEmpty } from "./util";
 
 /**
@@ -42,22 +43,24 @@ export class Aggregator {
       iterator.map(cloneDeep);
     }
 
-    const pipelineOperators: string[] = [];
+    const pipelineOperators = new Array<string>();
     if (!isEmpty(this.pipeline)) {
       // run aggregation pipeline
       for (const operator of this.pipeline) {
         const operatorKeys = Object.keys(operator);
-        const op = operatorKeys[0];
+        const opName = operatorKeys[0];
         const call = getOperator(
           OperatorType.PIPELINE,
-          op
-        ) as Callback<Iterator>;
+          opName,
+          this.options.context
+        ) as PipelineOperator;
         assert(
           operatorKeys.length === 1 && !!call,
-          `invalid aggregation operator ${op}`
+          `invalid aggregation operator ${opName}`
         );
-        pipelineOperators.push(op);
-        iterator = call(iterator, operator[op], this.options);
+        pipelineOperators.push(opName);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        iterator = call(iterator, operator[opName], this.options);
       }
     }
 

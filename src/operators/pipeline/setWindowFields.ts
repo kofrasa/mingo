@@ -3,20 +3,26 @@
 import {
   AccumulatorOperator,
   getOperator,
+  initOptions,
+  OperatorContext,
   OperatorType,
   Options,
   WindowOperator
 } from "../../core";
 import { compose, Iterator, Lazy } from "../../lazy";
-import { AnyVal, Callback, RawArray, RawObject } from "../../types";
-import { assert, isNumber, isOperator, isString } from "../../util";
-import { $dateAdd } from "../expression/date/dateAdd";
 import {
+  AnyVal,
   Boundary,
-  isUnbounded,
+  Callback,
+  RawArray,
+  RawObject,
   SetWindowFieldsInput,
   WindowOutputOption
-} from "./_internal";
+} from "../../types";
+import { assert, isNumber, isOperator, isString, merge } from "../../util";
+import { $function } from "../expression";
+import { $dateAdd } from "../expression/date/dateAdd";
+import { isUnbounded } from "./_internal";
 import { $addFields } from "./addFields";
 import { $group } from "./group";
 import { $sort } from "./sort";
@@ -55,13 +61,20 @@ export function $setWindowFields(
   expr: SetWindowFieldsInput,
   options: Options
 ): Iterator {
+  const opts = initOptions({
+    ...options,
+    context: merge(
+      { [OperatorType.EXPRESSION]: { $function } },
+      options.context
+    ) as OperatorContext
+  });
   // validate inputs early since this can be an expensive operation.
   for (const outputExpr of Object.values(expr.output)) {
     const keys = Object.keys(outputExpr);
     const op = keys.find(isOperator);
     assert(
-      !!getOperator(OperatorType.WINDOW, op) ||
-        !!getOperator(OperatorType.ACCUMULATOR, op),
+      !!getOperator(OperatorType.WINDOW, op, opts?.context) ||
+        !!getOperator(OperatorType.ACCUMULATOR, op, opts?.context),
       `'${op}' is not a valid window operator`
     );
 
@@ -85,7 +98,7 @@ export function $setWindowFields(
 
   // we sort first if required
   if (expr.sortBy) {
-    collection = $sort(collection, expr.sortBy, options);
+    collection = $sort(collection, expr.sortBy, opts);
   }
 
   // then partition collection
@@ -95,7 +108,7 @@ export function $setWindowFields(
       _id: expr.partitionBy,
       items: { $push: "$$CURRENT" }
     },
-    options
+    opts
   );
 
   // transform values
@@ -118,8 +131,16 @@ export function $setWindowFields(
       const config = {
         operatorName: op,
         func: {
-          left: getOperator(OperatorType.ACCUMULATOR, op),
-          right: getOperator(OperatorType.WINDOW, op)
+          left: getOperator(
+            OperatorType.ACCUMULATOR,
+            op,
+            opts?.context
+          ) as AccumulatorOperator,
+          right: getOperator(
+            OperatorType.WINDOW,
+            op,
+            opts?.context
+          ) as WindowOperator
         },
         args: outputExpr[op],
         field: field,
@@ -164,7 +185,7 @@ export function $setWindowFields(
 
             // process accumulator function
             if (func.left) {
-              return func.left(getItemsFn(obj, index), args, options);
+              return func.left(getItemsFn(obj, index), args, opts);
             } else if (func.right) {
               // OR process 'window' function
               return func.right(
@@ -177,7 +198,7 @@ export function $setWindowFields(
                   field
                 },
                 // must use raw options only since it operates over a collection.
-                options
+                opts
               );
             }
           };
@@ -232,7 +253,7 @@ export function $setWindowFields(
                         unit,
                         amount
                       },
-                      options
+                      opts
                     ) as Date
                   ).getTime();
                 };
@@ -276,7 +297,7 @@ export function $setWindowFields(
               }
             }
           },
-          options
+          opts
         );
       }
 

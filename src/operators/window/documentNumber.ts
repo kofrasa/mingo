@@ -1,6 +1,5 @@
 import { Options } from "../../core";
-import { AnyVal, RawObject } from "../../types";
-import { WindowOperatorInput } from "../pipeline/_internal";
+import { AnyVal, RawObject, WindowOperatorInput } from "../../types";
 
 /** Returns the position of a document in the $setWindowFields stage partition. */
 export function $documentNumber(
