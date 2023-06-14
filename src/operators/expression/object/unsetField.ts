@@ -1,6 +1,6 @@
 // Object Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#object-expression-operators
 
-import { Options } from "../../../core";
+import { ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
 import { $setField } from "./setField";
 
@@ -17,11 +17,11 @@ interface InputExpr {
  * @param {*} expr The right-hand side of the operator
  * @param {Options} options Options to use for operation
  */
-export function $unsetField(
+export const $unsetField: ExpressionOperator = (
   obj: RawObject,
   expr: InputExpr,
   options: Options
-): AnyVal {
+): AnyVal => {
   return $setField(
     obj,
     {
@@ -30,4 +30,4 @@ export function $unsetField(
     },
     options
   );
-}
+};

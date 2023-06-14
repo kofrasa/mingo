@@ -7,6 +7,7 @@ import {
   OperatorContext,
   OperatorType,
   Options,
+  PipelineOperator,
   WindowOperator
 } from "../../core";
 import { compose, Iterator, Lazy } from "../../lazy";
@@ -56,11 +57,11 @@ const WINDOW_UNBOUNDED_OPS = new Set([
  * @param  {Options} options
  * @return {*}
  */
-export function $setWindowFields(
+export const $setWindowFields: PipelineOperator = (
   collection: Iterator,
   expr: SetWindowFieldsInput,
   options: Options
-): Iterator {
+): Iterator => {
   const opts = initOptions({
     ...options,
     context: merge(
@@ -245,16 +246,14 @@ export function $setWindowFields(
               if (unit) {
                 // we are dealing with datetimes
                 const getTime = (amount: number): number => {
-                  return (
-                    $dateAdd(
-                      current,
-                      {
-                        startDate: new Date(current[sortKey] as Date),
-                        unit,
-                        amount
-                      },
-                      opts
-                    ) as Date
+                  return $dateAdd(
+                    current,
+                    {
+                      startDate: new Date(current[sortKey] as Date),
+                      unit,
+                      amount
+                    },
+                    opts
                   ).getTime();
                 };
                 lower = isNumber(begin) ? getTime(begin) : -Infinity;
@@ -307,4 +306,4 @@ export function $setWindowFields(
 
     return compose(...iterators);
   }) as Callback<Iterator>);
-}
+};

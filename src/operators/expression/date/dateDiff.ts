@@ -1,6 +1,6 @@
 // Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, Duration, RawObject } from "../../../types";
 import { computeDate, DURATION_IN_MILLIS } from "./_internal";
 
@@ -10,11 +10,11 @@ import { computeDate, DURATION_IN_MILLIS } from "./_internal";
  * @param expr
  * @param options Options
  */
-export function $dateDiff(
+export const $dateDiff: ExpressionOperator<number> = (
   obj: RawObject,
   expr: RawObject,
   options: Options
-): AnyVal {
+): number => {
   const args = computeValue(obj, expr, null, options) as {
     startDate: AnyVal;
     endDate: AnyVal;
@@ -26,7 +26,7 @@ export function $dateDiff(
   const d1 = computeDate(obj, expr.startDate, options);
   const d2 = computeDate(obj, expr.endDate, options);
 
-  let diff;
+  let diff: number;
   switch (args.unit) {
     case "year":
     case "quarter":
@@ -38,7 +38,7 @@ export function $dateDiff(
   }
 
   return diff;
-}
+};
 
 const unitMonths = {
   year: 12,

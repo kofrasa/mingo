@@ -1,6 +1,6 @@
 // $sample operator -  https://docs.mongodb.com/manual/reference/operator/aggregation/sample/
 
-import { Options } from "../../core";
+import { Options, PipelineOperator } from "../../core";
 import { Iterator, Source } from "../../lazy";
 import { Callback, RawArray } from "../../types";
 
@@ -9,14 +9,14 @@ import { Callback, RawArray } from "../../types";
  *
  * @param  {Iterator} collection
  * @param  {Object} expr
- * @param  {Options} options
+ * @param  {Options} _options
  * @return {*}
  */
-export function $sample(
+export const $sample: PipelineOperator = (
   collection: Iterator,
   expr: { size: number },
-  options: Options
-): Iterator {
+  _options: Options
+): Iterator => {
   return collection.transform(((xs: RawArray) => {
     const len = xs.length;
     let i = -1;
@@ -26,4 +26,4 @@ export function $sample(
       return { value: xs[n], done: false };
     };
   }) as Callback<Source>);
-}
+};

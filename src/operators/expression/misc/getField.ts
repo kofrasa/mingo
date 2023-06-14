@@ -1,6 +1,6 @@
 // Miscellaneous Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/rand/#mongodb-expression-exp.-rand
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
 import { assert, isNil, isObject, isString } from "../../../util";
 
@@ -16,11 +16,11 @@ interface InputExpr {
  * @param {*} expr The right-hand side of the operator
  * @param {Options} options Options to use for operation
  */
-export function $getField(
+export const $getField: ExpressionOperator = (
   obj: RawObject,
   expr: InputExpr | string,
   options: Options
-): AnyVal {
+): AnyVal => {
   const args = computeValue(obj, expr, null, options) as InputExpr | string;
   let input = obj;
   let field = args as string;
@@ -41,4 +41,4 @@ export function $getField(
   );
 
   return input[field];
-}
+};

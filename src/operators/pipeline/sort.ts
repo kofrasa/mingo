@@ -1,4 +1,4 @@
-import { CollationSpec, Options } from "../../core";
+import { CollationSpec, Options, PipelineOperator } from "../../core";
 import { Iterator } from "../../lazy";
 import { AnyVal, Comparator, RawArray, RawObject } from "../../types";
 import {
@@ -19,11 +19,11 @@ import {
  * @param  {Object} options
  * @returns {*}
  */
-export function $sort(
+export const $sort: PipelineOperator = (
   collection: Iterator,
   sortKeys: Record<string, 1 | -1>,
   options: Options
-): Iterator {
+): Iterator => {
   if (isEmpty(sortKeys) || !isObject(sortKeys)) return collection;
 
   let cmp = compare;
@@ -55,7 +55,7 @@ export function $sort(
     }
     return coll;
   });
-}
+};
 
 // MongoDB collation strength to JS localeCompare sensitivity mapping.
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare

@@ -1,5 +1,5 @@
 import { Aggregator } from "../../aggregator";
-import { Options } from "../../core";
+import { Options, PipelineOperator } from "../../core";
 import { compose, Iterator, Lazy } from "../../lazy";
 import { RawObject } from "../../types";
 import { isString } from "../../util";
@@ -16,11 +16,11 @@ interface InputExpr {
  * @param expr
  * @param opt
  */
-export function $unionWith(
+export const $unionWith: PipelineOperator = (
   collection: Iterator,
   expr: InputExpr,
   options: Options
-): Iterator {
+): Iterator => {
   const array = isString(expr.coll)
     ? options.collectionResolver(expr.coll)
     : expr.coll;
@@ -33,4 +33,4 @@ export function $unionWith(
   );
 
   return compose(...iterators);
-}
+};

@@ -1,6 +1,6 @@
 // Boolean Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#boolean-expression-operators
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawArray, RawObject } from "../../../types";
 import { truthy } from "../../../util";
 
@@ -11,10 +11,14 @@ import { truthy } from "../../../util";
  * @param expr
  * @returns {boolean}
  */
-export function $and(obj: RawObject, expr: AnyVal, options: Options): AnyVal {
+export const $and: ExpressionOperator = (
+  obj: RawObject,
+  expr: AnyVal,
+  options: Options
+): AnyVal => {
   const value = computeValue(obj, expr, null, options) as RawArray;
   return (
     truthy(value, options.useStrictMode) &&
     value.every(v => truthy(v, options.useStrictMode))
   );
-}
+};

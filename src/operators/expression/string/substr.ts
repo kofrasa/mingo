@@ -2,7 +2,7 @@
  * String Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators
  */
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawArray, RawObject } from "../../../types";
 import { isString } from "../../../util";
 
@@ -14,11 +14,11 @@ import { isString } from "../../../util";
  * @param expr
  * @returns {string}
  */
-export function $substr(
+export const $substr: ExpressionOperator = (
   obj: RawObject,
   expr: AnyVal,
   options: Options
-): AnyVal {
+): AnyVal => {
   const args = computeValue(obj, expr, null, options) as RawArray;
   const s = args[0] as string;
   const index = args[1] as number;
@@ -33,4 +33,4 @@ export function $substr(
     }
   }
   return "";
-}
+};

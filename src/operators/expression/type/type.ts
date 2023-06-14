@@ -2,15 +2,15 @@
  * Type Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#type-expression-operators
  */
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, BsonType, JsType, RawObject } from "../../../types";
 import { getType, MAX_INT, MIN_INT } from "../../../util";
 
-export function $type(
+export const $type: ExpressionOperator = (
   obj: RawObject,
   expr: AnyVal,
   options: Options
-): BsonType {
+): BsonType => {
   const val = computeValue(obj, expr, null, options) as number;
   const typename = getType(val);
   const nativeType = typename.toLowerCase() as JsType;
@@ -25,4 +25,4 @@ export function $type(
     default:
       return nativeType as BsonType;
   }
-}
+};

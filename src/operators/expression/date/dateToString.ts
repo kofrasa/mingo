@@ -1,7 +1,7 @@
 // Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
 
-import { computeValue, Options } from "../../../core";
-import { AnyVal, Callback, RawObject } from "../../../types";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
+import { AnyVal, RawObject } from "../../../types";
 import { assert, isNil, isObject } from "../../../util";
 import {
   adjustDate,
@@ -32,7 +32,7 @@ interface DateOptions {
 }
 
 // date functions for format specifiers
-const DATE_FUNCTIONS: Record<string, Callback<number>> = {
+const DATE_FUNCTIONS: Record<string, ExpressionOperator<number>> = {
   "%Y": $year,
   "%G": $year,
   "%m": $month,
@@ -66,11 +66,11 @@ const DATE_FUNCTIONS: Record<string, Callback<number>> = {
  * @param obj current object
  * @param expr operator expression
  */
-export function $dateToString(
+export const $dateToString: ExpressionOperator<string> = (
   obj: RawObject,
   expr: AnyVal,
   options: Options
-): string {
+): string => {
   const args = computeValue(obj, expr, null, options) as DateOptions;
 
   if (isNil(args.onNull)) args.onNull = null;
@@ -109,4 +109,4 @@ export function $dateToString(
   }
 
   return format;
-}
+};

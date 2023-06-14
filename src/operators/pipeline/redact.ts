@@ -1,4 +1,4 @@
-import { ComputeOptions, Options, redact } from "../../core";
+import { ComputeOptions, Options, PipelineOperator, redact } from "../../core";
 import { Iterator } from "../../lazy";
 import { Callback, RawObject } from "../../types";
 
@@ -7,12 +7,12 @@ import { Callback, RawObject } from "../../types";
  *
  * https://docs.mongodb.com/manual/reference/operator/aggregation/redact/
  */
-export function $redact(
+export const $redact: PipelineOperator = (
   collection: Iterator,
   expr: RawObject,
   options: Options
-): Iterator {
+): Iterator => {
   const copts = ComputeOptions.init(options);
   return collection.map(((obj: RawObject) =>
     redact(obj, expr, copts.update(obj))) as Callback);
-}
+};

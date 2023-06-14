@@ -2,7 +2,7 @@
  * Set Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#set-expression-operators
  */
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, Callback, RawArray, RawObject } from "../../../types";
 import { notInArray } from "../../../util";
 
@@ -11,11 +11,11 @@ import { notInArray } from "../../../util";
  * @param obj
  * @param expr
  */
-export function $setDifference(
+export const $setDifference: ExpressionOperator = (
   obj: RawObject,
   expr: AnyVal,
   options: Options
-): AnyVal {
+): AnyVal => {
   const args = computeValue(obj, expr, null, options) as RawArray[];
   return args[0].filter(notInArray.bind(null, args[1]) as Callback);
-}
+};

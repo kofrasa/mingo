@@ -1,4 +1,4 @@
-import { Options } from "../../core";
+import { Options, PipelineOperator } from "../../core";
 import { Iterator, Lazy } from "../../lazy";
 import { AnyVal, Callback, RawObject } from "../../types";
 import {
@@ -18,7 +18,7 @@ import {
  * @param options
  * @returns {Array}
  */
-export function $unwind(
+export const $unwind: PipelineOperator = (
   collection: Iterator,
   expr:
     | string
@@ -27,8 +27,8 @@ export function $unwind(
         includeArrayIndex?: string;
         preserveNullAndEmptyArrays?: boolean;
       },
-  options: Options
-): Iterator {
+  _options: Options
+): Iterator => {
   if (isString(expr)) expr = { path: expr };
 
   const path = expr.path;
@@ -82,4 +82,4 @@ export function $unwind(
       }
     }
   });
-}
+};

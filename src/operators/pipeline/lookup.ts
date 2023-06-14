@@ -1,4 +1,4 @@
-import { Options } from "../../core";
+import { Options, PipelineOperator } from "../../core";
 import { Iterator } from "../../lazy";
 import { RawArray, RawObject } from "../../types";
 import { assert, hashCode, into, isString, resolve } from "../../util";
@@ -10,7 +10,7 @@ import { assert, hashCode, into, isString, resolve } from "../../util";
  * @param expr
  * @param opt
  */
-export function $lookup(
+export const $lookup: PipelineOperator = (
   collection: Iterator,
   expr: {
     from: string | RawObject[];
@@ -19,7 +19,7 @@ export function $lookup(
     as: string;
   },
   options: Options
-): Iterator {
+): Iterator => {
   const joinColl = isString(expr.from)
     ? options?.collectionResolver(expr.from)
     : expr.from;
@@ -39,4 +39,4 @@ export function $lookup(
     newObj[expr.as] = hash[k] || [];
     return newObj;
   });
-}
+};

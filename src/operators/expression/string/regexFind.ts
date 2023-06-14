@@ -2,7 +2,7 @@
  * String Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators
  */
 
-import { Options } from "../../../core";
+import { ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
 import { regexSearch } from "./_internal";
 
@@ -12,11 +12,11 @@ import { regexSearch } from "./_internal";
  * @param obj
  * @param expr
  */
-export function $regexFind(
+export const $regexFind: ExpressionOperator = (
   obj: RawObject,
   expr: AnyVal,
   options: Options
-): AnyVal {
+): AnyVal => {
   const result = regexSearch(obj, expr, options, { global: false });
   return result && result.length > 0 ? result[0] : null;
-}
+};

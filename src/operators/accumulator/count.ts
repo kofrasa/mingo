@@ -1,4 +1,4 @@
-import { Options } from "../../core";
+import { AccumulatorOperator, Options } from "../../core";
 import { AnyVal, RawObject } from "../../types";
 
 /**
@@ -8,10 +8,8 @@ import { AnyVal, RawObject } from "../../types";
  * @param {Object} expr The right-hand side expression value of the operator
  * @returns {*}
  */
-export function $count(
+export const $count: AccumulatorOperator = (
   collection: RawObject[],
-  expr: AnyVal,
-  options: Options
-): AnyVal {
-  return collection.length;
-}
+  _expr: AnyVal,
+  _options: Options
+): number => collection.length;

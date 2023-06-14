@@ -1,6 +1,6 @@
 // Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawArray, RawObject } from "../../../types";
 import { assert, isArray, isNil } from "../../../util";
 
@@ -11,11 +11,11 @@ import { assert, isArray, isNil } from "../../../util";
  * @param  {*} expr
  * @return {*}
  */
-export function $reverseArray(
+export const $reverseArray: ExpressionOperator = (
   obj: RawObject,
   expr: AnyVal,
   options: Options
-): AnyVal {
+): AnyVal => {
   const arr = computeValue(obj, expr, null, options) as RawArray;
 
   if (isNil(arr)) return null;
@@ -24,4 +24,4 @@ export function $reverseArray(
   const result = arr.slice(0);
   result.reverse();
   return result;
-}
+};

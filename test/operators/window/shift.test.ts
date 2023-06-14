@@ -1,7 +1,11 @@
-import "../../../src/init/system";
-
 import { aggregate } from "../../../src";
 import { initOptions, ProcessingMode } from "../../../src/core";
+import { DEFAULT_OPTS } from "../../support";
+
+const options = initOptions({
+  ...DEFAULT_OPTS,
+  processingMode: ProcessingMode.CLONE_INPUT
+});
 
 const data = [
   {
@@ -53,8 +57,6 @@ const data = [
     quantity: 134
   }
 ];
-
-const options = initOptions({ processingMode: ProcessingMode.CLONE_INPUT });
 
 describe("operators/window/shift", () => {
   describe("$shift", () => {

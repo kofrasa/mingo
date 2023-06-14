@@ -2,7 +2,7 @@
  * Type Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#type-expression-operators
  */
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
 import { isNil } from "../../../util";
 import { TypeConvertError } from "./_internal";
@@ -26,11 +26,11 @@ interface ConvertOptions {
  * @param obj
  * @param expr
  */
-export function $convert(
+export const $convert: ExpressionOperator = (
   obj: RawObject,
   expr: AnyVal,
   options: Options
-): AnyVal {
+): AnyVal => {
   const args = computeValue(obj, expr, null, options) as ConvertOptions;
 
   args.onNull = args.onNull === undefined ? null : args.onNull;
@@ -74,4 +74,4 @@ export function $convert(
   if (args.onError !== undefined) return args.onError;
 
   throw new TypeConvertError(`could not convert to type ${args.to}.`);
-}
+};

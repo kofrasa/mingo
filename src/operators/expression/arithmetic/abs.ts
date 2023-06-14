@@ -1,6 +1,6 @@
 // Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
 import { isNil } from "../../../util";
 
@@ -11,11 +11,11 @@ import { isNil } from "../../../util";
  * @param expr
  * @return {Number|null|NaN}
  */
-export function $abs(
+export const $abs: ExpressionOperator = (
   obj: RawObject,
   expr: AnyVal,
   options: Options
-): number | null {
+): number | null => {
   const n = computeValue(obj, expr, null, options) as number;
   return isNil(n) ? null : Math.abs(n);
-}
+};

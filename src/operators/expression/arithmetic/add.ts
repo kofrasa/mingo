@@ -1,6 +1,6 @@
 // Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
 import { assert, isDate } from "../../../util";
 
@@ -11,11 +11,11 @@ import { assert, isDate } from "../../../util";
  * @param expr
  * @returns {Object}
  */
-export function $add(
+export const $add: ExpressionOperator = (
   obj: RawObject,
   expr: AnyVal,
   options: Options
-): number | Date {
+): number | Date => {
   const args = computeValue(obj, expr, null, options) as AnyVal[];
   let foundDate = false;
   const result = args.reduce((acc: number, val: AnyVal) => {
@@ -29,4 +29,4 @@ export function $add(
     return acc;
   }, 0) as number;
   return foundDate ? new Date(result) : result;
-}
+};

@@ -1,6 +1,6 @@
 // Comparison Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#comparison-expression-operators
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
 
 /**
@@ -10,9 +10,13 @@ import { AnyVal, RawObject } from "../../../types";
  * @param expr
  * @returns {number}
  */
-export function $cmp(obj: RawObject, expr: AnyVal, options: Options): AnyVal {
+export const $cmp: ExpressionOperator = (
+  obj: RawObject,
+  expr: AnyVal,
+  options: Options
+): AnyVal => {
   const args = computeValue(obj, expr, null, options);
   if (args[0] > args[1]) return 1;
   if (args[0] < args[1]) return -1;
   return 0;
-}
+};

@@ -2,7 +2,7 @@
  * Type Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#type-expression-operators
  */
 
-import { Options } from "../../../core";
+import { ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
 import { MAX_INT, MIN_INT } from "../../../util";
 import { toInteger } from "./_internal";
@@ -12,10 +12,10 @@ import { toInteger } from "./_internal";
  * @param obj
  * @param expr
  */
-export function $toInt(
+export const $toInt: ExpressionOperator = (
   obj: RawObject,
   expr: AnyVal,
   options: Options
-): number | null {
+): number | null => {
   return toInteger(obj, expr, options, MAX_INT, MIN_INT, "int");
-}
+};

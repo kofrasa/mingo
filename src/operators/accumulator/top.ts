@@ -1,6 +1,6 @@
 // https://www.mongodb.com/docs/manual/reference/operator/aggregation/top/#mongodb-group-grp.-top
-import { Options } from "../../core";
-import { AnyVal, RawObject } from "../../types";
+import { AccumulatorOperator, Options } from "../../core";
+import { AnyVal, RawArray, RawObject } from "../../types";
 import { $topN } from "./topN";
 
 /**
@@ -11,10 +11,8 @@ import { $topN } from "./topN";
  * @param {Options} options The options to use for this operation
  * @returns {*}
  */
-export function $top(
+export const $top: AccumulatorOperator = (
   collection: RawObject[],
   expr: { sortBy: Record<string, number>; output: AnyVal },
   options: Options
-): AnyVal[] {
-  return $topN(collection, { ...expr, n: 1 }, options);
-}
+): RawArray => $topN(collection, { ...expr, n: 1 }, options);

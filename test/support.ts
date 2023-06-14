@@ -1,30 +1,37 @@
 // load all operators
-// import { OperatorContext, OperatorType } from "../src/core";
-// import * as accumulatorOperators from "../src/operators/accumulator";
-// import * as expressionOperators from "../src/operators/expression";
-// import * as pipelineOperators from "../src/operators/pipeline";
-// import * as projectionOperators from "../src/operators/projection";
-// import * as queryOperators from "../src/operators/query";
-// import * as windowOperators from "../src/operators/window";
-
-/** The full context of all operators defined in the library. */
-// export const FULL_CONTEXT: OperatorContext = {
-//   [OperatorType.ACCUMULATOR]: accumulatorOperators,
-//   [OperatorType.EXPRESSION]: expressionOperators,
-//   [OperatorType.PIPELINE]: pipelineOperators,
-//   [OperatorType.PROJECTION]: projectionOperators,
-//   [OperatorType.QUERY]: queryOperators,
-//   [OperatorType.WINDOW]: windowOperators
-// };
-import "../src/init/system";
-
+// import "../src/init/system";
 import { aggregate } from "../src";
-import { computeValue, Options, ProcessingMode } from "../src/core";
+import {
+  computeValue,
+  initOptions,
+  OperatorContext,
+  OperatorType,
+  Options,
+  ProcessingMode
+} from "../src/core";
+import * as accumulatorOperators from "../src/operators/accumulator";
+import * as expressionOperators from "../src/operators/expression";
+import * as pipelineOperators from "../src/operators/pipeline";
+import * as projectionOperators from "../src/operators/projection";
+import * as queryOperators from "../src/operators/query";
+import * as windowOperators from "../src/operators/window";
 import { AnyVal, Callback, RawArray, RawObject } from "../src/types";
 import complexGrades from "./data/grades_complex";
 import simpleGrades from "./data/grades_simple";
 import person from "./data/person";
 import students from "./data/students";
+
+/** The full context of all operators defined in the library. */
+const FULL_CONTEXT: OperatorContext = {
+  [OperatorType.ACCUMULATOR]: accumulatorOperators,
+  [OperatorType.EXPRESSION]: expressionOperators,
+  [OperatorType.PIPELINE]: pipelineOperators,
+  [OperatorType.PROJECTION]: projectionOperators,
+  [OperatorType.QUERY]: queryOperators,
+  [OperatorType.WINDOW]: windowOperators
+};
+
+export const DEFAULT_OPTS = initOptions({ context: FULL_CONTEXT });
 
 export const complexGradesData = complexGrades;
 export const simpleGradesData = simpleGrades;
@@ -209,7 +216,7 @@ export function runTest(
             });
           } else {
             it(`${prefix} => ${JSON.stringify(expected)}`, () => {
-              let actual = computeValue(obj, input, field);
+              let actual = computeValue(obj, input, field, DEFAULT_OPTS);
               // NaNs don't compare
               if (actual !== actual && expected !== expected) {
                 actual = expected = 0;
@@ -243,10 +250,11 @@ export function runTestPipeline(
       const actual = aggregate(
         input,
         pipeline,
-        Object.assign(
-          { processingMode: ProcessingMode.CLONE_INPUT } as Options,
-          options
-        )
+        initOptions({
+          ...DEFAULT_OPTS,
+          ...options,
+          processingMode: ProcessingMode.CLONE_INPUT
+        })
       );
       it(message, () => {
         if (typeof expected === "function") {

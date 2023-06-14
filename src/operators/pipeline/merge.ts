@@ -1,5 +1,10 @@
 import { Aggregator } from "../../aggregator";
-import { ComputeOptions, computeValue, Options } from "../../core";
+import {
+  ComputeOptions,
+  computeValue,
+  Options,
+  PipelineOperator
+} from "../../core";
 import { Iterator } from "../../lazy";
 import { RawObject } from "../../types";
 import { assert, hashCode, isArray, isString, resolve } from "../../util";
@@ -32,11 +37,11 @@ interface InputExpr {
  * @param options
  * @returns {*}
  */
-export function $merge(
+export const $merge: PipelineOperator = (
   collection: Iterator,
   expr: InputExpr,
   options: Options
-): Iterator {
+): Iterator => {
   const output: RawObject[] = isString(expr.into)
     ? options?.collectionResolver(expr.into)
     : expr.into;
@@ -86,7 +91,7 @@ export function $merge(
 
       if (isArray(expr.whenMatched)) {
         const aggregator = new Aggregator(expr.whenMatched, {
-          ...copts.options,
+          ...options,
           variables
         });
         output[i] = aggregator.run([target])[0];
@@ -129,4 +134,4 @@ export function $merge(
 
     return o; // passthrough
   });
-}
+};

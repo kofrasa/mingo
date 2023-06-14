@@ -1,6 +1,6 @@
 // https://www.mongodb.com/docs/manual/reference/operator/aggregation/bottom/#mongodb-group-grp.-bottom
-import { Options } from "../../core";
-import { AnyVal, RawObject } from "../../types";
+import { AccumulatorOperator, Options } from "../../core";
+import { AnyVal, RawArray, RawObject } from "../../types";
 import { $bottomN } from "./bottomN";
 
 /**
@@ -11,10 +11,8 @@ import { $bottomN } from "./bottomN";
  * @param {Options} options The options to use for this operation
  * @returns {*}
  */
-export function $bottom(
+export const $bottom: AccumulatorOperator = (
   collection: RawObject[],
   expr: { sortBy: Record<string, number>; output: AnyVal },
   options: Options
-): AnyVal[] {
-  return $bottomN(collection, { ...expr, n: 1 }, options);
-}
+): RawArray => $bottomN(collection, { ...expr, n: 1 }, options);

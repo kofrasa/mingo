@@ -1,6 +1,6 @@
 // Object Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#object-expression-operators
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
 import { assert, isObject } from "../../../util";
 
@@ -11,11 +11,11 @@ import { assert, isObject } from "../../../util";
  * @param {*} expr The right-hand side of the operator
  * @param {Options} options Options to use for operation
  */
-export function $objectToArray(
+export const $objectToArray: ExpressionOperator = (
   obj: RawObject,
   expr: AnyVal,
   options: Options
-): AnyVal {
+): AnyVal => {
   const val = computeValue(obj, expr, null, options) as RawObject;
   assert(isObject(val), "$objectToArray expression must resolve to an object");
   const entries = Object.entries(val);
@@ -25,4 +25,4 @@ export function $objectToArray(
     result[i++] = { k, v };
   }
   return result;
-}
+};

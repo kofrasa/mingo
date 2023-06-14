@@ -1,6 +1,11 @@
 // Custom Aggregation Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#custom-aggregation-expression-operators
 
-import { ComputeOptions, computeValue, Options } from "../../core";
+import {
+  AccumulatorOperator,
+  ComputeOptions,
+  computeValue,
+  Options
+} from "../../core";
 import { AnyVal, Callback, RawArray, RawObject } from "../../types";
 import { assert } from "../../util";
 
@@ -27,11 +32,11 @@ interface AccumulatorExpr {
  * @param {*} expr The expression for the operator
  * @param {Options} options Options
  */
-export function $accumulator(
+export const $accumulator: AccumulatorOperator = (
   collection: RawObject[],
   expr: AccumulatorExpr,
   options: Options
-): AnyVal {
+): AnyVal => {
   assert(
     !!options && options.scriptEnabled,
     "$accumulator operator requires 'scriptEnabled' option to be true"
@@ -64,4 +69,4 @@ export function $accumulator(
   }
 
   return (expr.finalize ? expr.finalize.call(null, state) : state) as AnyVal;
-}
+};

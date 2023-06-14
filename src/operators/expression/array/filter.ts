@@ -1,6 +1,11 @@
 // Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
 
-import { ComputeOptions, computeValue, Options } from "../../../core";
+import {
+  ComputeOptions,
+  computeValue,
+  ExpressionOperator,
+  Options
+} from "../../../core";
 import { AnyVal, RawArray, RawObject } from "../../../types";
 import { assert, isArray, truthy } from "../../../util";
 
@@ -11,11 +16,11 @@ import { assert, isArray, truthy } from "../../../util";
  * @param  {*} expr The filter spec
  * @return {*}
  */
-export function $filter(
+export const $filter: ExpressionOperator = (
   obj: RawObject,
   expr: { input: RawArray; as: string; cond: AnyVal },
   options: Options
-): RawArray {
+): RawArray => {
   const input = computeValue(obj, expr.input, null, options) as RawArray;
   assert(isArray(input), "$filter 'input' expression must resolve to an array");
 
@@ -35,4 +40,4 @@ export function $filter(
     // allow empty strings only in strict MongoDB mode (default).
     return truthy(b, options.useStrictMode);
   });
-}
+};

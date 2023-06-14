@@ -1,6 +1,6 @@
 // Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
 import { assert, isNil, isNumber } from "../../../util";
 
@@ -11,13 +11,13 @@ import { assert, isNil, isNumber } from "../../../util";
  * @param expr
  * @returns {number}
  */
-export function $ln(
+export const $ln: ExpressionOperator = (
   obj: RawObject,
   expr: AnyVal,
   options: Options
-): number | null {
+): number | null => {
   const n = computeValue(obj, expr, null, options) as number;
   if (isNil(n)) return null;
   assert(isNumber(n) || isNaN(n), "$ln expression must resolve to a number.");
   return Math.log(n);
-}
+};

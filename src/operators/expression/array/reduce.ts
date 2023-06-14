@@ -1,6 +1,11 @@
 // Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
 
-import { ComputeOptions, computeValue, Options } from "../../../core";
+import {
+  ComputeOptions,
+  computeValue,
+  ExpressionOperator,
+  Options
+} from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
 import { assert, isArray, isNil } from "../../../util";
 
@@ -10,11 +15,11 @@ import { assert, isArray, isNil } from "../../../util";
  * @param {Object} obj
  * @param {*} expr
  */
-export function $reduce(
+export const $reduce: ExpressionOperator = (
   obj: RawObject,
   expr: RawObject,
   options: Options
-): AnyVal {
+): AnyVal => {
   const copts = ComputeOptions.init(options);
   const input = computeValue(obj, expr.input, null, copts) as AnyVal[];
   const initialValue = computeValue(obj, expr.initialValue, null, copts);
@@ -33,4 +38,4 @@ export function $reduce(
       })
     );
   }, initialValue);
-}
+};

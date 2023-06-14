@@ -10,9 +10,9 @@ import {
 } from "../src/core";
 import { AnyVal, RawArray, RawObject } from "../src/types";
 import { isNumber, resolve } from "../src/util";
-import * as support from "./support";
+import { complexGradesData, DEFAULT_OPTS } from "./support";
 
-const copts = ComputeOptions.init();
+const copts = ComputeOptions.init(DEFAULT_OPTS);
 
 describe("core", () => {
   afterEach(() => {
@@ -62,22 +62,26 @@ describe("core", () => {
     it("should add new pipeline operator", () => {
       function $pluck(collection: AnyVal, expr: AnyVal): AnyVal {
         const array = collection as Array<{ __temp__: AnyVal }>;
-        const agg = new Aggregator([{ $project: { __temp__: expr } }]);
+        const agg = new Aggregator(
+          [{ $project: { __temp__: expr } }],
+          DEFAULT_OPTS
+        );
         return agg.stream(array).map(item => (item as RawObject)["__temp__"]);
       }
 
       useOperators(OperatorType.PIPELINE, { $pluck });
 
-      const result = aggregate(support.complexGradesData, [
-        { $unwind: "$scores" },
-        { $pluck: "$scores.score" }
-      ]);
+      const result = aggregate(
+        complexGradesData,
+        [{ $unwind: "$scores" }, { $pluck: "$scores.score" }],
+        DEFAULT_OPTS
+      );
 
       expect(isNumber(result[0])).toBe(true);
     });
 
     it("should add new query operator", () => {
-      function $between(selector: string, rhs: AnyVal, options?: Options) {
+      function $between(selector: string, rhs: AnyVal, _options?: Options) {
         const args = rhs as number[];
         // const value = lhs as number;
         return (obj: RawObject): boolean => {
@@ -94,7 +98,12 @@ describe("core", () => {
         { a: 10, b: 6 },
         { a: 20, b: 10 }
       ];
-      const result = find(coll, { a: { $between: [5, 10] } }).all();
+      const result = find(
+        coll,
+        { a: { $between: [5, 10] } },
+        {},
+        DEFAULT_OPTS
+      ).all();
       expect(result.length).toBe(2);
     });
 
@@ -108,7 +117,7 @@ describe("core", () => {
           );
           const avg = result[0].avg as number;
           const diffs = collection.map(item => {
-            const v = (computeValue(item, expr, null) as number) - avg;
+            const v = (computeValue(item, expr, null, options) as number) - avg;
             return v * v;
           });
           const variance =
@@ -119,10 +128,14 @@ describe("core", () => {
         }
       });
 
-      const result = aggregate(support.complexGradesData, [
-        { $unwind: "$scores" },
-        { $group: { _id: null, stddev: { $stddev: "$scores.score" } } }
-      ]);
+      const result = aggregate(
+        complexGradesData,
+        [
+          { $unwind: "$scores" },
+          { $group: { _id: null, stddev: { $stddev: "$scores.score" } } }
+        ],
+        DEFAULT_OPTS
+      );
       expect(result.length).toBe(1);
       expect(result[0].stddev).toEqual(28.57362029450366);
     });
@@ -130,11 +143,18 @@ describe("core", () => {
 
   describe("computeValue", () => {
     it("throws for invalid operator", () => {
-      expect(() => computeValue({}, {}, "$fakeOperator")).toThrow(Error);
+      expect(() => computeValue({}, {}, "$fakeOperator", DEFAULT_OPTS)).toThrow(
+        Error
+      );
     });
 
     it("computes current timestamp using $$NOW", () => {
-      const result = computeValue({}, { date: "$$NOW" }, null) as {
+      const result = computeValue(
+        {},
+        { date: "$$NOW" },
+        null,
+        DEFAULT_OPTS
+      ) as {
         date: Date;
       };
       expect(result.date).toBeInstanceOf(Date);

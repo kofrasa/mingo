@@ -120,36 +120,36 @@ interface LocalData {
 /** Custom type to facilitate type checking for global options */
 export class ComputeOptions implements Options {
   private constructor(
-    readonly options: Options,
+    readonly opts: Options,
     /** Reference to the root object when processing subgraphs of the object. */
     private _root: AnyVal,
     private _local?: LocalData,
     /** The current time in milliseconds. Remains the same throughout all stages of the aggregation pipeline. */
     readonly timestamp = Date.now()
   ) {
-    this.options = options;
     this.update(_root, _local);
   }
 
   /**
-   * Initialize new ComputeOptions. Returns the same object modified when the 'options' argument is a ComputeOptions.
+   * Initialize new ComputeOptions.
+   *
    * @param options
    * @param root
    * @param local
-   * @returns
+   * @returns {ComputeOptions}
    */
   static init(
-    options?: Options,
+    options: Options,
     root?: AnyVal,
     local?: LocalData
   ): ComputeOptions {
     return options instanceof ComputeOptions
-      ? options.update(
-          // value can be '0' or 'false'
+      ? new ComputeOptions(
+          options.opts,
           isNil(options.root) ? root : options.root,
           Object.assign({}, options.local, local)
         )
-      : new ComputeOptions(initOptions(options), root, local);
+      : new ComputeOptions(options, root, local);
   }
 
   /** Updates the internal mutable state. */
@@ -172,34 +172,34 @@ export class ComputeOptions implements Options {
     return this._local;
   }
   get idKey() {
-    return this.options.idKey;
+    return this.opts.idKey;
   }
   get collation() {
-    return this.options?.collation;
+    return this.opts?.collation;
   }
   get processingMode() {
-    return this.options?.processingMode || ProcessingMode.CLONE_OFF;
+    return this.opts?.processingMode || ProcessingMode.CLONE_OFF;
   }
   get useStrictMode() {
-    return this.options?.useStrictMode;
+    return this.opts?.useStrictMode;
   }
   get scriptEnabled() {
-    return this.options?.scriptEnabled;
+    return this.opts?.scriptEnabled;
   }
   get hashFunction() {
-    return this.options?.hashFunction;
+    return this.opts?.hashFunction;
   }
   get collectionResolver() {
-    return this.options?.collectionResolver;
+    return this.opts?.collectionResolver;
   }
   get jsonSchemaValidator() {
-    return this.options?.jsonSchemaValidator;
+    return this.opts?.jsonSchemaValidator;
   }
   get variables() {
-    return this.options?.variables;
+    return this.opts?.variables;
   }
   get context() {
-    return this.options?.context;
+    return this.opts?.context;
   }
 }
 
@@ -208,13 +208,15 @@ export class ComputeOptions implements Options {
  * @param options Options
  */
 export function initOptions(options?: Partial<Options>): Options {
-  return Object.freeze({
-    idKey: "_id",
-    scriptEnabled: true,
-    useStrictMode: true,
-    processingMode: ProcessingMode.CLONE_OFF,
-    ...options
-  });
+  return options instanceof ComputeOptions
+    ? options.opts
+    : Object.freeze({
+        idKey: "_id",
+        scriptEnabled: true,
+        useStrictMode: true,
+        processingMode: ProcessingMode.CLONE_OFF,
+        ...options
+      });
 }
 
 /**
@@ -244,17 +246,17 @@ export enum OperatorType {
   WINDOW = "window"
 }
 
-export type AccumulatorOperator = (
+export type AccumulatorOperator<R = AnyVal> = (
   collection: RawObject[],
   expr: AnyVal,
   options: Options
-) => AnyVal;
+) => R;
 
-export type ExpressionOperator = (
+export type ExpressionOperator<R = AnyVal> = (
   obj: RawObject,
   expr: AnyVal | RawObject | RawArray,
   options: Options
-) => AnyVal;
+) => R;
 
 export type PipelineOperator = (
   collection: Iterator,

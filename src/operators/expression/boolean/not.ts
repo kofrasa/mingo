@@ -1,6 +1,6 @@
 // Boolean Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#boolean-expression-operators
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
 import { ensureArray } from "../../../util";
 
@@ -11,7 +11,11 @@ import { ensureArray } from "../../../util";
  * @param expr Right hand side expression of operator
  * @returns {boolean}
  */
-export function $not(obj: RawObject, expr: AnyVal, options: Options): AnyVal {
+export const $not: ExpressionOperator = (
+  obj: RawObject,
+  expr: AnyVal,
+  options: Options
+): AnyVal => {
   const booleanExpr = ensureArray(expr);
   // array values are truthy so an emty array is false
   if (booleanExpr.length == 0) return false;
@@ -20,4 +24,4 @@ export function $not(obj: RawObject, expr: AnyVal, options: Options): AnyVal {
     return !computeValue(obj, booleanExpr[0], null, options);
   // expects a single argument
   throw "Expression $not takes exactly 1 argument";
-}
+};

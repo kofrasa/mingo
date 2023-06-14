@@ -1,7 +1,12 @@
 // https://www.mongodb.com/docs/manual/reference/operator/aggregation/bottomN/#mongodb-group-grp.-bottomN
 import { Aggregator } from "../../aggregator";
-import { ComputeOptions, computeValue, Options } from "../../core";
-import { AnyVal, RawObject } from "../../types";
+import {
+  AccumulatorOperator,
+  ComputeOptions,
+  computeValue,
+  Options
+} from "../../core";
+import { AnyVal, RawArray, RawObject } from "../../types";
 import { $push } from "./push";
 
 interface InputExpr {
@@ -19,11 +24,11 @@ interface InputExpr {
  * @param {Options} options The options to use for this operation
  * @returns {*}
  */
-export function $bottomN(
+export const $bottomN: AccumulatorOperator<RawArray> = (
   collection: RawObject[],
   expr: InputExpr,
   options: Options
-): AnyVal[] {
+): RawArray => {
   const copts = ComputeOptions.init(options);
   const { n, sortBy } = computeValue(
     copts.local.groupId,
@@ -32,11 +37,9 @@ export function $bottomN(
     copts
   ) as Pick<InputExpr, "n" | "sortBy">;
 
-  const result = new Aggregator([{ $sort: sortBy }], copts.options).run(
-    collection
-  );
+  const result = new Aggregator([{ $sort: sortBy }], copts).run(collection);
 
   const m = result.length;
   const p = n as number;
   return $push(m <= p ? result : result.slice(m - p), expr.output, copts);
-}
+};

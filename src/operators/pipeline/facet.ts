@@ -1,5 +1,5 @@
 import { Aggregator } from "../../aggregator";
-import { Options, ProcessingMode } from "../../core";
+import { Options, PipelineOperator, ProcessingMode } from "../../core";
 import { Iterator } from "../../lazy";
 import { Callback, RawObject } from "../../types";
 
@@ -7,11 +7,11 @@ import { Callback, RawObject } from "../../types";
  * Processes multiple aggregation pipelines within a single stage on the same set of input documents.
  * Enables the creation of multi-faceted aggregations capable of characterizing data across multiple dimensions, or facets, in a single stage.
  */
-export function $facet(
+export const $facet: PipelineOperator = (
   collection: Iterator,
   expr: Record<string, RawObject[]>,
   options: Options
-): Iterator {
+): Iterator => {
   return collection.transform(((array: RawObject[]) => {
     const o: RawObject = {};
     for (const [k, pipeline] of Object.entries(expr)) {
@@ -22,4 +22,4 @@ export function $facet(
     }
     return [o];
   }) as Callback<RawObject[]>);
-}
+};

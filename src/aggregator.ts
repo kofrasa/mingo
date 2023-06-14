@@ -30,7 +30,6 @@ export class Aggregator {
    * Returns an `Lazy` iterator for processing results of pipeline
    *
    * @param {*} collection An array or iterator object
-   * @param {Query} query the `Query` object to use as context
    * @returns {Iterator} an iterator object
    */
   stream(collection: Source): Iterator {
@@ -54,9 +53,10 @@ export class Aggregator {
           opName,
           this.options.context
         ) as PipelineOperator;
+
         assert(
           operatorKeys.length === 1 && !!call,
-          `invalid aggregation operator ${opName}`
+          `invalid pipeline operator ${opName}`
         );
         pipelineOperators.push(opName);
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

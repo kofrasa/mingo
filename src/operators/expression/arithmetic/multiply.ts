@@ -1,6 +1,6 @@
 // Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
 
 /**
@@ -10,11 +10,11 @@ import { AnyVal, RawObject } from "../../../types";
  * @param expr
  * @returns {Object}
  */
-export function $multiply(
+export const $multiply: ExpressionOperator = (
   obj: RawObject,
   expr: AnyVal,
   options: Options
-): number {
+): number => {
   const args = computeValue(obj, expr, null, options) as number[];
   return args.reduce((acc, num) => acc * num, 1);
-}
+};

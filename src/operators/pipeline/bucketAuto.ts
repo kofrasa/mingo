@@ -1,4 +1,4 @@
-import { computeValue, Options } from "../../core";
+import { computeValue, Options, PipelineOperator } from "../../core";
 import { Iterator } from "../../lazy";
 import { AnyVal, RawArray, RawObject } from "../../types";
 import { assert, has, into, isNil, memoize, sortBy } from "../../util";
@@ -18,7 +18,7 @@ interface Boundary extends RawObject {
  * @param {*} expr
  * @param {*} options
  */
-export function $bucketAuto(
+export const $bucketAuto: PipelineOperator = (
   collection: Iterator,
   expr: {
     groupBy: AnyVal;
@@ -27,7 +27,7 @@ export function $bucketAuto(
     granularity: string;
   },
   options: Options
-): Iterator {
+): Iterator => {
   const outputExpr = expr.output || { count: { $sum: 1 } };
   const groupByExpr = expr.groupBy;
   const bucketCount = expr.buckets;
@@ -122,4 +122,4 @@ export function $bucketAuto(
 
     return result;
   });
-}
+};

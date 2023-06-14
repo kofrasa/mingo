@@ -1,4 +1,4 @@
-import { Options } from "../../core";
+import { Options, PipelineOperator } from "../../core";
 import { Iterator } from "../../lazy";
 
 /**
@@ -9,10 +9,10 @@ import { Iterator } from "../../lazy";
  * @param options
  * @returns {Object|*}
  */
-export function $limit(
+export const $limit: PipelineOperator = (
   collection: Iterator,
   expr: number,
   options: Options
-): Iterator {
+): Iterator => {
   return collection.take(expr);
-}
+};

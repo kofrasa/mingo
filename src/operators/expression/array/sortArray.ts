@@ -1,7 +1,7 @@
 // https://www.mongodb.com/docs/manual/reference/operator/aggregation/sortArray/#mongodb-expression-exp.-sortArray
 
 import { Aggregator } from "../../../aggregator";
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawArray, RawObject } from "../../../types";
 import { assert, compare, isArray, isNil, isObject } from "../../../util";
 
@@ -13,11 +13,11 @@ import { assert, compare, isArray, isNil, isObject } from "../../../util";
  * @param options Options
  * @returns
  */
-export function $sortArray(
+export const $sortArray: ExpressionOperator = (
   obj: RawObject,
   expr: AnyVal,
   options: Options
-): AnyVal {
+): AnyVal => {
   const { input, sortBy } = computeValue(obj, expr, null, options) as {
     input: RawArray;
     sortBy: RawObject | number;
@@ -34,4 +34,4 @@ export function $sortArray(
   result.sort(compare);
   if (sortBy === -1) result.reverse();
   return result;
-}
+};

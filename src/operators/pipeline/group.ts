@@ -1,4 +1,9 @@
-import { ComputeOptions, computeValue, Options } from "../../core";
+import {
+  ComputeOptions,
+  computeValue,
+  Options,
+  PipelineOperator
+} from "../../core";
 import { Iterator, Source } from "../../lazy";
 import { Callback, RawArray, RawObject } from "../../types";
 import { assert, groupBy, has } from "../../util";
@@ -14,11 +19,11 @@ const ID_KEY = "_id";
  * @param options
  * @returns {Array}
  */
-export function $group(
+export const $group: PipelineOperator = (
   collection: Iterator,
   expr: RawObject,
   options: Options
-): Iterator {
+): Iterator => {
   assert(has(expr, ID_KEY), "a group specification must include an _id");
   const idExpr = expr[ID_KEY];
   const copts = ComputeOptions.init(options);
@@ -62,4 +67,4 @@ export function $group(
       return { value: obj, done: false };
     };
   }) as Callback<Source>);
-}
+};

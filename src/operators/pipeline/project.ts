@@ -4,6 +4,7 @@ import {
   getOperator,
   OperatorType,
   Options,
+  PipelineOperator,
   ProjectionOperator
 } from "../../core";
 import { Iterator } from "../../lazy";
@@ -37,11 +38,11 @@ import {
  * @param opt
  * @returns {Array}
  */
-export function $project(
+export const $project: PipelineOperator = (
   collection: Iterator,
   expr: RawObject,
   options: Options
-): Iterator {
+): Iterator => {
   if (isEmpty(expr)) return collection;
 
   // result collection
@@ -75,7 +76,7 @@ export function $project(
       expressionKeys,
       idOnlyExcluded
     )) as Callback);
-}
+};
 
 /**
  * Process the expression value for $project operators

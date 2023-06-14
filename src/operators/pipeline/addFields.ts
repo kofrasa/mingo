@@ -1,4 +1,4 @@
-import { computeValue, Options } from "../../core";
+import { computeValue, Options, PipelineOperator } from "../../core";
 import { Iterator } from "../../lazy";
 import { Callback, RawObject } from "../../types";
 import { removeValue, setValue } from "../../util";
@@ -11,11 +11,11 @@ import { removeValue, setValue } from "../../util";
  * @param {Object} expr
  * @param {Options} options
  */
-export function $addFields(
+export const $addFields: PipelineOperator = (
   collection: Iterator,
   expr: RawObject,
   options: Options
-): Iterator {
+): Iterator => {
   const newFields = Object.keys(expr);
 
   if (newFields.length === 0) return collection;
@@ -32,4 +32,4 @@ export function $addFields(
     }
     return newObj;
   }) as Callback<RawObject>);
-}
+};

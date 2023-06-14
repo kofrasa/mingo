@@ -1,9 +1,12 @@
-import "../../../src/init/system";
-
 import { aggregate } from "../../../src";
-import { ProcessingMode } from "../../../src/core";
+import { initOptions, ProcessingMode } from "../../../src/core";
+import { DEFAULT_OPTS } from "../../support";
 
-const options = { processingMode: ProcessingMode.CLONE_INPUT };
+const options = initOptions({
+  ...DEFAULT_OPTS,
+  processingMode: ProcessingMode.CLONE_INPUT
+});
+
 const data = [
   {
     _id: 0,
@@ -11,7 +14,7 @@ const data = [
     orderDate: new Date("2020-05-18T14:10:30Z"),
     state: "CA",
     price: 13,
-    quantity: 120,
+    quantity: 120
   },
   {
     _id: 1,
@@ -19,7 +22,7 @@ const data = [
     orderDate: new Date("2021-03-20T11:30:05Z"),
     state: "WA",
     price: 14,
-    quantity: 140,
+    quantity: 140
   },
   {
     _id: 2,
@@ -27,7 +30,7 @@ const data = [
     orderDate: new Date("2021-01-11T06:31:15Z"),
     state: "CA",
     price: 12,
-    quantity: 145,
+    quantity: 145
   },
   {
     _id: 3,
@@ -35,7 +38,7 @@ const data = [
     orderDate: new Date("2020-02-08T13:13:23Z"),
     state: "WA",
     price: 13,
-    quantity: 104,
+    quantity: 104
   },
   {
     _id: 4,
@@ -43,7 +46,7 @@ const data = [
     orderDate: new Date("2019-05-18T16:09:01Z"),
     state: "CA",
     price: 41,
-    quantity: 162,
+    quantity: 162
   },
   {
     _id: 5,
@@ -51,8 +54,8 @@ const data = [
     orderDate: new Date("2019-01-08T06:12:03Z"),
     state: "WA",
     price: 43,
-    quantity: 134,
-  },
+    quantity: 134
+  }
 ];
 
 describe("operators/window/denseRank", () => {
@@ -67,11 +70,11 @@ describe("operators/window/denseRank", () => {
               sortBy: { quantity: -1 },
               output: {
                 denseRankQuantityForState: {
-                  $denseRank: {},
-                },
-              },
-            },
-          },
+                  $denseRank: {}
+                }
+              }
+            }
+          }
         ],
         options
       );
@@ -84,7 +87,7 @@ describe("operators/window/denseRank", () => {
           state: "CA",
           price: 41,
           quantity: 162,
-          denseRankQuantityForState: 1,
+          denseRankQuantityForState: 1
         },
         {
           _id: 2,
@@ -93,7 +96,7 @@ describe("operators/window/denseRank", () => {
           state: "CA",
           price: 12,
           quantity: 145,
-          denseRankQuantityForState: 2,
+          denseRankQuantityForState: 2
         },
         {
           _id: 0,
@@ -102,7 +105,7 @@ describe("operators/window/denseRank", () => {
           state: "CA",
           price: 13,
           quantity: 120,
-          denseRankQuantityForState: 3,
+          denseRankQuantityForState: 3
         },
         {
           _id: 1,
@@ -111,7 +114,7 @@ describe("operators/window/denseRank", () => {
           state: "WA",
           price: 14,
           quantity: 140,
-          denseRankQuantityForState: 1,
+          denseRankQuantityForState: 1
         },
         {
           _id: 5,
@@ -120,7 +123,7 @@ describe("operators/window/denseRank", () => {
           state: "WA",
           price: 43,
           quantity: 134,
-          denseRankQuantityForState: 2,
+          denseRankQuantityForState: 2
         },
         {
           _id: 3,
@@ -129,8 +132,8 @@ describe("operators/window/denseRank", () => {
           state: "WA",
           price: 13,
           quantity: 104,
-          denseRankQuantityForState: 3,
-        },
+          denseRankQuantityForState: 3
+        }
       ]);
     });
 
@@ -144,11 +147,11 @@ describe("operators/window/denseRank", () => {
               sortBy: { orderDate: 1 },
               output: {
                 denseRankOrderDateForState: {
-                  $denseRank: {},
-                },
-              },
-            },
-          },
+                  $denseRank: {}
+                }
+              }
+            }
+          }
         ],
         options
       );
@@ -161,7 +164,7 @@ describe("operators/window/denseRank", () => {
           state: "WA",
           price: 43,
           quantity: 134,
-          denseRankOrderDateForState: 1,
+          denseRankOrderDateForState: 1
         },
         {
           _id: 3,
@@ -170,7 +173,7 @@ describe("operators/window/denseRank", () => {
           state: "WA",
           price: 13,
           quantity: 104,
-          denseRankOrderDateForState: 2,
+          denseRankOrderDateForState: 2
         },
         {
           _id: 1,
@@ -179,7 +182,7 @@ describe("operators/window/denseRank", () => {
           state: "WA",
           price: 14,
           quantity: 140,
-          denseRankOrderDateForState: 3,
+          denseRankOrderDateForState: 3
         },
         {
           _id: 4,
@@ -188,7 +191,7 @@ describe("operators/window/denseRank", () => {
           state: "CA",
           price: 41,
           quantity: 162,
-          denseRankOrderDateForState: 1,
+          denseRankOrderDateForState: 1
         },
         {
           _id: 0,
@@ -197,7 +200,7 @@ describe("operators/window/denseRank", () => {
           state: "CA",
           price: 13,
           quantity: 120,
-          denseRankOrderDateForState: 2,
+          denseRankOrderDateForState: 2
         },
         {
           _id: 2,
@@ -206,8 +209,8 @@ describe("operators/window/denseRank", () => {
           state: "CA",
           price: 12,
           quantity: 145,
-          denseRankOrderDateForState: 3,
-        },
+          denseRankOrderDateForState: 3
+        }
       ]);
     });
 
@@ -220,7 +223,7 @@ describe("operators/window/denseRank", () => {
           { name: "Sam", age: 12 },
           { name: "Raul", age: 13 },
           { name: "Penny", age: 12 },
-          { name: "Penny", age: 12 },
+          { name: "Penny", age: 12 }
         ],
         [
           {
@@ -229,11 +232,11 @@ describe("operators/window/denseRank", () => {
               sortBy: { name: 1 },
               output: {
                 rank: {
-                  $denseRank: {},
-                },
-              },
-            },
-          },
+                  $denseRank: {}
+                }
+              }
+            }
+          }
         ],
         options
       );
@@ -245,7 +248,7 @@ describe("operators/window/denseRank", () => {
         { name: "Penny", age: 12, rank: 2 },
         { name: "Penny", age: 12, rank: 2 },
         { name: "Sam", age: 12, rank: 3 },
-        { name: "Peter", age: 21, rank: 1 },
+        { name: "Peter", age: 21, rank: 1 }
       ]);
     });
   });

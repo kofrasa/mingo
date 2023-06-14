@@ -1,4 +1,4 @@
-import { Options } from "../../core";
+import { AccumulatorOperator, Options } from "../../core";
 import { AnyVal, RawObject } from "../../types";
 import { isNumber } from "../../util";
 import { $push } from "./push";
@@ -11,12 +11,12 @@ import { $push } from "./push";
  * @param {Options} options The options to use for this operation
  * @returns {Number}
  */
-export function $avg(
+export const $avg: AccumulatorOperator = (
   collection: RawObject[],
   expr: AnyVal,
   options: Options
-): number {
+): number => {
   const data = $push(collection, expr, options).filter(isNumber);
   const sum = data.reduce<number>((acc: number, n: number) => acc + n, 0);
   return sum / (data.length || 1);
-}
+};

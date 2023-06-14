@@ -2,7 +2,7 @@
  * String Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators
  */
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
 import { assert, isEqual, isNil, isString } from "../../../util";
 
@@ -13,11 +13,11 @@ import { assert, isEqual, isNil, isString } from "../../../util";
  * @param expr
  * @returns {number}
  */
-export function $strcasecmp(
+export const $strcasecmp: ExpressionOperator = (
   obj: RawObject,
   expr: AnyVal,
   options: Options
-): AnyVal {
+): AnyVal => {
   const args = computeValue(obj, expr, null, options) as Array<string>;
   let a = args[0];
   let b = args[1];
@@ -29,4 +29,4 @@ export function $strcasecmp(
   a = a.toUpperCase();
   b = b.toUpperCase();
   return (a > b && 1) || (a < b && -1) || 0;
-}
+};

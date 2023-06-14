@@ -1,6 +1,6 @@
 // Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawArray, RawObject } from "../../../types";
 import { assert, isArray, isEqual, isNil } from "../../../util";
 
@@ -12,11 +12,11 @@ import { assert, isArray, isEqual, isNil } from "../../../util";
  * @param  {*} expr
  * @return {*}
  */
-export function $indexOfArray(
+export const $indexOfArray: ExpressionOperator = (
   obj: RawObject,
   expr: AnyVal,
   options: Options
-): number {
+): number => {
   const args = computeValue(obj, expr, null, options) as RawArray;
   if (isNil(args)) return null;
 
@@ -46,4 +46,4 @@ export function $indexOfArray(
   });
 
   return index + start;
-}
+};

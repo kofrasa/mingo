@@ -1,7 +1,12 @@
 // https://www.mongodb.com/docs/manual/reference/operator/aggregation/topN/#mongodb-group-grp.-topN
 import { Aggregator } from "../../aggregator";
-import { ComputeOptions, computeValue, Options } from "../../core";
-import { AnyVal, RawObject } from "../../types";
+import {
+  AccumulatorOperator,
+  ComputeOptions,
+  computeValue,
+  Options
+} from "../../core";
+import { AnyVal, RawArray, RawObject } from "../../types";
 import { $push } from "./push";
 
 interface InputExpr {
@@ -19,11 +24,11 @@ interface InputExpr {
  * @param {Options} options The options to use for this operation
  * @returns {*}
  */
-export function $topN(
+export const $topN: AccumulatorOperator<RawArray> = (
   collection: RawObject[],
   expr: InputExpr,
   options: Options
-): AnyVal[] {
+): RawArray => {
   const copts = ComputeOptions.init(options);
   const { n, sortBy } = computeValue(
     copts.local.groupId,
@@ -32,10 +37,9 @@ export function $topN(
     copts
   ) as Pick<InputExpr, "n" | "sortBy">;
 
-  const result = new Aggregator(
-    [{ $sort: sortBy }, { $limit: n }],
-    copts.options
-  ).run(collection);
+  const result = new Aggregator([{ $sort: sortBy }, { $limit: n }], copts).run(
+    collection
+  );
 
   return $push(result, expr.output, copts);
-}
+};

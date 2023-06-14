@@ -1,6 +1,6 @@
 // Miscellaneous Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#miscellaneous-operators
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { RawObject } from "../../../types";
 
 /**
@@ -10,7 +10,7 @@ import { RawObject } from "../../../types";
  * @param {*} expr The right-hand side of the operator
  * @param {Options} options Options to use for operation
  */
-export const $sampleRate = (
+export const $sampleRate: ExpressionOperator = (
   obj: RawObject,
   expr: number,
   options: Options

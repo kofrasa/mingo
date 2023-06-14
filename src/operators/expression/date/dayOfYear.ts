@@ -1,6 +1,6 @@
 // Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
 
-import { Options } from "../../../core";
+import { ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
 import { computeDate, getDayOfYear } from "./_internal";
 
@@ -9,10 +9,10 @@ import { computeDate, getDayOfYear } from "./_internal";
  * @param obj
  * @param expr
  */
-export function $dayOfYear(
+export const $dayOfYear: ExpressionOperator<number> = (
   obj: RawObject,
   expr: AnyVal,
   options: Options
-): number {
+): number => {
   return getDayOfYear(computeDate(obj, expr, options));
-}
+};

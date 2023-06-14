@@ -1,6 +1,6 @@
 // $elemMatch operator. https://docs.mongodb.com/manual/reference/operator/projection/elemMatch/#proj._S_elemMatch
 
-import { Options } from "../../core";
+import { Options, ProjectionOperator } from "../../core";
 import { Query } from "../../query";
 import { AnyVal, RawArray, RawObject } from "../../types";
 import { assert, resolve } from "../../util";
@@ -13,12 +13,12 @@ import { assert, resolve } from "../../util";
  * @param expr
  * @returns {*}
  */
-export function $elemMatch(
+export const $elemMatch: ProjectionOperator = (
   obj: RawObject,
   expr: RawObject,
   field: string,
   options: Options
-): AnyVal {
+): AnyVal => {
   const arr = resolve(obj, field) as Array<RawObject>;
   const query = new Query(expr, options);
 
@@ -34,4 +34,4 @@ export function $elemMatch(
     }
   }
   return result.length > 0 ? result : undefined;
-}
+};

@@ -1,6 +1,6 @@
 // Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
 
 /**
@@ -10,10 +10,10 @@ import { AnyVal, RawObject } from "../../../types";
  * @param  {*}  expr
  * @return {Boolean}
  */
-export function $isArray(
+export const $isArray: ExpressionOperator = (
   obj: RawObject,
   expr: AnyVal,
   options: Options
-): AnyVal {
+): AnyVal => {
   return computeValue(obj, expr[0], null, options) instanceof Array;
-}
+};

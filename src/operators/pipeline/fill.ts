@@ -2,7 +2,8 @@ import {
   initOptions,
   OperatorContext,
   OperatorType,
-  Options
+  Options,
+  PipelineOperator
 } from "../../core";
 import { Iterator } from "../../lazy";
 import { AnyVal } from "../../types";
@@ -30,11 +31,11 @@ const FILL_METHODS: Record<string, string> = {
  * @param {Object} expr
  * @param {Options} options
  */
-export function $fill(
+export const $fill: PipelineOperator = (
   collection: Iterator,
   expr: InputExpr,
   options: Options
-): Iterator {
+): Iterator => {
   const opts = initOptions({
     ...options,
     context: merge(
@@ -97,4 +98,4 @@ export function $fill(
   }
 
   return collection;
-}
+};

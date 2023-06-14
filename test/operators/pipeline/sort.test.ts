@@ -1,6 +1,6 @@
 import { aggregate } from "../../../src";
 import { ProcessingMode } from "../../../src/core";
-import * as samples from "../../support";
+import { DEFAULT_OPTS, runTestPipeline, studentsData } from "../../support";
 
 // english
 const english = [
@@ -23,11 +23,11 @@ const french = [
 
 describe("operators/pipeline/sort", () => {
   it("can sort collection with $sort", () => {
-    const result = aggregate(samples.studentsData, [
-      { $sort: { _id: -1 } },
-      { $limit: 1 },
-      { $project: { _id: 1 } }
-    ]);
+    const result = aggregate(
+      studentsData,
+      [{ $sort: { _id: -1 } }, { $limit: 1 }, { $project: { _id: 1 } }],
+      DEFAULT_OPTS
+    );
     expect(result).toStrictEqual([{ _id: 199 }]);
   });
 
@@ -38,7 +38,8 @@ describe("operators/pipeline/sort", () => {
         { _id: "a", date: new Date(2017, 1, 1) },
         { _id: "b", date: new Date(2017, 1, 1) }
       ],
-      [{ $sort: { date: 1 } }]
+      [{ $sort: { date: 1 } }],
+      DEFAULT_OPTS
     );
     expect(result).toStrictEqual([
       { _id: "a", date: new Date(2017, 1, 1) },
@@ -57,6 +58,7 @@ describe("operators/pipeline/sort", () => {
       ],
       [{ $sort: { name: 1 } }],
       {
+        ...DEFAULT_OPTS,
         collation: {
           locale: "en",
           strength: 1
@@ -74,6 +76,7 @@ describe("operators/pipeline/sort", () => {
 
   it("can sort with locale", () => {
     const result = aggregate(english, [{ $sort: { name: 1 } }], {
+      ...DEFAULT_OPTS,
       collation: {
         locale: "en"
       },
@@ -91,6 +94,7 @@ describe("operators/pipeline/sort", () => {
 
   it("can sort with numeric odering", () => {
     const result = aggregate(english, [{ $sort: { name: 1 } }], {
+      ...DEFAULT_OPTS,
       collation: {
         locale: "en",
         numericOrdering: true
@@ -109,7 +113,7 @@ describe("operators/pipeline/sort", () => {
   });
 });
 
-samples.runTestPipeline("$sort", [
+runTestPipeline("$sort", [
   {
     message: "can sort with accented letters",
     input: french,

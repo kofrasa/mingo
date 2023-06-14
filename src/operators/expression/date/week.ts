@@ -1,6 +1,6 @@
 // Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
 
-import { Options } from "../../../core";
+import { ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
 import { computeDate, isoWeek } from "./_internal";
 
@@ -10,7 +10,11 @@ import { computeDate, isoWeek } from "./_internal";
  * @param obj
  * @param expr
  */
-export function $week(obj: RawObject, expr: AnyVal, options: Options): number {
+export const $week: ExpressionOperator<number> = (
+  obj: RawObject,
+  expr: AnyVal,
+  options: Options
+): number => {
   const d = computeDate(obj, expr, options);
   const result = isoWeek(d);
   // check for starting of year and adjust accordingly
@@ -20,4 +24,4 @@ export function $week(obj: RawObject, expr: AnyVal, options: Options): number {
   if (d.getUTCDay() == 0) return result + 1;
   // else
   return result;
-}
+};

@@ -1,9 +1,12 @@
-import "../../../src/init/system";
-
 import { aggregate } from "../../../src";
 import { initOptions, ProcessingMode } from "../../../src/core";
+import { DEFAULT_OPTS } from "../../support";
 
-const options = initOptions({ processingMode: ProcessingMode.CLONE_INPUT });
+const options = initOptions({
+  ...DEFAULT_OPTS,
+  processingMode: ProcessingMode.CLONE_INPUT
+});
+
 const data = [
   {
     _id: 0,

@@ -1,17 +1,17 @@
 // Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawArray, RawObject } from "../../../types";
 import { assert, has, isArray, isObject } from "../../../util";
 
 /**
  * Converts an array of key value pairs to a document.
  */
-export function $arrayToObject(
+export const $arrayToObject: ExpressionOperator = (
   obj: RawObject,
   expr: AnyVal,
   options: Options
-): RawObject {
+): RawObject => {
   const arr = computeValue(obj, expr, null, options) as Array<RawArray>;
   assert(isArray(arr), "$arrayToObject expression must resolve to an array");
 
@@ -31,4 +31,4 @@ export function $arrayToObject(
     }
     return newObj;
   }, {});
-}
+};

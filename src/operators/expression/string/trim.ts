@@ -2,7 +2,7 @@
  * String Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators
  */
 
-import { Options } from "../../../core";
+import { ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
 import { trimString } from "./_internal";
 
@@ -12,6 +12,10 @@ import { trimString } from "./_internal";
  * @param obj
  * @param expr
  */
-export function $trim(obj: RawObject, expr: AnyVal, options: Options): AnyVal {
+export const $trim: ExpressionOperator = (
+  obj: RawObject,
+  expr: AnyVal,
+  options: Options
+): AnyVal => {
   return trimString(obj, expr, options, { left: true, right: true });
-}
+};

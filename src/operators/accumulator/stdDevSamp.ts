@@ -1,4 +1,4 @@
-import { Options } from "../../core";
+import { AccumulatorOperator, Options } from "../../core";
 import { AnyVal, RawObject } from "../../types";
 import { isNumber } from "../../util";
 import { stddev } from "./_internal";
@@ -10,10 +10,8 @@ import { $push } from "./push";
  * @param  {Object} expr
  * @return {Number|null}
  */
-export function $stdDevSamp(
+export const $stdDevSamp: AccumulatorOperator<number> = (
   collection: RawObject[],
   expr: AnyVal,
   options: Options
-): number {
-  return stddev($push(collection, expr, options).filter(isNumber), true);
-}
+): number => stddev($push(collection, expr, options).filter(isNumber), true);

@@ -1,4 +1,4 @@
-import { Options } from "../../core";
+import { AccumulatorOperator, Options } from "../../core";
 import { AnyVal, RawObject } from "../../types";
 import { covariance } from "./_internal";
 import { $push } from "./push";
@@ -9,10 +9,8 @@ import { $push } from "./push";
  * @param  {Object} expr
  * @return {Number|null}
  */
-export function $covariancePop(
+export const $covariancePop: AccumulatorOperator = (
   collection: RawObject[],
   expr: AnyVal,
   options: Options
-): number {
-  return covariance($push(collection, expr, options) as number[][], false);
-}
+): number => covariance($push(collection, expr, options) as number[][], false);

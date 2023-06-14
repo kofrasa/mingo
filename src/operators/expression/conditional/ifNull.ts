@@ -2,7 +2,7 @@
  * Conditional Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#conditional-expression-operators
  */
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawArray, RawObject } from "../../../types";
 import { isNil } from "../../../util";
 
@@ -13,11 +13,11 @@ import { isNil } from "../../../util";
  * @param expr
  * @returns {*}
  */
-export function $ifNull(
+export const $ifNull: ExpressionOperator = (
   obj: RawObject,
   expr: RawArray,
   options: Options
-): AnyVal {
+): AnyVal => {
   const args = computeValue(obj, expr, null, options) as RawArray[];
   return args.find(arg => !isNil(arg));
-}
+};

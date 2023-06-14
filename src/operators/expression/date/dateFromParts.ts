@@ -1,6 +1,6 @@
 // Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
 import {
   DATE_PART_INTERVAL,
@@ -35,11 +35,11 @@ const getDaysInMonth = (date: DateArgs): number => {
  * @param expr The date expression
  * @param options Options
  */
-export function $dateFromParts(
+export const $dateFromParts: ExpressionOperator<Date> = (
   obj: RawObject,
   expr: AnyVal,
   options: Options
-): AnyVal {
+): Date => {
   const args = computeValue(obj, expr, null, options) as DateArgs;
   const minuteOffset = parseTimezone(args.timezone);
 
@@ -96,4 +96,4 @@ export function $dateFromParts(
       args.millisecond
     )
   );
-}
+};

@@ -1,6 +1,6 @@
 // Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawArray, RawObject } from "../../../types";
 import { assert, isArray, isBoolean, isNil } from "../../../util";
 
@@ -14,11 +14,11 @@ import { assert, isArray, isBoolean, isNil } from "../../../util";
  * @param  {*} expr
  * @return {*}
  */
-export function $zip(
+export const $zip: ExpressionOperator = (
   obj: RawObject,
   expr: { inputs: RawArray; useLongestLength: boolean; defaults: AnyVal },
   options: Options
-): AnyVal {
+): AnyVal => {
   const inputs = computeValue(
     obj,
     expr.inputs,
@@ -65,4 +65,4 @@ export function $zip(
   }
 
   return result;
-}
+};

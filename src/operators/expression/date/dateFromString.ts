@@ -1,6 +1,6 @@
 // Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
 import { assert, isNil, isObject } from "../../../util";
 import {
@@ -37,11 +37,11 @@ const TZ_LETTER_OFFSETS = {
  * @param obj
  * @param expr
  */
-export function $dateFromString(
+export const $dateFromString: ExpressionOperator<AnyVal> = (
   obj: RawObject,
   expr: InputExpr,
   options: Options
-): AnyVal {
+): AnyVal => {
   const args = computeValue(obj, expr, null, options) as InputExpr;
 
   args.format = args.format || DATE_FORMAT;
@@ -139,4 +139,4 @@ export function $dateFromString(
   adjustDate(d, -minuteOffset);
 
   return d;
-}
+};

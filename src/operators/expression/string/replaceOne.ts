@@ -2,7 +2,7 @@
  * String Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators
  */
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
 import { assert, isNil, isString } from "../../../util";
 
@@ -12,11 +12,11 @@ import { assert, isNil, isString } from "../../../util";
  * @param  {Object} obj
  * @param  {Array} expr
  */
-export function $replaceOne(
+export const $replaceOne: ExpressionOperator = (
   obj: RawObject,
   expr: AnyVal,
   options: Options
-): AnyVal {
+): AnyVal => {
   const args = computeValue(obj, expr, null, options) as {
     input: string;
     find: string;
@@ -29,4 +29,4 @@ export function $replaceOne(
     "$replaceOne expression fields must evaluate to string"
   );
   return args.input.replace(args.find, args.replacement);
-}
+};

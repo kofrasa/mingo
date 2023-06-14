@@ -1,4 +1,4 @@
-import { Options } from "../../core";
+import { Options, PipelineOperator } from "../../core";
 import { Iterator } from "../../lazy";
 import { RawObject } from "../../types";
 import { assert, cloneDeep, isString } from "../../util";
@@ -16,11 +16,11 @@ import { assert, cloneDeep, isString } from "../../util";
  * @param options
  * @returns {*}
  */
-export function $out(
+export const $out: PipelineOperator = (
   collection: Iterator,
   expr: string | RawObject[],
   options: Options
-): Iterator {
+): Iterator => {
   const outputColl: RawObject[] = isString(expr)
     ? options?.collectionResolver(expr)
     : expr;
@@ -30,4 +30,4 @@ export function $out(
     outputColl.push(cloneDeep(o) as RawObject);
     return o; // passthrough
   });
-}
+};

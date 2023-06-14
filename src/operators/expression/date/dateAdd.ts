@@ -1,6 +1,6 @@
 // Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, Duration, RawObject } from "../../../types";
 import {
   adjustDate,
@@ -14,11 +14,11 @@ import {
  * @param obj
  * @param expr
  */
-export function $dateAdd(
+export const $dateAdd: ExpressionOperator<Date> = (
   obj: RawObject,
   expr: RawObject,
   options: Options
-): AnyVal {
+): Date => {
   const args = computeValue(obj, expr, null, options) as {
     startDate: AnyVal;
     unit: Duration;
@@ -48,7 +48,7 @@ export function $dateAdd(
   }
 
   return d;
-}
+};
 
 function addMonth(d: Date, amount: number): void {
   // months start from 0 to 11.

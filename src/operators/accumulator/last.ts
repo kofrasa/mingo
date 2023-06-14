@@ -1,4 +1,4 @@
-import { computeValue, Options } from "../../core";
+import { AccumulatorOperator, computeValue, Options } from "../../core";
 import { AnyVal, RawObject } from "../../types";
 
 /**
@@ -9,12 +9,12 @@ import { AnyVal, RawObject } from "../../types";
  * @param {Options} options The options to use for this operation
  * @returns {*}
  */
-export function $last(
+export const $last: AccumulatorOperator = (
   collection: RawObject[],
   expr: AnyVal,
   options: Options
-): AnyVal {
+): AnyVal => {
   return collection.length > 0
     ? computeValue(collection[collection.length - 1], expr, null, options)
     : undefined;
-}
+};

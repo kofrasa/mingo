@@ -1,6 +1,6 @@
 // Object Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#object-expression-operators
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
 import { into } from "../../../util";
 
@@ -11,13 +11,13 @@ import { into } from "../../../util";
  * @param {*} expr The right-hand side of the operator
  * @param {Options} options Options to use for operation
  */
-export function $mergeObjects(
+export const $mergeObjects: ExpressionOperator<RawObject> = (
   obj: RawObject,
   expr: AnyVal,
   options: Options
-): RawObject {
+): RawObject => {
   const docs = computeValue(obj, expr, null, options) as RawObject[];
   return docs instanceof Array
     ? docs.reduce((memo, o) => into(memo, o) as RawObject, {})
     : {};
-}
+};

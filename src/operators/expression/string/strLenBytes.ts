@@ -2,7 +2,7 @@
  * String Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators
  */
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
 
 /**
@@ -12,12 +12,12 @@ import { AnyVal, RawObject } from "../../../types";
  * @param  {String} expr
  * @return {Number}
  */
-export function $strLenBytes(
+export const $strLenBytes: ExpressionOperator = (
   obj: RawObject,
   expr: AnyVal,
   options: Options
-): AnyVal {
+): AnyVal => {
   return ~-encodeURI(computeValue(obj, expr, null, options) as string).split(
     /%..|./
   ).length;
-}
+};

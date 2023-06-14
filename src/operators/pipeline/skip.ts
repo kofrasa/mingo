@@ -1,4 +1,4 @@
-import { Options } from "../../core";
+import { Options, PipelineOperator } from "../../core";
 import { Iterator } from "../../lazy";
 
 /**
@@ -9,10 +9,10 @@ import { Iterator } from "../../lazy";
  * @param  {Options} options
  * @returns {*}
  */
-export function $skip(
+export const $skip: PipelineOperator = (
   collection: Iterator,
   expr: number,
   options: Options
-): Iterator {
+): Iterator => {
   return collection.drop(expr);
-}
+};

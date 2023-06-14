@@ -2,7 +2,7 @@
  * Set Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#set-expression-operators
  */
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawArray, RawObject } from "../../../types";
 import { truthy } from "../../../util";
 
@@ -11,12 +11,12 @@ import { truthy } from "../../../util";
  * @param obj
  * @param expr
  */
-export function $anyElementTrue(
+export const $anyElementTrue: ExpressionOperator = (
   obj: RawObject,
   expr: AnyVal,
   options: Options
-): AnyVal {
+): AnyVal => {
   // mongodb nests the array expression in another
   const args = computeValue(obj, expr, null, options)[0] as RawArray;
   return args.some(v => truthy(v, options.useStrictMode));
-}
+};

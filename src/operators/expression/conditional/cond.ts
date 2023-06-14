@@ -2,7 +2,7 @@
  * Conditional Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#conditional-expression-operators
  */
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, ArrayOrObject, RawObject } from "../../../types";
 import { assert, isObject, truthy } from "../../../util";
 
@@ -13,11 +13,11 @@ import { assert, isObject, truthy } from "../../../util";
  * @param obj
  * @param expr
  */
-export function $cond(
+export const $cond: ExpressionOperator = (
   obj: RawObject,
   expr: ArrayOrObject,
   options: Options
-): AnyVal {
+): AnyVal => {
   let ifExpr: AnyVal;
   let thenExpr: AnyVal;
   let elseExpr: AnyVal;
@@ -38,4 +38,4 @@ export function $cond(
     options.useStrictMode
   );
   return computeValue(obj, condition ? thenExpr : elseExpr, null, options);
-}
+};

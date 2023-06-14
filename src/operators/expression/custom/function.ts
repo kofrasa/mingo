@@ -1,6 +1,6 @@
 // Custom Aggregation Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#custom-aggregation-expression-operators
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, Callback, RawArray, RawObject } from "../../../types";
 import { assert } from "../../../util";
 
@@ -17,15 +17,15 @@ interface FunctionExpr {
  * @param {*} expr The expression for the operator
  * @param {Options} options Options
  */
-export function $function(
+export const $function: ExpressionOperator = (
   obj: RawObject,
   expr: FunctionExpr,
   options: Options
-): AnyVal {
+): AnyVal => {
   assert(
     options.scriptEnabled,
     "$function operator requires 'scriptEnabled' option to be true"
   );
   const fn = computeValue(obj, expr, null, options) as FunctionExpr;
   return fn.body.apply(null, fn.args) as AnyVal;
-}
+};

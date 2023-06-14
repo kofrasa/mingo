@@ -2,7 +2,7 @@
  * Type Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#type-expression-operators
  */
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
 import { isNil } from "../../../util";
 import { TypeConvertError } from "./_internal";
@@ -13,11 +13,11 @@ import { TypeConvertError } from "./_internal";
  * @param obj
  * @param expr
  */
-export function $toDate(
+export const $toDate: ExpressionOperator = (
   obj: RawObject,
   expr: AnyVal,
   options: Options
-): Date | null {
+): Date | null => {
   const val = computeValue(obj, expr, null, options) as string | number | Date;
 
   if (val instanceof Date) return val;
@@ -28,4 +28,4 @@ export function $toDate(
   if (!isNaN(n)) return d;
 
   throw new TypeConvertError(`cannot convert '${val}' to date`);
-}
+};

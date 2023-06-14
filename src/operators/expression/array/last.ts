@@ -1,6 +1,11 @@
 // Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
 
-import { ComputeOptions, computeValue, Options } from "../../../core";
+import {
+  ComputeOptions,
+  computeValue,
+  ExpressionOperator,
+  Options
+} from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
 import { assert, isArray, isNil } from "../../../util";
 import { $last as __last } from "../../accumulator";
@@ -12,7 +17,11 @@ import { $last as __last } from "../../accumulator";
  * @param  {*} expr
  * @return {*}
  */
-export function $last(obj: RawObject, expr: AnyVal, options: Options): AnyVal {
+export const $last: ExpressionOperator = (
+  obj: RawObject,
+  expr: AnyVal,
+  options: Options
+): AnyVal => {
   const copts = ComputeOptions.init(options);
   if (obj instanceof Array) return __last(obj, expr, copts.update());
 
@@ -20,4 +29,4 @@ export function $last(obj: RawObject, expr: AnyVal, options: Options): AnyVal {
   if (isNil(arr)) return null;
   assert(isArray(arr), "Must resolve to an array/null or missing");
   return __last(arr, "$$this", options);
-}
+};

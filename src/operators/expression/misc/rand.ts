@@ -6,9 +6,12 @@ import { AnyVal, RawObject } from "../../../types";
 /**
  * Returns a random float between 0 and 1.
  *
- * @param {*} obj The target object for this expression
- * @param {*} expr The right-hand side of the operator
- * @param {Options} options Options to use for operation
+ * @param {*} _obj The target object for this expression
+ * @param {*} _expr The right-hand side of the operator
+ * @param {Options} _options Options to use for operation
  */
-export const $rand = (obj: RawObject, expr: AnyVal, options: Options): number =>
-  Math.random();
+export const $rand = (
+  _obj: RawObject,
+  _expr: AnyVal,
+  _options: Options
+): number => Math.random();

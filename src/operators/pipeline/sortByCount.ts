@@ -1,4 +1,4 @@
-import { Options } from "../../core";
+import { Options, PipelineOperator } from "../../core";
 import { Iterator } from "../../lazy";
 import { AnyVal, RawObject } from "../../types";
 import { $group } from "./group";
@@ -15,14 +15,14 @@ import { $sort } from "./sort";
  * @param  {Object} options
  * @return {*}
  */
-export function $sortByCount(
+export const $sortByCount: PipelineOperator = (
   collection: Iterator,
   expr: AnyVal,
   options: Options
-): Iterator {
+): Iterator => {
   const newExpr: RawObject = { count: { $sum: 1 } };
 
   newExpr["_id"] = expr;
 
   return $sort($group(collection, newExpr, options), { count: -1 }, options);
-}
+};

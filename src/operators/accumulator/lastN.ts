@@ -1,5 +1,10 @@
 // https://www.mongodb.com/docs/manual/reference/operator/aggregation/lastN/
-import { ComputeOptions, computeValue, Options } from "../../core";
+import {
+  AccumulatorOperator,
+  ComputeOptions,
+  computeValue,
+  Options
+} from "../../core";
 import { AnyVal, RawObject } from "../../types";
 import { $push } from "./push";
 
@@ -17,11 +22,11 @@ interface InputExpr {
  * @param {Options} options The options to use for this operation
  * @returns {*}
  */
-export function $lastN(
+export const $lastN: AccumulatorOperator = (
   collection: RawObject[],
   expr: InputExpr,
   options: Options
-): AnyVal[] {
+): AnyVal[] => {
   const copts = ComputeOptions.init(options);
   const m = collection.length;
   const n = computeValue(copts?.local?.groupId, expr.n, null, copts) as number;
@@ -30,4 +35,4 @@ export function $lastN(
     expr.input,
     options
   );
-}
+};

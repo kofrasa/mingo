@@ -3,8 +3,12 @@ import "../../../src/init/system";
 import { aggregate } from "../../../src";
 import { initOptions, ProcessingMode } from "../../../src/core";
 import { RawObject } from "../../../src/types";
+import { DEFAULT_OPTS } from "../../support";
 
-const options = initOptions({ processingMode: ProcessingMode.CLONE_INPUT });
+const options = initOptions({
+  ...DEFAULT_OPTS,
+  processingMode: ProcessingMode.CLONE_INPUT
+});
 
 describe("operators/pipeline/merge", () => {
   describe("On-Demand Materialized View", () => {

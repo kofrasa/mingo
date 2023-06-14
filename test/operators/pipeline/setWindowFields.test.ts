@@ -1,13 +1,13 @@
-import "../../../src/init/system";
-
 import { aggregate } from "../../../src";
 import { ProcessingMode } from "../../../src/core";
+import { DEFAULT_OPTS } from "../../support";
 
 describe("operators/pipeline/setWindowFields", () => {
   describe("$setWindowFields", () => {
     const options = {
+      ...DEFAULT_OPTS,
       processingMode: ProcessingMode.CLONE_INPUT,
-      scriptEnabled: true,
+      scriptEnabled: true
     };
     const data = [
       {
@@ -16,7 +16,7 @@ describe("operators/pipeline/setWindowFields", () => {
         orderDate: new Date("2020-05-18T14:10:30Z"),
         state: "CA",
         price: 13,
-        quantity: 120,
+        quantity: 120
       },
       {
         _id: 1,
@@ -24,7 +24,7 @@ describe("operators/pipeline/setWindowFields", () => {
         orderDate: new Date("2021-03-20T11:30:05Z"),
         state: "WA",
         price: 14,
-        quantity: 140,
+        quantity: 140
       },
       {
         _id: 2,
@@ -32,7 +32,7 @@ describe("operators/pipeline/setWindowFields", () => {
         orderDate: new Date("2021-01-11T06:31:15Z"),
         state: "CA",
         price: 12,
-        quantity: 145,
+        quantity: 145
       },
       {
         _id: 3,
@@ -40,7 +40,7 @@ describe("operators/pipeline/setWindowFields", () => {
         orderDate: new Date("2020-02-08T13:13:23Z"),
         state: "WA",
         price: 13,
-        quantity: 104,
+        quantity: 104
       },
       {
         _id: 4,
@@ -48,7 +48,7 @@ describe("operators/pipeline/setWindowFields", () => {
         orderDate: new Date("2019-05-18T16:09:01Z"),
         state: "CA",
         price: 41,
-        quantity: 162,
+        quantity: 162
       },
       {
         _id: 5,
@@ -56,8 +56,8 @@ describe("operators/pipeline/setWindowFields", () => {
         orderDate: new Date("2019-01-08T06:12:03Z"),
         state: "WA",
         price: 43,
-        quantity: 134,
-      },
+        quantity: 134
+      }
     ];
 
     it("Use Documents Window to Obtain Cumulative Quantity for Each State", () => {
@@ -72,12 +72,12 @@ describe("operators/pipeline/setWindowFields", () => {
                 cumulativeQuantityForState: {
                   $sum: "$quantity",
                   window: {
-                    documents: ["unbounded", "current"],
-                  },
-                },
-              },
-            },
-          },
+                    documents: ["unbounded", "current"]
+                  }
+                }
+              }
+            }
+          }
         ],
         options
       );
@@ -90,7 +90,7 @@ describe("operators/pipeline/setWindowFields", () => {
           state: "WA",
           price: 43,
           quantity: 134,
-          cumulativeQuantityForState: 134,
+          cumulativeQuantityForState: 134
         },
         {
           _id: 3,
@@ -99,7 +99,7 @@ describe("operators/pipeline/setWindowFields", () => {
           state: "WA",
           price: 13,
           quantity: 104,
-          cumulativeQuantityForState: 238,
+          cumulativeQuantityForState: 238
         },
         {
           _id: 1,
@@ -108,7 +108,7 @@ describe("operators/pipeline/setWindowFields", () => {
           state: "WA",
           price: 14,
           quantity: 140,
-          cumulativeQuantityForState: 378,
+          cumulativeQuantityForState: 378
         },
         {
           _id: 4,
@@ -117,7 +117,7 @@ describe("operators/pipeline/setWindowFields", () => {
           state: "CA",
           price: 41,
           quantity: 162,
-          cumulativeQuantityForState: 162,
+          cumulativeQuantityForState: 162
         },
         {
           _id: 0,
@@ -126,7 +126,7 @@ describe("operators/pipeline/setWindowFields", () => {
           state: "CA",
           price: 13,
           quantity: 120,
-          cumulativeQuantityForState: 282,
+          cumulativeQuantityForState: 282
         },
         {
           _id: 2,
@@ -135,8 +135,8 @@ describe("operators/pipeline/setWindowFields", () => {
           state: "CA",
           price: 12,
           quantity: 145,
-          cumulativeQuantityForState: 427,
-        },
+          cumulativeQuantityForState: 427
+        }
       ]);
     });
 
@@ -152,12 +152,12 @@ describe("operators/pipeline/setWindowFields", () => {
                 cumulativeQuantityForYear: {
                   $sum: "$quantity",
                   window: {
-                    documents: ["unbounded", "current"],
-                  },
-                },
-              },
-            },
-          },
+                    documents: ["unbounded", "current"]
+                  }
+                }
+              }
+            }
+          }
         ],
         options
       );
@@ -170,7 +170,7 @@ describe("operators/pipeline/setWindowFields", () => {
           state: "WA",
           price: 43,
           quantity: 134,
-          cumulativeQuantityForYear: 134,
+          cumulativeQuantityForYear: 134
         },
         {
           _id: 4,
@@ -179,7 +179,7 @@ describe("operators/pipeline/setWindowFields", () => {
           state: "CA",
           price: 41,
           quantity: 162,
-          cumulativeQuantityForYear: 296,
+          cumulativeQuantityForYear: 296
         },
         {
           _id: 3,
@@ -188,7 +188,7 @@ describe("operators/pipeline/setWindowFields", () => {
           state: "WA",
           price: 13,
           quantity: 104,
-          cumulativeQuantityForYear: 104,
+          cumulativeQuantityForYear: 104
         },
         {
           _id: 0,
@@ -197,7 +197,7 @@ describe("operators/pipeline/setWindowFields", () => {
           state: "CA",
           price: 13,
           quantity: 120,
-          cumulativeQuantityForYear: 224,
+          cumulativeQuantityForYear: 224
         },
         {
           _id: 2,
@@ -206,7 +206,7 @@ describe("operators/pipeline/setWindowFields", () => {
           state: "CA",
           price: 12,
           quantity: 145,
-          cumulativeQuantityForYear: 145,
+          cumulativeQuantityForYear: 145
         },
         {
           _id: 1,
@@ -215,8 +215,8 @@ describe("operators/pipeline/setWindowFields", () => {
           state: "WA",
           price: 14,
           quantity: 140,
-          cumulativeQuantityForYear: 285,
-        },
+          cumulativeQuantityForYear: 285
+        }
       ]);
     });
 
@@ -232,12 +232,12 @@ describe("operators/pipeline/setWindowFields", () => {
                 averageQuantity: {
                   $avg: "$quantity",
                   window: {
-                    documents: [-1, 0],
-                  },
-                },
-              },
-            },
-          },
+                    documents: [-1, 0]
+                  }
+                }
+              }
+            }
+          }
         ],
         options
       );
@@ -250,7 +250,7 @@ describe("operators/pipeline/setWindowFields", () => {
           state: "WA",
           price: 43,
           quantity: 134,
-          averageQuantity: 134,
+          averageQuantity: 134
         },
         {
           _id: 4,
@@ -259,7 +259,7 @@ describe("operators/pipeline/setWindowFields", () => {
           state: "CA",
           price: 41,
           quantity: 162,
-          averageQuantity: 148,
+          averageQuantity: 148
         },
         {
           _id: 3,
@@ -268,7 +268,7 @@ describe("operators/pipeline/setWindowFields", () => {
           state: "WA",
           price: 13,
           quantity: 104,
-          averageQuantity: 104,
+          averageQuantity: 104
         },
         {
           _id: 0,
@@ -277,7 +277,7 @@ describe("operators/pipeline/setWindowFields", () => {
           state: "CA",
           price: 13,
           quantity: 120,
-          averageQuantity: 112,
+          averageQuantity: 112
         },
         {
           _id: 2,
@@ -286,7 +286,7 @@ describe("operators/pipeline/setWindowFields", () => {
           state: "CA",
           price: 12,
           quantity: 145,
-          averageQuantity: 145,
+          averageQuantity: 145
         },
         {
           _id: 1,
@@ -295,8 +295,8 @@ describe("operators/pipeline/setWindowFields", () => {
           state: "WA",
           price: 14,
           quantity: 140,
-          averageQuantity: 142.5,
-        },
+          averageQuantity: 142.5
+        }
       ]);
     });
 
@@ -312,18 +312,18 @@ describe("operators/pipeline/setWindowFields", () => {
                 cumulativeQuantityForYear: {
                   $sum: "$quantity",
                   window: {
-                    documents: ["unbounded", "current"],
-                  },
+                    documents: ["unbounded", "current"]
+                  }
                 },
                 maximumQuantityForYear: {
                   $max: "$quantity",
                   window: {
-                    documents: ["unbounded", "unbounded"],
-                  },
-                },
-              },
-            },
-          },
+                    documents: ["unbounded", "unbounded"]
+                  }
+                }
+              }
+            }
+          }
         ],
         options
       );
@@ -337,7 +337,7 @@ describe("operators/pipeline/setWindowFields", () => {
           price: 43,
           quantity: 134,
           cumulativeQuantityForYear: 134,
-          maximumQuantityForYear: 162,
+          maximumQuantityForYear: 162
         },
         {
           _id: 4,
@@ -347,7 +347,7 @@ describe("operators/pipeline/setWindowFields", () => {
           price: 41,
           quantity: 162,
           cumulativeQuantityForYear: 296,
-          maximumQuantityForYear: 162,
+          maximumQuantityForYear: 162
         },
         {
           _id: 3,
@@ -357,7 +357,7 @@ describe("operators/pipeline/setWindowFields", () => {
           price: 13,
           quantity: 104,
           cumulativeQuantityForYear: 104,
-          maximumQuantityForYear: 120,
+          maximumQuantityForYear: 120
         },
         {
           _id: 0,
@@ -367,7 +367,7 @@ describe("operators/pipeline/setWindowFields", () => {
           price: 13,
           quantity: 120,
           cumulativeQuantityForYear: 224,
-          maximumQuantityForYear: 120,
+          maximumQuantityForYear: 120
         },
         {
           _id: 2,
@@ -377,7 +377,7 @@ describe("operators/pipeline/setWindowFields", () => {
           price: 12,
           quantity: 145,
           cumulativeQuantityForYear: 145,
-          maximumQuantityForYear: 145,
+          maximumQuantityForYear: 145
         },
         {
           _id: 1,
@@ -387,8 +387,8 @@ describe("operators/pipeline/setWindowFields", () => {
           price: 14,
           quantity: 140,
           cumulativeQuantityForYear: 285,
-          maximumQuantityForYear: 145,
-        },
+          maximumQuantityForYear: 145
+        }
       ]);
     });
 
@@ -404,12 +404,12 @@ describe("operators/pipeline/setWindowFields", () => {
                 quantityFromSimilarOrders: {
                   $sum: "$quantity",
                   window: {
-                    range: [-10, 10],
-                  },
-                },
-              },
-            },
-          },
+                    range: [-10, 10]
+                  }
+                }
+              }
+            }
+          }
         ],
         options
       );
@@ -422,7 +422,7 @@ describe("operators/pipeline/setWindowFields", () => {
           state: "CA",
           price: 12,
           quantity: 145,
-          quantityFromSimilarOrders: 265,
+          quantityFromSimilarOrders: 265
         },
         {
           _id: 0,
@@ -431,7 +431,7 @@ describe("operators/pipeline/setWindowFields", () => {
           state: "CA",
           price: 13,
           quantity: 120,
-          quantityFromSimilarOrders: 265,
+          quantityFromSimilarOrders: 265
         },
         {
           _id: 4,
@@ -440,7 +440,7 @@ describe("operators/pipeline/setWindowFields", () => {
           state: "CA",
           price: 41,
           quantity: 162,
-          quantityFromSimilarOrders: 162,
+          quantityFromSimilarOrders: 162
         },
         {
           _id: 3,
@@ -449,7 +449,7 @@ describe("operators/pipeline/setWindowFields", () => {
           state: "WA",
           price: 13,
           quantity: 104,
-          quantityFromSimilarOrders: 244,
+          quantityFromSimilarOrders: 244
         },
         {
           _id: 1,
@@ -458,7 +458,7 @@ describe("operators/pipeline/setWindowFields", () => {
           state: "WA",
           price: 14,
           quantity: 140,
-          quantityFromSimilarOrders: 244,
+          quantityFromSimilarOrders: 244
         },
         {
           _id: 5,
@@ -467,8 +467,8 @@ describe("operators/pipeline/setWindowFields", () => {
           state: "WA",
           price: 43,
           quantity: 134,
-          quantityFromSimilarOrders: 134,
-        },
+          quantityFromSimilarOrders: 134
+        }
       ]);
     });
 
@@ -486,12 +486,12 @@ describe("operators/pipeline/setWindowFields", () => {
                     $push: "$orderDate",
                     window: {
                       range: ["unbounded", 10],
-                      unit: "month",
-                    },
-                  },
-                },
-              },
-            },
+                      unit: "month"
+                    }
+                  }
+                }
+              }
+            }
           ],
           options
         );
@@ -504,7 +504,7 @@ describe("operators/pipeline/setWindowFields", () => {
             state: "WA",
             price: 43,
             quantity: 134,
-            recentOrders: [new Date("2019-01-08T06:12:03Z")],
+            recentOrders: [new Date("2019-01-08T06:12:03Z")]
           },
           {
             _id: 3,
@@ -515,8 +515,8 @@ describe("operators/pipeline/setWindowFields", () => {
             quantity: 104,
             recentOrders: [
               new Date("2019-01-08T06:12:03Z"),
-              new Date("2020-02-08T13:13:23Z"),
-            ],
+              new Date("2020-02-08T13:13:23Z")
+            ]
           },
           {
             _id: 1,
@@ -528,8 +528,8 @@ describe("operators/pipeline/setWindowFields", () => {
             recentOrders: [
               new Date("2019-01-08T06:12:03Z"),
               new Date("2020-02-08T13:13:23Z"),
-              new Date("2021-03-20T11:30:05Z"),
-            ],
+              new Date("2021-03-20T11:30:05Z")
+            ]
           },
           {
             _id: 4,
@@ -538,7 +538,7 @@ describe("operators/pipeline/setWindowFields", () => {
             state: "CA",
             price: 41,
             quantity: 162,
-            recentOrders: [new Date("2019-05-18T16:09:01Z")],
+            recentOrders: [new Date("2019-05-18T16:09:01Z")]
           },
           {
             _id: 0,
@@ -550,8 +550,8 @@ describe("operators/pipeline/setWindowFields", () => {
             recentOrders: [
               new Date("2019-05-18T16:09:01Z"),
               new Date("2020-05-18T14:10:30Z"),
-              new Date("2021-01-11T06:31:15Z"),
-            ],
+              new Date("2021-01-11T06:31:15Z")
+            ]
           },
           {
             _id: 2,
@@ -563,9 +563,9 @@ describe("operators/pipeline/setWindowFields", () => {
             recentOrders: [
               new Date("2019-05-18T16:09:01Z"),
               new Date("2020-05-18T14:10:30Z"),
-              new Date("2021-01-11T06:31:15Z"),
-            ],
-          },
+              new Date("2021-01-11T06:31:15Z")
+            ]
+          }
         ]);
       });
 
@@ -582,12 +582,12 @@ describe("operators/pipeline/setWindowFields", () => {
                     $push: "$orderDate",
                     window: {
                       range: ["unbounded", -10],
-                      unit: "month",
-                    },
-                  },
-                },
-              },
-            },
+                      unit: "month"
+                    }
+                  }
+                }
+              }
+            }
           ],
           options
         );
@@ -600,7 +600,7 @@ describe("operators/pipeline/setWindowFields", () => {
             state: "WA",
             price: 43,
             quantity: 134,
-            recentOrders: [],
+            recentOrders: []
           },
           {
             _id: 3,
@@ -609,7 +609,7 @@ describe("operators/pipeline/setWindowFields", () => {
             state: "WA",
             price: 13,
             quantity: 104,
-            recentOrders: [new Date("2019-01-08T06:12:03Z")],
+            recentOrders: [new Date("2019-01-08T06:12:03Z")]
           },
           {
             _id: 1,
@@ -620,8 +620,8 @@ describe("operators/pipeline/setWindowFields", () => {
             quantity: 140,
             recentOrders: [
               new Date("2019-01-08T06:12:03Z"),
-              new Date("2020-02-08T13:13:23Z"),
-            ],
+              new Date("2020-02-08T13:13:23Z")
+            ]
           },
           {
             _id: 4,
@@ -630,7 +630,7 @@ describe("operators/pipeline/setWindowFields", () => {
             state: "CA",
             price: 41,
             quantity: 162,
-            recentOrders: [],
+            recentOrders: []
           },
           {
             _id: 0,
@@ -639,7 +639,7 @@ describe("operators/pipeline/setWindowFields", () => {
             state: "CA",
             price: 13,
             quantity: 120,
-            recentOrders: [new Date("2019-05-18T16:09:01Z")],
+            recentOrders: [new Date("2019-05-18T16:09:01Z")]
           },
           {
             _id: 2,
@@ -648,8 +648,8 @@ describe("operators/pipeline/setWindowFields", () => {
             state: "CA",
             price: 12,
             quantity: 145,
-            recentOrders: [new Date("2019-05-18T16:09:01Z")],
-          },
+            recentOrders: [new Date("2019-05-18T16:09:01Z")]
+          }
         ]);
       });
     });
@@ -663,11 +663,11 @@ describe("operators/pipeline/setWindowFields", () => {
               sortBy: { name: 1 },
               output: {
                 size: {
-                  $count: {},
-                },
-              },
-            },
-          },
+                  $count: {}
+                }
+              }
+            }
+          }
         ],
         options
       );
@@ -675,7 +675,7 @@ describe("operators/pipeline/setWindowFields", () => {
       expect(result).toStrictEqual([
         { name: "Alice", size: 3 },
         { name: "Bob", size: 3 },
-        { name: "Casey", size: 3 },
+        { name: "Casey", size: 3 }
       ]);
     });
   });

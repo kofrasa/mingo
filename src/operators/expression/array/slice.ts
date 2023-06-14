@@ -1,6 +1,6 @@
 // Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawArray, RawObject } from "../../../types";
 import { assert, isNil } from "../../../util";
 
@@ -11,7 +11,11 @@ import { assert, isNil } from "../../../util";
  * @param  {*} expr
  * @return {*}
  */
-export function $slice(obj: RawObject, expr: AnyVal, options: Options): AnyVal {
+export const $slice: ExpressionOperator = (
+  obj: RawObject,
+  expr: AnyVal,
+  options: Options
+): AnyVal => {
   const args = computeValue(obj, expr, null, options) as RawArray;
   const arr = args[0] as RawArray;
   let skip = args[1] as number;
@@ -39,4 +43,4 @@ export function $slice(obj: RawObject, expr: AnyVal, options: Options): AnyVal {
   }
 
   return arr.slice(skip, limit);
-}
+};

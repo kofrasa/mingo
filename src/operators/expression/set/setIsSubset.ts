@@ -2,7 +2,7 @@
  * Set Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#set-expression-operators
  */
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawArray, RawObject } from "../../../types";
 import { intersection } from "../../../util";
 
@@ -11,11 +11,11 @@ import { intersection } from "../../../util";
  * @param obj
  * @param expr
  */
-export function $setIsSubset(
+export const $setIsSubset: ExpressionOperator = (
   obj: RawObject,
   expr: AnyVal,
   options: Options
-): AnyVal {
+): AnyVal => {
   const args = computeValue(obj, expr, null, options) as RawArray[];
   return intersection(args, options?.hashFunction).length === args[0].length;
-}
+};

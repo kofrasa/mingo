@@ -1,4 +1,4 @@
-import { Options } from "../../core";
+import { Options, PipelineOperator } from "../../core";
 import { Iterator } from "../../lazy";
 import { Query } from "../../query";
 import { RawObject } from "../../types";
@@ -12,11 +12,11 @@ import { RawObject } from "../../types";
  * @param options
  * @returns {Array|*}
  */
-export function $match(
+export const $match: PipelineOperator = (
   collection: Iterator,
   expr: RawObject,
   options: Options
-): Iterator {
+): Iterator => {
   const q = new Query(expr, options);
   return collection.filter((o: RawObject) => q.test(o));
-}
+};

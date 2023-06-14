@@ -27,7 +27,7 @@ useOperators(OperatorType.PROJECTION, projectionOperators as OperatorMap);
 useOperators(OperatorType.QUERY, queryOperators as OperatorMap);
 
 /** The basic context for queries. */
-export const BASIC_CONTEXT: OperatorContext = {
+export const BASIC_CONTEXT: OperatorContext = Object.freeze({
   [OperatorType.EXPRESSION]: {
     ...booleanOperators,
     ...comparisonOperators
@@ -40,4 +40,4 @@ export const BASIC_CONTEXT: OperatorContext = {
   },
   [OperatorType.PROJECTION]: projectionOperators,
   [OperatorType.QUERY]: queryOperators
-};
+});

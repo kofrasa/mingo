@@ -2,7 +2,7 @@
  * Type Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#type-expression-operators
  */
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
 import { isNil, isNumber } from "../../../util";
 import { TypeConvertError } from "./_internal";
@@ -13,11 +13,11 @@ import { TypeConvertError } from "./_internal";
  * @param obj
  * @param expr
  */
-export function $toDouble(
+export const $toDouble: ExpressionOperator = (
   obj: RawObject,
   expr: AnyVal,
   options: Options
-): number | null {
+): number | null => {
   const val = computeValue(obj, expr, null, options) as
     | string
     | boolean
@@ -34,4 +34,4 @@ export function $toDouble(
   if (isNumber(n)) return n;
 
   throw new TypeConvertError(`cannot convert '${val}' to double/decimal`);
-}
+};

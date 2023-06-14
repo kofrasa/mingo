@@ -1,4 +1,4 @@
-import { computeValue, Options } from "../../core";
+import { computeValue, Options, PipelineOperator } from "../../core";
 import { Iterator, Lazy } from "../../lazy";
 import { AnyVal, Callback, RawArray, RawObject } from "../../types";
 import { assert, compare, getType, into, isNil } from "../../util";
@@ -11,7 +11,7 @@ import { assert, compare, getType, into, isNil } from "../../util";
  * @param {*} expr
  * @param {Options} opt Pipeline options
  */
-export function $bucket(
+export const $bucket: PipelineOperator = (
   collection: Iterator,
   expr: {
     groupBy: AnyVal;
@@ -20,7 +20,7 @@ export function $bucket(
     output?: RawObject;
   },
   options: Options
-): Iterator {
+): Iterator => {
   const boundaries = [...expr.boundaries];
   const defaultKey = expr.default as string;
   const lower = boundaries[0]; // inclusive
@@ -100,7 +100,7 @@ export function $bucket(
 
     return iterator.next();
   });
-}
+};
 
 /**
  * Find the insert index for the given key in a sorted array.

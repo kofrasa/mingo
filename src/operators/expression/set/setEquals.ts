@@ -2,7 +2,7 @@
  * Set Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#set-expression-operators
  */
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawArray, RawObject } from "../../../types";
 import { intersection, unique } from "../../../util";
 
@@ -11,11 +11,11 @@ import { intersection, unique } from "../../../util";
  * @param obj
  * @param expr
  */
-export function $setEquals(
+export const $setEquals: ExpressionOperator = (
   obj: RawObject,
   expr: AnyVal,
   options: Options
-): AnyVal {
+): AnyVal => {
   const args = computeValue(obj, expr, null, options) as RawArray[];
   const xs = unique(args[0], options?.hashFunction);
   const ys = unique(args[1], options?.hashFunction);
@@ -23,4 +23,4 @@ export function $setEquals(
     xs.length === ys.length &&
     xs.length === intersection([xs, ys], options?.hashFunction).length
   );
-}
+};

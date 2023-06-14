@@ -1,7 +1,6 @@
-import "../../../src/init/system";
-
 import { aggregate } from "../../../src";
 import { RawObject } from "../../../src/types";
+import { DEFAULT_OPTS } from "../../support";
 
 describe("operators/pipeline/unionWith", () => {
   describe("$unionWith", () => {
@@ -9,7 +8,7 @@ describe("operators/pipeline/unionWith", () => {
       warehouses: [
         { _id: 1, warehouse: "A", region: "West", state: "California" },
         { _id: 2, warehouse: "B", region: "Central", state: "Colorado" },
-        { _id: 3, warehouse: "C", region: "East", state: "Florida" },
+        { _id: 3, warehouse: "C", region: "East", state: "Florida" }
       ],
       sales2019q1: [
         { store: "A", item: "Chocolates", quantity: 150 },
@@ -17,7 +16,7 @@ describe("operators/pipeline/unionWith", () => {
         { store: "A", item: "Cookies", quantity: 100 },
         { store: "B", item: "Cookies", quantity: 120 },
         { store: "A", item: "Pie", quantity: 10 },
-        { store: "B", item: "Pie", quantity: 5 },
+        { store: "B", item: "Pie", quantity: 5 }
       ],
       sales2019q2: [
         { store: "A", item: "Cheese", quantity: 30 },
@@ -28,7 +27,7 @@ describe("operators/pipeline/unionWith", () => {
         { store: "B", item: "Cookies", quantity: 100 },
         { store: "B", item: "Nuts", quantity: 100 },
         { store: "A", item: "Pie", quantity: 30 },
-        { store: "B", item: "Pie", quantity: 25 },
+        { store: "B", item: "Pie", quantity: 25 }
       ],
       sales2019q3: [
         { store: "A", item: "Cheese", quantity: 50 },
@@ -40,7 +39,7 @@ describe("operators/pipeline/unionWith", () => {
         { store: "A", item: "Nuts", quantity: 80 },
         { store: "B", item: "Nuts", quantity: 30 },
         { store: "A", item: "Pie", quantity: 50 },
-        { store: "B", item: "Pie", quantity: 75 },
+        { store: "B", item: "Pie", quantity: 75 }
       ],
       sales2019q4: [
         { store: "A", item: "Cheese", quantity: 100 },
@@ -52,19 +51,20 @@ describe("operators/pipeline/unionWith", () => {
         { store: "A", item: "Nuts", quantity: 100 },
         { store: "B", item: "Nuts", quantity: 200 },
         { store: "A", item: "Pie", quantity: 100 },
-        { store: "B", item: "Pie", quantity: 100 },
-      ],
+        { store: "B", item: "Pie", quantity: 100 }
+      ]
     };
 
     const options = {
-      collectionResolver: (s: string): RawObject[] => collections[s],
+      ...DEFAULT_OPTS,
+      collectionResolver: (s: string): RawObject[] => collections[s]
     };
 
     it("Duplicates Results", () => {
       const suppliers = [
         { _id: 1, supplier: "Aardvark and Sons", state: "Texas" },
         { _id: 2, supplier: "Bears Run Amok.", state: "Colorado" },
-        { _id: 3, supplier: "Squid Mark Inc. ", state: "Rhode Island" },
+        { _id: 3, supplier: "Squid Mark Inc. ", state: "Rhode Island" }
       ];
 
       const result = aggregate(
@@ -74,9 +74,9 @@ describe("operators/pipeline/unionWith", () => {
           {
             $unionWith: {
               coll: "warehouses",
-              pipeline: [{ $project: { state: 1, _id: 0 } }],
-            },
-          },
+              pipeline: [{ $project: { state: 1, _id: 0 } }]
+            }
+          }
         ],
         options
       );
@@ -87,7 +87,7 @@ describe("operators/pipeline/unionWith", () => {
         { state: "Rhode Island" },
         { state: "California" },
         { state: "Colorado" },
-        { state: "Florida" },
+        { state: "Florida" }
       ]);
     });
 
@@ -99,22 +99,22 @@ describe("operators/pipeline/unionWith", () => {
           {
             $unionWith: {
               coll: "sales2019q2",
-              pipeline: [{ $set: { _id: "2019Q2" } }],
-            },
+              pipeline: [{ $set: { _id: "2019Q2" } }]
+            }
           },
           {
             $unionWith: {
               coll: "sales2019q3",
-              pipeline: [{ $set: { _id: "2019Q3" } }],
-            },
+              pipeline: [{ $set: { _id: "2019Q3" } }]
+            }
           },
           {
             $unionWith: {
               coll: collections.sales2019q4,
-              pipeline: [{ $set: { _id: "2019Q4" } }],
-            },
+              pipeline: [{ $set: { _id: "2019Q4" } }]
+            }
           },
-          { $sort: { _id: 1, store: 1, item: 1 } },
+          { $sort: { _id: 1, store: 1, item: 1 } }
         ],
         options
       );
@@ -154,7 +154,7 @@ describe("operators/pipeline/unionWith", () => {
         { _id: "2019Q4", store: "B", item: "Chocolates", quantity: 300 },
         { _id: "2019Q4", store: "B", item: "Cookies", quantity: 400 },
         { _id: "2019Q4", store: "B", item: "Nuts", quantity: 200 },
-        { _id: "2019Q4", store: "B", item: "Pie", quantity: 100 },
+        { _id: "2019Q4", store: "B", item: "Pie", quantity: 100 }
       ]);
     });
   });

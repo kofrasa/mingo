@@ -2,7 +2,7 @@
  * String Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators
  */
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, Callback, RawArray, RawObject } from "../../../types";
 import { inArray } from "../../../util";
 
@@ -13,11 +13,11 @@ import { inArray } from "../../../util";
  * @param expr
  * @returns {string|*}
  */
-export function $concat(
+export const $concat: ExpressionOperator = (
   obj: RawObject,
   expr: AnyVal,
   options: Options
-): AnyVal {
+): AnyVal => {
   const args = computeValue(obj, expr, null, options) as RawArray;
   // does not allow concatenation with nulls
   if (
@@ -25,4 +25,4 @@ export function $concat(
   )
     return null;
   return args.join("");
-}
+};

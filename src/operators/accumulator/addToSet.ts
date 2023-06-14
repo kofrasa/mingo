@@ -1,4 +1,4 @@
-import { Options } from "../../core";
+import { AccumulatorOperator, Options } from "../../core";
 import { AnyVal, RawObject } from "../../types";
 import { unique } from "../../util";
 import { $push } from "./push";
@@ -11,13 +11,13 @@ import { $push } from "./push";
  * @param {Options} options The options to use for this operation
  * @returns {*}
  */
-export function $addToSet(
+export const $addToSet: AccumulatorOperator = (
   collection: RawObject[],
   expr: AnyVal,
   options: Options
-): RawObject[] {
+): RawObject[] => {
   return unique(
     $push(collection, expr, options),
     options?.hashFunction
   ) as RawObject[];
-}
+};

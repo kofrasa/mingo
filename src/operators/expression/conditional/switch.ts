@@ -2,7 +2,7 @@
  * Conditional Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#conditional-expression-operators
  */
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
 import { truthy } from "../../../util";
 
@@ -14,11 +14,11 @@ import { truthy } from "../../../util";
  * @param obj
  * @param expr
  */
-export function $switch(
+export const $switch: ExpressionOperator = (
   obj: RawObject,
   expr: { branches: Array<{ case: AnyVal; then: AnyVal }>; default: AnyVal },
   options: Options
-): AnyVal {
+): AnyVal => {
   let thenExpr = null;
   // Array.prototype.find not supported in IE, hence the '.some()' proxy
   expr.branches.some((b: { case: AnyVal; then: AnyVal }) => {
@@ -36,4 +36,4 @@ export function $switch(
     null,
     options
   );
-}
+};

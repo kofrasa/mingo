@@ -1,4 +1,4 @@
-import { computeValue, Options } from "../../core";
+import { computeValue, Options, PipelineOperator } from "../../core";
 import { Iterator } from "../../lazy";
 import { RawObject } from "../../types";
 import { assert, isObject } from "../../util";
@@ -14,14 +14,14 @@ import { assert, isObject } from "../../util";
  * @param  {Object} options
  * @return {*}
  */
-export function $replaceRoot(
+export const $replaceRoot: PipelineOperator = (
   collection: Iterator,
   expr: RawObject,
   options: Options
-): Iterator {
+): Iterator => {
   return collection.map(obj => {
     obj = computeValue(obj, expr.newRoot, null, options);
     assert(isObject(obj), "$replaceRoot expression must return an object");
     return obj;
   });
-}
+};

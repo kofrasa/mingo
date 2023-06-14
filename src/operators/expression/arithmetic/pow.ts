@@ -1,6 +1,6 @@
 // Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
 import { assert, isArray, isNumber } from "../../../util";
 
@@ -11,7 +11,11 @@ import { assert, isArray, isNumber } from "../../../util";
  * @param expr
  * @returns {Object}
  */
-export function $pow(obj: RawObject, expr: AnyVal, options: Options): number {
+export const $pow: ExpressionOperator = (
+  obj: RawObject,
+  expr: AnyVal,
+  options: Options
+): number => {
   const args = computeValue(obj, expr, null, options) as number[];
 
   assert(
@@ -24,4 +28,4 @@ export function $pow(obj: RawObject, expr: AnyVal, options: Options): number {
   );
 
   return Math.pow(args[0], args[1]);
-}
+};

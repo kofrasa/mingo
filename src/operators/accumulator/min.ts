@@ -1,4 +1,4 @@
-import { Options } from "../../core";
+import { AccumulatorOperator, Options } from "../../core";
 import { AnyVal, RawObject } from "../../types";
 import { compare, isNotNaN } from "../../util";
 import { $push } from "./push";
@@ -11,12 +11,12 @@ import { $push } from "./push";
  * @param {Options} The options to use for this operator
  * @returns {*}
  */
-export function $min(
+export const $min: AccumulatorOperator = (
   collection: RawObject[],
   expr: AnyVal,
   options: Options
-): AnyVal {
+): AnyVal => {
   const nums = $push(collection, expr, options).filter(isNotNaN) as number[];
   const n = nums.reduce((acc, n) => (compare(n, acc) <= 0 ? n : acc), Infinity);
   return n === Infinity ? undefined : n;
-}
+};

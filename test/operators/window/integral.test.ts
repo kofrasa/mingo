@@ -1,9 +1,11 @@
-import "../../../src/init/system";
-
 import { aggregate } from "../../../src";
-import { ProcessingMode } from "../../../src/core";
+import { initOptions, ProcessingMode } from "../../../src/core";
+import { DEFAULT_OPTS } from "../../support";
 
-const options = { processingMode: ProcessingMode.CLONE_INPUT };
+const options = initOptions({
+  ...DEFAULT_OPTS,
+  processingMode: ProcessingMode.CLONE_INPUT
+});
 
 describe("operators/window/integral", () => {
   describe("$integral", () => {
@@ -13,43 +15,43 @@ describe("operators/window/integral", () => {
           {
             powerMeterID: "1",
             timeStamp: new Date("2020-05-18T14:10:30Z"),
-            kilowatts: 2.95,
+            kilowatts: 2.95
           },
           {
             powerMeterID: "1",
             timeStamp: new Date("2020-05-18T14:11:00Z"),
-            kilowatts: 2.7,
+            kilowatts: 2.7
           },
           {
             powerMeterID: "1",
             timeStamp: new Date("2020-05-18T14:11:30Z"),
-            kilowatts: 2.6,
+            kilowatts: 2.6
           },
           {
             powerMeterID: "1",
             timeStamp: new Date("2020-05-18T14:12:00Z"),
-            kilowatts: 2.98,
+            kilowatts: 2.98
           },
           {
             powerMeterID: "2",
             timeStamp: new Date("2020-05-18T14:10:30Z"),
-            kilowatts: 2.5,
+            kilowatts: 2.5
           },
           {
             powerMeterID: "2",
             timeStamp: new Date("2020-05-18T14:11:00Z"),
-            kilowatts: 2.25,
+            kilowatts: 2.25
           },
           {
             powerMeterID: "2",
             timeStamp: new Date("2020-05-18T14:11:30Z"),
-            kilowatts: 2.75,
+            kilowatts: 2.75
           },
           {
             powerMeterID: "2",
             timeStamp: new Date("2020-05-18T14:12:00Z"),
-            kilowatts: 2.82,
-          },
+            kilowatts: 2.82
+          }
         ],
         [
           {
@@ -60,16 +62,16 @@ describe("operators/window/integral", () => {
                 powerMeterKilowattHours: {
                   $integral: {
                     input: "$kilowatts",
-                    unit: "hour",
+                    unit: "hour"
                   },
                   window: {
                     range: ["unbounded", "current"],
-                    unit: "hour",
-                  },
-                },
-              },
-            },
-          },
+                    unit: "hour"
+                  }
+                }
+              }
+            }
+          }
         ],
         options
       );
@@ -79,50 +81,50 @@ describe("operators/window/integral", () => {
           powerMeterID: "1",
           timeStamp: new Date("2020-05-18T14:10:30Z"),
           kilowatts: 2.95,
-          powerMeterKilowattHours: 0,
+          powerMeterKilowattHours: 0
         },
         {
           powerMeterID: "1",
           timeStamp: new Date("2020-05-18T14:11:00Z"),
           kilowatts: 2.7,
-          powerMeterKilowattHours: 0.02354166666666667,
+          powerMeterKilowattHours: 0.02354166666666667
         },
         {
           powerMeterID: "1",
           timeStamp: new Date("2020-05-18T14:11:30Z"),
           kilowatts: 2.6,
-          powerMeterKilowattHours: 0.045625000000000006,
+          powerMeterKilowattHours: 0.045625000000000006
         },
         {
           powerMeterID: "1",
           timeStamp: new Date("2020-05-18T14:12:00Z"),
           kilowatts: 2.98,
-          powerMeterKilowattHours: 0.068875,
+          powerMeterKilowattHours: 0.068875
         },
         {
           powerMeterID: "2",
           timeStamp: new Date("2020-05-18T14:10:30Z"),
           kilowatts: 2.5,
-          powerMeterKilowattHours: 0,
+          powerMeterKilowattHours: 0
         },
         {
           powerMeterID: "2",
           timeStamp: new Date("2020-05-18T14:11:00Z"),
           kilowatts: 2.25,
-          powerMeterKilowattHours: 0.019791666666666666,
+          powerMeterKilowattHours: 0.019791666666666666
         },
         {
           powerMeterID: "2",
           timeStamp: new Date("2020-05-18T14:11:30Z"),
           kilowatts: 2.75,
-          powerMeterKilowattHours: 0.040624999999999994,
+          powerMeterKilowattHours: 0.040624999999999994
         },
         {
           powerMeterID: "2",
           timeStamp: new Date("2020-05-18T14:12:00Z"),
           kilowatts: 2.82,
-          powerMeterKilowattHours: 0.06383333333333333,
-        },
+          powerMeterKilowattHours: 0.06383333333333333
+        }
       ]);
     });
   });

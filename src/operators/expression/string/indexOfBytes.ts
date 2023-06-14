@@ -2,7 +2,7 @@
  * String Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators
  */
 
-import { computeValue, Options } from "../../../core";
+import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { AnyVal, RawObject } from "../../../types";
 import { assert, isNil, isNumber, isString } from "../../../util";
 
@@ -14,11 +14,11 @@ import { assert, isNil, isNumber, isString } from "../../../util";
  * @param  {*} expr
  * @return {*}
  */
-export function $indexOfBytes(
+export const $indexOfBytes: ExpressionOperator = (
   obj: RawObject,
   expr: AnyVal,
   options: Options
-): AnyVal {
+): AnyVal => {
   const arr = computeValue(obj, expr, null, options);
   const errorMsg = "$indexOfBytes expression resolves to invalid an argument";
 
@@ -47,4 +47,4 @@ export function $indexOfBytes(
 
   const index = str.substring(start, end).indexOf(searchStr);
   return index > -1 ? index + start : index;
-}
+};

@@ -1,4 +1,9 @@
-import { ComputeOptions, computeValue, Options } from "../../core";
+import {
+  AccumulatorOperator,
+  ComputeOptions,
+  computeValue,
+  Options
+} from "../../core";
 import { AnyVal, RawArray, RawObject } from "../../types";
 import { isNil } from "../../util";
 
@@ -10,14 +15,14 @@ import { isNil } from "../../util";
  * @param {Options} options The options to use for this operation
  * @returns {Array|*}
  */
-export function $push(
+export const $push: AccumulatorOperator<RawArray> = (
   collection: RawObject[],
   expr: AnyVal,
   options: Options
-): RawArray {
+): RawArray => {
   if (isNil(expr)) return collection;
   const copts = ComputeOptions.init(options);
   return collection.map(obj =>
     computeValue(obj, expr, null, copts.update(obj))
   );
-}
+};

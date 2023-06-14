@@ -1,4 +1,4 @@
-import { Options } from "../../core";
+import { Options, PipelineOperator } from "../../core";
 import { Iterator, Lazy } from "../../lazy";
 import { assert, isString } from "../../util";
 
@@ -10,11 +10,11 @@ import { assert, isString } from "../../util";
  * @param {Options} options
  * @return {Object}
  */
-export function $count(
+export const $count: PipelineOperator = (
   collection: Iterator,
   expr: string,
   _: Options
-): Iterator {
+): Iterator => {
   assert(
     isString(expr) &&
       expr.trim() !== "" &&
@@ -28,4 +28,4 @@ export function $count(
       [expr]: collection.size()
     }
   ]);
-}
+};

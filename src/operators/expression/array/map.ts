@@ -1,6 +1,11 @@
 // Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
 
-import { ComputeOptions, computeValue, Options } from "../../../core";
+import {
+  ComputeOptions,
+  computeValue,
+  ExpressionOperator,
+  Options
+} from "../../../core";
 import { AnyVal, RawArray, RawObject } from "../../../types";
 import { assert, isArray } from "../../../util";
 
@@ -11,11 +16,11 @@ import { assert, isArray } from "../../../util";
  * @param expr
  * @returns {Array|*}
  */
-export function $map(
+export const $map: ExpressionOperator = (
   obj: RawObject,
   expr: { input: RawArray; as: string; in: AnyVal },
   options: Options
-): AnyVal {
+): AnyVal => {
   const input = computeValue(obj, expr.input, null, options) as RawArray;
   assert(isArray(input), `$map 'input' expression must resolve to an array`);
   const copts = ComputeOptions.init(options);
@@ -30,4 +35,4 @@ export function $map(
       })
     );
   });
-}
+};
