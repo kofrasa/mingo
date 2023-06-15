@@ -244,7 +244,7 @@ Query and aggregation operations can be configured with options to enabled diffe
 
 ## Adding Custom Operators
 
-Custom operators can be registered using `OperatorContext` via the `context` option which is the recommended way from `6.6.0`. The `OperatorContext` is a table of operator functions by type, that the execution engine will use to process queries. Previously, the [useOperators(...)](http://kofrasa.net/mingo/modules/core.html#useOperators) function was used to register operators globally but that is no longer preferred.The difference between the two is that a globally registered operator cannot be overwritten whereas a new context may be created and used at anytime.
+Custom operators can be registered using `OperatorContext` via the `context` option which is the recommended way from `6.5.0`. The `OperatorContext` is a table of operator functions by type, that the execution engine will use to process queries. Previously, the [useOperators(...)](http://kofrasa.net/mingo/modules/core.html#useOperators) function was used to register operators globally but that is no longer preferred.The difference between the two is that a globally registered operator cannot be overwritten whereas a new context may be created and used at anytime.
 
 Each operator type has a specific interface to which an implementation must conform to be valid.
 
