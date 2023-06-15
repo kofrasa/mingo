@@ -100,6 +100,8 @@ export interface Options {
   readonly useStrictMode: boolean;
   /** Enable or disable custom script execution via $where, $accumulator, and $function operators. @default true. */
   readonly scriptEnabled: boolean;
+  /** Enable or disable falling back to the global context for operators. @default true. */
+  readonly useGlobalContext: boolean;
   /** Hash function to replace the Effective Java default implementation. */
   readonly hashFunction?: HashFunction;
   /** Function to resolve strings to arrays for use with operators that reference other collections such as; `$lookup`, `$out` and `$merge`. */
@@ -109,7 +111,7 @@ export interface Options {
   /** Global variables. */
   readonly variables?: Readonly<RawObject>;
   /** Extra references to operators to be used for processing. */
-  readonly context?: OperatorContext;
+  readonly context: OperatorContext;
 }
 
 interface LocalData {
@@ -122,7 +124,7 @@ interface LocalData {
 /** Custom type to facilitate type checking for global options */
 export class ComputeOptions implements Options {
   private constructor(
-    readonly opts: Options,
+    private _opts: Options,
     /** Reference to the root object when processing subgraphs of the object. */
     private _root: AnyVal,
     private _local?: LocalData,
@@ -147,7 +149,7 @@ export class ComputeOptions implements Options {
   ): ComputeOptions {
     return options instanceof ComputeOptions
       ? new ComputeOptions(
-          options.opts,
+          options._opts,
           isNil(options.root) ? root : options.root,
           Object.assign({}, options.local, local)
         )
@@ -167,6 +169,13 @@ export class ComputeOptions implements Options {
     return this;
   }
 
+  getOptions() {
+    return Object.freeze({
+      ...this._opts,
+      context: OperatorContext.from(this._opts.context)
+    }) as Options;
+  }
+
   get root() {
     return this._root;
   }
@@ -174,34 +183,37 @@ export class ComputeOptions implements Options {
     return this._local;
   }
   get idKey() {
-    return this.opts.idKey;
+    return this._opts.idKey;
   }
   get collation() {
-    return this.opts?.collation;
+    return this._opts?.collation;
   }
   get processingMode() {
-    return this.opts?.processingMode || ProcessingMode.CLONE_OFF;
+    return this._opts?.processingMode || ProcessingMode.CLONE_OFF;
   }
   get useStrictMode() {
-    return this.opts?.useStrictMode;
+    return this._opts?.useStrictMode;
   }
   get scriptEnabled() {
-    return this.opts?.scriptEnabled;
+    return this._opts?.scriptEnabled;
+  }
+  get useGlobalContext() {
+    return this._opts?.useGlobalContext;
   }
   get hashFunction() {
-    return this.opts?.hashFunction;
+    return this._opts?.hashFunction;
   }
   get collectionResolver() {
-    return this.opts?.collectionResolver;
+    return this._opts?.collectionResolver;
   }
   get jsonSchemaValidator() {
-    return this.opts?.jsonSchemaValidator;
+    return this._opts?.jsonSchemaValidator;
   }
   get variables() {
-    return this.opts?.variables;
+    return this._opts?.variables;
   }
   get context() {
-    return this.opts?.context;
+    return this._opts?.context;
   }
 }
 
@@ -209,15 +221,19 @@ export class ComputeOptions implements Options {
  * Creates an Option from another where required keys are initialized.
  * @param options Options
  */
-export function initOptions(options?: Partial<Options>): Options {
+export function initOptions(options: Partial<Options>): Options {
   return options instanceof ComputeOptions
-    ? options.opts
+    ? options.getOptions()
     : Object.freeze({
         idKey: "_id",
         scriptEnabled: true,
         useStrictMode: true,
+        useGlobalContext: true,
         processingMode: ProcessingMode.CLONE_OFF,
-        ...options
+        ...options,
+        context: options?.context
+          ? OperatorContext.from(options?.context)
+          : OperatorContext.init({})
       });
 }
 
@@ -350,10 +366,11 @@ export class OperatorContext {
   }
 
   addOperators(type: OperatorType, ops: OperatorMap): OperatorContext {
-    (this.operators[type] as RawObject) = {
-      ...this.operators[type],
-      ...ops
-    };
+    for (const [name, fn] of Object.entries(ops)) {
+      if (!this.getOperator(type, name)) {
+        (this.operators[type] as OperatorMap)[name] = fn;
+      }
+    }
     return this;
   }
 
@@ -422,10 +439,11 @@ export function useOperators(type: OperatorType, operators: OperatorMap): void {
 export function getOperator(
   type: OperatorType,
   operator: string,
-  context: OperatorContext
+  options: Pick<Options, "useGlobalContext" | "context">
 ): Operator {
-  const fn = context ? (context.getOperator(type, operator) as Operator) : null;
-  return fn || (CONTEXT.getOperator(type, operator) as Operator);
+  const { context: ctx, useGlobalContext: fallback } = options || {};
+  const fn = ctx ? (ctx.getOperator(type, operator) as Operator) : null;
+  return !fn && fallback ? CONTEXT.getOperator(type, operator) : fn;
 }
 
 /* eslint-disable unused-imports/no-unused-vars-ts */
@@ -526,7 +544,7 @@ export function computeValue(
     const callExpression = getOperator(
       OperatorType.EXPRESSION,
       operator,
-      options?.context
+      options
     ) as ExpressionOperator;
     if (callExpression) return callExpression(obj as RawObject, expr, copts);
 
@@ -534,7 +552,7 @@ export function computeValue(
     const callAccumulator = getOperator(
       OperatorType.ACCUMULATOR,
       operator,
-      options?.context
+      options
     ) as AccumulatorOperator;
     if (callAccumulator) {
       // if object is not an array, first try to compute using the expression
@@ -620,7 +638,7 @@ export function computeValue(
       // if so, return result of the computed value
       if (
         [OperatorType.EXPRESSION, OperatorType.ACCUMULATOR].some(
-          t => !!getOperator(t, key, options?.context)
+          t => !!getOperator(t, key, options)
         )
       ) {
         // there should be only one operator

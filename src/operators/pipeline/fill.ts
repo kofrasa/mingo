@@ -1,17 +1,12 @@
-import {
-  OperatorType,
-  Options,
-  PipelineOperator,
-  useOperators
-} from "../../core";
+import { initOptions, Options, PipelineOperator } from "../../core";
 import { Iterator } from "../../lazy";
 import { AnyVal } from "../../types";
 import { assert, has, isObject } from "../../util";
 import { $ifNull } from "../expression/conditional/ifNull";
+import { $linearFill } from "../window/linearFill";
+import { $locf } from "../window/locf";
 import { $addFields } from "./addFields";
 import { $setWindowFields } from "./setWindowFields";
-
-useOperators(OperatorType.EXPRESSION, { $ifNull });
 
 interface InputExpr {
   partitionBy?: AnyVal;
@@ -51,6 +46,10 @@ export const $fill: PipelineOperator = (
       expr?.partitionByFields?.every(s => s[0] !== "$"),
     "fields in partitionByFields cannot begin with '$'."
   );
+
+  options = initOptions(options);
+  options.context.addExpressionOps({ $ifNull });
+  options.context.addWindowOps({ $locf, $linearFill });
 
   const partitionExpr =
     expr.partitionBy || expr?.partitionByFields?.map(s => `$${s}`);

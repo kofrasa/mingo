@@ -51,7 +51,7 @@ export class Aggregator {
         const call = getOperator(
           OperatorType.PIPELINE,
           opName,
-          this.options.context
+          this.options
         ) as PipelineOperator;
 
         assert(

@@ -135,7 +135,7 @@ function processObject(
       const call = getOperator(
         OperatorType.PROJECTION,
         operator,
-        options?.context
+        options
       ) as ProjectionOperator;
       if (call) {
         // apply the projection operator on the operator expression for the key

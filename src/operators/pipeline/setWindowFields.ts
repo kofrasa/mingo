@@ -3,10 +3,10 @@
 import {
   AccumulatorOperator,
   getOperator,
+  initOptions,
   OperatorType,
   Options,
   PipelineOperator,
-  useOperators,
   WindowOperator
 } from "../../core";
 import { compose, Iterator, Lazy } from "../../lazy";
@@ -48,8 +48,6 @@ const WINDOW_UNBOUNDED_OPS = new Set([
   "$shift"
 ]);
 
-useOperators(OperatorType.EXPRESSION, { $function });
-
 /**
  * Randomly selects the specified number of documents from its input. The given iterator must have finite values
  *
@@ -63,13 +61,16 @@ export const $setWindowFields: PipelineOperator = (
   expr: SetWindowFieldsInput,
   options: Options
 ): Iterator => {
+  options = initOptions(options);
+  options.context.addExpressionOps({ $function });
+
   // validate inputs early since this can be an expensive operation.
   for (const outputExpr of Object.values(expr.output)) {
     const keys = Object.keys(outputExpr);
     const op = keys.find(isOperator);
     assert(
-      !!getOperator(OperatorType.WINDOW, op, options.context) ||
-        !!getOperator(OperatorType.ACCUMULATOR, op, options.context),
+      !!getOperator(OperatorType.WINDOW, op, options) ||
+        !!getOperator(OperatorType.ACCUMULATOR, op, options),
       `'${op}' is not a valid window operator`
     );
 
@@ -129,13 +130,9 @@ export const $setWindowFields: PipelineOperator = (
           left: getOperator(
             OperatorType.ACCUMULATOR,
             op,
-            options?.context
+            options
           ) as AccumulatorOperator,
-          right: getOperator(
-            OperatorType.WINDOW,
-            op,
-            options?.context
-          ) as WindowOperator
+          right: getOperator(OperatorType.WINDOW, op, options) as WindowOperator
         },
         args: outputExpr[op],
         field: field,

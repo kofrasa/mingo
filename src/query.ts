@@ -70,7 +70,7 @@ export class Query {
     const call = getOperator(
       OperatorType.QUERY,
       operator,
-      this.options?.context
+      this.options
     ) as QueryOperator;
     if (!call) {
       throw new Error(`unknown operator ${operator}`);

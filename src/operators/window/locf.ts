@@ -1,7 +1,7 @@
 import { Options } from "../../core";
 import { AnyVal, RawArray, RawObject, WindowOperatorInput } from "../../types";
 import { isNil } from "../../util";
-import { $push } from "../accumulator";
+import { $push } from "../accumulator/push";
 import { withMemo } from "./_internal";
 
 /**
