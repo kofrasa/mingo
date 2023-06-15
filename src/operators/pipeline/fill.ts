@@ -1,16 +1,17 @@
 import {
-  initOptions,
-  OperatorContext,
   OperatorType,
   Options,
-  PipelineOperator
+  PipelineOperator,
+  useOperators
 } from "../../core";
 import { Iterator } from "../../lazy";
 import { AnyVal } from "../../types";
-import { assert, has, isObject, merge } from "../../util";
+import { assert, has, isObject } from "../../util";
 import { $ifNull } from "../expression/conditional/ifNull";
 import { $addFields } from "./addFields";
 import { $setWindowFields } from "./setWindowFields";
+
+useOperators(OperatorType.EXPRESSION, { $ifNull });
 
 interface InputExpr {
   partitionBy?: AnyVal;
@@ -36,13 +37,6 @@ export const $fill: PipelineOperator = (
   expr: InputExpr,
   options: Options
 ): Iterator => {
-  const opts = initOptions({
-    ...options,
-    context: merge(
-      { [OperatorType.EXPRESSION]: { $ifNull } },
-      options.context
-    ) as OperatorContext
-  });
   assert(!expr.sortBy || isObject(expr.sortBy), "sortBy must be an object.");
   assert(
     !!expr.sortBy || Object.values(expr.output).every(m => has(m, "value")),
@@ -88,13 +82,13 @@ export const $fill: PipelineOperator = (
         partitionBy: partitionExpr,
         output: methodExpr
       },
-      opts
+      options
     );
   }
 
   // fill with values
   if (Object.keys(valueExpr).length > 0) {
-    collection = $addFields(collection, valueExpr, opts);
+    collection = $addFields(collection, valueExpr, options);
   }
 
   return collection;

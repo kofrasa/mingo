@@ -2,12 +2,15 @@ import { aggregate, Aggregator, find } from "../src";
 import {
   ComputeOptions,
   computeValue,
+  initOptions,
   OperatorType,
   Options,
+  PipelineOperator,
   ProcessingMode,
   redact,
   useOperators
 } from "../src/core";
+import { Iterator } from "../src/lazy";
 import { AnyVal, RawArray, RawObject } from "../src/types";
 import { isNumber, resolve } from "../src/util";
 import { complexGradesData, DEFAULT_OPTS } from "./support";
@@ -60,21 +63,23 @@ describe("core", () => {
   });
   describe("useOperators", () => {
     it("should add new pipeline operator", () => {
-      function $pluck(collection: AnyVal, expr: AnyVal): AnyVal {
+      const $pluck: PipelineOperator = (
+        collection: AnyVal,
+        expr: AnyVal,
+        options: Options
+      ): Iterator => {
         const array = collection as Array<{ __temp__: AnyVal }>;
-        const agg = new Aggregator(
-          [{ $project: { __temp__: expr } }],
-          DEFAULT_OPTS
-        );
+        const agg = new Aggregator([{ $project: { __temp__: expr } }], options);
         return agg.stream(array).map(item => (item as RawObject)["__temp__"]);
-      }
+      };
 
-      useOperators(OperatorType.PIPELINE, { $pluck });
+      const opts = initOptions(DEFAULT_OPTS);
+      if (opts.context) opts.context.addPipelineOps({ $pluck });
 
       const result = aggregate(
         complexGradesData,
         [{ $unwind: "$scores" }, { $pluck: "$scores.score" }],
-        DEFAULT_OPTS
+        opts
       );
 
       expect(isNumber(result[0])).toBe(true);

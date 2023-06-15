@@ -3,11 +3,10 @@
 import {
   AccumulatorOperator,
   getOperator,
-  initOptions,
-  OperatorContext,
   OperatorType,
   Options,
   PipelineOperator,
+  useOperators,
   WindowOperator
 } from "../../core";
 import { compose, Iterator, Lazy } from "../../lazy";
@@ -20,7 +19,7 @@ import {
   SetWindowFieldsInput,
   WindowOutputOption
 } from "../../types";
-import { assert, isNumber, isOperator, isString, merge } from "../../util";
+import { assert, isNumber, isOperator, isString } from "../../util";
 import { $function } from "../expression";
 import { $dateAdd } from "../expression/date/dateAdd";
 import { isUnbounded } from "./_internal";
@@ -49,6 +48,8 @@ const WINDOW_UNBOUNDED_OPS = new Set([
   "$shift"
 ]);
 
+useOperators(OperatorType.EXPRESSION, { $function });
+
 /**
  * Randomly selects the specified number of documents from its input. The given iterator must have finite values
  *
@@ -62,20 +63,13 @@ export const $setWindowFields: PipelineOperator = (
   expr: SetWindowFieldsInput,
   options: Options
 ): Iterator => {
-  const opts = initOptions({
-    ...options,
-    context: merge(
-      { [OperatorType.EXPRESSION]: { $function } },
-      options.context
-    ) as OperatorContext
-  });
   // validate inputs early since this can be an expensive operation.
   for (const outputExpr of Object.values(expr.output)) {
     const keys = Object.keys(outputExpr);
     const op = keys.find(isOperator);
     assert(
-      !!getOperator(OperatorType.WINDOW, op, opts?.context) ||
-        !!getOperator(OperatorType.ACCUMULATOR, op, opts?.context),
+      !!getOperator(OperatorType.WINDOW, op, options.context) ||
+        !!getOperator(OperatorType.ACCUMULATOR, op, options.context),
       `'${op}' is not a valid window operator`
     );
 
@@ -99,7 +93,7 @@ export const $setWindowFields: PipelineOperator = (
 
   // we sort first if required
   if (expr.sortBy) {
-    collection = $sort(collection, expr.sortBy, opts);
+    collection = $sort(collection, expr.sortBy, options);
   }
 
   // then partition collection
@@ -109,7 +103,7 @@ export const $setWindowFields: PipelineOperator = (
       _id: expr.partitionBy,
       items: { $push: "$$CURRENT" }
     },
-    opts
+    options
   );
 
   // transform values
@@ -135,12 +129,12 @@ export const $setWindowFields: PipelineOperator = (
           left: getOperator(
             OperatorType.ACCUMULATOR,
             op,
-            opts?.context
+            options?.context
           ) as AccumulatorOperator,
           right: getOperator(
             OperatorType.WINDOW,
             op,
-            opts?.context
+            options?.context
           ) as WindowOperator
         },
         args: outputExpr[op],
@@ -186,7 +180,7 @@ export const $setWindowFields: PipelineOperator = (
 
             // process accumulator function
             if (func.left) {
-              return func.left(getItemsFn(obj, index), args, opts);
+              return func.left(getItemsFn(obj, index), args, options);
             } else if (func.right) {
               // OR process 'window' function
               return func.right(
@@ -199,7 +193,7 @@ export const $setWindowFields: PipelineOperator = (
                   field
                 },
                 // must use raw options only since it operates over a collection.
-                opts
+                options
               );
             }
           };
@@ -253,7 +247,7 @@ export const $setWindowFields: PipelineOperator = (
                       unit,
                       amount
                     },
-                    opts
+                    options
                   ).getTime();
                 };
                 lower = isNumber(begin) ? getTime(begin) : -Infinity;
@@ -296,7 +290,7 @@ export const $setWindowFields: PipelineOperator = (
               }
             }
           },
-          opts
+          options
         );
       }
 

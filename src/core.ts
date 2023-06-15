@@ -2,6 +2,7 @@ import { Iterator } from "./lazy";
 import {
   AnyVal,
   ArrayOrObject,
+  Callback,
   HashFunction,
   Predicate,
   RawArray,
@@ -10,8 +11,8 @@ import {
 } from "./types";
 import {
   assert,
+  cloneDeep,
   has,
-  into,
   isArray,
   isFunction,
   isNil,
@@ -19,6 +20,7 @@ import {
   isObjectLike,
   isOperator,
   isString,
+  merge,
   resolve
 } from "./util";
 
@@ -292,7 +294,7 @@ export type UpdateOperator = (
   options: UpdateOptions
 ) => string[];
 
-type OperatorFunction =
+export type Operator =
   | AccumulatorOperator
   | ExpressionOperator
   | PipelineOperator
@@ -301,28 +303,94 @@ type OperatorFunction =
   | WindowOperator;
 
 /** Map of operator functions */
-export type OperatorMap = Record<string, OperatorFunction>;
+export type OperatorMap = Record<string, Operator>;
 
-type OperatorName = `$${string}`;
-
-export type OperatorContext = Partial<{
-  [OperatorType.ACCUMULATOR]: Record<OperatorName, AccumulatorOperator>;
-  [OperatorType.EXPRESSION]: Record<OperatorName, ExpressionOperator>;
-  [OperatorType.PIPELINE]: Record<OperatorName, PipelineOperator>;
-  [OperatorType.PROJECTION]: Record<OperatorName, ProjectionOperator>;
-  [OperatorType.QUERY]: Record<OperatorName, QueryOperator>;
-  [OperatorType.WINDOW]: Record<OperatorName, WindowOperator>;
+export type OpContextMap = Partial<{
+  [OperatorType.ACCUMULATOR]: Record<string, AccumulatorOperator>;
+  [OperatorType.EXPRESSION]: Record<string, ExpressionOperator>;
+  [OperatorType.PIPELINE]: Record<string, PipelineOperator>;
+  [OperatorType.PROJECTION]: Record<string, ProjectionOperator>;
+  [OperatorType.QUERY]: Record<string, QueryOperator>;
+  [OperatorType.WINDOW]: Record<string, WindowOperator>;
 }>;
 
+type AccumulatorOps = Record<string, AccumulatorOperator>;
+type ExpressionOps = Record<string, ExpressionOperator>;
+type ProjectionOps = Record<string, ProjectionOperator>;
+type QueryOps = Record<string, QueryOperator>;
+type PipelineOps = Record<string, PipelineOperator>;
+type WindowOps = Record<string, WindowOperator>;
+
+export class OperatorContext {
+  private readonly operators: OpContextMap;
+
+  private constructor(ops: OpContextMap) {
+    this.operators = cloneDeep(ops) as typeof ops;
+  }
+
+  static init(ops: OpContextMap): OperatorContext {
+    return new OperatorContext(
+      merge(
+        {
+          [OperatorType.ACCUMULATOR]: {},
+          [OperatorType.EXPRESSION]: {},
+          [OperatorType.PIPELINE]: {},
+          [OperatorType.PROJECTION]: {},
+          [OperatorType.QUERY]: {},
+          [OperatorType.WINDOW]: {}
+        },
+        ops,
+        { skipValidation: true }
+      )
+    );
+  }
+
+  static from(ctx: OperatorContext): OperatorContext {
+    return new OperatorContext(ctx.operators);
+  }
+
+  addOperators(type: OperatorType, ops: OperatorMap): OperatorContext {
+    (this.operators[type] as RawObject) = {
+      ...this.operators[type],
+      ...ops
+    };
+    return this;
+  }
+
+  // register
+
+  addAccumulatorOps(ops: AccumulatorOps) {
+    return this.addOperators(OperatorType.ACCUMULATOR, ops);
+  }
+
+  addExpressionOps(ops: ExpressionOps) {
+    return this.addOperators(OperatorType.EXPRESSION, ops);
+  }
+
+  addQueryOps(ops: QueryOps) {
+    return this.addOperators(OperatorType.QUERY, ops);
+  }
+
+  addPipelineOps(ops: PipelineOps) {
+    return this.addOperators(OperatorType.PIPELINE, ops);
+  }
+
+  addProjectionOps(ops: ProjectionOps) {
+    return this.addOperators(OperatorType.PROJECTION, ops);
+  }
+
+  addWindowOps(ops: WindowOps) {
+    return this.addOperators(OperatorType.WINDOW, ops);
+  }
+
+  // getters
+  getOperator(type: OperatorType, name: string): Callback | null {
+    return type in this.operators ? this.operators[type][name] || null : null;
+  }
+}
+
 // operator definitions
-const OPERATORS: OperatorContext = {
-  [OperatorType.ACCUMULATOR]: {},
-  [OperatorType.EXPRESSION]: {},
-  [OperatorType.PIPELINE]: {},
-  [OperatorType.PROJECTION]: {},
-  [OperatorType.QUERY]: {},
-  [OperatorType.WINDOW]: {}
-};
+const CONTEXT = OperatorContext.init({});
 
 /**
  * Register fully specified operators for the given operator class.
@@ -336,14 +404,14 @@ export function useOperators(type: OperatorType, operators: OperatorMap): void {
       isFunction(fn) && isOperator(name),
       `'${name}' is not a valid operator`
     );
-    const currentFn = getOperator(type, name, {});
+    const currentFn = getOperator(type, name, null);
     assert(
       !currentFn || fn === currentFn,
       `${name} already exists for '${type}' operators. Cannot change operator function once registered.`
     );
   }
   // toss the operator salad :)
-  into(OPERATORS[type], operators);
+  CONTEXT.addOperators(type, operators);
 }
 
 /**
@@ -354,12 +422,10 @@ export function useOperators(type: OperatorType, operators: OperatorMap): void {
 export function getOperator(
   type: OperatorType,
   operator: string,
-  context: Partial<OperatorContext>
-): OperatorFunction {
-  const fn = (
-    context && context[type] ? context[type][operator] : null
-  ) as OperatorFunction;
-  return (fn ? fn : OPERATORS[type][operator]) as OperatorFunction;
+  context: OperatorContext
+): Operator {
+  const fn = context ? (context.getOperator(type, operator) as Operator) : null;
+  return fn || (CONTEXT.getOperator(type, operator) as Operator);
 }
 
 /* eslint-disable unused-imports/no-unused-vars-ts */

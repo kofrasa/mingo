@@ -22,14 +22,14 @@ import person from "./data/person";
 import students from "./data/students";
 
 /** The full context of all operators defined in the library. */
-const FULL_CONTEXT: OperatorContext = {
+const FULL_CONTEXT = OperatorContext.init({
   [OperatorType.ACCUMULATOR]: accumulatorOperators,
   [OperatorType.EXPRESSION]: expressionOperators,
   [OperatorType.PIPELINE]: pipelineOperators,
   [OperatorType.PROJECTION]: projectionOperators,
   [OperatorType.QUERY]: queryOperators,
   [OperatorType.WINDOW]: windowOperators
-};
+});
 
 export const DEFAULT_OPTS = initOptions({ context: FULL_CONTEXT });
 
