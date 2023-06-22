@@ -165,7 +165,7 @@ No default implementation is provided out of the box so users can use a library 
 <td>This is provided to allow users to strictly enforce which operators may be usable.</td>
 </tr>
 </tbody></table>
-<a id="md:adding-custom-operators" class="tsd-anchor"></a><h2><a href="#md:adding-custom-operators">Adding Custom Operators</a></h2><p>Custom operators can be registered using <code>OperatorContext</code> via the <code>context</code> option which is the recommended way from <code>6.4.2</code>. The <code>OperatorContext</code> is a container for operators, that the execution engine will use to process queries. Previously, the <a href="http://kofrasa.net/mingo/modules/core.html#useOperators">useOperators(...)</a> function was used to register operators globally but that is no longer preferred. The difference between the two is that a globally registered operator cannot be overwritten whereas a new context may be created and used at anytime.</p>
+<a id="md:adding-custom-operators" class="tsd-anchor"></a><h2><a href="#md:adding-custom-operators">Adding Custom Operators</a></h2><p>Custom operators can be registered using <code>Context</code> via the <code>context</code> option which is the recommended way from <code>6.4.2</code>. The <code>Context</code> is a container for operators, that the execution engine will use to process queries. Previously, the <a href="http://kofrasa.net/mingo/modules/core.html#useOperators">useOperators(...)</a> function was used to register operators globally but that is no longer preferred. The difference between the two is that a globally registered operator cannot be overwritten whereas a new context may be created and used at anytime.</p>
 <p><strong>NB: Note that the execution engine will first try to find the operator in the context and fallback to the global context when not found.</strong></p>
 <p>Each operator type has a specific interface to which an implementation must conform to be valid.</p>
 <ul>
@@ -184,7 +184,7 @@ No default implementation is provided out of the box so users can use a library 
 <li>Pipeline <a href="http://kofrasa.net/mingo/modules/operators_pipeline.html">operators</a>; <code>$project</code>, <code>$skip</code>, <code>$limit</code>, and <code>$sort</code>.</li>
 </ul>
 <blockquote>
-<p>NB: <em>Update operators is not supported in OperatorContext.</em></p>
+<p>NB: <em>Update operators is not supported in <code>Context</code>.</em></p>
 </blockquote>
 <a id="md:updating-documents" class="tsd-anchor"></a><h2><a href="#md:updating-documents">Updating Documents</a></h2><p>An update operation can be performed using the <code>updateObject</code> function from the <code>mingo/updater</code> module. Unlike other operations in the library, this only works operates on a single object.
 The query and aggregation operators are powerful enough to use for transforming arrays of documents and should be preferred when dealing with multiple objects.
