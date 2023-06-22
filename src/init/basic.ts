@@ -1,12 +1,7 @@
 /**
  * Loads all Query and Projection operators
  */
-import {
-  OperatorContext,
-  OperatorMap,
-  OperatorType,
-  useOperators
-} from "../core";
+import { Context, OperatorMap, OperatorType, useOperators } from "../core";
 import * as booleanOperators from "../operators/expression/boolean";
 import * as comparisonOperators from "../operators/expression/comparison";
 import { $limit, $project, $skip, $sort } from "../operators/pipeline";
@@ -27,7 +22,7 @@ useOperators(OperatorType.PROJECTION, projectionOperators as OperatorMap);
 useOperators(OperatorType.QUERY, queryOperators as OperatorMap);
 
 /** The basic context for queries. */
-export const BASIC_CONTEXT = OperatorContext.init({
+export const BASIC_CONTEXT = Context.init({
   [OperatorType.EXPRESSION]: {
     ...booleanOperators,
     ...comparisonOperators

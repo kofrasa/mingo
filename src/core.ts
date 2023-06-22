@@ -111,7 +111,7 @@ export interface Options {
   /** Global variables. */
   readonly variables?: Readonly<RawObject>;
   /** Extra references to operators to be used for processing. */
-  readonly context: OperatorContext;
+  readonly context: Context;
 }
 
 interface LocalData {
@@ -172,7 +172,7 @@ export class ComputeOptions implements Options {
   getOptions() {
     return Object.freeze({
       ...this._opts,
-      context: OperatorContext.from(this._opts.context)
+      context: Context.from(this._opts.context)
     }) as Options;
   }
 
@@ -232,8 +232,8 @@ export function initOptions(options: Partial<Options>): Options {
         processingMode: ProcessingMode.CLONE_OFF,
         ...options,
         context: options?.context
-          ? OperatorContext.from(options?.context)
-          : OperatorContext.init({})
+          ? Context.from(options?.context)
+          : Context.init({})
       });
 }
 
@@ -321,7 +321,7 @@ export type Operator =
 /** Map of operator functions */
 export type OperatorMap = Record<string, Operator>;
 
-export type OpContextMap = Partial<{
+type ContextMap = Partial<{
   [OperatorType.ACCUMULATOR]: Record<string, AccumulatorOperator>;
   [OperatorType.EXPRESSION]: Record<string, ExpressionOperator>;
   [OperatorType.PIPELINE]: Record<string, PipelineOperator>;
@@ -337,15 +337,15 @@ type QueryOps = Record<string, QueryOperator>;
 type PipelineOps = Record<string, PipelineOperator>;
 type WindowOps = Record<string, WindowOperator>;
 
-export class OperatorContext {
-  private readonly operators: OpContextMap;
+export class Context {
+  private readonly operators: ContextMap;
 
-  private constructor(ops: OpContextMap) {
+  private constructor(ops: ContextMap) {
     this.operators = cloneDeep(ops) as typeof ops;
   }
 
-  static init(ops: OpContextMap): OperatorContext {
-    return new OperatorContext(
+  static init(ops: ContextMap): Context {
+    return new Context(
       merge(
         {
           [OperatorType.ACCUMULATOR]: {},
@@ -361,11 +361,11 @@ export class OperatorContext {
     );
   }
 
-  static from(ctx: OperatorContext): OperatorContext {
-    return new OperatorContext(ctx.operators);
+  static from(ctx: Context): Context {
+    return new Context(ctx.operators);
   }
 
-  addOperators(type: OperatorType, ops: OperatorMap): OperatorContext {
+  addOperators(type: OperatorType, ops: OperatorMap): Context {
     for (const [name, fn] of Object.entries(ops)) {
       if (!this.getOperator(type, name)) {
         (this.operators[type] as OperatorMap)[name] = fn;
@@ -407,7 +407,7 @@ export class OperatorContext {
 }
 
 // operator definitions
-const CONTEXT = OperatorContext.init({});
+const CONTEXT = Context.init({});
 
 /**
  * Register fully specified operators for the given operator class.

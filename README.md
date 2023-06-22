@@ -245,7 +245,7 @@ Query and aggregation operations can be configured with options to enabled diffe
 
 ## Adding Custom Operators
 
-Custom operators can be registered using `OperatorContext` via the `context` option which is the recommended way from `6.4.2`. The `OperatorContext` is a container for operators, that the execution engine will use to process queries. Previously, the [useOperators(...)](http://kofrasa.net/mingo/modules/core.html#useOperators) function was used to register operators globally but that is no longer preferred. The difference between the two is that a globally registered operator cannot be overwritten whereas a new context may be created and used at anytime.
+Custom operators can be registered using `Context` via the `context` option which is the recommended way from `6.4.2`. The `Context` is a container for operators, that the execution engine will use to process queries. Previously, the [useOperators(...)](http://kofrasa.net/mingo/modules/core.html#useOperators) function was used to register operators globally but that is no longer preferred. The difference between the two is that a globally registered operator cannot be overwritten whereas a new context may be created and used at anytime.
 
 **NB: Note that the execution engine will first try to find the operator in the context and fallback to the global context when not found.**
 
@@ -265,7 +265,7 @@ Pre-loaded operators defined [here](https://github.com/kofrasa/mingo/blob/master
 - Expression operators for [boolean](http://kofrasa.net/mingo/modules/operators_expression_boolean.html) and [comparison](http://kofrasa.net/mingo/modules/operators_expression_comparison.html).
 - Pipeline [operators](http://kofrasa.net/mingo/modules/operators_pipeline.html); `$project`, `$skip`, `$limit`, and `$sort`.
 
-> NB: _Update operators is not supported in OperatorContext._
+> NB: _Update operators is not supported in `Context`._
 
 ## Updating Documents
 

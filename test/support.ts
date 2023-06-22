@@ -3,8 +3,8 @@
 import { aggregate } from "../src";
 import {
   computeValue,
+  Context,
   initOptions,
-  OperatorContext,
   OperatorType,
   Options,
   ProcessingMode
@@ -22,7 +22,7 @@ import person from "./data/person";
 import students from "./data/students";
 
 /** The full context of all operators defined in the library. */
-const FULL_CONTEXT = OperatorContext.init({
+const FULL_CONTEXT = Context.init({
   [OperatorType.ACCUMULATOR]: accumulatorOperators,
   [OperatorType.EXPRESSION]: expressionOperators,
   [OperatorType.PIPELINE]: pipelineOperators,

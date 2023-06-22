@@ -2,7 +2,7 @@
 
 ## 6.4.2 / 2023-06-xx
 **New**
-- Add `OperatorContext` to enable isolated configurations of usable operators in the same runtime context.
+- Add `Context` to enable isolated configurations of usable operators in the same runtime context.
 
 ## 6.4.1 / 2023-06-08
 **New**
