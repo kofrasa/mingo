@@ -1,6 +1,6 @@
 # Changelog
 
-## 6.4.2 / 2023-06-xx
+## 6.4.2 / 2023-06-23
 **New**
 - Add `Context` to enable isolated configurations of usable operators in the same runtime context.
 
