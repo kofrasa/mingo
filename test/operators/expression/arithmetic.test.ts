@@ -80,10 +80,13 @@ support.runTest("operators/expression/arithmetic", {
     [{ $pow: [-5, 0.5] }, NaN]
   ],
   $round: [
+    [[10.4, 0], 10],
     [[10.5, 0], 10],
     [[10.6, 0], 11],
+    [[10.7, 0], 11],
     [[11.4, 0], 11],
     [[11.5, 0], 12],
+    [[11.9, 0], 12],
     [[12.5, 0], 12],
     [[13.5, 0], 14],
     // rounded to the first decimal place
