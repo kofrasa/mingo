@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.4.3 / 2023-06-28
+**Fixes**
+- Fix rounding of even whole numbers. [347](https://github.com/kofrasa/mingo/issues/347)
+
 ## 6.4.2 / 2023-06-23
 **New**
 - Add `Context` to enable isolated configurations of usable operators in the same runtime context.
