@@ -17,7 +17,10 @@ export function truncate(
 
   if (places === 0) {
     const firstDigit = Math.trunc(10 * decimals);
-    if (roundOff && (result & 1) === 1 && firstDigit >= 5) {
+    if (
+      roundOff &&
+      (((result & 1) === 1 && firstDigit >= 5) || firstDigit > 5)
+    ) {
       result++;
     }
   } else if (places > 0) {
