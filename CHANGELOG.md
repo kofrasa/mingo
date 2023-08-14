@@ -1,5 +1,10 @@
 # Changelog
 
+## 6.4.4 / 2023-08-13
+**Fixes**
+- Fixed incorrect query normalization when a regex condition is specified as an object literal. [355](https://github.com/kofrasa/mingo/issues/355)
+- Restore generic type annotations for top-level classes. [357](https://github.com/kofrasa/mingo/issues/357)
+
 ## 6.4.3 / 2023-06-28
 **Fixes**
 - Fix rounding of even whole numbers. [347](https://github.com/kofrasa/mingo/issues/347)
