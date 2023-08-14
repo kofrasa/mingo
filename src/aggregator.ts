@@ -83,7 +83,7 @@ export class Aggregator {
    * @param {*} collection
    * @param {*} query
    */
-  run(collection: Source): RawObject[] {
+  run<T extends RawObject>(collection: Source): T[] {
     return this.stream(collection).value();
   }
 }

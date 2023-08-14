@@ -16,15 +16,15 @@ describe("operators/query/array", () => {
       qty: [
         { size: "S", num: 10, color: "blue" },
         { size: "M", num: 100, color: "blue" },
-        { size: "L", num: 100, color: "green" },
-      ],
+        { size: "L", num: 100, color: "green" }
+      ]
     },
     {
       _id: "52350353b2eff1353b349de9",
       code: "ijk",
       tags: ["electronics", "school"],
-      qty: [{ size: "M", num: 100, color: "green" }],
-    },
+      qty: [{ size: "M", num: 100, color: "green" }]
+    }
   ];
 
   it("can match object using $all with $elemMatch", () => {
@@ -32,9 +32,9 @@ describe("operators/query/array", () => {
       qty: {
         $all: [
           { $elemMatch: { size: "M", num: { $gt: 50 } } },
-          { $elemMatch: { num: 100, color: "green" } },
-        ],
-      },
+          { $elemMatch: { num: 100, color: "green" } }
+        ]
+      }
     });
 
     let booleanResult = true;
@@ -52,50 +52,50 @@ describe("operators/query/array", () => {
           {
             key1: [
               [[{ key2: [{ a: "value2" }, { a: "dummy" }, { b: 20 }] }]],
-              { key2: "value" },
+              { key2: "value" }
             ],
-            key1a: { key2a: "value2a" },
-          },
-        ],
-      },
+            key1a: { key2a: "value2a" }
+          }
+        ]
+      }
     ];
 
     const fixtures: Array<RawArray> = [
       [
         { "key0.key1.key2.a": "value2" },
         [],
-        "should not match without array index selector to nested value ",
+        "should not match without array index selector to nested value "
       ],
       [
         { "key0.key1.0.key2.a": "value2" },
         [],
-        "should not match without enough depth for array index selector to nested value",
+        "should not match without enough depth for array index selector to nested value"
       ],
       [
         { "key0.key1.0.0.key2.a": "value2" },
         data,
-        "can match with full array index selector to deeply nested value",
+        "can match with full array index selector to deeply nested value"
       ],
       [
         { "key0.key1.0.0.key2": { b: 20 } },
         data,
-        "can match with array index selector to nested value at depth 1",
+        "can match with array index selector to nested value at depth 1"
       ],
       [
         { "key0.key1.1.key2": "value" },
         data,
-        "can match with full array index selector to nested value",
+        "can match with full array index selector to nested value"
       ],
       [
         { "key0.key1.key2": "value" },
         data,
-        "can match without array index selector to nested value at depth 1",
+        "can match without array index selector to nested value at depth 1"
       ],
       [
         { "key0.key1.1.key2": "value" },
         data,
-        "can match shallow nested value with array index selector",
-      ],
+        "can match shallow nested value with array index selector"
+      ]
     ];
 
     fixtures.forEach((row: RawArray) => {
@@ -113,31 +113,31 @@ describe("operators/query/array", () => {
       [
         {
           "key0.key1": [
-            [{ key2: [{ a: "value2" }, { a: "dummy" }, { b: 20 }] }],
-          ],
+            [{ key2: [{ a: "value2" }, { a: "dummy" }, { b: 20 }] }]
+          ]
         },
-        "can match full key selector",
+        "can match full key selector"
       ],
       [
         {
           "key0.key1.0": [
-            [{ key2: [{ a: "value2" }, { a: "dummy" }, { b: 20 }] }],
-          ],
+            [{ key2: [{ a: "value2" }, { a: "dummy" }, { b: 20 }] }]
+          ]
         },
-        "can match with key<-->index selector",
+        "can match with key<-->index selector"
       ],
       [
         {
           "key0.key1.0.0": [
-            { key2: [{ a: "value2" }, { a: "dummy" }, { b: 20 }] },
-          ],
+            { key2: [{ a: "value2" }, { a: "dummy" }, { b: 20 }] }
+          ]
         },
-        "can match with key<-->multi-index selector",
+        "can match with key<-->multi-index selector"
       ],
       [
         { "key0.key1.0.0.key2": [{ a: "value2" }, { a: "dummy" }, { b: 20 }] },
-        "can match with key<-->multi-index<-->key selector",
-      ],
+        "can match with key<-->multi-index<-->key selector"
+      ]
     ].forEach(function (row) {
       const query = row[0] as RawObject;
       const message = row[1] as string;
@@ -165,9 +165,9 @@ describe("operators/query/array", () => {
         id: 1,
         sub: [
           { id: 11, name: "OneOne", test: true },
-          { id: 22, name: "TwoTwo", test: false },
-        ],
-      },
+          { id: 22, name: "TwoTwo", test: false }
+        ]
+      }
     ];
 
     const arrayResult = find(data, {}, { "sub.id": 1, "sub.name": 1 }).all();
@@ -175,9 +175,9 @@ describe("operators/query/array", () => {
       {
         sub: [
           { id: 11, name: "OneOne" },
-          { id: 22, name: "TwoTwo" },
-        ],
-      },
+          { id: 22, name: "TwoTwo" }
+        ]
+      }
     ]);
   });
 
@@ -208,7 +208,7 @@ describe("operators/query/array", () => {
       {},
       {
         "history.user": 1,
-        "history.notes": 1,
+        "history.notes": 1
       }
     ).all();
 
@@ -217,13 +217,13 @@ describe("operators/query/array", () => {
         history: [
           {
             user: "Jeff",
-            notes: "asdf",
+            notes: "asdf"
           },
           {
-            user: "Gary",
-          },
-        ],
-      },
+            user: "Gary"
+          }
+        ]
+      }
     ]);
   });
 
@@ -234,24 +234,24 @@ describe("operators/query/array", () => {
           username: "User1",
           projects: [
             { name: "Project 1", rating: { complexity: 6 } },
-            { name: "Project 2", rating: { complexity: 2 } },
-          ],
-        },
+            { name: "Project 2", rating: { complexity: 2 } }
+          ]
+        }
       },
       {
         user: {
           username: "User2",
           projects: [
             { name: "Project 1", rating: { complexity: 6 } },
-            { name: "Project 2", rating: { complexity: 8 } },
-          ],
-        },
-      },
+            { name: "Project 2", rating: { complexity: 8 } }
+          ]
+        }
+      }
     ];
     const criteria = {
       "user.projects": {
-        $all: [{ $elemMatch: { "rating.complexity": { $gt: 6 } } }],
-      },
+        $all: [{ $elemMatch: { "rating.complexity": { $gt: 6 } } }]
+      }
     };
     // It should return one user object
     const result = find(data, criteria).count();
@@ -263,32 +263,32 @@ describe("operators/query/array", () => {
       {
         user: {
           username: "User1",
-          projects: ["foo", "bar"],
-        },
+          projects: ["foo", "bar"]
+        }
       },
       {
         user: {
           username: "User2",
-          projects: ["foo", "baz"],
-        },
+          projects: ["foo", "baz"]
+        }
       },
       {
         user: {
           username: "User3",
-          projects: ["fizz", "buzz"],
-        },
+          projects: ["fizz", "buzz"]
+        }
       },
       {
         user: {
           username: "User4",
-          projects: [],
-        },
-      },
+          projects: []
+        }
+      }
     ];
     const criteria = {
       "user.projects": {
-        $all: ["foo", /^ba/],
-      },
+        $all: ["foo", /^ba/]
+      }
     };
     // It should return two user objects
     const results = find(data, criteria).all();
@@ -306,35 +306,35 @@ describe("operators/query/array", () => {
       {
         user: {
           username: "User1",
-          projects: ["foo", 1],
-        },
+          projects: ["foo", 1]
+        }
       },
       {
         user: {
           username: "User2",
-          projects: ["foo", 2, "1"],
-        },
+          projects: ["foo", 2, "1"]
+        }
       },
       {
         user: {
           username: "User3",
-          projects: [],
-        },
-      },
+          projects: []
+        }
+      }
     ];
     const criteria = {
       "user.projects": {
-        $all: ["foo", 1],
-      },
+        $all: ["foo", 1]
+      }
     };
     // It should return two user objects
-    const results = find(data, criteria).all();
+    const results = find<UserResult>(data, criteria).all();
 
     expect(results.length).toEqual(1);
 
     expect(
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      (results[0] as UserResult).user.username
+      results[0].user.username
     ).toEqual("User1");
 
     criteria["user.projects"].$all = [];
@@ -347,42 +347,42 @@ describe("operators/query/array", () => {
         _id: 1,
         results: [
           { product: "abc", score: 10 },
-          { product: "xyz", score: 5 },
-        ],
+          { product: "xyz", score: 5 }
+        ]
       },
       {
         _id: 2,
         results: [
           { product: "abc", score: 8 },
-          { product: "xyz", score: 7 },
-        ],
+          { product: "xyz", score: 7 }
+        ]
       },
       {
         _id: 3,
         results: [
           { product: "abc", score: 7 },
-          { product: "xyz", score: 8 },
-        ],
-      },
+          { product: "xyz", score: 8 }
+        ]
+      }
     ];
 
     it("can $elemMatch on embedded documents", () => {
       const result = find(products, {
-        results: { $elemMatch: { product: "xyz", score: { $gte: 8 } } },
+        results: { $elemMatch: { product: "xyz", score: { $gte: 8 } } }
       }).all()[0];
 
       expect(result).toEqual({
         _id: 3,
         results: [
           { product: "abc", score: 7 },
-          { product: "xyz", score: 8 },
-        ],
+          { product: "xyz", score: 8 }
+        ]
       });
     });
 
     it("can $elemMatch single document", () => {
       const result = find(products, {
-        results: { $elemMatch: { product: "xyz" } },
+        results: { $elemMatch: { product: "xyz" } }
       }).all();
       expect(result).toEqual(products);
     });
@@ -395,7 +395,7 @@ describe("operators/query/array", () => {
         [{ $lte: 50 }],
         [{ $gt: 50 }],
         [{ $gte: 50 }],
-        [{ $gte: 10, $lt: 100 }],
+        [{ $gte: 10, $lt: 100 }]
       ];
 
       fixtures.forEach(function (args) {
@@ -412,35 +412,35 @@ describe("operators/query/array", () => {
         _id: 3,
         results: [
           { product: "abc", score: 7 },
-          { product: "xyz", score: 8 },
-        ],
-      },
+          { product: "xyz", score: 8 }
+        ]
+      }
     ];
 
     it("$elemMatch with $and", () => {
       let result = find(products, {
         results: {
           $elemMatch: {
-            $and: [{ product: "xyz" }, { score: 8 }],
-          },
-        },
+            $and: [{ product: "xyz" }, { score: 8 }]
+          }
+        }
       }).all()[0];
 
       expect(result).toEqual({
         _id: 3,
         results: [
           { product: "abc", score: 7 },
-          { product: "xyz", score: 8 },
-        ],
+          { product: "xyz", score: 8 }
+        ]
       });
 
       // non-existing value
       result = find(products, {
         results: {
           $elemMatch: {
-            $and: [{ product: "xyz" }, { score: 9 }],
-          },
-        },
+            $and: [{ product: "xyz" }, { score: 9 }]
+          }
+        }
       }).all()[0];
 
       expect(result).toBeUndefined();
@@ -450,17 +450,17 @@ describe("operators/query/array", () => {
       const result = find(products, {
         results: {
           $elemMatch: {
-            $or: [{ product: "xyz" }, { score: 8 }],
-          },
-        },
+            $or: [{ product: "xyz" }, { score: 8 }]
+          }
+        }
       }).all()[0];
 
       expect(result).toEqual({
         _id: 3,
         results: [
           { product: "abc", score: 7 },
-          { product: "xyz", score: 8 },
-        ],
+          { product: "xyz", score: 8 }
+        ]
       });
     });
 
@@ -468,17 +468,17 @@ describe("operators/query/array", () => {
       const result = find(products, {
         results: {
           $elemMatch: {
-            $nor: [{ product: "abc" }, { score: 7 }],
-          },
-        },
+            $nor: [{ product: "abc" }, { score: 7 }]
+          }
+        }
       }).all()[0];
 
       expect(result).toEqual({
         _id: 3,
         results: [
           { product: "abc", score: 7 },
-          { product: "xyz", score: 8 },
-        ],
+          { product: "xyz", score: 8 }
+        ]
       });
     });
   });

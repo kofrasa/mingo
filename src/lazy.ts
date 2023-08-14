@@ -257,7 +257,7 @@ export class Iterator {
   /**
    * Returns the fully realized values of the iterators.
    * The return value will be an array unless `lazy.first()` was used.
-   * The realized values are cached for subsequent calls
+   * The realized values are cached for subsequent calls.
    */
   value<T>(): T[] {
     if (!this.isDone) {
@@ -284,7 +284,7 @@ export class Iterator {
    * Returns the reduction of sequence according the reducing function
    *
    * @param {*} f a reducing function
-   * @param {*} init
+   * @param {*} initialValue
    */
   reduce<T = AnyVal>(f: Callback<T>, initialValue?: AnyVal): T {
     let o = this.next();

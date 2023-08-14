@@ -1,7 +1,7 @@
 import { Aggregator } from "./aggregator";
 import { CollationSpec, Options } from "./core";
 import { compose, Iterator, Lazy, Source } from "./lazy";
-import { AnyVal, Callback, Predicate, RawArray, RawObject } from "./types";
+import { AnyVal, Callback, Predicate, RawObject } from "./types";
 import { isObject } from "./util";
 
 /**
@@ -14,10 +14,10 @@ import { isObject } from "./util";
  * @param options Options
  * @constructor
  */
-export class Cursor {
+export class Cursor<T> {
   private readonly operators: Array<RawObject> = [];
   private result: Iterator | null = null;
-  private buffer: RawObject[] = [];
+  private buffer: T[] = [];
 
   constructor(
     readonly source: Source,
@@ -58,8 +58,8 @@ export class Cursor {
    * Return remaining objects in the cursor as an array. This method exhausts the cursor
    * @returns {Array}
    */
-  all(): RawArray {
-    return this.fetchAll().value() as RawArray;
+  all(): T[] {
+    return this.fetchAll().value();
   }
 
   /**
@@ -75,7 +75,7 @@ export class Cursor {
    * @param {Number} n the number of results to skip.
    * @return {Cursor} Returns the cursor, so you can chain this call.
    */
-  skip(n: number): Cursor {
+  skip(n: number): Cursor<T> {
     this.operators.push({ $skip: n });
     return this;
   }
@@ -85,7 +85,7 @@ export class Cursor {
    * @param {Number} n the number of results to limit to.
    * @return {Cursor} Returns the cursor, so you can chain this call.
    */
-  limit(n: number): Cursor {
+  limit(n: number): Cursor<T> {
     this.operators.push({ $limit: n });
     return this;
   }
@@ -95,7 +95,7 @@ export class Cursor {
    * @param {Object} modifier an object of key and values specifying the sort order. 1 for ascending and -1 for descending
    * @return {Cursor} Returns the cursor, so you can chain this call.
    */
-  sort(modifier: RawObject): Cursor {
+  sort(modifier: RawObject): Cursor<T> {
     this.operators.push({ $sort: modifier });
     return this;
   }
@@ -104,7 +104,7 @@ export class Cursor {
    * Specifies the collation for the cursor returned by the `mingo.Query.find`
    * @param {*} spec
    */
-  collation(spec: CollationSpec): Cursor {
+  collation(spec: CollationSpec): Cursor<T> {
     this.options = { ...this.options, collation: spec };
     return this;
   }
@@ -113,14 +113,14 @@ export class Cursor {
    * Returns the next document in a cursor.
    * @returns {Object | Boolean}
    */
-  next(): AnyVal {
+  next(): T {
     // yield value obtains in hasNext()
     if (this.buffer.length > 0) {
       return this.buffer.pop();
     }
     const o = this.fetch().next();
     if (o.done) return;
-    return o.value;
+    return o.value as T;
   }
 
   /**
@@ -134,25 +134,25 @@ export class Cursor {
     const o = this.fetch().next();
     if (o.done) return false;
 
-    this.buffer.push(o.value as RawObject);
+    this.buffer.push(o.value as T);
     return true;
   }
 
   /**
    * Applies a function to each document in a cursor and collects the return values in an array.
-   * @param callback
+   * @param fn
    * @returns {Array}
    */
-  map(callback: Callback<AnyVal>): RawObject[] {
-    return this.all().map(callback) as RawObject[];
+  map<R>(fn: Callback<R, T>): R[] {
+    return this.all().map(fn as unknown as (t: T, i: number, a: T[]) => R);
   }
 
   /**
    * Applies a JavaScript function for every document in a cursor.
-   * @param callback
+   * @param fn
    */
-  forEach(callback: Callback<AnyVal>): void {
-    this.all().forEach(callback);
+  forEach(fn: Callback<void, T>): void {
+    this.all().forEach(fn as unknown as (t: T, i: number, a: T[]) => void);
   }
 
   [Symbol.iterator](): Iterator {

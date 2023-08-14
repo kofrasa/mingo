@@ -21,13 +21,13 @@ export { Query } from "./query";
  * @param options
  * @returns {Cursor} A cursor of results
  */
-export function find(
+export function find<T>(
   collection: Source,
   criteria: RawObject,
   projection?: RawObject,
   options?: Partial<Options>
-): Cursor {
-  return new Query(criteria, options).find(collection, projection);
+): Cursor<T> {
+  return new Query(criteria, options).find<T>(collection, projection);
 }
 
 /**

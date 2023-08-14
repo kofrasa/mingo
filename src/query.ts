@@ -85,7 +85,7 @@ export class Query {
    * @param obj The object to test
    * @returns {boolean} True or false
    */
-  test(obj: RawObject): boolean {
+  test<T extends RawObject>(obj: T): boolean {
     for (let i = 0, len = this.compiled.length; i < len; i++) {
       if (!this.compiled[i](obj)) {
         return false;
@@ -101,8 +101,8 @@ export class Query {
    * @param projection An optional projection criteria
    * @returns {Cursor} A Cursor for iterating over the results
    */
-  find(collection: Source, projection?: RawObject): Cursor {
-    return new Cursor(
+  find<T>(collection: Source, projection?: RawObject): Cursor<T> {
+    return new Cursor<T>(
       collection,
       ((x: RawObject) => this.test(x)) as Predicate<AnyVal>,
       projection || {},
@@ -116,13 +116,10 @@ export class Query {
    * @param collection An array of documents
    * @returns {Array} A new array with matching elements removed
    */
-  remove(collection: RawObject[]): RawObject[] {
-    return collection.reduce<RawObject[]>(
-      (acc: RawObject[], obj: RawObject) => {
-        if (!this.test(obj)) acc.push(obj);
-        return acc;
-      },
-      []
-    );
+  remove<T extends RawObject>(collection: T[]): T[] {
+    return collection.reduce<T[]>((acc: T[], obj: T) => {
+      if (!this.test(obj)) acc.push(obj);
+      return acc;
+    }, []);
   }
 }
