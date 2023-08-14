@@ -969,12 +969,13 @@ export function normalize(expr: AnyVal): AnyVal {
 
     // ensure valid regex
     if (has(expr as RawObject, "$regex")) {
-      return {
-        $regex: new RegExp(
-          exprObj["$regex"] as string,
-          exprObj["$options"] as string
-        )
-      };
+      const newExpr = { ...(expr as RawObject) };
+      newExpr["$regex"] = new RegExp(
+        expr["$regex"] as string,
+        expr["$options"] as string
+      );
+      delete newExpr["$options"];
+      return newExpr;
     }
   }
 

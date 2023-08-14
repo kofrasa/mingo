@@ -9,6 +9,7 @@ import {
   isEqual,
   isObject,
   merge,
+  normalize,
   resolve,
   resolveGraph,
   sortBy,
@@ -23,6 +24,28 @@ describe("util", () => {
       expect(compare(1, 5)).toBe(-1);
       expect(compare(5, 1)).toBe(1);
       expect(compare(1, 1)).toBe(0);
+    });
+  });
+
+  describe("normalize", () => {
+    it.each([
+      [1, { $eq: 1 }],
+      ["a", { $eq: "a" }],
+      [true, { $eq: true }],
+      [{ a: 1 }, { $eq: { a: 1 } }],
+      [/mo/, { $regex: /mo/ }],
+      [{ $regex: "ab" }, { $regex: /ab/ }],
+      [{ $regex: "ab", $options: "i" }, { $regex: /ab/i }],
+      [
+        { $regex: "ab", $ne: "ab" },
+        { $regex: /ab/, $ne: "ab" }
+      ],
+      [
+        { $eq: 10, $gt: 5, $le: 2 },
+        { $eq: 10, $gt: 5, $le: 2 }
+      ]
+    ])("should normalize: %p => %p", (input, output) => {
+      expect(normalize(input)).toEqual(output);
     });
   });
 
