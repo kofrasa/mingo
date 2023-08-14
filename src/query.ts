@@ -85,7 +85,7 @@ export class Query {
    * @param obj The object to test
    * @returns {boolean} True or false
    */
-  test<T extends RawObject>(obj: T): boolean {
+  test<T>(obj: T): boolean {
     for (let i = 0, len = this.compiled.length; i < len; i++) {
       if (!this.compiled[i](obj)) {
         return false;
@@ -116,7 +116,7 @@ export class Query {
    * @param collection An array of documents
    * @returns {Array} A new array with matching elements removed
    */
-  remove<T extends RawObject>(collection: T[]): T[] {
+  remove<T>(collection: T[]): T[] {
     return collection.reduce<T[]>((acc: T[], obj: T) => {
       if (!this.test(obj)) acc.push(obj);
       return acc;
