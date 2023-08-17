@@ -20,7 +20,7 @@ import {
   WindowOutputOption
 } from "../../types";
 import { assert, isNumber, isOperator, isString } from "../../util";
-import { $function } from "../expression";
+import { $function } from "../expression/custom/function";
 import { $dateAdd } from "../expression/date/dateAdd";
 import { isUnbounded } from "./_internal";
 import { $addFields } from "./addFields";
