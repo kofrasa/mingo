@@ -6,7 +6,7 @@ import { assert, isNil, isObject, isString } from "../../../util";
 
 interface InputExpr {
   readonly field: string;
-  readonly input: RawObject;
+  readonly input?: RawObject;
 }
 
 /**
@@ -22,12 +22,9 @@ export const $getField: ExpressionOperator = (
   options: Options
 ): AnyVal => {
   const args = computeValue(obj, expr, null, options) as InputExpr | string;
-  let input = obj;
-  let field = args as string;
-  if (isObject(args) && args.input && args.field) {
-    input = args.input;
-    field = args.field;
-  }
+  const [field, input] = isObject(args)
+    ? [args.field, args.input || obj]
+    : [args, obj];
 
   if (isNil(input)) return null;
 

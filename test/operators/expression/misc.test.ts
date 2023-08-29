@@ -1,6 +1,8 @@
 import "../../../src/init/system";
 
 import { aggregate, find } from "../../../src";
+import { initOptions } from "../../../src/core";
+import { $getField } from "../../../src/operators/expression/misc/getField";
 import { RawArray, RawObject } from "../../../src/types";
 import { isEqual } from "../../../src/util";
 
@@ -37,6 +39,12 @@ describe("operators/expression/misc", () => {
   });
 
   describe("$getField", () => {
+    it("should work with only 'field' in expression", () => {
+      expect(
+        $getField({ "a.b": "dotted" }, { field: "a.b" }, initOptions({}))
+      ).toEqual("dotted");
+    });
+
     it("Query Fields that Contain Periods", () => {
       const result = aggregate(
         [
