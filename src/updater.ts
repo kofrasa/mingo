@@ -44,7 +44,7 @@ export function createUpdater(defaultOptions: UpdateOptions): Updater {
     conditions: RawObject = {},
     options: UpdateOptions = {}
   ): Array<string> => {
-    const opts = Object.assign({ cloneMode: "none" }, defaultOptions, options);
+    const opts = Object.assign({ cloneMode: "copy" }, defaultOptions, options);
     Object.assign(opts, {
       queryOptions: initOptions(
         Object.assign({ useStrictMode: false }, opts?.queryOptions)

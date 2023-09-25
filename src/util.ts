@@ -22,6 +22,15 @@ export const MIN_LONG = Number.MIN_SAFE_INTEGER;
 // special value to identify missing items. treated differently from undefined
 const MISSING = Symbol("missing");
 
+const IMMUTABLE_TYPES_SET = new Set([
+  "Undefined",
+  "Null",
+  "Boolean",
+  "String",
+  "Number",
+  "RegExp"
+]);
+
 const OBJECT_PROTOTYPE = Object.getPrototypeOf({}) as AnyVal;
 const OBJECT_TAG = "[object Object]";
 const OBJECT_TYPE_RE = /^\[object ([a-zA-Z0-9]+)\]$/;
@@ -108,19 +117,19 @@ export function assert(condition: boolean, message: string): void {
  * Deep clone an object. Value types and immutable objects are returned as is.
  */
 export const cloneDeep = (obj: AnyVal): AnyVal => {
+  if (IMMUTABLE_TYPES_SET.has(getType(obj))) return obj;
   const m = new Map();
   const add = (v: AnyVal) => {
-    if (m.has(v)) throw new Error("cycle detected during clone operation.");
+    if (m.has(v))
+      throw new Error("cycle detected during deep clone operation.");
     m.set(v, true);
   };
-  const clone = (val: AnyVal) => {
-    if (val instanceof Date) return new Date(val);
+  const clone = (val: AnyVal): AnyVal => {
+    if (IMMUTABLE_TYPES_SET.has(getType(val))) return val;
+    if (isDate(val)) return new Date(val);
     if (isArray(val)) {
       add(val);
-      const res = new Array<AnyVal>(val.length);
-      const len = val.length;
-      for (let i = 0; i < len; i++) res[i] = clone(val[i]);
-      return res;
+      return val.map(clone) as AnyVal;
     }
     if (isObject(val)) {
       add(val);
@@ -141,8 +150,11 @@ export const getType = (v: AnyVal): string =>
   OBJECT_TYPE_RE.exec(Object.prototype.toString.call(v) as string)![1];
 export const isBoolean = (v: AnyVal): v is boolean => typeof v === "boolean";
 export const isString = (v: AnyVal): v is string => typeof v === "string";
+export const isSymbol = (v: AnyVal): boolean => typeof v === "symbol";
 export const isNumber = (v: AnyVal): v is number =>
   !isNaN(v as number) && typeof v === "number";
+export const isBigInt = (v: AnyVal): v is bigint =>
+  !isNaN(v as number) && typeof v === "bigint";
 export const isNotNaN = (v: AnyVal) =>
   !(isNaN(v as number) && typeof v === "number");
 export const isArray = Array.isArray;
@@ -460,26 +472,26 @@ export function unique(
  * @returns {*}
  */
 export function stringify(value: AnyVal): string {
-  const type = getType(value).toLowerCase() as JsType;
+  const type = getType(value);
   switch (type) {
-    case "boolean":
-    case "number":
-    case "regexp":
+    case "Boolean":
+    case "Number":
+    case "RegExp":
       return (value as string).toString();
-    case "string":
+    case "String":
       return JSON.stringify(value);
-    case "date":
+    case "Date":
       return (value as Date).toISOString();
-    case "null":
-    case "undefined":
-      return type;
-    case "array":
+    case "Null":
+    case "Undefined":
+      return type.toLowerCase();
+    case "Array":
       return "[" + (value as RawArray).map(stringify).join(",") + "]";
     default:
       break;
   }
   // default case
-  const prefix = type === "object" ? "" : `${getType(value)}`;
+  const prefix = type === "Object" ? "" : type;
   const objKeys = Object.keys(value as RawObject);
   objKeys.sort();
   return (

@@ -7,14 +7,26 @@ import {
   RawArray,
   RawObject
 } from "../../types";
-import { assert, cloneDeep, isArray, resolve, walk } from "../../util";
+import {
+  assert,
+  cloneDeep,
+  isArray,
+  isDate,
+  isObject,
+  resolve,
+  walk
+} from "../../util";
 
 export const clone = (mode: CloneMode, val: AnyVal): AnyVal => {
   switch (mode) {
     case "deep":
       return cloneDeep(val);
-    case "structured":
-      return structuredClone ? structuredClone(val) : cloneDeep(val);
+    case "copy": {
+      if (isDate(val)) return new Date(val);
+      if (isArray(val)) return [...(val as RawArray)];
+      if (isObject(val)) return { ...val };
+      return val;
+    }
     default:
       return val;
   }

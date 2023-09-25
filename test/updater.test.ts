@@ -2,6 +2,7 @@ import "./support";
 
 import { clone } from "../src/operators/update/_internal";
 import { updateObject } from "../src/updater";
+import { isArray } from "../src/util";
 
 describe("updateObject", () => {
   const obj = {};
@@ -40,10 +41,26 @@ describe("updateObject", () => {
     expect(obj).toEqual({ name: "Fred", age: 30 });
   });
 
-  // adding for completeness
-  it("should clone with valid option", () => {
-    expect(clone("deep", { a: 1 })).toEqual({ a: 1 });
-    expect(clone("structured", { a: 1 })).toEqual({ a: 1 });
-    expect(clone("none", { a: 1 })).toEqual({ a: 1 });
-  });
+  it.each([{ a: 1 }, [{ a: 1 }], new Date("2022-02-01")])(
+    "should apply clone mode: %p",
+    val => {
+      const a = clone("deep", val);
+      const b = clone("copy", val);
+      const c = clone("none", val);
+
+      expect(val).toEqual(a);
+      expect(val).toEqual(b);
+      expect(val).toEqual(c);
+
+      expect(val).not.toBe(a);
+      expect(val).not.toBe(b);
+      expect(val).toBe(c);
+
+      if (isArray(val)) {
+        expect(val[0]).not.toBe((a as unknown[])[0]);
+        expect(val[0]).toBe((b as unknown[])[0]);
+        expect(val[0]).toBe((c as unknown[])[0]);
+      }
+    }
+  );
 });
