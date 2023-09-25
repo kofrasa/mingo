@@ -6,8 +6,8 @@
  */
 export function truncate(
   num: number,
-  places: number,
-  roundOff: boolean
+  places: number = 0,
+  roundOff: boolean = false
 ): number {
   const sign = Math.abs(num) === num ? 1 : -1;
   num = Math.abs(num);
