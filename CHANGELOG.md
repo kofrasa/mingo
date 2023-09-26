@@ -1,5 +1,12 @@
 # Changelog
 
+## 6.4.5 / 2023-09-26
+**Fixes**
+- Allow specifying only field expression for `$getField` operator.
+- Make place argument optional for `$trunc` and `$round`.
+- Add and default to new clone mode `copy` for UpdateOptions.
+- Remove clone mode `structured` for UpdateOptions.
+
 ## 6.4.4 / 2023-08-13
 **Fixes**
 - Fixed incorrect query normalization when a regex condition is specified as an object literal. [355](https://github.com/kofrasa/mingo/issues/355)

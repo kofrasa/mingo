@@ -306,7 +306,7 @@ You can also create a preconfigured updater function.
 ```ts
 import { createUpdater } from "mingo/updater";
 
-// configure updater to deep clone passed values.
+// configure updater to deep clone passed values. clone mode defaults to "copy".
 const updateObject = createUpdater({ cloneMode: "deep" });
 
 const state = { people: ["Fred", "John"] };
@@ -326,15 +326,15 @@ console.log(newPeople); // ["Amy", "Mark", "Jason"]
 
 1. There is no concept of a collection. Input data is either an array of objects or a generator function to support streaming.
 1. Does not support server specific operators. E.g. `$collStat`, `$planCacheStats`, `$listSessions`.
-1. Does not support GeoJSON query operators.
-1. Does not support query operators; `$comment`, `$meta`, `$text`.
+1. Does not support geometry query operators.
+1. Does not support query operators dependent on persistent storage; `$comment`, `$meta`, `$text`.
 1. Does not support positional query or update operator `$`.
 1. Does not support server specific expression operators; `$toObjectId`, `$binarySize`, `bsonSize`.
 1. Agregation pipeline operator `$merge` enforces unique constraint on the lookup field at runtime.
 1. Custom function evaluation operators; `$where`, `$function`, and `$accumulator`, do not accept strings as the function body.
 1. Custom function evaluation operators are enabled by default. They can be disabled with the `scriptEnabled` option.
 1. Custom function evaluation operator [$accumulator](https://docs.mongodb.com/manual/reference/operator/aggregation/accumulator/) does not support the `merge` option.
-1. The `$jsonSchema` operator requires the user to register their own validator using the `jsonSchemaValidator` option.
+1. The `$jsonSchema` operator requires the user to register their own validator using the `jsonSchemaValidator` configuration.
 
 ## Benefits
 
