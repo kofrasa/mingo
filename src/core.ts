@@ -35,12 +35,12 @@ export type CollectionResolver = (name: string) => Array<RawObject>;
 export interface CollationSpec {
   readonly locale: string;
   readonly caseLevel?: boolean;
-  readonly caseFirst?: string;
-  readonly strength?: number;
+  readonly caseFirst?: "upper" | "lower" | "off";
+  readonly strength?: 1 | 2 | 3;
   readonly numericOrdering?: boolean;
   readonly alternate?: string;
-  readonly maxVariable?: string; // unsupported
-  readonly backwards?: boolean; // unsupported
+  readonly maxVariable?: never; // unsupported
+  readonly backwards?: never; // unsupported
 }
 
 /**

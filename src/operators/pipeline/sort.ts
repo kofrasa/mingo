@@ -59,7 +59,7 @@ export const $sort: PipelineOperator = (
 
 // MongoDB collation strength to JS localeCompare sensitivity mapping.
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare
-const COLLATION_STRENGTH: Record<number, string> = {
+const COLLATION_STRENGTH: Record<number, "base" | "accent" | "variant"> = {
   // Only strings that differ in base letters compare as unequal. Examples: a ≠ b, a = á, a = A.
   1: "base",
   //  Only strings that differ in base letters or accents and other diacritic marks compare as unequal.
@@ -82,12 +82,12 @@ const COLLATION_STRENGTH: Record<number, string> = {
  *   strength: int,
  *   numericOrdering: boolean,
  *   alternate: string,
- *   maxVariable: string, // unsupported
- *   backwards: boolean // unsupported
+ *   maxVariable: never, // unsupported
+ *   backwards: never // unsupported
  * }
  */
 function collationComparator(spec: CollationSpec): Comparator<AnyVal> {
-  const localeOpt = {
+  const localeOpt: Intl.CollatorOptions = {
     sensitivity: COLLATION_STRENGTH[spec.strength || 3],
     caseFirst: spec.caseFirst === "off" ? "false" : spec.caseFirst || "false",
     numeric: spec.numericOrdering || false,
