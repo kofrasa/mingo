@@ -39,4 +39,40 @@ describe("operators/update/pull", () => {
     $pull(state, { results: { score: 8, item: "B" } });
     expect(state).toEqual({ _id: 1, results: [{ item: "A", score: 5 }] });
   });
+
+  it("Removes items using Nested object expressions", () => {
+    const state = {
+      title: "Tobi",
+      author: "Brian",
+      date: "2023-09-30T15:45:44.097Z",
+      owners: ["owner1", "owner2"],
+      comments: [
+        {
+          _id: "comment1",
+          date: null,
+          body: "been there"
+        },
+        {
+          _id: "comment2",
+          date: null,
+          body: "done that"
+        }
+      ]
+    };
+
+    $pull(state, { comments: { _id: { $in: ["comment1"] } } });
+    expect(state).toEqual({
+      title: "Tobi",
+      author: "Brian",
+      date: "2023-09-30T15:45:44.097Z",
+      owners: ["owner1", "owner2"],
+      comments: [
+        {
+          _id: "comment2",
+          date: null,
+          body: "done that"
+        }
+      ]
+    });
+  });
 });

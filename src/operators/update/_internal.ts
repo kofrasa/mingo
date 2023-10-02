@@ -14,7 +14,8 @@ import {
   isDate,
   isObject,
   resolve,
-  walk
+  walk,
+  WalkOptions
 } from "../../util";
 
 export const clone = (mode: CloneMode, val: AnyVal): AnyVal => {
@@ -71,13 +72,14 @@ export function tokenizePath(path: string): [PathNode, string[]] {
  * @param n The path node of the update selector.
  * @param q Map of positional identifiers to queries for filtering.
  * @param f The update function which accepts containver value and key.
+ * @param opts The optional {@link WalkOptions} passed to the walk function.
  */
 export const applyUpdate = (
   o: ArrayOrObject,
   n: PathNode,
   q: Record<string, Query>,
   f: Callback<boolean>,
-  opts?: RawObject
+  opts?: WalkOptions
 ): boolean => {
   const { parent, child: c, next } = n;
   if (!c) {
@@ -96,7 +98,7 @@ export const applyUpdate = (
       // filter if applicable.
       if (q[c] && !q[c].test({ [c]: e })) return false;
       // apply update.
-      return next ? applyUpdate(e as ArrayOrObject, next, q, f) : f(t, i);
+      return next ? applyUpdate(e as ArrayOrObject, next, q, f, opts) : f(t, i);
     })
     .some(Boolean);
 };

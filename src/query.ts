@@ -31,7 +31,10 @@ export class Query {
   }
 
   private compile(): void {
-    assert(isObject(this.condition), "query criteria must be an object");
+    assert(
+      isObject(this.condition),
+      `query criteria must be an object: ${JSON.stringify(this.condition)}`
+    );
 
     const whereOperator: { field?: string; expr?: AnyVal } = {};
 

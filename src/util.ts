@@ -835,7 +835,8 @@ export function filterMissing(obj: ArrayOrObject): void {
   }
 }
 
-interface WalkOptions {
+/** Options passed to the walk function. */
+export interface WalkOptions {
   buildGraph?: boolean;
   descendArray?: boolean;
 }
@@ -848,7 +849,7 @@ const NUMBER_RE = /^\d+$/;
  * @param  {Object|Array} obj   The object to traverse.
  * @param  {String} selector    The selector to navigate.
  * @param  {Callback} fn Callback to execute for value at the end the traversal.
- * @param  {WalkOptions} Options to use for the function.
+ * @param  {WalkOptions} options The opetions to use for the function.
  * @return {*}
  */
 export function walk(
