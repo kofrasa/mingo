@@ -251,12 +251,12 @@ Custom operators can be registered using `Context` via the `context` option whic
 
 Each operator type has a specific interface to which an implementation must conform to be valid.
 
-- [AccumulatorOperator](http://kofrasa.net/mingo/modules/core.html#AccumulatorOperator)
-- [ExpressionOperator](http://kofrasa.net/mingo/modules/core.html#ExpressionOperator)
-- [ProjectionOperator](http://kofrasa.net/mingo/modules/core.html#ProjectionOperator)
-- [PipelineOperator](http://kofrasa.net/mingo/modules/core.html#PipelineOperator)
-- [WindowOperator](http://kofrasa.net/mingo/modules/core.html#WindowOperator)
-- [QueryOperator](http://kofrasa.net/mingo/modules/core.html#QueryOperator)
+- [AccumulatorOperator](http://kofrasa.net/mingo/types/core.AccumulatorOperator.html)
+- [ExpressionOperator](http://kofrasa.net/mingo/types/core.ExpressionOperator.html)
+- [ProjectionOperator](http://kofrasa.net/mingo/types/core.ProjectionOperator.html)
+- [PipelineOperator](http://kofrasa.net/mingo/types/core.PipelineOperator.html)
+- [WindowOperator](http://kofrasa.net/mingo/types/core.WindowOperator.html)
+- [QueryOperator](http://kofrasa.net/mingo/types/core.QueryOperator.html)
 
 Pre-loaded operators defined [here](https://github.com/kofrasa/mingo/blob/master/src/init/basic.ts) cannot be overridden. These include;
 
@@ -269,13 +269,13 @@ Pre-loaded operators defined [here](https://github.com/kofrasa/mingo/blob/master
 
 ## Updating Documents
 
-An update operation can be performed using the `updateObject` function from the `mingo/updater` module. Unlike other operations in the library, this only works operates on a single object.
+An update operation can be performed using the `updateObject` function from the `mingo/updater` module. Unlike other operations in the library, this only works on a single object.
 The query and aggregation operators are powerful enough to use for transforming arrays of documents and should be preferred when dealing with multiple objects.
-`updateObject` returns an array of paths that were updated if the object changed supports [arrayFilters](https://www.mongodb.com/docs/manual/release-notes/3.6/#std-label-3.6-arrayFilters). To detect whether a change occured you can check the length of the returned array.
+`updateObject` returns an array of all paths that were updated. It also supports [arrayFilters](https://www.mongodb.com/docs/manual/release-notes/3.6/#std-label-3.6-arrayFilters) for applicable operators. To detect whether a change occured you can check the length of the returned array.
 
 All operators as of MongoDB 5.0 are supported except the positional array operator `$`.
 
-### Example
+### Examples
 
 ```ts
 import { updateObject } from "mingo/updater";
@@ -324,9 +324,11 @@ console.log(newPeople); // ["Amy", "Mark", "Jason"]
 
 ## Differences from MongoDB
 
+This list describes how this library differs from the full MongoDB query engine.
+
 1. There is no concept of a collection. Input data is either an array of objects or a generator function to support streaming.
 1. Does not support server specific operators. E.g. `$collStat`, `$planCacheStats`, `$listSessions`.
-1. Does not support geometry query operators.
+1. Does not support geometry query operators. **no support planned**.
 1. Does not support query operators dependent on persistent storage; `$comment`, `$meta`, `$text`.
 1. Does not support positional query or update operator `$`.
 1. Does not support server specific expression operators; `$toObjectId`, `$binarySize`, `bsonSize`.
@@ -346,11 +348,13 @@ console.log(newPeople); // ["Amy", "Mark", "Jason"]
 
 ## Contributing
 
-- Squash changes into one commit
-- Run `npm test` to build and execute unit tests
-- Submit pull request
+- Squash changes into one commit.
+- Run `npm test` to build and run unit tests.
+- Submit pull request.
 
-To validate correct behaviour and semantics of operators, you may also test against [mongoplayground.net](https://mongoplayground.net/). _Credit to the author_.
+To validate correct behaviour and semantics of operators, you may also test against [mongoplayground.net](https://mongoplayground.net/). _Credit to the [author](https://github.com/feliixx)_.
+
+_A big thank you to all users and [CONTRIBUTORS](https://github.com/kofrasa/mingo/graphs/contributors) of this library._
 
 ## License
 

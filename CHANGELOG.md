@@ -1,9 +1,13 @@
 # Changelog
 
+## 6.4.6 / 2023-10-02
+**Fixes**
+- Support nested object query expressions for `$pull`. [373](https://github.com/kofrasa/mingo/issues/373)
+
 ## 6.4.5 / 2023-09-26
 **Fixes**
 - Allow specifying only field expression for `$getField` operator.
-- Make place argument optional for `$trunc` and `$round`.
+- Make place argument optional for `$trunc` and `$round`. [347](https://github.com/kofrasa/mingo/issues/347)
 - Add and default to new clone mode `copy` for UpdateOptions.
 - Remove clone mode `structured` for UpdateOptions.
 
