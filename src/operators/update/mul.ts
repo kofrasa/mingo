@@ -1,6 +1,5 @@
 import { UpdateOptions } from "../../core";
 import { ArrayOrObject, RawObject } from "../../types";
-import { isNil } from "../../util";
 import { Action, applyUpdate, walkExpression } from "./_internal";
 
 /** Multiply the value of a field by a number. */
@@ -17,9 +16,10 @@ export const $mul = (
       queries,
       (o: ArrayOrObject, k: string | number) => {
         const prev = o[k] as number;
-        o[k] = isNil(prev) ? 0 : o[k] * val;
+        o[k] = o[k] === undefined ? 0 : o[k] * val;
         return o[k] !== prev;
-      }
+      },
+      { buildGraph: true }
     );
   }) as Action<number>);
 };

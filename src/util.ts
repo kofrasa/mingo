@@ -902,7 +902,7 @@ export function walk(
  * @param value {*} the value to set. if it is function, it is invoked with the old value and must return the new value.
  */
 export function setValue(
-  obj: RawObject,
+  obj: ArrayOrObject,
   selector: string,
   value: AnyVal
 ): void {

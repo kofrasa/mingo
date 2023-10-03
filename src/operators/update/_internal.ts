@@ -36,32 +36,33 @@ export const clone = (mode: CloneMode, val: AnyVal): AnyVal => {
 const FILTER_IDENT_RE = /^[a-z]+[a-zA-Z0-9]*$/;
 
 export type PathNode = {
+  selector: string;
   parent: string;
   child?: string;
   next?: PathNode;
 };
 /**
- * Tokening a selector path to extract parts for the root, arrayFilter, and child
- * @param path The path to tokenize
- * @returns {parent:string,elem:string,child:string}
+ * Tokenize a selector path to extract parts for the root, arrayFilter, and child
+ * @param selector The path to tokenize
+ * @returns {parent:string, elem:string, child:string}
  */
-export function tokenizePath(path: string): [PathNode, string[]] {
-  if (!path.includes(".$")) {
-    return [{ parent: path }, []];
+export function tokenizePath(selector: string): [PathNode, string[]] {
+  if (!selector.includes(".$")) {
+    return [{ parent: selector, selector }, []];
   }
-  const begin = path.indexOf(".$");
-  const end = path.indexOf("]");
-  const parent = path.substring(0, begin);
+  const begin = selector.indexOf(".$");
+  const end = selector.indexOf("]");
+  const parent = selector.substring(0, begin);
   // using "$" wildcard to represent every element.
-  const child = path.substring(begin + 3, end);
+  const child = selector.substring(begin + 3, end);
   assert(
     child === "" || FILTER_IDENT_RE.test(child),
     "The filter <identifier> must begin with a lowercase letter and contain only alphanumeric characters."
   );
-  const rest = path.substring(end + 2);
+  const rest = selector.substring(end + 2);
   const [next, elems] = rest ? tokenizePath(rest) : [];
   return [
-    { parent, child: child || "$", next },
+    { selector, parent, child: child || "$", next },
     [child, ...(elems || [])].filter(Boolean)
   ];
 }

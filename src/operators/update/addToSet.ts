@@ -15,12 +15,18 @@ export const $addToSet = (
     if (isObject(val) && has(val as RawObject, "$each")) {
       Object.assign(args, val);
     }
-    return applyUpdate(obj, node, queries, (o: ArrayOrObject, k: string) => {
-      const prev = o[k] as RawArray;
-      const common = intersection([prev, args.$each]);
-      if (common.length === args.$each.length) return false;
-      o[k] = clone(options.cloneMode, unique(prev.concat(args.$each)));
-      return true;
-    });
+    return applyUpdate(
+      obj,
+      node,
+      queries,
+      (o: ArrayOrObject, k: string) => {
+        const prev = (o[k] ||= []) as RawArray;
+        const common = intersection([prev, args.$each]);
+        if (common.length === args.$each.length) return false;
+        o[k] = clone(options.cloneMode, unique(prev.concat(args.$each)));
+        return true;
+      },
+      { buildGraph: true }
+    );
   });
 };

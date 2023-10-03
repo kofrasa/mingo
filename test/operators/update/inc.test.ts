@@ -145,4 +145,25 @@ describe("operators/update/inc", () => {
       expect(s).toEqual(results[i]);
     });
   });
+
+  it("should build object graph if missing", () => {
+    const state = {
+      _id: "1",
+      name: "Celsoppe"
+    };
+
+    $inc(state, {
+      "attributes.scores.bar": 2
+    });
+
+    expect(state).toEqual({
+      _id: "1",
+      attributes: {
+        scores: {
+          bar: 2
+        }
+      },
+      name: "Celsoppe"
+    });
+  });
 });

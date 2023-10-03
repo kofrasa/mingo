@@ -1,5 +1,6 @@
 import { UpdateOptions } from "../../core";
 import { ArrayOrObject, RawArray, RawObject } from "../../types";
+import { assert, isArray } from "../../util";
 import { Action, applyUpdate, walkExpression } from "./_internal";
 
 /** Removes the first or last element of an array. */
@@ -12,6 +13,10 @@ export const $pop = (
   return walkExpression(expr, arrayFilters, options, ((val, node, queries) => {
     return applyUpdate(obj, node, queries, (o: ArrayOrObject, k: string) => {
       const arr = o[k] as RawArray;
+      assert(
+        isArray(arr),
+        `path '${node.selector}' contains an element of non-array type.`
+      );
       if (!arr.length) return false;
       if (val === -1) {
         arr.splice(0, 1);

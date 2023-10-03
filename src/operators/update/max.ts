@@ -11,15 +11,18 @@ export const $max = (
   options: UpdateOptions = {}
 ) => {
   return walkExpression(expr, arrayFilters, options, ((val, node, queries) => {
+    // If the field does not exist, the $max operator sets the field to the specified value.
     return applyUpdate(
       obj,
       node,
       queries,
       (o: ArrayOrObject, k: string | number) => {
+        o[k] = o[k] === undefined ? val : (o[k] as number | string);
         if (compare(o[k], val) > -1) return false;
         o[k] = val;
         return true;
-      }
+      },
+      { buildGraph: true }
     );
   }) as Action<number | string>);
 };

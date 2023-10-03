@@ -39,7 +39,7 @@ export const $push = (
       node,
       queries,
       (o: ArrayOrObject, k: string) => {
-        const arr = o[k] as RawArray;
+        const arr = (o[k] ||= []) as RawArray;
         // take a copy of sufficient length.
         const prev = arr.slice(0, args.$slice || arr.length);
         const oldsize = arr.length;
@@ -74,7 +74,7 @@ export const $push = (
         // detect change
         return oldsize != arr.length || !isEqual(prev, arr);
       },
-      { descendArray: true }
+      { descendArray: true, buildGraph: true }
     );
-  }) as Action<number>);
+  }) as Action);
 };

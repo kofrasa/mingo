@@ -58,6 +58,33 @@ describe("operators/update/push", () => {
     });
   });
 
+  it("should build object graph if missing", () => {
+    const state = {
+      _id: "1",
+      name: "Celsoppe"
+    };
+
+    $push(state, {
+      "attributes.scores.bar": {
+        a: 1
+      }
+    });
+
+    expect(state).toEqual({
+      _id: "1",
+      attributes: {
+        scores: {
+          bar: [
+            {
+              a: 1
+            }
+          ]
+        }
+      },
+      name: "Celsoppe"
+    });
+  });
+
   describe("$slice modifier", () => {
     it("Slice from the End of the Array", () => {
       const state = { _id: 1, scores: [40, 50, 60] };
