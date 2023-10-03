@@ -1,7 +1,7 @@
 // Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, Duration, RawObject } from "../../../types";
+import { AnyVal, RawObject, TimeUnit } from "../../../types";
 import {
   adjustDate,
   computeDate,
@@ -21,7 +21,7 @@ export const $dateAdd: ExpressionOperator<Date> = (
 ): Date => {
   const args = computeValue(obj, expr, null, options) as {
     startDate: AnyVal;
-    unit: Duration;
+    unit: TimeUnit;
     amount: number;
     timezone?: string;
   };

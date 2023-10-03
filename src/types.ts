@@ -52,8 +52,8 @@ export type BsonType =
   | "decimal"
   | "regex";
 
-/** Duration for datetime periods */
-export type Duration =
+/** Time unit for datetime periods */
+export type TimeUnit =
   | "year"
   | "quarter"
   | "month"
@@ -64,13 +64,16 @@ export type Duration =
   | "second"
   | "millisecond";
 
+/** @deprecated. Use TimeUnit */
+export type Duration = TimeUnit;
+
 // Window operator types.
 export type Boundary = "current" | "unbounded" | number;
 
 export interface WindowOutputOption {
   readonly documents?: [Boundary, Boundary];
   readonly range?: [Boundary, Boundary];
-  readonly unit?: Duration;
+  readonly unit?: TimeUnit;
 }
 
 export interface SetWindowFieldsInput {

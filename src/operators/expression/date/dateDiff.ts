@@ -1,7 +1,7 @@
 // Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, Duration, RawObject } from "../../../types";
+import { AnyVal, RawObject, TimeUnit } from "../../../types";
 import { computeDate, DURATION_IN_MILLIS } from "./_internal";
 
 /**
@@ -18,7 +18,7 @@ export const $dateDiff: ExpressionOperator<number> = (
   const args = computeValue(obj, expr, null, options) as {
     startDate: AnyVal;
     endDate: AnyVal;
-    unit: Duration;
+    unit: TimeUnit;
     timezone?: string;
     startOfWeek?: string;
   };

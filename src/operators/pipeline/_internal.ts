@@ -1,11 +1,11 @@
-import { AnyVal, Duration } from "../../types";
+import { AnyVal, TimeUnit } from "../../types";
 
 export type Boundary = "current" | "unbounded" | number;
 
 export interface WindowOutputOption {
   readonly documents?: [Boundary, Boundary];
   readonly range?: [Boundary, Boundary];
-  readonly unit?: Duration;
+  readonly unit?: TimeUnit;
 }
 
 export interface SetWindowFieldsInput {

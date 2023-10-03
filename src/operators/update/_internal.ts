@@ -109,6 +109,15 @@ export type Action<T = AnyVal> = (
   queries: Record<string, Query>
 ) => boolean;
 
+/**
+ * Walks the expression and apply the given action for each key-value pair.
+ *
+ * @param expr The expression for the update operator.
+ * @param arrayFilter Filter conditions passed to the operator.
+ * @param options The options provided by the caller.
+ * @param callback The action to apply for a given path and value.
+ * @returns {Array<string>}
+ */
 export function walkExpression<T>(
   expr: RawObject,
   arrayFilter: RawObject[],
