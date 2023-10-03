@@ -899,7 +899,7 @@ export function walk(
  *
  * @param obj {Object|Array} the object context
  * @param selector {String} path to field
- * @param value {*} the value to set
+ * @param value {*} the value to set. if it is function, it is invoked with the old value and must return the new value.
  */
 export function setValue(
   obj: RawObject,
@@ -910,7 +910,7 @@ export function setValue(
     obj,
     selector,
     ((item: RawObject, key: string) => {
-      item[key] = value;
+      item[key] = isFunction(value) ? (value as Callback)(item[key]) : value;
     }) as Callback<void>,
     { buildGraph: true }
   );
