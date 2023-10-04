@@ -1,5 +1,6 @@
 export * from "./arithmetic";
 export * from "./array";
+export * from "./bitwise";
 export * from "./boolean";
 export * from "./comparison";
 export * from "./conditional";

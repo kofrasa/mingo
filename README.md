@@ -30,6 +30,7 @@ MongoDB query language for in-memory objects
   - [Expression Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#expression-operators)
     - [Arithmetic Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators)
     - [Array Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators/)
+    - [Bitwise Operators](https://www.mongodb.com/docs/manual/reference/operator/aggregation/#bitwise-operators)
     - [Boolean Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#boolean-expression-operators/)
     - [Comparisons Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#comparison-expression-operators/)
     - [Conditional Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#conditional-expression-operators/)
