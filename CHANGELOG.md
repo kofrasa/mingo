@@ -1,6 +1,6 @@
 # Changelog
 
-## 6.4.7
+## 6.4.7 / 2023-10-04
 **New**
 - Add support for bitwise aggregation operators. `$bitAnd`, `$bitOr`,`$bitXor`,`$bitNot`.
 
