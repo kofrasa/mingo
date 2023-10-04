@@ -22,4 +22,23 @@ describe("operators/update/bit", () => {
       XOR: [8, 6, 4]
     });
   });
+
+  it("should build object graph for missing value.", () => {
+    const state = {
+      _id: 1
+    };
+
+    $bit(state, {
+      "a.and": { and: 5 },
+      "b.or": { or: 5 },
+      "c.xor": { xor: 5 }
+    });
+
+    expect(state).toEqual({
+      _id: 1,
+      a: { and: 0 },
+      b: { or: 5 },
+      c: { xor: 5 }
+    });
+  });
 });
