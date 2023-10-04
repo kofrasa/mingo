@@ -1,5 +1,12 @@
 # Changelog
 
+## 6.4.7
+**New**
+- Add support for bitwise aggregation operators. `$bitAnd`, `$bitOr`,`$bitXor`,`$bitNot`.
+
+**Fixes**
+- Build object graph for relevant update operators `$inc`,`$mul`,`$max`,`$min`,`$push`,`$bit`.
+
 ## 6.4.6 / 2023-10-02
 **Fixes**
 - Support nested object query expressions for `$pull`. [373](https://github.com/kofrasa/mingo/issues/373)
