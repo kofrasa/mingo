@@ -17,8 +17,7 @@ export const $max = (
       node,
       queries,
       (o: ArrayOrObject, k: string | number) => {
-        o[k] = o[k] === undefined ? val : (o[k] as number | string);
-        if (compare(o[k], val) > -1) return false;
+        if (o[k] !== undefined && compare(o[k], val) > -1) return false;
         o[k] = val;
         return true;
       },
