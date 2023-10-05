@@ -1,11 +1,13 @@
 # Changelog
 
-## 6.4.7 / 2023-10-04
+## 6.4.7 / 2023-10-05
 **New**
 - Add support for bitwise aggregation operators. `$bitAnd`, `$bitOr`,`$bitXor`,`$bitNot`.
 
 **Fixes**
 - Build object graph for relevant update operators `$inc`,`$mul`,`$max`,`$min`,`$push`,`$bit`.
+- Compare user-defined types with referential equality using `isEqual`.
+- Expand support for user-defined types with `stringify`.
 
 ## 6.4.6 / 2023-10-02
 **Fixes**
