@@ -2,6 +2,7 @@ import { RawObject } from "../src/types";
 import {
   cloneDeep,
   compare,
+  groupBy,
   has,
   hashCode,
   intersection,
@@ -17,6 +18,7 @@ import {
   unique,
   walk
 } from "../src/util";
+import { ObjectId } from "./support";
 
 describe("util", () => {
   describe("compare", () => {
@@ -68,7 +70,8 @@ describe("util", () => {
         true
       ],
       [() => void {}, () => void {}, false],
-      [RegExp, RegExp, true]
+      [RegExp, RegExp, true],
+      [new ObjectId("100"), new ObjectId("100"), false]
     ];
     fixture.forEach(arr => {
       it(`check: ${JSON.stringify(arr[0])} == ${JSON.stringify(
@@ -115,6 +118,30 @@ describe("util", () => {
       expect(
         sortBy(["cat", "ant", "function", "ant", "constructor"], k => k)
       ).toEqual(["ant", "ant", "cat", "constructor", "function"]);
+    });
+  });
+
+  describe("groupBy", () => {
+    it("should group by user-defined object", () => {
+      const a = new ObjectId("100");
+      const b = new ObjectId("200");
+      const collection = [
+        { userId: a, ix: 1 },
+        { userId: a, ix: 2 },
+        { userId: b, ix: 3 },
+        { userId: b, ix: 4 },
+        { userId: b, ix: 5 }
+      ];
+
+      const partitions = groupBy(collection, o => (o as RawObject).userId);
+
+      expect(partitions.size).toEqual(2);
+      expect(partitions.get(a)?.length).toEqual(2);
+      expect(partitions.get(a)).toContainEqual({ userId: a, ix: 1 });
+      expect(partitions.get(a)).not.toContainEqual({ userId: b, ix: 3 });
+      expect(partitions.get(b)?.length).toEqual(3);
+      expect(partitions.get(b)).toContainEqual({ userId: b, ix: 3 });
+      expect(partitions.get(b)).not.toContainEqual({ userId: a, ix: 1 });
     });
   });
 

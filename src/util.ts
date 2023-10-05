@@ -31,7 +31,8 @@ const IMMUTABLE_TYPES_SET = new Set([
   "RegExp"
 ]);
 
-const OBJECT_PROTOTYPE = Object.getPrototypeOf({}) as AnyVal;
+const ARRAY_PROTO = Object.getPrototypeOf([]) as AnyVal;
+const OBJECT_PROTO = Object.getPrototypeOf({}) as AnyVal;
 const OBJECT_TAG = "[object Object]";
 const OBJECT_TYPE_RE = /^\[object ([a-zA-Z0-9]+)\]$/;
 
@@ -65,6 +66,25 @@ const JS_SIMPLE_TYPES = new Set<JsType>([
   "string",
   "date",
   "regexp"
+]);
+
+const STRING_COMPARABLE = new Set<AnyVal>([
+  Number,
+  String,
+  Boolean,
+  RegExp,
+  Date,
+  Int8Array,
+  Uint8Array,
+  Uint8ClampedArray,
+  Int16Array,
+  Uint16Array,
+  Int32Array,
+  Uint32Array,
+  Float32Array,
+  Float64Array,
+  BigInt64Array,
+  BigUint64Array
 ]);
 
 /** MongoDB sort comparison order. https://www.mongodb.com/docs/manual/reference/bson-type-comparison-order */
@@ -142,6 +162,16 @@ export const cloneDeep = (obj: AnyVal): AnyVal => {
   return clone(obj);
 };
 
+type Constructor = new (...args: RawArray[]) => AnyVal;
+class Null {}
+class Undefined {}
+
+const getConstructor = (v: AnyVal): Constructor => {
+  if (v === null) return Null;
+  if (v === undefined) return Undefined;
+  return v.constructor as Constructor;
+};
+
 /**
  * Returns the name of type as specified in the tag returned by a call to Object.prototype.toString
  * @param v A value
@@ -162,7 +192,7 @@ export const isObject = (v: AnyVal): v is object => {
   if (!v) return false;
   const proto = Object.getPrototypeOf(v) as AnyVal;
   return (
-    (proto === OBJECT_PROTOTYPE || proto === null) &&
+    (proto === OBJECT_PROTO || proto === null) &&
     OBJECT_TAG === Object.prototype.toString.call(v)
   );
 };
@@ -392,6 +422,25 @@ export function flatten(xs: RawArray, depth = 0): RawArray {
   return arr;
 }
 
+/** Returns all members of the value in an object literal. */
+const getMembersOf = (value: AnyVal): [RawObject, AnyVal] => {
+  let [proto, names] = [
+    Object.getPrototypeOf(value),
+    Object.getOwnPropertyNames(value)
+  ] as [AnyVal, string[]];
+  // save effective prototype
+  let activeProto = proto;
+  // traverse the prototype hierarchy until we get property names or hit the bottom prototype.
+  while (!names.length && proto !== OBJECT_PROTO && proto !== ARRAY_PROTO) {
+    activeProto = proto;
+    names = Object.getOwnPropertyNames(proto);
+    proto = Object.getPrototypeOf(proto);
+  }
+  const o = {};
+  names.forEach(k => (o[k] = (value as RawObject)[k]));
+  return [o, activeProto];
+};
+
 /**
  * Determine whether two values are the same or strictly equivalent
  *
@@ -407,43 +456,47 @@ export function isEqual(a: AnyVal, b: AnyVal): boolean {
     a = lhs.pop();
     b = rhs.pop();
 
-    // strictly equal must be equal.
+    // strictly equal must be equal. matches simple and referentially equal values.
     if (a === b) continue;
 
-    // unequal types and functions cannot be equal.
-    const nativeType = getType(a).toLowerCase() as JsType;
-    if (nativeType !== getType(b).toLowerCase() || nativeType === "function") {
-      return false;
+    // unequal types and functions (unless referentially equivalent) cannot be equal.
+    const ctor = getConstructor(a);
+    if (ctor !== getConstructor(b) || isFunction(a)) return false;
+    // string representable comparable types
+    if (STRING_COMPARABLE.has(ctor)) {
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
+      if (a.toString() !== b.toString()) return false;
+      // values are equal, so move next
+      continue;
     }
 
-    // leverage toString for Date and RegExp types
-    if (nativeType === "array") {
+    // handle array types
+    if (ctor === Array) {
       const xs = a as RawArray;
       const ys = b as RawArray;
       if (xs.length !== ys.length) return false;
-      if (xs.length === ys.length && xs.length === 0) continue;
+
+      // add array items for comparison
       into(lhs, xs);
       into(rhs, ys);
-    } else if (nativeType === "object") {
+    } else if (ctor === Object) {
+      // literal object equality
       // deep compare objects
       const aKeys = Object.keys(a as RawObject);
       const bKeys = Object.keys(b as RawObject);
 
-      // check length of keys early
+      // validate keys
       if (aKeys.length !== bKeys.length) return false;
-
-      // compare keys
-      for (let i = 0, len = aKeys.length; i < len; i++) {
-        const k = aKeys[i];
-        // not found
-        if (!has(b as RawObject, k)) return false;
-        // key found
+      if (new Set(aKeys.concat(bKeys)).size != aKeys.length) return false;
+      // push values to be compared
+      aKeys.forEach(k => {
         lhs.push((a as RawObject)[k]);
         rhs.push((b as RawObject)[k]);
-      }
+      });
     } else {
-      // compare encoded values
-      if (stringify(a) !== stringify(b)) return false;
+      // user-defined type detected.
+      // we don't try to compare user-defined types (even though we could...shhhh).
+      return false;
     }
   }
   return lhs.length === 0;
@@ -487,18 +540,41 @@ export function stringify(value: AnyVal): string {
       return type.toLowerCase();
     case "Array":
       return "[" + (value as RawArray).map(stringify).join(",") + "]";
+    case "Function":
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
+      return value.toString();
     default:
       break;
   }
-  // default case
-  const prefix = type === "Object" ? "" : type;
-  const objKeys = Object.keys(value as RawObject);
+  // handle every other object type
+  const ctor = getConstructor(value);
+  const tag = ctor === Object ? "" : ctor.name;
+  // string comparables have a proper string representation we can use.
+  if (STRING_COMPARABLE.has(ctor)) {
+    // eslint-disable-next-line @typescript-eslint/no-base-to-string
+    return `${tag}(${value.toString()})`;
+  }
+  // handle JSONable objects. BYOF
+  if (isFunction((value as RawObject)["toJSON"])) {
+    return `${tag}(${JSON.stringify(value)})`;
+  }
+
+  // custom or unhandled object type.
+  if (ctor !== Object) {
+    const [members, _] = getMembersOf(value);
+    // custom type derived from array.
+    if (isArray(value)) {
+      // include other members as part of array elements.
+      return `${tag}${stringify([...(value as RawArray), members])}`;
+    }
+    // get members as literal
+    value = members;
+  }
+  const objKeys = Object.keys(value);
   objKeys.sort();
   return (
-    `${prefix}{` +
-    objKeys
-      .map(k => `${stringify(k)}:${stringify((value as RawObject)[k])}`)
-      .join(",") +
+    `${tag}{` +
+    objKeys.map(k => `${k}:${stringify((value as RawObject)[k])}`).join(",") +
     "}"
   );
 }
