@@ -1,4 +1,4 @@
-import { RawObject } from "../src/types";
+import { AnyVal, RawArray, RawObject } from "../src/types";
 import {
   cloneDeep,
   compare,
@@ -9,11 +9,13 @@ import {
   isEmpty,
   isEqual,
   isObject,
+  isObjectLike,
   merge,
   normalize,
   resolve,
   resolveGraph,
   sortBy,
+  stringify,
   truthy,
   unique,
   walk
@@ -52,7 +54,7 @@ describe("util", () => {
   });
 
   describe("isEqual", () => {
-    const fixture = [
+    it.each([
       [NaN, 0 / 0, true],
       [NaN, NaN, true],
       [0, -0, true],
@@ -72,15 +74,19 @@ describe("util", () => {
       [() => void {}, () => void {}, false],
       [RegExp, RegExp, true],
       [new ObjectId("100"), new ObjectId("100"), false]
-    ];
-    fixture.forEach(arr => {
-      it(`check: ${JSON.stringify(arr[0])} == ${JSON.stringify(
-        arr[1]
-      )}`, () => {
-        expect(isEqual(arr[0], arr[1])).toEqual(arr[2]);
-      });
+    ])("should check: %p == %p", (a, b, c) => {
+      expect(isEqual(a, b)).toEqual(c);
     });
-    expect(true).toBeTruthy();
+
+    it("should check for cycles in object", () => {
+      const a: RawArray = [1, 2, 3];
+      const b: RawArray = [1, 2, 3];
+      const obj = { a, b };
+      a.push(obj);
+      b.push(obj);
+      expect(isEqual(a, b)).toEqual(true);
+      // expect(() => isEqual(a, b)).toThrow(/cycle detected/);
+    });
   });
 
   describe("merge", () => {
@@ -110,6 +116,50 @@ describe("util", () => {
       });
       expect(result).toBe(target);
       expect(result).toStrictEqual([{ a: 1, b: 3 }, { a: 2, b: 4 }, { c: 5 }]);
+    });
+  });
+
+  describe("stringify", () => {
+    const a: RawArray = [1, 2, 3];
+    const b: RawArray = [4, 5, 6];
+
+    it.each([
+      [null, "null"],
+      [undefined, "undefined"],
+      [1, "1"],
+      ["a", '"a"'],
+      [true, "true"],
+      [{ a: 1 }, "{a:1}"],
+      [/mo/, "/mo/"],
+      [[1, "a"], '[1,"a"]'],
+      [new Date("2001-01-01T00:00:00.000Z"), "2001-01-01T00:00:00.000Z"],
+      [(id: AnyVal) => id, "(id) => id"],
+      [new Uint8Array([5, 2]), "Uint8Array[5,2]"],
+      [new Float32Array([1.5, 2.5]), "Float32Array[1.5,2.5]"],
+      [{ a: a, b: a }, "{a:[1,2,3],b:[1,2,3]}"],
+      [[a, a], "[[1,2,3],[1,2,3]]"],
+      [[a, b], "[[1,2,3],[4,5,6]]"],
+      [[a, b, a, b], "[[1,2,3],[4,5,6],[1,2,3],[4,5,6]]"]
+    ])("should pass: %p => %p", (input, output) => {
+      expect(stringify(input)).toEqual(output);
+    });
+
+    it("should check for cycles in object", () => {
+      const a: RawArray = [1, 2, 3];
+      const b: RawArray = [4, 5, 6];
+      const obj = { a, b };
+      b.push(obj);
+
+      expect(() => stringify(obj)).toThrow(/cycle detected/);
+    });
+
+    it("should check for cycles in array", () => {
+      const a: RawArray = [1, 2, 3];
+      const b: RawArray = [4, 5, 6, a];
+      const c = [a, b];
+      a.push(c);
+
+      expect(() => stringify(c)).toThrow(/cycle detected/);
     });
   });
 
@@ -188,6 +238,31 @@ describe("util", () => {
   describe("isEmpty", () => {
     const sample = ["0", 0, null, {}, "", []];
     expect(sample.map(isEmpty)).toEqual([false, false, true, true, true, true]);
+  });
+
+  describe("cloneDeep", () => {
+    const a: RawArray = [1, 2, 3];
+    const b: RawArray = [4, 5, 6];
+
+    it.each([
+      [null],
+      [undefined],
+      [1],
+      ["a"],
+      [true],
+      [{ a: 1 }],
+      [/mo/],
+      [[1, "a"]],
+      [new Date("2001-01-01T00:00:00.000Z")],
+      [new Uint8Array([5, 2])],
+      [new Float32Array([1.5, 2.5])],
+      [{ a: a, b: a }],
+      [[a, b, a, b]]
+    ])("should pass: %p => %p", input => {
+      const other = cloneDeep(input);
+      expect(isEqual(input, other)).toEqual(true);
+      if (isObjectLike(input)) expect(input !== other).toEqual(true);
+    });
   });
 
   describe("resolveGraph", () => {

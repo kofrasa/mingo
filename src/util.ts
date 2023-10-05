@@ -22,19 +22,24 @@ export const MIN_LONG = Number.MIN_SAFE_INTEGER;
 // special value to identify missing items. treated differently from undefined
 const MISSING = Symbol("missing");
 
-const IMMUTABLE_TYPES_SET = new Set([
-  "Undefined",
-  "Null",
-  "Boolean",
-  "String",
-  "Number",
-  "RegExp"
-]);
+const CYCLE_FOUND_ERROR = Object.freeze(
+  new Error("mingo: cycle detected while processing object/array")
+) as Error;
 
 const ARRAY_PROTO = Object.getPrototypeOf([]) as AnyVal;
 const OBJECT_PROTO = Object.getPrototypeOf({}) as AnyVal;
 const OBJECT_TAG = "[object Object]";
 const OBJECT_TYPE_RE = /^\[object ([a-zA-Z0-9]+)\]$/;
+
+type Constructor = new (...args: RawArray) => AnyVal;
+class Null {}
+class Undefined {}
+
+const getConstructor = (v: AnyVal): Constructor => {
+  if (v === null) return Null;
+  if (v === undefined) return Undefined;
+  return v.constructor as Constructor;
+};
 
 /**
  * Uses the simple hash method as described in Effective Java.
@@ -68,23 +73,36 @@ const JS_SIMPLE_TYPES = new Set<JsType>([
   "regexp"
 ]);
 
-const STRING_COMPARABLE = new Set<AnyVal>([
-  Number,
-  String,
-  Boolean,
-  RegExp,
-  Date,
-  Int8Array,
-  Uint8Array,
-  Uint8ClampedArray,
-  Int16Array,
-  Uint16Array,
-  Int32Array,
-  Uint32Array,
-  Float32Array,
-  Float64Array,
-  BigInt64Array,
-  BigUint64Array
+const IMMUTABLE_TYPES_SET = new Set([Undefined, Null, Boolean, String, Number]);
+
+/** Convert simple value to string representation. */
+const toString = (v: AnyVal) => (v as string).toString(); // eslint-disable-line @typescript-eslint/no-base-to-string
+/** Convert a typed array to string representation. */
+const typedArrayToString = (v: AnyVal) =>
+  `${getConstructor(v).name}[${v.toString()}]`; // eslint-disable-line @typescript-eslint/no-base-to-string
+/** Map of constructors to string converter functions */
+const STRING_CONVERTERS = new Map<AnyVal, Callback<string>>([
+  [Number, toString],
+  [Boolean, toString],
+  [RegExp, toString],
+  [Function, toString],
+  [Symbol, toString],
+  [BigInt, (n: bigint) => "0x" + n.toString(16)],
+  [Date, (d: Date) => d.toISOString()],
+  [String, JSON.stringify],
+  [Null, (_: AnyVal) => "null"],
+  [Undefined, (_: AnyVal) => "undefined"],
+  [Int8Array, typedArrayToString],
+  [Uint8Array, typedArrayToString],
+  [Uint8ClampedArray, typedArrayToString],
+  [Int16Array, typedArrayToString],
+  [Uint16Array, typedArrayToString],
+  [Int32Array, typedArrayToString],
+  [Uint32Array, typedArrayToString],
+  [Float32Array, typedArrayToString],
+  [Float64Array, typedArrayToString],
+  [BigInt64Array, typedArrayToString],
+  [BigUint64Array, typedArrayToString]
 ]);
 
 /** MongoDB sort comparison order. https://www.mongodb.com/docs/manual/reference/bson-type-comparison-order */
@@ -133,43 +151,44 @@ export function assert(condition: boolean, message: string): void {
   if (!condition) throw new Error(message);
 }
 
+const isTypedArray = (v: AnyVal): boolean => {
+  const proto = Object.getPrototypeOf(getConstructor(v)) as Callback;
+  return proto && proto.name === "TypedArray";
+};
+
 /**
  * Deep clone an object. Value types and immutable objects are returned as is.
  */
 export const cloneDeep = (obj: AnyVal): AnyVal => {
-  if (IMMUTABLE_TYPES_SET.has(getType(obj))) return obj;
-  const m = new Map();
-  const add = (v: AnyVal) => {
-    if (m.has(v))
-      throw new Error("cycle detected during deep clone operation.");
-    m.set(v, true);
-  };
+  if (IMMUTABLE_TYPES_SET.has(getConstructor(obj))) return obj;
+  const cycle = new Set();
   const clone = (val: AnyVal): AnyVal => {
-    if (IMMUTABLE_TYPES_SET.has(getType(val))) return val;
-    if (isDate(val)) return new Date(val);
-    if (isArray(val)) {
-      add(val);
-      return val.map(clone) as AnyVal;
+    if (cycle.has(val)) throw CYCLE_FOUND_ERROR;
+    const ctor = getConstructor(val);
+    if (IMMUTABLE_TYPES_SET.has(ctor)) return val;
+    try {
+      // arrays
+      if (isArray(val)) {
+        cycle.add(val);
+        return val.map(clone) as AnyVal;
+      }
+      // object literals
+      if (isObject(val)) {
+        cycle.add(val);
+        const res = {};
+        for (const k in val) res[k] = clone(val[k]);
+        return res;
+      }
+    } finally {
+      cycle.delete(val);
     }
-    if (isObject(val)) {
-      add(val);
-      const res = {};
-      for (const k in val) res[k] = clone(val[k]);
-      return res;
+    // dates, regex, typed arrays
+    if (ctor === Date || ctor === RegExp || isTypedArray(val)) {
+      return new ctor(val);
     }
     return val;
   };
   return clone(obj);
-};
-
-type Constructor = new (...args: RawArray[]) => AnyVal;
-class Null {}
-class Undefined {}
-
-const getConstructor = (v: AnyVal): Constructor => {
-  if (v === null) return Null;
-  if (v === undefined) return Undefined;
-  return v.constructor as Constructor;
 };
 
 /**
@@ -442,7 +461,10 @@ const getMembersOf = (value: AnyVal): [RawObject, AnyVal] => {
 };
 
 /**
- * Determine whether two values are the same or strictly equivalent
+ * Determine whether two values are the same or strictly equivalent.
+ * Checking whether values are the same only applies to built in objects.
+ * For user-defined objects this checks for only referential equality so
+ * two different instances with the same values are not equal.
  *
  * @param  {*}  a The first value
  * @param  {*}  b The second value
@@ -462,10 +484,12 @@ export function isEqual(a: AnyVal, b: AnyVal): boolean {
     // unequal types and functions (unless referentially equivalent) cannot be equal.
     const ctor = getConstructor(a);
     if (ctor !== getConstructor(b) || isFunction(a)) return false;
-    // string representable comparable types
-    if (STRING_COMPARABLE.has(ctor)) {
+
+    // string convertable types
+    if (STRING_CONVERTERS.has(ctor)) {
+      const str = STRING_CONVERTERS.get(ctor);
       // eslint-disable-next-line @typescript-eslint/no-base-to-string
-      if (a.toString() !== b.toString()) return false;
+      if (str(a) !== str(b)) return false;
       // values are equal, so move next
       continue;
     }
@@ -520,63 +544,63 @@ export function unique(
 
 /**
  * Encode value to string using a simple non-colliding stable scheme.
+ * Handles user-defined types by processing keys on first non-empty prototype.
+ * If a user-defined type provides a "toJSON" function, it is used.
  *
- * @param value
- * @returns {*}
+ * @param value The value to convert to a string representation.
+ * @returns {String}
  */
 export function stringify(value: AnyVal): string {
-  const type = getType(value);
-  switch (type) {
-    case "Boolean":
-    case "Number":
-    case "RegExp":
-      return (value as string).toString();
-    case "String":
-      return JSON.stringify(value);
-    case "Date":
-      return (value as Date).toISOString();
-    case "Null":
-    case "Undefined":
-      return type.toLowerCase();
-    case "Array":
-      return "[" + (value as RawArray).map(stringify).join(",") + "]";
-    case "Function":
-      // eslint-disable-next-line @typescript-eslint/no-base-to-string
-      return value.toString();
-    default:
-      break;
-  }
-  // handle every other object type
-  const ctor = getConstructor(value);
-  const tag = ctor === Object ? "" : ctor.name;
-  // string comparables have a proper string representation we can use.
-  if (STRING_COMPARABLE.has(ctor)) {
-    // eslint-disable-next-line @typescript-eslint/no-base-to-string
-    return `${tag}(${value.toString()})`;
-  }
-  // handle JSONable objects. BYOF
-  if (isFunction((value as RawObject)["toJSON"])) {
-    return `${tag}(${JSON.stringify(value)})`;
-  }
-
-  // custom or unhandled object type.
-  if (ctor !== Object) {
-    const [members, _] = getMembersOf(value);
-    // custom type derived from array.
-    if (isArray(value)) {
-      // include other members as part of array elements.
-      return `${tag}${stringify([...(value as RawArray), members])}`;
+  const cycle = new Set();
+  // stringify with cycle check
+  const str = (v: AnyVal): string => {
+    const ctor = getConstructor(v);
+    // string convertable types
+    if (STRING_CONVERTERS.has(ctor)) {
+      return STRING_CONVERTERS.get(ctor)(v);
     }
-    // get members as literal
-    value = members;
-  }
-  const objKeys = Object.keys(value);
-  objKeys.sort();
-  return (
-    `${tag}{` +
-    objKeys.map(k => `${k}:${stringify((value as RawObject)[k])}`).join(",") +
-    "}"
-  );
+
+    const tag = ctor === Object ? "" : ctor.name;
+    // handle JSONable objects.
+    if (isFunction((v as RawObject)["toJSON"])) {
+      return `${tag}(${JSON.stringify(v)})`;
+    }
+
+    // handle cycles
+    if (cycle.has(v)) throw CYCLE_FOUND_ERROR;
+    cycle.add(v);
+
+    try {
+      // handle array
+      if (ctor === Array) {
+        return "[" + (v as RawArray).map(str).join(",") + "]";
+      }
+
+      // handle user-defined object
+      if (ctor !== Object) {
+        // handle user-defined types or object literals.
+        const [members, _] = getMembersOf(v);
+        // custom type derived from array.
+        if (isArray(v)) {
+          // include other members as part of array elements.
+          return `${tag}${str([...(v as RawArray), members])}`;
+        }
+        // get members as literal
+        v = members;
+      }
+      const objKeys = Object.keys(v);
+      objKeys.sort();
+      return (
+        `${tag}{` +
+        objKeys.map(k => `${k}:${str((v as RawObject)[k])}`).join(",") +
+        "}"
+      );
+    } finally {
+      cycle.delete(v);
+    }
+  };
+  // convert to string
+  return str(value);
 }
 
 /**
