@@ -45,6 +45,10 @@ export const testPath = (filename: string): string =>
 
 export class ObjectId {
   constructor(readonly _id: string) {}
+
+  toJSON(): string {
+    return this._id;
+  }
 }
 
 export const groupByObjectsData = [
@@ -211,7 +215,7 @@ export function runTest(
           const prefix = `can apply ${operator}(${JSON.stringify(input)})`;
 
           if (ctx.err) {
-            it(`${prefix} => Error("${expected}")`, () => {
+            it(`${prefix} => Error("${expected as string}")`, () => {
               expect(() => computeValue(obj, input, field)).toThrowError();
             });
           } else {
@@ -233,7 +237,7 @@ export function runTest(
 interface PipelineTestSuite {
   input: RawArray;
   pipeline: Array<RawObject>;
-  expected: AnyVal | Callback<AnyVal>;
+  expected: AnyVal;
   message: string;
   options?: Partial<Options>;
 }
