@@ -1,13 +1,15 @@
 # Changelog
 
-## 6.4.7 / 2023-10-05
+## 6.4.7 / 2023-10-06
 **New**
 - Add support for bitwise aggregation operators. `$bitAnd`, `$bitOr`,`$bitXor`,`$bitNot`.
+- Add support for typed arrays in `isEqual`, `cloneDeep`, and `stringify`.
 
 **Fixes**
 - Build object graph for relevant update operators `$inc`,`$mul`,`$max`,`$min`,`$push`,`$bit`.
-- Compare user-defined types with referential equality using `isEqual`.
-- Expand support for user-defined types with `stringify`.
+- Compare user-defined types with referential equality only with `isEqual`.
+- Process user-defined types correctly with `stringify`.
+- Properly handle cycles in `stringify` operation.
 
 ## 6.4.6 / 2023-10-02
 **Fixes**
