@@ -134,7 +134,7 @@ function createCallback(
 }
 
 /**
- * A lazy collection iterator yields a single value at time upon request
+ * A lazy collection iterator yields a single value at a time upon request.
  */
 export class Iterator {
   private readonly iteratees: Iteratee[] = [];
@@ -175,7 +175,7 @@ export class Iterator {
       };
     } else if (!(source instanceof Function)) {
       throw new Error(
-        `Source is of type '${typeof source}'. Must be Array, Function, or Generator`
+        `Lazy must be initialized with an array, generator, or function.`
       );
     }
 
