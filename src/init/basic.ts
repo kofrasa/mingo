@@ -22,17 +22,11 @@ useOperators(OperatorType.PROJECTION, projectionOperators as OperatorMap);
 useOperators(OperatorType.QUERY, queryOperators as OperatorMap);
 
 /** The basic context for queries. */
-export const BASIC_CONTEXT = Context.init({
-  [OperatorType.EXPRESSION]: {
+export const BASIC_CONTEXT = Context.init()
+  .addExpressionOps({
     ...booleanOperators,
     ...comparisonOperators
-  },
-  [OperatorType.PIPELINE]: {
-    $project,
-    $skip,
-    $limit,
-    $sort
-  },
-  [OperatorType.PROJECTION]: projectionOperators,
-  [OperatorType.QUERY]: queryOperators
-});
+  })
+  .addPipelineOps({ $project, $skip, $limit, $sort })
+  .addProjectionOps(projectionOperators)
+  .addQueryOps(queryOperators);
