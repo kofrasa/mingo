@@ -272,7 +272,7 @@ export type AccumulatorOperator<R = AnyVal> = (
 
 export type ExpressionOperator<R = AnyVal> = (
   obj: RawObject,
-  expr: AnyVal,
+  expr: AnyVal | RawObject | RawArray,
   options: Options
 ) => R;
 
@@ -344,7 +344,7 @@ export class Context {
     this.operators = cloneDeep(ops) as typeof ops;
   }
 
-  static init(ops: ContextMap = {}): Context {
+  static init(ops: ContextMap): Context {
     return new Context(
       merge(
         {
@@ -365,7 +365,7 @@ export class Context {
     return new Context(ctx.operators);
   }
 
-  private addOperators(type: OperatorType, ops: OperatorMap): Context {
+  addOperators(type: OperatorType, ops: OperatorMap): Context {
     for (const [name, fn] of Object.entries(ops)) {
       if (!this.getOperator(type, name)) {
         (this.operators[type] as OperatorMap)[name] = fn;
@@ -406,15 +406,14 @@ export class Context {
   }
 }
 
-// global context
-let GLOBAL_CONTEXT = Context.init();
+// operator definitions
+const CONTEXT = Context.init({});
 
 /**
  * Register fully specified operators for the given operator class.
  *
  * @param type The operator type
  * @param operators Map of the operators
- * @deprecated
  */
 export function useOperators(type: OperatorType, operators: OperatorMap): void {
   for (const [name, fn] of Object.entries(operators)) {
@@ -429,36 +428,8 @@ export function useOperators(type: OperatorType, operators: OperatorMap): void {
     );
   }
   // toss the operator salad :)
-  switch (type) {
-    case OperatorType.ACCUMULATOR:
-      GLOBAL_CONTEXT.addAccumulatorOps(operators as AccumulatorOps);
-      break;
-    case OperatorType.EXPRESSION:
-      GLOBAL_CONTEXT.addExpressionOps(operators as ExpressionOps);
-      break;
-    case OperatorType.PIPELINE:
-      GLOBAL_CONTEXT.addPipelineOps(operators as PipelineOps);
-      break;
-    case OperatorType.PROJECTION:
-      GLOBAL_CONTEXT.addProjectionOps(operators as ProjectionOps);
-      break;
-    case OperatorType.QUERY:
-      GLOBAL_CONTEXT.addQueryOps(operators as QueryOps);
-      break;
-    case OperatorType.WINDOW:
-      GLOBAL_CONTEXT.addWindowOps(operators as WindowOps);
-      break;
-  }
+  CONTEXT.addOperators(type, operators);
 }
-
-/**
- * Overrides the current global context with this new one.
- *
- * @param context The new context to override the global one with.
- */
-export const setGlobalContext = (context: Context): void => {
-  GLOBAL_CONTEXT = context;
-};
 
 /**
  * Returns the operator function or undefined if it is not found
@@ -472,7 +443,7 @@ export function getOperator(
 ): Operator {
   const { context: ctx, useGlobalContext: fallback } = options || {};
   const fn = ctx ? (ctx.getOperator(type, operator) as Operator) : null;
-  return !fn && fallback ? GLOBAL_CONTEXT.getOperator(type, operator) : fn;
+  return !fn && fallback ? CONTEXT.getOperator(type, operator) : fn;
 }
 
 /* eslint-disable unused-imports/no-unused-vars-ts */
@@ -482,16 +453,16 @@ export function getOperator(
  * @type {Object}
  */
 const systemVariables: Record<string, typeof redact> = {
-  $$ROOT(_obj: AnyVal, _expr: AnyVal, options: ComputeOptions) {
+  $$ROOT(obj: AnyVal, expr: AnyVal, options: ComputeOptions) {
     return options.root;
   },
-  $$CURRENT(obj: AnyVal, _expr: AnyVal, _options: ComputeOptions) {
+  $$CURRENT(obj: AnyVal, expr: AnyVal, options: ComputeOptions) {
     return obj;
   },
-  $$REMOVE(_obj: AnyVal, _expr: AnyVal, _options: ComputeOptions) {
+  $$REMOVE(obj: AnyVal, expr: AnyVal, options: ComputeOptions) {
     return undefined;
   },
-  $$NOW(_obj: AnyVal, _expr: AnyVal, options: ComputeOptions) {
+  $$NOW(obj: AnyVal, expr: AnyVal, options: ComputeOptions) {
     return new Date(options.timestamp);
   }
 };
@@ -504,10 +475,10 @@ const systemVariables: Record<string, typeof redact> = {
  * @type {Object}
  */
 const redactVariables: Record<string, typeof redact> = {
-  $$KEEP(obj: AnyVal, _expr: AnyVal, _options: ComputeOptions): AnyVal {
+  $$KEEP(obj: AnyVal, expr: AnyVal, options: ComputeOptions): AnyVal {
     return obj;
   },
-  $$PRUNE(_obj: AnyVal, _expr: AnyVal, _options: ComputeOptions): AnyVal {
+  $$PRUNE(obj: AnyVal, expr: AnyVal, options: ComputeOptions): AnyVal {
     return undefined;
   },
   $$DESCEND(obj: RawObject, expr: AnyVal, options: ComputeOptions): AnyVal {

@@ -95,7 +95,6 @@ describe("core", () => {
         };
       }
 
-      // DEFAULT_OPTS.context.addQueryOps({ $between });
       useOperators(OperatorType.QUERY, { $between });
 
       const coll = [
@@ -114,7 +113,7 @@ describe("core", () => {
     });
 
     it("should add accumulator operator", () => {
-      DEFAULT_OPTS.context.addAccumulatorOps({
+      useOperators(OperatorType.ACCUMULATOR, {
         $stddev: (collection: RawArray, expr: AnyVal, options?: Options) => {
           const result = aggregate(
             collection,
