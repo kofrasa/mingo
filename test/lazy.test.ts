@@ -44,7 +44,15 @@ describe("lazy", () => {
     expect(Lazy(data).size()).toBe(data.length);
   });
 
-  it("throws when source is invalid", () => {
+  it("should throw when source is invalid", () => {
     expect(() => Lazy(5 as unknown as Source)).toThrowError();
+  });
+
+  it("should iterate with for-loop", () => {
+    let i = 0;
+    for (const item of Lazy(data)) {
+      if (typeof item === "number") i++;
+    }
+    expect(i).toBe(data.length);
   });
 });
