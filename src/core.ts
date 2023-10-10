@@ -263,7 +263,7 @@ export enum OperatorType {
 }
 
 export type AccumulatorOperator<R = AnyVal> = (
-  collection: RawObject[],
+  collection: RawArray,
   expr: AnyVal,
   options: Options
 ) => R;

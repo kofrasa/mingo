@@ -239,9 +239,9 @@ export class Iterator {
    * Returns a new lazy object with results of the transformation
    * The entire sequence is realized.
    *
-   * @param {Function} fn Tranform function of type (Array) => (Any)
+   * @param {Callback<Source, RawArray>} fn Tranform function of type (Array) => (Any)
    */
-  transform(fn: Callback<Source>): Iterator {
+  transform(fn: Callback<Source, RawArray>): Iterator {
     const self = this;
     let iter: Iterator;
     return Lazy(() => {

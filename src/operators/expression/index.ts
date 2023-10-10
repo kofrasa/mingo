@@ -9,6 +9,7 @@ export * from "./date";
 export * from "./literal";
 export * from "./misc";
 export * from "./object";
+export * from "./percentile";
 export * from "./set";
 export * from "./string";
 export * from "./trignometry";

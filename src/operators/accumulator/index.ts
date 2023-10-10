@@ -19,6 +19,7 @@ export * from "./maxN";
 export * from "./mergeObjects";
 export * from "./min";
 export * from "./minN";
+export * from "./percentile";
 export * from "./push";
 export * from "./stdDevPop";
 export * from "./stdDevSamp";

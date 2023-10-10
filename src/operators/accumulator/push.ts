@@ -4,7 +4,7 @@ import {
   computeValue,
   Options
 } from "../../core";
-import { AnyVal, RawArray, RawObject } from "../../types";
+import { AnyVal, RawArray } from "../../types";
 import { isNil } from "../../util";
 
 /**
@@ -16,7 +16,7 @@ import { isNil } from "../../util";
  * @returns {Array|*}
  */
 export const $push: AccumulatorOperator<RawArray> = (
-  collection: RawObject[],
+  collection: RawArray,
   expr: AnyVal,
   options: Options
 ): RawArray => {
