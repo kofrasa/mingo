@@ -12,7 +12,7 @@ import { $percentile as __percentile } from "../accumulator/percentile";
  */
 export const $percentile: ExpressionOperator<number[]> = (
   obj: RawObject,
-  expr: { input: AnyVal; p: RawArray },
+  expr: { input: AnyVal; p: RawArray; method: "approximate" },
   options: Options
 ): number[] => {
   const input = computeValue(obj, expr.input, null, options) as RawArray;

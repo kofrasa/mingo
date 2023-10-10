@@ -16,6 +16,7 @@ export * from "./last";
 export * from "./lastN";
 export * from "./max";
 export * from "./maxN";
+export * from "./median";
 export * from "./mergeObjects";
 export * from "./min";
 export * from "./minN";

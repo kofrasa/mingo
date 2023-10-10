@@ -261,8 +261,7 @@ export const $setWindowFields: PipelineOperator = (
 
               // look within the boundary and filter down
               return array.filter((o: RawObject) => {
-                const value = o[sortKey] as number;
-                const n = +value;
+                const n = +o[sortKey];
                 return n >= lower && n <= upper;
               });
             };

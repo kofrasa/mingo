@@ -14,12 +14,11 @@ import { $push } from "./push";
  */
 export const $percentile: AccumulatorOperator<number[]> = (
   collection: RawObject[],
-  expr: { input: AnyVal; p: RawArray },
+  expr: { input: AnyVal; p: RawArray; method: "approximate" },
   options: Options
 ): number[] => {
   // MongoDB uses the t-digest algorithm to estimate percentiles.
-  // Since this library expects all data in memory we compute percentiles using linear interpolation method.
-  // see https://en.wikipedia.org/wiki/Percentile#The_linear_interpolation_between_closest_ranks_method
+  // Since this library expects all data in memory we use the linear interpolation method.
   const X = $push(collection, expr.input, options).filter(isNumber).sort();
   const centiles = $push(expr.p, "$$CURRENT", options).filter(isNumber);
   return centiles.map(p => {

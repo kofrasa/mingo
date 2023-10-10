@@ -7,6 +7,7 @@ export * from "./conditional";
 export * from "./custom";
 export * from "./date";
 export * from "./literal";
+export * from "./median";
 export * from "./misc";
 export * from "./object";
 export * from "./percentile";
