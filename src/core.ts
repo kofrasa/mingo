@@ -11,7 +11,6 @@ import {
 } from "./types";
 import {
   assert,
-  cloneDeep,
   has,
   isArray,
   isFunction,
@@ -20,7 +19,6 @@ import {
   isObjectLike,
   isOperator,
   isString,
-  merge,
   resolve
 } from "./util";
 
@@ -338,27 +336,23 @@ type PipelineOps = Record<string, PipelineOperator>;
 type WindowOps = Record<string, WindowOperator>;
 
 export class Context {
-  private readonly operators: ContextMap;
+  private readonly operators: ContextMap = {
+    [OperatorType.ACCUMULATOR]: {},
+    [OperatorType.EXPRESSION]: {},
+    [OperatorType.PIPELINE]: {},
+    [OperatorType.PROJECTION]: {},
+    [OperatorType.QUERY]: {},
+    [OperatorType.WINDOW]: {}
+  };
 
   private constructor(ops: ContextMap) {
-    this.operators = cloneDeep(ops) as typeof ops;
+    for (const [type, operators] of Object.entries(ops)) {
+      this.addOperators(type as OperatorType, operators as OperatorMap);
+    }
   }
 
   static init(ops: ContextMap = {}): Context {
-    return new Context(
-      merge(
-        {
-          [OperatorType.ACCUMULATOR]: {},
-          [OperatorType.EXPRESSION]: {},
-          [OperatorType.PIPELINE]: {},
-          [OperatorType.PROJECTION]: {},
-          [OperatorType.QUERY]: {},
-          [OperatorType.WINDOW]: {}
-        },
-        ops,
-        { skipValidation: true }
-      )
-    );
+    return new Context(ops);
   }
 
   static from(ctx: Context): Context {
