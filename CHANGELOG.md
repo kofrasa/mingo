@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.4.8 / 2023-10-21
+**Fixes**
+- Minor refactoring improvements to fix build issues in some web frameworks.
+
 ## 6.4.7 / 2023-10-06
 **New**
 - Add support for bitwise aggregation operators. `$bitAnd`, `$bitOr`,`$bitXor`,`$bitNot`.
