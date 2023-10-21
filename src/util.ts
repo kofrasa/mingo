@@ -471,14 +471,11 @@ const getMembersOf = (value: AnyVal): [RawObject, AnyVal] => {
  * @return {Boolean}   Result of comparison
  */
 export function isEqual(a: AnyVal, b: AnyVal): boolean {
-  const lhs = [a];
-  const rhs = [b];
+  const args = [[a, b]];
+  while (args.length > 0) {
+    [a, b] = args.pop();
 
-  while (lhs.length > 0) {
-    a = lhs.pop();
-    b = rhs.pop();
-
-    // strictly equal must be equal. matches simple and referentially equal values.
+    // strictly equal must be equal. matches referentially equal values.
     if (a === b) continue;
 
     // unequal types and functions (unless referentially equivalent) cannot be equal.
@@ -494,36 +491,22 @@ export function isEqual(a: AnyVal, b: AnyVal): boolean {
       continue;
     }
 
-    // handle array types
-    if (ctor === Array) {
-      const xs = a as RawArray;
-      const ys = b as RawArray;
-      if (xs.length !== ys.length) return false;
-
-      // add array items for comparison
-      into(lhs, xs);
-      into(rhs, ys);
-    } else if (ctor === Object) {
-      // literal object equality
-      // deep compare objects
-      const aKeys = Object.keys(a as RawObject);
-      const bKeys = Object.keys(b as RawObject);
-
-      // validate keys
-      if (aKeys.length !== bKeys.length) return false;
-      if (new Set(aKeys.concat(bKeys)).size != aKeys.length) return false;
-      // push values to be compared
-      aKeys.forEach(k => {
-        lhs.push((a as RawObject)[k]);
-        rhs.push((b as RawObject)[k]);
-      });
-    } else {
-      // user-defined type detected.
-      // we don't try to compare user-defined types (even though we could...shhhh).
-      return false;
+    // handle array and object types
+    if (ctor === Array || ctor === Object) {
+      const ka = Object.keys(a);
+      const kb = Object.keys(b);
+      if (ka.length !== kb.length) return false;
+      if (new Set(ka.concat(kb)).size != ka.length) return false;
+      for (const k of ka) args.push([a[k], b[k]]);
+      // move next
+      continue;
     }
+    // user-defined type detected.
+    // we don't try to compare user-defined types (even though we could...shhhh).
+    return false;
   }
-  return lhs.length === 0;
+  // nothing left to compare
+  return !args.length;
 }
 
 /**
