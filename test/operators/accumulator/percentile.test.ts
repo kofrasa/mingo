@@ -35,7 +35,7 @@ describe(testPath("accumulator/percentile"), () => {
       ["$test01", [62, 64, 67, 67]],
       ["$test02", [81, 82, 83, 83]],
       ["$test03", [78, 79, 80, 80]]
-    ])("should comput for %p", (expr, expected) => {
+    ])("should compute for %p", (expr, expected) => {
       const result = $percentile(
         input,
         {
@@ -130,4 +130,32 @@ describe(testPath("accumulator/percentile"), () => {
       { studentId: "2358", test01_95percentile: [67] }
     ]);
   });
+
+  it.each([
+    [[10], 0.1, [10, 10]],
+    [[10], 0.5, [10, 10]],
+    [[10], 0.9, [10, 10]],
+    [[10], 1.0, [10, 10]],
+    [[10, 20], 0.1, [11, 10]],
+    [[10, 20], 0.5, [15, 10]],
+    [[10, 20], 0.9, [19, 20]],
+    [[10, 20], 1.0, [20, 20]],
+    [[60, 64, 67], 0.1, [60.8, 60]],
+    [[60, 64, 67], 0.5, [64, 64]],
+    [[60, 64, 67], 0.9, [66.4, 67]],
+    [[60, 64, 67], 1.0, [67, 67]]
+  ])(
+    "should compute Pct(%p,%p) => %p (exact, approximate)",
+    (X, p, results) => {
+      ["exact", "approximate"].forEach((method, i) => {
+        expect(
+          $percentile(
+            X,
+            { input: "$$CURRENT", p: [p], method },
+            DEFAULT_OPTS
+          ).pop()
+        ).toEqual(results[i]);
+      });
+    }
+  );
 });

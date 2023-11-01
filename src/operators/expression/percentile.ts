@@ -15,6 +15,6 @@ export const $percentile: ExpressionOperator<number[]> = (
   expr: { input: AnyVal; p: RawArray; method: "approximate" },
   options: Options
 ): number[] => {
-  const input = computeValue(obj, expr.input, null, options) as RawArray;
+  const input = computeValue(obj, expr.input, null, options) as number[];
   return __percentile(input, { ...expr, input: "$$CURRENT" }, options);
 };

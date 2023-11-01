@@ -1,7 +1,14 @@
 import { computeValue, Options, PipelineOperator } from "../../core";
 import { Iterator, Lazy } from "../../lazy";
 import { AnyVal, Callback, RawArray, RawObject } from "../../types";
-import { assert, compare, getType, into, isNil } from "../../util";
+import {
+  assert,
+  compare,
+  findInsertIndex,
+  getType,
+  into,
+  isNil
+} from "../../util";
 
 /**
  * Categorizes incoming documents into groups, called buckets, based on a specified expression and bucket boundaries.
@@ -101,26 +108,3 @@ export const $bucket: PipelineOperator = (
     return iterator.next();
   });
 };
-
-/**
- * Find the insert index for the given key in a sorted array.
- *
- * @param {*} sorted The sorted array to search
- * @param {*} item The search key
- */
-function findInsertIndex(sorted: RawArray, item: AnyVal): number {
-  // uses binary search
-  let lo = 0;
-  let hi = sorted.length - 1;
-  while (lo <= hi) {
-    const mid = Math.round(lo + (hi - lo) / 2);
-    if (compare(item, sorted[mid]) < 0) {
-      hi = mid - 1;
-    } else if (compare(item, sorted[mid]) > 0) {
-      lo = mid + 1;
-    } else {
-      return mid;
-    }
-  }
-  return lo;
-}

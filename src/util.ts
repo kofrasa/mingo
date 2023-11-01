@@ -1077,3 +1077,26 @@ export function normalize(expr: AnyVal): AnyVal {
 
   return expr;
 }
+
+/**
+ * Find the insert index for the given key in a sorted array.
+ *
+ * @param {*} sorted The sorted array to search
+ * @param {*} item The search key
+ */
+export function findInsertIndex(sorted: RawArray, item: AnyVal): number {
+  // uses binary search
+  let lo = 0;
+  let hi = sorted.length - 1;
+  while (lo <= hi) {
+    const mid = Math.round(lo + (hi - lo) / 2);
+    if (compare(item, sorted[mid]) < 0) {
+      hi = mid - 1;
+    } else if (compare(item, sorted[mid]) > 0) {
+      lo = mid + 1;
+    } else {
+      return mid;
+    }
+  }
+  return lo;
+}

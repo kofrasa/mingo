@@ -1,8 +1,7 @@
 // https://www.mongodb.com/docs/manual/reference/operator/aggregation/median
 import { AccumulatorOperator, Options } from "../../core";
 import { AnyVal, RawObject } from "../../types";
-import { isNumber } from "../../util";
-import { $push } from "./push";
+import { $percentile } from "./percentile";
 
 /**
  * Returns the median of the dataset. The 'expr.method' defaults to "approximate" to return a median value from the dataset.
@@ -20,15 +19,4 @@ export const $median: AccumulatorOperator<number> = (
   collection: RawObject[],
   expr: { input: AnyVal; method: "approximate" | "exact" },
   options: Options
-): number => {
-  const X = $push(collection, expr.input, options).filter(isNumber).sort();
-  const mid = X.length / 2;
-  const method = expr.method || "approximate";
-  const [lo, hi] = [Math.floor(mid), Math.ceil(mid)];
-  switch (method) {
-    case "exact":
-      return (X[lo] + X[hi]) / 2;
-    case "approximate": // return value from dataset
-      return mid % 1 === 0 ? X[lo - 1] : X[lo];
-  }
-};
+): number => $percentile(collection, { ...expr, p: [0.5] }, options).pop();
