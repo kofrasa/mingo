@@ -2,7 +2,7 @@
 
 ## 6.4.9 / 2023-11-12
 **New**
-- Add support for accumulator and expression opertors; `$percentile`, `$median`.
+- Add support for accumulator and expression operators; `$percentile`, `$median`.
 
 ## 6.4.8 / 2023-10-21
 **Fixes**
