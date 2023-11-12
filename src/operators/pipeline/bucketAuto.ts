@@ -8,6 +8,8 @@ interface Boundary extends RawObject {
   max?: number;
 }
 
+const ID_KEY = "_id";
+
 /**
  * Categorizes incoming documents into a specific number of groups, called buckets,
  * based on a specified expression. Bucket boundaries are automatically determined
@@ -36,8 +38,6 @@ export const $bucketAuto: PipelineOperator = (
     bucketCount > 0,
     `The $bucketAuto 'buckets' field must be greater than 0, but found: ${bucketCount}`
   );
-
-  const ID_KEY = "_id";
 
   return collection.transform((coll: RawObject[]) => {
     const approxBucketSize = Math.max(1, Math.round(coll.length / bucketCount));

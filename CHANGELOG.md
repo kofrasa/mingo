@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.4.9 / 2023-11-12
+**New**
+- Add support for accumulator and expression opertors; `$percentile`, `$median`.
+
 ## 6.4.8 / 2023-10-21
 **Fixes**
 - Minor refactoring improvements to fix build issues in some web frameworks.
