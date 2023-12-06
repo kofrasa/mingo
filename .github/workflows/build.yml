@@ -10,6 +10,14 @@ on:
   pull_request:
     branches:
       - main
+  workflow_call:
+    inputs:
+      matrix.node-version:
+        required: true
+        type: string
+    secrets:
+      CODECOV_TOKEN:
+        required: true
 
 jobs:
   build:

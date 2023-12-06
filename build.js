@@ -23,7 +23,7 @@ function createModule() {
   fs.writeFileSync(path.join(OUT_DIR, ".npmignore"), NPM_IGNORE.join("\n"));
 
   // copy all the allowed files to the lib directory
-  packageJson.files = ["LICENSE", "README.md", "CHANGELOG.md"].reduce(
+  packageJson.files = ["LICENSE", "README.md"].reduce(
     (files, p) => {
       fs.copyFileSync(path.resolve(p), path.join(OUT_DIR, p));
       files.push(p);
