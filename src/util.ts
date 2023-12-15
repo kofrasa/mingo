@@ -87,7 +87,6 @@ const STRING_CONVERTERS = new Map<AnyVal, Callback<string>>([
   [RegExp, toString],
   [Function, toString],
   [Symbol, toString],
-  [BigInt, (n: bigint) => "0x" + n.toString(16)],
   [Date, (d: Date) => d.toISOString()],
   [String, JSON.stringify],
   [Null, (_: AnyVal) => "null"],
@@ -100,10 +99,22 @@ const STRING_CONVERTERS = new Map<AnyVal, Callback<string>>([
   [Int32Array, typedArrayToString],
   [Uint32Array, typedArrayToString],
   [Float32Array, typedArrayToString],
-  [Float64Array, typedArrayToString],
-  [BigInt64Array, typedArrayToString],
-  [BigUint64Array, typedArrayToString]
+  [Float64Array, typedArrayToString]
 ]);
+/**
+ * Some types like BigInt are not available on more exotic
+ * JavaScript runtimes like ReactNative or QuickJS.
+ * So we fill them in only if they exist so that it does not throw an error.
+ */
+if (typeof BigInt !== "undefined") {
+  STRING_CONVERTERS.set(BigInt, (n: bigint) => "0x" + n.toString(16));
+}
+if (typeof BigInt64Array !== "undefined") {
+  STRING_CONVERTERS.set(BigInt64Array, typedArrayToString);
+}
+if (typeof BigUint64Array !== "undefined") {
+  STRING_CONVERTERS.set(BigUint64Array, typedArrayToString);
+}
 
 /** MongoDB sort comparison order. https://www.mongodb.com/docs/manual/reference/bson-type-comparison-order */
 const SORT_ORDER_BY_TYPE: Record<JsType, number> = {
