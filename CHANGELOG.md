@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.4.10 / 2023-12-xx
+**Fixes**
+- Support BigInt only when available on platform [#407](https://github.com/kofrasa/mingo/issues/407)
+
 ## 6.4.9 / 2023-11-12
 **New**
 - Add support for accumulator and expression operators; `$percentile`, `$median`.
