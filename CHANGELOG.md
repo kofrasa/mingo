@@ -1,6 +1,6 @@
 # Changelog
 
-## 6.4.10 / 2023-12-xx
+## 6.4.10 / 2023-12-20
 **Fixes**
 - Support BigInt only when available on platform [#407](https://github.com/kofrasa/mingo/issues/407)
 
