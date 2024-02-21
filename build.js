@@ -90,6 +90,7 @@ function createModule() {
 
     packageJson.exports[key] = {
       types: typesPath,
+      import: esmPath,
       node: cjsPath,
       require: cjsPath,
       default: esmPath
