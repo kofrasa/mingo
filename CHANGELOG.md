@@ -1,5 +1,13 @@
 # Changelog
 
+## 6.4.11 /2024-02-24
+**New**
+- Autoload basic query operators and expression operators for boolean and comparison for use with `Updater`. [#413](https://github.com/kofrasa/mingo/issues/413)
+- Add explicit `MingoError` type to represent errors caught by the library.
+
+**Fixes**
+- Add fix for Vitest. [#420](https://github.com/kofrasa/mingo/pull/420)
+
 ## 6.4.10 / 2023-12-20
 **Fixes**
 - Support BigInt only when available on platform [#407](https://github.com/kofrasa/mingo/issues/407)
