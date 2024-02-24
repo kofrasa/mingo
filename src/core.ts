@@ -4,6 +4,7 @@ import {
   ArrayOrObject,
   Callback,
   HashFunction,
+  MingoError,
   Predicate,
   RawArray,
   RawObject,
@@ -596,7 +597,7 @@ export function computeValue(
     }
 
     // operator was not found
-    throw new Error(`operator '${operator}' is not registered`);
+    throw new MingoError(`operator '${operator}' is not registered`);
   }
 
   // if expr is a string and begins with "$$", then we have a variable.

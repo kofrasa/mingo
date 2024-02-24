@@ -3,6 +3,7 @@ import {
   AnyVal,
   Callback,
   GroupByOutput,
+  MingoError,
   RawArray,
   RawObject,
   WindowOperatorInput
@@ -113,7 +114,7 @@ export function rank(
         offset += partitions.get(key).length;
       }
       // should be unreachable
-      throw new Error(
+      throw new MingoError(
         "rank: invalid return value. please submit a bug report."
       );
     }

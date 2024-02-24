@@ -6,7 +6,7 @@ import {
   PipelineOperator
 } from "../../core";
 import { Iterator } from "../../lazy";
-import { RawObject } from "../../types";
+import { MingoError, RawObject } from "../../types";
 import { assert, hashCode, isArray, isString, resolve } from "../../util";
 import { $mergeObjects } from "../expression";
 
@@ -101,7 +101,7 @@ export const $merge: PipelineOperator = (
             output[i] = o;
             break;
           case "fail":
-            throw new Error(
+            throw new MingoError(
               "$merge: failed due to matching as specified by 'whenMatched' option."
             );
           case "keepExisting":
@@ -122,7 +122,7 @@ export const $merge: PipelineOperator = (
         case "discard":
           break;
         case "fail":
-          throw new Error(
+          throw new MingoError(
             "$merge: failed due to matching as specified by 'whenMatched' option."
           );
         case "insert":

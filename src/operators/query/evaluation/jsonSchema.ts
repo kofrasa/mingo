@@ -1,7 +1,7 @@
 // Query Evaluation Operators: https://docs.mongodb.com/manual/reference/operator/query-evaluation/
 
 import { Options } from "../../../core";
-import { AnyVal, Predicate, RawObject } from "../../../types";
+import { AnyVal, MingoError, Predicate, RawObject } from "../../../types";
 
 /**
  * Validate documents against the given JSON Schema.
@@ -16,7 +16,7 @@ export function $jsonSchema(
   options: Options
 ): Predicate<AnyVal> {
   if (!options?.jsonSchemaValidator) {
-    throw new Error(
+    throw new MingoError(
       "Missing option 'jsonSchemaValidator'. Configure to use '$jsonSchema' operator."
     );
   }

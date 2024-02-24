@@ -1,4 +1,7 @@
 import { initOptions, UpdateOptions } from "./core";
+import * as booleanOperators from "./operators/expression/boolean";
+import * as comparisonOperators from "./operators/expression/comparison";
+import * as queryOperators from "./operators/query";
 import * as UPDATE_OPERATORS from "./operators/update";
 import { Query } from "./query";
 import { RawObject } from "./types";
@@ -6,7 +9,7 @@ import { assert, has } from "./util";
 
 // https://stackoverflow.com/questions/60872063/enforce-typescript-object-has-exactly-one-key-from-a-set
 /** Define maps to enforce a single key from a union. */
-type OneKey<K extends keyof any, V, KK extends keyof any = K> = {
+type OneKey<K extends keyof any, V, KK extends keyof any = K> = { //eslint-disable-line
   [P in K]: { [Q in P]: V } & { [Q in Exclude<KK, P>]?: never } extends infer O
     ? { [Q in keyof O]: O[Q] }
     : never;
@@ -37,6 +40,16 @@ export type Updater = (
  * @returns {Updater}
  */
 export function createUpdater(defaultOptions: UpdateOptions): Updater {
+  // automatically load basic query options for update operators
+  defaultOptions = {
+    ...defaultOptions,
+    queryOptions: initOptions(defaultOptions.queryOptions)
+  };
+  defaultOptions.queryOptions.context
+    .addQueryOps(queryOperators)
+    .addExpressionOps(booleanOperators)
+    .addExpressionOps(comparisonOperators);
+
   return (
     obj: RawObject,
     expr: UpdateExpression,

@@ -10,6 +10,7 @@ import {
   GroupByOutput,
   HashFunction,
   JsType,
+  MingoError,
   RawArray,
   RawObject
 } from "./types";
@@ -159,7 +160,7 @@ export const compare = (a: AnyVal, b: AnyVal): number => {
 };
 
 export function assert(condition: boolean, message: string): void {
-  if (!condition) throw new Error(message);
+  if (!condition) throw new MingoError(message);
 }
 
 const isTypedArray = (v: AnyVal): boolean => {

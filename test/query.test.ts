@@ -35,7 +35,7 @@ describe("Query", () => {
 
   it("should fail for unknown operator", () => {
     expect(() => find([{ a: 1 }], { a: { $cut: 3 } }, { a: 1 }).all()).toThrow(
-      /unknown operator/
+      /unknown query operator/
     );
   });
 });

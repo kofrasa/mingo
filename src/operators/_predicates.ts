@@ -14,6 +14,7 @@ import {
   BsonType,
   Callback,
   JsType,
+  MingoError,
   Predicate,
   RawArray,
   RawObject
@@ -157,7 +158,11 @@ export function $nin(
  * @param b
  * @returns {boolean}
  */
-export function $lt(a: AnyVal, b: AnyVal, options?: PredicateOptions): boolean {
+export function $lt(
+  a: AnyVal,
+  b: AnyVal,
+  _options?: PredicateOptions
+): boolean {
   return compare(a, b, (x: AnyVal, y: AnyVal) => mingoCmp(x, y) < 0);
 }
 
@@ -171,7 +176,7 @@ export function $lt(a: AnyVal, b: AnyVal, options?: PredicateOptions): boolean {
 export function $lte(
   a: AnyVal,
   b: AnyVal,
-  options?: PredicateOptions
+  _options?: PredicateOptions
 ): boolean {
   return compare(a, b, (x: AnyVal, y: AnyVal) => mingoCmp(x, y) <= 0);
 }
@@ -183,7 +188,11 @@ export function $lte(
  * @param b
  * @returns {boolean}
  */
-export function $gt(a: AnyVal, b: AnyVal, options?: PredicateOptions): boolean {
+export function $gt(
+  a: AnyVal,
+  b: AnyVal,
+  _options?: PredicateOptions
+): boolean {
   return compare(a, b, (x: AnyVal, y: AnyVal) => mingoCmp(x, y) > 0);
 }
 
@@ -197,7 +206,7 @@ export function $gt(a: AnyVal, b: AnyVal, options?: PredicateOptions): boolean {
 export function $gte(
   a: AnyVal,
   b: AnyVal,
-  options?: PredicateOptions
+  _options?: PredicateOptions
 ): boolean {
   return compare(a, b, (x: AnyVal, y: AnyVal) => mingoCmp(x, y) >= 0);
 }
@@ -212,7 +221,7 @@ export function $gte(
 export function $mod(
   a: AnyVal,
   b: number[],
-  options?: PredicateOptions
+  _options?: PredicateOptions
 ): boolean {
   return ensureArray(a).some(
     ((x: number) => b.length === 2 && x % b[0] === b[1]) as Callback
@@ -247,7 +256,7 @@ export function $regex(
 export function $exists(
   a: AnyVal,
   b: AnyVal,
-  options?: PredicateOptions
+  _options?: PredicateOptions
 ): boolean {
   return (
     ((b === false || b === 0) && a === undefined) ||
@@ -301,7 +310,7 @@ export function $all(
 export function $size(
   a: RawArray,
   b: number,
-  options?: PredicateOptions
+  _options?: PredicateOptions
 ): boolean {
   return Array.isArray(a) && a.length === b;
 }
@@ -376,7 +385,7 @@ const compareFuncs: Record<ConversionType, Predicate<AnyVal>> = {
   // added for completeness
   undefined: isNil, // deprecated
   function: (_: AnyVal) => {
-    throw new Error("unsupported type key `function`.");
+    throw new MingoError("unsupported type key `function`.");
   },
   // Mongo identifiers
   1: isNumber, //double

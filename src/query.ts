@@ -7,7 +7,7 @@ import {
 } from "./core";
 import { Cursor } from "./cursor";
 import { Source } from "./lazy";
-import { AnyVal, Callback, Predicate, RawObject } from "./types";
+import { AnyVal, Callback, MingoError, Predicate, RawObject } from "./types";
 import { assert, inArray, isObject, isOperator, normalize } from "./util";
 
 /**
@@ -76,7 +76,7 @@ export class Query {
       this.options
     ) as QueryOperator;
     if (!call) {
-      throw new Error(`unknown operator ${operator}`);
+      throw new MingoError(`unknown query operator ${operator}`);
     }
     const fn = call(field, value, this.options) as Callback<boolean, RawObject>;
     this.compiled.push(fn);

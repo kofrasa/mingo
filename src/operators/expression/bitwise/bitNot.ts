@@ -1,7 +1,7 @@
 // Bitwise Operators: https://www.mongodb.com/docs/manual/reference/operator/aggregation/bitNot/#mongodb-expression-exp
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
+import { AnyVal, MingoError, RawObject } from "../../../types";
 import { isNil, isNumber } from "../../../util";
 
 /**
@@ -19,5 +19,5 @@ export const $bitNot: ExpressionOperator = (
   const n = computeValue(obj, expr, null, options) as number;
   if (isNil(n)) return null;
   if (isNumber(n)) return ~n;
-  throw new Error("$bitNot: expression must evaluate to a number.");
+  throw new MingoError("$bitNot: expression must evaluate to a number.");
 };

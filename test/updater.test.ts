@@ -1,4 +1,4 @@
-import "./support";
+// import "./support";
 
 import { clone } from "../src/operators/update/_internal";
 import { updateObject } from "../src/updater";
@@ -13,7 +13,7 @@ describe("updateObject", () => {
   it("should contain single operator in expression", () => {
     const expr = { $set: { name: "Fred" } };
     expr["$inc"] = { age: 2 };
-    expect(() => updateObject(obj, expr)).toThrowError(
+    expect(() => updateObject(obj, expr)).toThrow(
       /must contain only one operator/
     );
   });
@@ -22,7 +22,7 @@ describe("updateObject", () => {
     const expr = { $set: { name: "Fred" } };
     expr["$cos"] = { age: 2 };
     delete expr["$set" as string];
-    expect(() => updateObject(obj, expr)).toThrowError(
+    expect(() => updateObject(obj, expr)).toThrow(
       /operator '\$cos' is not supported/
     );
   });

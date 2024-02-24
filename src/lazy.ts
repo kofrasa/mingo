@@ -1,4 +1,11 @@
-import { AnyVal, Callback, Predicate, RawArray, RawObject } from "./types";
+import {
+  AnyVal,
+  Callback,
+  MingoError,
+  Predicate,
+  RawArray,
+  RawObject
+} from "./types";
 
 interface Iteratee {
   action: Action;
@@ -174,7 +181,7 @@ export class Iterator {
         throw DONE;
       };
     } else if (!(source instanceof Function)) {
-      throw new Error(
+      throw new MingoError(
         `Lazy must be initialized with an array, generator, or function.`
       );
     }

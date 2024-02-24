@@ -1,7 +1,7 @@
 // Trignometry Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#trigonometry-expression-operators
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, Callback, RawObject } from "../../../types";
+import { AnyVal, Callback, MingoError, RawObject } from "../../../types";
 
 const FIXED_POINTS = {
   undefined: null,
@@ -27,7 +27,7 @@ export function createTrignometryOperator(
     if (keySet.has(`${n}`)) {
       const res = fp[`${n}`];
       if (res instanceof Error) {
-        throw new Error(
+        throw new MingoError(
           `cannot apply $${f.name} to -inf, value must in (-inf,inf)`
         );
       }
