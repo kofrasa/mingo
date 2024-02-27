@@ -1,5 +1,13 @@
 # Changelog
 
+## 6.4.12 /2024-02-26
+**New**
+- Autoload basic query operators and expression operators for boolean and comparison for use with `Updater`. [#413](https://github.com/kofrasa/mingo/issues/413)
+- Add explicit `MingoError` type to represent errors caught by the library.
+
+**Fixes**
+- Revert "add import field to built package.json file to ensure proper vitest resolution (#420)
+
 ## 6.4.11 /2024-02-24
 **New**
 - Autoload basic query operators and expression operators for boolean and comparison for use with `Updater`. [#413](https://github.com/kofrasa/mingo/issues/413)
