@@ -1,6 +1,6 @@
 export type AnyVal = unknown;
 export type RawObject = Record<string, AnyVal>;
-export type RawArray = Array<AnyVal>;
+export type RawArray<T = AnyVal> = Array<T>;
 export type ArrayOrObject = RawObject | RawArray;
 
 // Generic callback
@@ -23,7 +23,7 @@ export type GroupByOutput = Map<AnyVal, Array<AnyVal>>;
 /**
  * Custom function to hash values to improve faster comparaisons
  */
-export type HashFunction = Callback<number>;
+export type HashFunction = (x: AnyVal) => number;
 
 type CommonTypes =
   | "null"

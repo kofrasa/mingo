@@ -138,7 +138,7 @@ const SORT_ORDER_BY_TYPE: Record<JsType, number> = {
  * @param b The second value
  * @returns {Number}
  */
-export const compare = (a: AnyVal, b: AnyVal): number => {
+export const compare = <T = AnyVal>(a: T, b: T): number => {
   if (a === MISSING) a = undefined;
   if (b === MISSING) b = undefined;
   const [u, v] = [a, b].map(
@@ -208,7 +208,7 @@ export const cloneDeep = (obj: AnyVal): AnyVal => {
  * @param v A value
  */
 export const getType = (v: AnyVal): string =>
-  OBJECT_TYPE_RE.exec(Object.prototype.toString.call(v) as string)![1];
+  OBJECT_TYPE_RE.exec(Object.prototype.toString.call(v) as string)[1];
 export const isBoolean = (v: AnyVal): v is boolean => typeof v === "boolean";
 export const isString = (v: AnyVal): v is string => typeof v === "string";
 export const isSymbol = (v: AnyVal): boolean => typeof v === "symbol";
@@ -247,7 +247,7 @@ export const isEmpty = (x: AnyVal): boolean =>
 
 export const isMissing = (v: AnyVal): boolean => v === MISSING;
 /** ensure a value is an array or wrapped within one. */
-export const ensureArray = (x: AnyVal): RawArray =>
+export const ensureArray = <T>(x: T | T[]): T[] =>
   x instanceof Array ? x : [x];
 
 export const has = (obj: RawObject, prop: string): boolean =>
@@ -259,7 +259,7 @@ interface MergeOptions {
   skipValidation?: boolean;
 }
 
-const mergeable = (left: AnyVal, right: AnyVal): boolean =>
+const mergeable = <T>(left: T, right: T): boolean =>
   (isObject(left) && isObject(right)) || (isArray(left) && isArray(right));
 
 /**
