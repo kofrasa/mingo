@@ -1,5 +1,6 @@
 // import "./support";
 
+import { Query } from "../src";
 import { clone } from "../src/operators/update/_internal";
 import { updateObject } from "../src/updater";
 import { isArray } from "../src/util";
@@ -34,9 +35,21 @@ describe("updateObject", () => {
     expect(obj).toEqual({ name: "John", age: 30 });
   });
 
-  it("should apply update on valid condition", () => {
+  it("should apply update on valid condition expression", () => {
     expect(
       updateObject(obj, { $set: { name: "Fred" } }, [], { age: { $gt: 10 } })
+    ).toEqual(["name"]);
+    expect(obj).toEqual({ name: "Fred", age: 30 });
+  });
+
+  it("should apply update on valid condition query", () => {
+    expect(
+      updateObject(
+        obj,
+        { $set: { name: "Fred" } },
+        [],
+        new Query({ age: { $gt: 10 } })
+      )
     ).toEqual(["name"]);
     expect(obj).toEqual({ name: "Fred", age: 30 });
   });
