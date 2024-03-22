@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.4.13 / 2024-03-22
+**Update**
+- Add support for `Query` condition to updater function.
+
 ## 6.4.12 / 2024-02-26
 **New**
 - Autoload basic query operators and expression operators for boolean and comparison for use with `Updater`. [#413](https://github.com/kofrasa/mingo/issues/413)
