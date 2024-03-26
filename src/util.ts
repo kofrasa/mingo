@@ -102,6 +102,7 @@ const STRING_CONVERTERS = new Map<AnyVal, Callback<string>>([
   [Float32Array, typedArrayToString],
   [Float64Array, typedArrayToString]
 ]);
+
 /**
  * Some types like BigInt are not available on more exotic
  * JavaScript runtimes like ReactNative or QuickJS.
@@ -483,12 +484,12 @@ const getMembersOf = (value: AnyVal): [RawObject, AnyVal] => {
  * @return {Boolean}   Result of comparison
  */
 export function isEqual(a: AnyVal, b: AnyVal): boolean {
-  const args = [[a, b]];
-  while (args.length > 0) {
-    [a, b] = args.pop();
+  const stack = [[a, b]];
+  while (stack.length > 0) {
+    [a, b] = stack.pop();
 
     // strictly equal must be equal. matches referentially equal values.
-    if (a === b) continue;
+    if (Object.is(a, b)) continue;
 
     // unequal types and functions (unless referentially equivalent) cannot be equal.
     const ctor = getConstructor(a);
@@ -505,11 +506,22 @@ export function isEqual(a: AnyVal, b: AnyVal): boolean {
 
     // handle array and object types
     if (ctor === Array || ctor === Object) {
-      const ka = Object.keys(a);
-      const kb = Object.keys(b);
-      if (ka.length !== kb.length) return false;
-      if (new Set(ka.concat(kb)).size != ka.length) return false;
-      for (const k of ka) args.push([a[k], b[k]]);
+      const aKeys = Object.keys(a);
+      const bKeys = Object.keys(b);
+      if (aKeys.length !== bKeys.length) return false;
+      if (new Set([...aKeys, ...bKeys]).size != aKeys.length) return false;
+      for (const k of aKeys) {
+        if (Object.is(a[k], b[k])) continue;
+        const f = getConstructor(a[k]);
+        if (f !== getConstructor(b[k]) || isFunction(a[k])) return false;
+        const str = STRING_CONVERTERS.get(f);
+        if (!str) {
+          stack.push([a[k], b[k]]); // complex object, skip for later
+        } else if (str(a[k]) !== str(b[k])) {
+          return false; // fast path
+        }
+      }
+
       // move next
       continue;
     }
@@ -518,7 +530,7 @@ export function isEqual(a: AnyVal, b: AnyVal): boolean {
     return false;
   }
   // nothing left to compare
-  return !args.length;
+  return !stack.length;
 }
 
 /**
