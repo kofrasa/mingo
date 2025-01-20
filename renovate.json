@@ -1,9 +1,5 @@
 {
-  "extends": [
-    "config:base",
-    "schedule:monthly",
-    "group:all"
-  ],
+  "extends": ["config:recommended", "schedule:monthly", "group:all"],
   "ignoreUnstable": true,
   "automerge": false,
   "automergeType": "branch",
@@ -12,32 +8,32 @@
   },
   "packageRules": [
     {
-      "matchPackagePatterns": ["codecov"],
-      "groupName": "codecov"
+      "groupName": "codecov",
+      "matchPackageNames": ["/codecov/"]
     },
     {
-      "matchPackagePatterns": ["eslint"],
-      "groupName": "eslint"
+      "groupName": "eslint",
+      "matchPackageNames": ["/eslint/"]
     },
     {
-      "matchPackagePatterns": ["lodash"],
-      "groupName": "lodash"
+      "groupName": "lodash",
+      "matchPackageNames": ["/lodash/"]
     },
     {
-      "matchPackagePatterns": ["nyc"],
-      "groupName": "nyc"
+      "groupName": "nyc",
+      "matchPackageNames": ["/nyc/"]
     },
     {
-      "matchPackagePatterns": ["perf_hooks"],
-      "groupName": "perf_hooks"
+      "groupName": "perf_hooks",
+      "matchPackageNames": ["/perf_hooks/"]
     },
     {
-      "matchPackagePatterns": ["tape"],
-      "groupName": "tape"
+      "groupName": "tape",
+      "matchPackageNames": ["/tape/"]
     },
     {
-      "matchPackagePatterns": ["typescript"],
-      "groupName": "typescript"
+      "groupName": "typescript",
+      "matchPackageNames": ["/typescript/"]
     }
   ]
 }
