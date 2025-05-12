@@ -22,7 +22,7 @@ MongoDB query language for in-memory objects
   - [Accumulator operators](https://docs.mongodb.com/manual/reference/operator/aggregation#accumulators-group/)
   - [Expression operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#expression-operators)
   - [Window operators](https://docs.mongodb.com/manual/reference/operator/aggregation/setWindowFields/#window-operators)
-- Aggregaion variables; [`$$ROOT`, `$$CURRENT`, `$$DESCEND`, `$$PRUNE`, `$$KEEP`, `$$REMOVE`, `$$NOW`](https://docs.mongodb.com/manual/reference/aggregation-variables/)
+- Aggregation variables; [`$$ROOT`, `$$CURRENT`, `$$DESCEND`, `$$PRUNE`, `$$KEEP`, `$$REMOVE`, `$$NOW`](https://docs.mongodb.com/manual/reference/aggregation-variables/)
 - Filtering and aggregation using streaming.
 - Document [update](https://www.mongodb.com/docs/manual/reference/operator/update/) support. See [Updating Documents](#updating-documents).
 - Custom type value equality using `toString` when implemented.
@@ -31,7 +31,7 @@ For more documentation on how to use operators see [mongodb](http://docs.mongodb
 
 [API Documentation](http://kofrasa.github.io/mingo/).
 
-A minified version with full operator support is availble under [dist/mingo.min.js](https://www.npmjs.com/package/mingo?activeTab=code) on NPM since `6.6.0`.
+A minified version with full operator support is available under [dist/mingo.min.js](https://www.npmjs.com/package/mingo?activeTab=code) on NPM since `6.6.0`.
 
 ## Usage
 
@@ -220,7 +220,7 @@ Query and aggregation operations can be configured with options to enabled diffe
 | processingMode |  [CLONE_OFF](http://kofrasa.github.io/mingo/enums/core.ProcessingMode.html) | <p>Specifies the degree of mutation for inputs and outputs. By default the input collection is modified as needed and returned output objects may share references.</p> Immutable intermediate results may be collected in a pipeline using the `$out` operator. |
 | scriptEnabled | `true` | <p>Enable or disable using custom script execution.</p>When disabled, operators that execute custom code are disallowed such as; `$where`, `$accumulator`, and `$function`. |
 | useGlobalContext | `true`| <p>Fallback to the global context if an operator is missing from the user-supplied context.</p>This is provided to allow users to strictly enforce which operators may be used. |
-| useStrictMode |  `true` | <p>Enforces strict MongoDB compatibilty.</p>When disabled the behaviour changes as follows. <ul><li>`$elemMatch` returns all matching nested documents instead of only the first.</li><li>Empty string `""` is coerced to false during boolean checking in supported operators which is consistent with Javascript semantics.</li><li>`$type` returns JS native type names as follows. <table><thead><tr><td>MongoDB</td><td>JavaScript</td></tr></thead><tr><td><code>"missing"</code></td><td><code>"undefined"</code></td></tr><tr><td><code>"bool"</code></td><td><code>"boolean"</code></td></tr><tr><td><code>"int"&#124;"long"&#124;"double"</code></td><td><code>"number"</code></td></tr><tr><td><code>"regex"</code></td><td><code>"regexp"</code></td></tr></table> |
+| useStrictMode |  `true` | <p>Enforces strict MongoDB compatibility.</p>When disabled the behaviour changes as follows. <ul><li>`$elemMatch` returns all matching nested documents instead of only the first.</li><li>Empty string `""` is coerced to false during boolean checking in supported operators which is consistent with Javascript semantics.</li><li>`$type` returns JS native type names as follows. <table><thead><tr><td>MongoDB</td><td>JavaScript</td></tr></thead><tr><td><code>"missing"</code></td><td><code>"undefined"</code></td></tr><tr><td><code>"bool"</code></td><td><code>"boolean"</code></td></tr><tr><td><code>"int"&#124;"long"&#124;"double"</code></td><td><code>"number"</code></td></tr><tr><td><code>"regex"</code></td><td><code>"regexp"</code></td></tr></table> |
 | variables | `{}` | Global variables to pass to all operators |
 
 ## Custom Operators
@@ -264,8 +264,8 @@ const collection = [
 ];
 ```
 
-#### Register csutom operator using the context option.
-The custom operator is registerd with a user-provided context object that is passed an option to the query. The context will be searched for operators used in a query and fallback to the global context when not found.
+#### Register custom operator using the context option.
+The custom operator is registered with a user-provided context object that is passed an option to the query. The context will be searched for operators used in a query and fallback to the global context when not found.
 
 ```ts
 const context = core.Context.init().addQueryOps({ $between })
@@ -294,7 +294,7 @@ console.log(result) // output => [ { a: 7, b: 1 }, { a: 10, b: 6 } ]
 
 An update operation can be performed using the `update` function from the `mingo/updater` module. Unlike other operations in the library, this only works on a single object.
 The query and aggregation operators are powerful enough to use for transforming arrays of documents and should be preferred when dealing with multiple objects.
-`update` returns an array of all paths that were updated. It also supports [arrayFilters](https://www.mongodb.com/docs/manual/release-notes/3.6/#std-label-3.6-arrayFilters) for applicable operators. To detect whether a change occured you can check the length of the returned array.
+`update` returns an array of all paths that were updated. It also supports [arrayFilters](https://www.mongodb.com/docs/manual/release-notes/3.6/#std-label-3.6-arrayFilters) for applicable operators. To detect whether a change occurred you can check the length of the returned array.
 
 All operators as of MongoDB 5.0 are supported except the positional array operator `$`.
 
