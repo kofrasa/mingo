@@ -34,6 +34,22 @@ export function find<T>(
 }
 
 /**
+ * Tests if a document matches the specified criteria.
+ *
+ * @template T - The type of the object to test.
+ * @param obj - The object to be tested against the compiled predicates.
+ * @param predicates - The predicates the object should satisfies.
+ * @returns `true` if the object satisfies all predicates, otherwise `false`.
+ */
+export function test<T>(
+  obj: T,
+  predicates: AnyObject,
+  options?: Partial<Options>
+): boolean {
+  return new Query(predicates, options).test<T>(obj);
+}
+
+/**
  * Performs an aggregation operation on the provided collection using the specified pipeline.
  *
  * @param collection - The input data source to aggregate.
@@ -57,5 +73,6 @@ export default {
   aggregate,
   createUpdater,
   find,
+  test,
   update
 };
