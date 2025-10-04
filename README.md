@@ -322,7 +322,7 @@ update(obj, { $unset: { "friends.1": "" } }); // ["friends.1"] => friends: ["Sco
 // update with condition
 update(obj, { $set: { "friends.$[e]": "Velma" } }, [{ e: null }]); // ["friends"] => friends: ["Scooby", "Velma"]
 // empty array returned if value has not changed.
-update(obj, { $set: { fristName: "Bob" } }); // [] => no change to object.
+update(obj, { $set: { firstName: "Bob" } }); // [] => no change to object.
 ```
 
 You can also create a preconfigured updater function.
