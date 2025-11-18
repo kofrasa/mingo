@@ -45,7 +45,7 @@
     "eslint-plugin-prettier": "5.5.4",
     "eslint-plugin-simple-import-sort": "12.1.1",
     "eslint-plugin-unused-imports": "4.2.0",
-    "glob": "11.0.3",
+    "glob": "11.1.0",
     "husky": "9.1.7",
     "lint-staged": "16.1.6",
     "perf_hooks": "0.0.1",
