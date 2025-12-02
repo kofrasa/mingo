@@ -45,6 +45,20 @@ runTest(testPath(__filename), {
         timezone: "-0500"
       },
       new Date("2017-02-09T08:35:02.055Z")
+    ],
+    [
+      {
+        dateString: "10 June 2025",
+        format: "%d %B %Y"
+      },
+      new Date("2025-06-10T00:00:00Z")
+    ],
+    [
+      {
+        dateString: "18 Apr 2025",
+        format: "%d %b %Y"
+      },
+      new Date("2025-04-18T00:00:00Z")
     ]
   ]
 });

@@ -8,6 +8,7 @@ import {
   DATE_FORMAT_SYM_RE,
   DATE_SYM_TABLE,
   MINUTES_PER_HOUR,
+  MONTHS,
   parseTimezone
 } from "./_internal";
 
@@ -18,7 +19,7 @@ function tzLetterOffset(c: string): number {
 }
 
 const regexStrip = (s: string): string =>
-  s.replace(/^\//, "").replace(/\/$/, "");
+  s.replace(/^\//, "").replace(/\/$/, "").replace(/\/i/, "");
 
 const REGEX_SPECIAL_CHARS = ["^", ".", "-", "*", "?", "$"] as const;
 function regexQuote(s: string): string {
@@ -63,6 +64,8 @@ export const $dateFromString: ExpressionOperator<Any> = (
   const dateParts: {
     year?: number;
     month?: number;
+    full_month?: string;
+    abbr_month?: string;
     day?: number;
     hour?: number;
     minute?: number;
@@ -97,6 +100,17 @@ export const $dateFromString: ExpressionOperator<Any> = (
       } else {
         dateParts[props.name] = null;
       }
+    }
+  }
+  // Transform month names to month number
+  if (isNil(dateParts.month)) {
+    const abbrMonth = (
+      dateParts.full_month?.slice(0, 3) ??
+      dateParts.abbr_month ??
+      ""
+    ).toLowerCase();
+    if (MONTHS[abbrMonth]) {
+      dateParts.month = MONTHS[abbrMonth];
     }
   }
 
