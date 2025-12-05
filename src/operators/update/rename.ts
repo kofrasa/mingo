@@ -1,5 +1,5 @@
 import { AnyObject, ArrayOrObject, Options } from "../../types";
-import { has } from "../../util";
+import { assert, has } from "../../util";
 import {
   Action,
   applyUpdate,
@@ -8,6 +8,9 @@ import {
 } from "./_internal";
 import { $set } from "./set";
 
+const isIdPath = (path: string, idKey: string) =>
+  path === idKey || path.startsWith(`${idKey}.`);
+
 /** Replaces the value of a field with the specified value. */
 export const $rename = (
   obj: AnyObject,
@@ -15,6 +18,15 @@ export const $rename = (
   arrayFilters: AnyObject[] = [],
   options: Options = DEFAULT_OPTIONS
 ) => {
+  // validate target fields are not id field (source fields validated in walkExpression)
+  const idKey = options.idKey ?? "_id";
+  for (const target of Object.values(expr)) {
+    assert(
+      !isIdPath(target, idKey),
+      `Performing an update on the path '${target}' would modify the immutable field '${idKey}'.`
+    );
+  }
+
   const res: string[] = [];
   const changed = walkExpression(expr, arrayFilters, options, ((
     val,

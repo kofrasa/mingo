@@ -31,6 +31,64 @@ describe("updater", () => {
     });
   });
 
+  describe("_id Immutability", () => {
+    const ERR_MSG = /would modify the immutable field '_id'/;
+
+    it("should FAIL when $set targets _id field", () => {
+      const doc = { _id: "abc123", name: "John" };
+      expect(() => update(doc, { $set: { _id: "xyz789" } })).toThrow(ERR_MSG);
+    });
+
+    it("should FAIL when $set targets nested _id field", () => {
+      const doc = { _id: { a: 1, b: 2 }, name: "John" };
+      expect(() => update(doc, { $set: { "_id.a": 3 } })).toThrow(ERR_MSG);
+    });
+
+    it("should FAIL when $unset targets _id field", () => {
+      const doc = { _id: "abc123", name: "John" };
+      expect(() => update(doc, { $unset: { _id: "" } })).toThrow(ERR_MSG);
+    });
+
+    it("should FAIL when $rename source is _id field", () => {
+      const doc = { _id: "abc123", name: "John" };
+      expect(() => update(doc, { $rename: { _id: "oldId" } })).toThrow(ERR_MSG);
+    });
+
+    it("should FAIL when $rename target is _id field", () => {
+      const doc = { tempId: "abc123", name: "John" };
+      expect(() => update(doc, { $rename: { tempId: "_id" } })).toThrow(
+        ERR_MSG
+      );
+    });
+
+    it("should FAIL when $rename target is nested _id path", () => {
+      const doc = { tempId: "abc123", name: "John" };
+      expect(() => update(doc, { $rename: { tempId: "_id.value" } })).toThrow(
+        ERR_MSG
+      );
+    });
+
+    it("should FAIL when $inc targets _id field", () => {
+      const doc = { _id: 100, name: "John" };
+      expect(() => update(doc, { $inc: { _id: 1 } })).toThrow(ERR_MSG);
+    });
+
+    it("should allow updating fields that contain 'id' but not '_id'", () => {
+      const doc = { _id: "abc123", id: "old", myId: "test" };
+      update(doc, { $set: { id: "new", myId: "updated" } });
+      expect(doc.id).toBe("new");
+      expect(doc.myId).toBe("updated");
+      expect(doc._id).toBe("abc123");
+    });
+
+    it("should allow updating _id_backup field (not _id)", () => {
+      const doc = { _id: "abc123", _id_backup: "old" };
+      update(doc, { $set: { _id_backup: "new" } });
+      expect(doc._id_backup).toBe("new");
+      expect(doc._id).toBe("abc123");
+    });
+  });
+
   describe("update()", () => {
     const obj = {};
     beforeEach(() => {

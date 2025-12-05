@@ -109,6 +109,9 @@ export type Action<T = Any> = (
 const ERR_MISSING_FIELD =
   "You must include the array field for '.$' as part of the query document.";
 
+const ERR_IMMUTABLE_FIELD = (path: string, idKey: string) =>
+  `Performing an update on the path '${path}' would modify the immutable field '${idKey}'.`;
+
 /**
  * Walks the expression and apply the given action for each key-value pair.
  *
@@ -214,6 +217,13 @@ export function buildParams(
         // add query for matching condition.
         queries[field] = new Query({ [k]: condition[k] }, options);
       }
+
+      // assert id field is not being modified (MongoDB immutability constraint)
+      const idKey = options.idKey;
+      assert(
+        node.selector !== idKey && !node.selector.startsWith(`${idKey}.`),
+        ERR_IMMUTABLE_FIELD(node.selector, idKey)
+      );
 
       // assert there are no conflicting selectors
       assert(
