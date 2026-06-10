@@ -22,6 +22,10 @@ export const $substrCP = (obj: AnyObject, expr: Any, options: Options): Any => {
   // If the argument resolves to a value of null or refers to a field that is missing, return an empty string.
   if (nil) return "";
   if (index < 0) return "";
-  if (count < 0) return s.substring(index);
-  return s.substring(index, index + count);
+  // Index by Unicode code points, not UTF-16 code units. `String.substring`
+  // slices by code units and can split a surrogate pair, returning an invalid
+  // unpaired surrogate. MongoDB $substrCP operates on code points.
+  const codePoints = [...s];
+  if (count < 0) return codePoints.slice(index).join("");
+  return codePoints.slice(index, index + count).join("");
 };

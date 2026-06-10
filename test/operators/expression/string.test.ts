@@ -70,7 +70,11 @@ support.runTest("operators/expression/string", {
     ["cafétéria", 9],
     ["", 0],
     [{ $strLenCP: { $literal: "$€λG" } }, 4],
-    ["寿司", 2]
+    ["寿司", 2],
+    // Non-BMP code points must count as 1 each, not 2 (UTF-16 code units).
+    ["😀", 1],
+    ["a😀b", 3],
+    ["𐀀ab", 3]
   ],
 
   $strcasecmp: [
@@ -94,7 +98,12 @@ support.runTest("operators/expression/string", {
     [["cafétéria", 0, 5], "cafét"],
     [["cafétéria", 5, 4], "éria"],
     [["cafétéria", 7, 3], "ia"],
-    [["cafétéria", 3, 1], "é"]
+    [["cafétéria", 3, 1], "é"],
+    // Non-BMP code points must not be split into unpaired surrogates.
+    [["a😀b", 0, 2], "a😀"],
+    [["😀😀😀", 0, 2], "😀😀"],
+    [["a😀b", 1, 1], "😀"],
+    [["𐀀ab", 0, 1], "𐀀"]
   ],
 
   $substrBytes: [
