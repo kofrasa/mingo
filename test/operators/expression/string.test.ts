@@ -1278,3 +1278,59 @@ support.runTestPipeline("$replaceAll: More examples", [
     ]
   }
 ]);
+
+// Regression: MongoDB treats $replaceAll/$replaceOne `find` as a LITERAL string,
+// not a regular expression. Previously `find` was compiled with
+// `new RegExp(find, "g")`, so regex metacharacters in `find` matched the wrong
+// text (silent wrong output) and a crafted `find` could trigger catastrophic
+// backtracking (ReDoS) when the query came from untrusted input.
+support.runTestPipeline("$replaceAll: find is literal, not a regex", [
+  {
+    message: "regex metacharacters in find match literally",
+    input: [
+      { _id: 1, v: "a.b.c" },
+      { _id: 2, v: "axbxc" },
+      { _id: 3, v: "(a)+[b]" }
+    ],
+    pipeline: [
+      {
+        $project: {
+          v: { $replaceAll: { input: "$v", find: ".", replacement: "X" } }
+        }
+      }
+    ],
+    // literal '.' replaces only the real dots in #1; #2 and #3 have none
+    expected: [
+      { _id: 1, v: "aXbXc" },
+      { _id: 2, v: "axbxc" },
+      { _id: 3, v: "(a)+[b]" }
+    ]
+  },
+  {
+    message: "literal grouping/quantifier metacharacters in find",
+    input: [{ _id: 1, v: "x(a)+[b]y" }],
+    pipeline: [
+      {
+        $project: {
+          v: { $replaceAll: { input: "$v", find: "(a)+[b]", replacement: "Z" } }
+        }
+      }
+    ],
+    expected: [{ _id: 1, v: "xZy" }]
+  }
+]);
+
+support.runTestPipeline("$replaceOne: find is literal, first match only", [
+  {
+    message: "regex metacharacter in find matches literally, first occurrence",
+    input: [{ _id: 1, v: "a.b.c" }],
+    pipeline: [
+      {
+        $project: {
+          v: { $replaceOne: { input: "$v", find: ".", replacement: "X" } }
+        }
+      }
+    ],
+    expected: [{ _id: 1, v: "aXb.c" }]
+  }
+]);

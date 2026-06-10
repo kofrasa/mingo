@@ -28,5 +28,8 @@ export const $replaceAll = (
   if (!isString(replacement))
     return errExpectString(foe, `${OP} 'replacement'`);
 
-  return input.replace(new RegExp(find, "g"), replacement);
+  // MongoDB treats `find` and `replacement` as literal strings (no regex,
+  // no `$` substitution patterns). Using a literal split/join keeps parity and
+  // avoids ReDoS from a regex compiled out of a (possibly untrusted) `find`.
+  return input.split(find).join(replacement);
 };

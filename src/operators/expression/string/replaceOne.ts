@@ -27,5 +27,10 @@ export const $replaceOne = (
   if (!isString(replacement))
     return errExpectString(foe, `${OP} 'replacement'`);
 
-  return args.input.replace(args.find, args.replacement);
+  // MongoDB replaces only the first instance and treats `find`/`replacement`
+  // as literal strings. `String.prototype.replace` with a string pattern would
+  // still interpret `$`-substitution patterns in `replacement`, so splice manually.
+  const idx = input.indexOf(find);
+  if (idx < 0) return input;
+  return input.slice(0, idx) + replacement + input.slice(idx + find.length);
 };
