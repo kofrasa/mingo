@@ -40,7 +40,7 @@
     "@typescript-eslint/parser": "8.44.0",
     "@vitest/coverage-v8": "4.1.8",
     "ajv": "8.17.1",
-    "esbuild": "0.27.2",
+    "esbuild": "0.28.1",
     "eslint": "9.35.0",
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-import": "2.32.0",
