@@ -342,13 +342,18 @@ function updateDocuments<T extends AnyObject>(
 
   const arrayFilters = updateConfig?.arrayFilters ?? [];
 
+  const renameTargets = Object.values(modifier.$rename ?? {}).map(target => ({
+    [target as string]: true
+  }));
+
+  const updateExpressions = [
+    ...(Object.values(modifier) as AnyObject[]),
+    ...renameTargets
+  ];
+
   // build parameters and add to locals
   opts.update({
-    updateParams: buildParams(
-      Object.values(modifier) as AnyObject[],
-      arrayFilters,
-      opts
-    )
+    updateParams: buildParams(updateExpressions, arrayFilters, opts)
   });
 
   const matchedCount = foundDocs.length;
