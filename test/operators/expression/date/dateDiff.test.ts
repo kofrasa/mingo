@@ -49,7 +49,7 @@ const fixtures: [number[], string[], string, string, string?, string?][] = [
     ]
   ]);
 
-runTest(testPath(__filename), {
+runTest(testPath(import.meta.url), {
   $dateDiff: flatten(
     fixtures.map(([res, units, start, end, timezone, startOfWeek]) =>
       res.map((diff, i) => [

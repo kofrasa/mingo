@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { aggregate } from "../../../src";
 import { DEFAULT_OPTS, testPath } from "../../support";
 
-describe(testPath(__filename), () => {
+describe(testPath(import.meta.url), () => {
   const employees = [
     { _id: 1, name: "Dev" },
     { _id: 2, name: "Eliot", reportsTo: "Dev" },

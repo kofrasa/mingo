@@ -1,6 +1,6 @@
 import { runTest, testPath } from "../../../support";
 
-runTest(testPath(__filename), {
+runTest(testPath(import.meta.url), {
   $first: [
     [[1, 2, 3], 1],
     [[[]], undefined],

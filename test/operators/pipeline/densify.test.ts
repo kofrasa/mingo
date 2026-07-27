@@ -32,7 +32,7 @@ const exampleData = [
   }
 ];
 
-describe(testPath(__filename), () => {
+describe(testPath(import.meta.url), () => {
   it("passes: Densify Time Series Data", () => {
     const res = aggregate(
       [

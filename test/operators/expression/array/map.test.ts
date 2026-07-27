@@ -1,6 +1,6 @@
 import { runTest, testPath } from "../../../support";
 
-runTest(testPath(__filename), {
+runTest(testPath(import.meta.url), {
   $map: [
     ["invalid", Error("expects object")],
     [{ input: null, in: true }, null],

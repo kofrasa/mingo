@@ -24,7 +24,7 @@ const fixtureWithTz = (d: string, tz: string, ...parts: number[]) => {
   return data;
 };
 
-runTest(testPath(__filename), {
+runTest(testPath(import.meta.url), {
   $dateFromParts: [
     // exampels
     fixture("2022-01-31T00:00:00Z", 2022, 2, 0),

@@ -1,6 +1,6 @@
 import * as support from "../../../support";
 
-support.runTest(support.testPath(__filename), {
+support.runTest(support.testPath(import.meta.url), {
   $arrayElemAt: [
     [[], Error("expects array(2)")],
     [["not array", "nan"], Error("<array>")],

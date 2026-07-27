@@ -4,7 +4,7 @@ import { aggregate } from "../../../src";
 import { ProcessingMode } from "../../../src/core/_internal";
 import { ISODate, testPath } from "../../support";
 
-describe(testPath(__filename), () => {
+describe(testPath(import.meta.url), () => {
   const options = {
     processingMode: ProcessingMode.CLONE_INPUT,
     scriptEnabled: true

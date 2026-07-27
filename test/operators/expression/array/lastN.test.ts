@@ -1,6 +1,6 @@
 import { runTest, testPath } from "../../../support";
 
-runTest(testPath(__filename), {
+runTest(testPath(import.meta.url), {
   $lastN: [
     ["invalid", Error("expects object")],
     [{ input: null, n: 2 }, null],

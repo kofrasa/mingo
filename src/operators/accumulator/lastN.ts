@@ -1,7 +1,7 @@
 import { ComputeOptions, evalExpr } from "../../core/_internal";
 import { Any, Options } from "../../types";
 import { isInteger } from "../../util";
-import { errExpectNumber, INT_OPTS } from "../expression/_internal";
+import { errExpectInteger } from "../expression/_internal";
 import { $push } from "./push";
 
 interface InputExpr {
@@ -19,7 +19,7 @@ export const $lastN = (coll: Any[], expr: InputExpr, options: Options) => {
   const n = evalExpr(copts?.local?.groupId, expr.n, copts) as number;
   const foe = options.failOnError;
   if (!isInteger(n) || n < 1) {
-    return errExpectNumber(foe, "$lastN 'n'", INT_OPTS.pos);
+    return errExpectInteger(foe, "$lastN 'n'", { min: 1 });
   }
   return $push(m <= n ? coll : coll.slice(m - n), expr.input, options);
 };

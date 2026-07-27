@@ -17,7 +17,7 @@ export const $elemMatch = (
   if (!isArray(arr)) return undefined;
 
   const result: Any[] = [];
-  for (let i = 0; i < (arr as Any[]).length; i++) {
+  for (let i = 0; i < arr.length; i++) {
     if (query.test(arr[i])) {
       // MongoDB projects only the first nested document when using this operator.
       // For some use cases this can lead to complicated queries to selectively project nested documents.

@@ -256,6 +256,17 @@ describe("util", () => {
 
   describe("removeValue", () => {
     for (const [path, res, opts] of [
+      // primitive and null targets
+      ["a.k", { a: [{ b: [{ c: 0 }, { c: 1 }, { c: 2 }] }] }],
+      [
+        "a.b.c.0",
+        { a: [{ b: [{ c: 0 }, { c: 1 }, { c: 2 }] }] },
+        { descendArray: true }
+      ],
+
+      // object targets
+      ["a", {}],
+      ["b", { a: [{ b: [{ c: 0 }, { c: 1 }, { c: 2 }] }] }],
       ["a.b.1", { a: [{ b: [{ c: 0 }, { c: 1 }, { c: 2 }] }] }],
       ["a.0.b.1", { a: [{ b: [{ c: 0 }, { c: 2 }] }] }],
       ["a.b.1", { a: [{ b: [{ c: 0 }, { c: 2 }] }] }, { descendArray: true }],

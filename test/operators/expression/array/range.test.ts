@@ -1,6 +1,6 @@
 import { runTest, testPath } from "../../../support";
 
-runTest(testPath(__filename), {
+runTest(testPath(import.meta.url), {
   $range: [
     [[0], Error("expects array(3)")],
     [[0], Error("expects array(3)"), { failOnError: false }],

@@ -1,6 +1,6 @@
 import * as support from "../../../support";
 
-support.runTest(support.testPath(__filename), {
+support.runTest(support.testPath(import.meta.url), {
   $minN: [
     ["invalid", Error("expects object")],
     [{ input: null, n: 2 }, null],

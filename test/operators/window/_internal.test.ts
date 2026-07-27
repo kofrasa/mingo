@@ -4,7 +4,7 @@ import { cached, withMemo } from "../../../src/operators/window/_internal";
 import { Any } from "../../../src/types";
 import { testPath } from "../../support";
 
-describe(testPath(__filename), () => {
+describe(testPath(import.meta.url), () => {
   describe("withMemo", () => {
     it("cleanup cache key on last document", () => {
       const coll = [{ n: 1 }, { n: 2 }];

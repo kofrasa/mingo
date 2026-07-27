@@ -22,8 +22,8 @@ export interface Callback<R = Any, T = Any> {
 }
 
 // Generic predicate
-export interface Predicate<T = Any> {
-  (...args: T[]): boolean;
+export interface Predicate {
+  (...args: any[]): boolean; // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
 // Generic comparator callback
@@ -80,7 +80,7 @@ export interface CollationSpec {
 /**
  * JSON schema validator
  */
-export type JsonSchemaValidator = (schema: AnyObject) => Predicate<AnyObject>;
+export type JsonSchemaValidator = (schema: AnyObject) => Predicate;
 
 /**
  * Generic options interface passed down to all operators

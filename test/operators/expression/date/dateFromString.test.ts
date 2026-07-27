@@ -1,6 +1,6 @@
 import { runTest, testPath } from "../../../support";
 
-runTest(testPath(__filename), {
+runTest(testPath(import.meta.url), {
   $dateFromString: [
     [{ dateString: null, onNull: "NULL" }, "NULL"],
     [{ dateString: "Mon Jul, 2018", onError: "ERROR" }, "ERROR"],

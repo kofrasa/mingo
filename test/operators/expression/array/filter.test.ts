@@ -1,6 +1,6 @@
 import * as support from "../../../support";
 
-support.runTest(support.testPath(__filename), {
+support.runTest(support.testPath(import.meta.url), {
   $filter: [
     ["invalid", Error("expects object")], // no validation for argument structure.
     [{ input: "invalid" }, Error("expects object")],

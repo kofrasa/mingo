@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { find } from "../../../src";
 import { testPath } from "../../support";
 
-describe(testPath(__filename), () => {
+describe(testPath(import.meta.url), () => {
   const docs = [
     { _id: 1, a: 54, binaryValueofA: "00110110" },
     { _id: 2, a: 20, binaryValueofA: "00010100" },

@@ -8,7 +8,7 @@ const options = {
   processingMode: ProcessingMode.CLONE_INPUT
 };
 
-describe(testPath(__filename), () => {
+describe(testPath(import.meta.url), () => {
   it("Fill Missing Values with the Last Observed Value", () => {
     const result = aggregate(
       [

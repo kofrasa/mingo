@@ -5,7 +5,7 @@ import { aggregate, find } from "../../../src";
 import { Any, AnyObject, JsonSchemaValidator } from "../../../src/types";
 import { testPath } from "../../support";
 
-describe(testPath(__filename), () => {
+describe(testPath(import.meta.url), () => {
   describe("$where", () => {
     const data = [
       {

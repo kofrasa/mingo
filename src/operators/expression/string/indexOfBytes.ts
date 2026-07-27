@@ -7,7 +7,7 @@ import {
   isNil,
   isString
 } from "../../../util/_internal";
-import { errExpectNumber, errExpectString, INT_OPTS } from "../_internal";
+import { errExpectInteger, errExpectString } from "../_internal";
 
 const OP = "$indexOfBytes";
 
@@ -38,9 +38,9 @@ export const $indexOfBytes = (
   const end = (args[3] as number) ?? str.length;
 
   if (!isInteger(start) || start < 0)
-    return errExpectNumber(foe, `${OP} arg3 <start>`, INT_OPTS.index);
+    return errExpectInteger(foe, `${OP} arg3 <start>`, { min: 0 });
   if (!isInteger(end) || end < 0)
-    return errExpectNumber(foe, `${OP} arg4 <end>`, INT_OPTS.index);
+    return errExpectInteger(foe, `${OP} arg4 <end>`, { min: 0 });
 
   if (start > end) return -1;
 

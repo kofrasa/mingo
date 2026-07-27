@@ -5,7 +5,7 @@ import { $exists } from "../../../src/operators/query";
 import { AnyObject } from "../../../src/types";
 import { DEFAULT_OPTS, testPath } from "../../support";
 
-describe(testPath(__filename), () => {
+describe(testPath(import.meta.url), () => {
   const obj = {
     double: 12323.4,
     string: "me",

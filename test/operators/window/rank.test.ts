@@ -59,7 +59,7 @@ const data = [
   }
 ];
 
-describe(testPath(__filename), () => {
+describe(testPath(import.meta.url), () => {
   it("Rank Partitions by an Integer Field", () => {
     const result = aggregate(
       data,

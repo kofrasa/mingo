@@ -15,7 +15,7 @@ runTest("EdgeCases", {
   ]
 });
 
-describe(testPath(__filename), () => {
+describe(testPath(import.meta.url), () => {
   it("passes: using $firstN as an array operator", () => {
     const res = aggregate(
       [

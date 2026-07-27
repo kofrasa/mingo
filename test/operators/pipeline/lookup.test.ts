@@ -85,7 +85,7 @@ const restaurants = [
   }
 ];
 
-samples.runTestPipeline(samples.testPath(__filename), [
+samples.runTestPipeline(samples.testPath(import.meta.url), [
   {
     message: "Perform a Single Equality Join",
     input: orders,

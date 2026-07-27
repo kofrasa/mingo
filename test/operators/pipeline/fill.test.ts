@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { aggregate } from "../../../src";
 import * as samples from "../../support";
 
-describe(samples.testPath(__filename), () => {
+describe(samples.testPath(import.meta.url), () => {
   it("should use partitionByFields", () => {
     const res = aggregate(
       [

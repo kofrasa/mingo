@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { aggregate } from "../../../src";
 import { ISODate, testPath } from "../../support";
 
-describe(testPath(__filename), () => {
+describe(testPath(import.meta.url), () => {
   it("returns null for empty set", () => {
     const res = aggregate(
       [

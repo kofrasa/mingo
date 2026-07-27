@@ -59,7 +59,7 @@ const data = [
   }
 ];
 
-describe(testPath(__filename), () => {
+describe(testPath(import.meta.url), () => {
   it("Document Number for Each State", () => {
     const result = aggregate(
       data,

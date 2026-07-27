@@ -59,7 +59,7 @@ const data = [
   }
 ];
 
-describe(testPath(__filename), () => {
+describe(testPath(import.meta.url), () => {
   it("Shift Using a Positive Integer", () => {
     const result = aggregate(
       data,

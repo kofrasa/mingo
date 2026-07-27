@@ -1,6 +1,6 @@
 import { runTest, testPath } from "../../support";
 
-runTest(testPath(__filename), {
+runTest(testPath(import.meta.url), {
   $max: [
     [[], null],
     [[3, null, 2, 1], 3],

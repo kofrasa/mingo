@@ -629,7 +629,7 @@ runTestPipeline("operators/pipeline/project", [
   }
 ]);
 
-describe(testPath(__filename) + ": More Tests", () => {
+describe(testPath(import.meta.url) + ": More Tests", () => {
   describe("validateProjection", () => {
     const opts = DEFAULT_OPTS;
     // valid projections

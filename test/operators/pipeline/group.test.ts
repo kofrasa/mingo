@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { aggregate } from "../../../src";
 import { studentsData, testPath } from "../../support";
 
-describe(testPath(__filename), () => {
+describe(testPath(import.meta.url), () => {
   it("can apply $group operator with simple group key", () => {
     const res = aggregate(
       [

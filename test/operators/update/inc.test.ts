@@ -4,7 +4,7 @@ import { update } from "../../../src";
 import { $inc } from "../../../src/operators/update";
 import { testPath } from "../../support";
 
-describe(testPath(__filename), () => {
+describe(testPath(import.meta.url), () => {
   it("cannot increment invalid field", () => {
     const state = { _id: 1, n: "Bob" };
     expect($inc({ n: 2 })(state)).toEqual([]);

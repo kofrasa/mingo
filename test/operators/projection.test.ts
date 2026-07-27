@@ -8,7 +8,7 @@ import { ObjectId, personData, testPath } from "../support";
 const idStr = "123456789abe";
 const obj = Object.assign({}, personData, { _id: ObjectId(idStr) });
 
-describe(testPath(__filename), () => {
+describe(testPath(import.meta.url), () => {
   const data = [
     {
       _id: 1,
@@ -46,6 +46,15 @@ describe(testPath(__filename), () => {
   ];
 
   describe("$elemMatch", () => {
+    it("returns undefined if value is not an array", () => {
+      const result = find(
+        [{ _id: 1, zipcode: "63109", students: "not an array" }],
+        { zipcode: "63109" },
+        { students: { $elemMatch: { school: 102 } } }
+      ).all();
+      expect(result).toEqual([{ _id: 1, students: undefined }]);
+    });
+
     it("can project single field with $elemMatch", () => {
       const result = find(
         data,

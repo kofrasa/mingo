@@ -13,7 +13,7 @@ export const $and = (
   _: string,
   rhs: AnyObject[],
   options: Options
-): Predicate<AnyObject> => {
+): Predicate => {
   assert(isArray(rhs), "$and expects value to be an Array.");
   const queries = rhs.map(expr => new Query(expr, options));
   return (obj: AnyObject) => queries.every(q => q.test(obj));

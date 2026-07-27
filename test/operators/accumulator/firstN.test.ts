@@ -18,7 +18,7 @@ runTest("SimpleTests", {
   $firstN: [[{ input: [1, 2, 3, 4], n: "invalid" }, Error("positive integer")]]
 });
 
-describe(testPath(__filename), () => {
+describe(testPath(import.meta.url), () => {
   it("handle Null and Missing Values", () => {
     const res = aggregate(
       [

@@ -2,13 +2,49 @@ import { describe, expect, it } from "vitest";
 
 import { aggregate } from "../../../src";
 import { ProcessingMode } from "../../../src/core/_internal";
-import { testPath } from "../../support";
+import { ISODate, testPath } from "../../support";
 
 const options = {
   processingMode: ProcessingMode.CLONE_INPUT
 };
 
-describe(testPath(__filename), () => {
+describe(testPath(import.meta.url), () => {
+  it("compute integral with default unit", () => {
+    const result = aggregate(
+      [
+        { t: ISODate("2025-01-01T00:00:00.000Z"), y: 0 },
+        { t: ISODate("2025-01-01T00:00:00.001Z"), y: 2 },
+        { t: ISODate("2025-01-01T00:00:00.002Z"), y: 4 },
+        { t: ISODate("2025-01-01T00:00:00.003Z"), y: 6 }
+      ],
+      [
+        {
+          $setWindowFields: {
+            sortBy: { t: 1 },
+            output: {
+              integral: {
+                $integral: {
+                  input: "$y"
+                },
+                window: {
+                  documents: ["unbounded", "current"]
+                }
+              }
+            }
+          }
+        },
+        { $project: { t: 0 } }
+      ]
+    );
+
+    expect(result).toStrictEqual([
+      { y: 0, integral: 0 },
+      { y: 2, integral: 1 },
+      { y: 4, integral: 4 },
+      { y: 6, integral: 9 }
+    ]);
+  });
+
   it("Can Compute Integral with Unit", () => {
     const result = aggregate(
       [

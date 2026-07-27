@@ -67,7 +67,7 @@ const fixturesWithTimezone = [
   new Date(result)
 ]);
 
-runTest(testPath(__filename), {
+runTest(testPath(import.meta.url), {
   $dateTrunc: fixtures
     .map(([result, unit, binSize, timezone, startOfWeek]) => [
       {

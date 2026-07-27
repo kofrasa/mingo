@@ -8,7 +8,7 @@ interface UserResult {
   user: { username: string };
 }
 
-describe(testPath(__filename), () => {
+describe(testPath(import.meta.url), () => {
   const data: AnyObject[] = [
     {
       _id: "5234ccb7687ea597eabee677",
@@ -44,6 +44,13 @@ describe(testPath(__filename), () => {
     });
 
     expect(booleanResult).toEqual(true);
+  });
+
+  it("returns false if field is not an array", () => {
+    const q = new Query({
+      qty: { $elemMatch: { size: "M" } }
+    });
+    expect(q.test({ qty: "not an array" })).toEqual(false);
   });
 
   describe("matching with field selectors", () => {

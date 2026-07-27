@@ -1,7 +1,7 @@
 import { evalExpr } from "../../../core/_internal";
 import { Any, AnyObject, Options } from "../../../types";
 import { assert, isArray, isInteger, isNil } from "../../../util";
-import { errExpectArray, errExpectNumber, INT_OPTS } from "../_internal";
+import { errExpectArray, errExpectInteger } from "../_internal";
 
 const OP = "$arrayElemAt";
 
@@ -20,8 +20,7 @@ export const $arrayElemAt = (
   const foe = options.failOnError;
   const [arr, index] = args as [Any[], number];
   if (!isArray(arr)) return errExpectArray(foe, `${OP} arg1 <array>`);
-  if (!isInteger(index))
-    return errExpectNumber(foe, `${OP} arg2 <index>`, INT_OPTS.int);
+  if (!isInteger(index)) return errExpectInteger(foe, `${OP} arg2 <index>`);
 
   if (index < 0 && Math.abs(index) <= arr.length) {
     return arr[(index + arr.length) % arr.length];

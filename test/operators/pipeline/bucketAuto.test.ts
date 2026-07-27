@@ -4,7 +4,7 @@ import { aggregate } from "../../../src";
 import { AnyObject } from "../../../src/types";
 import { testPath } from "../../support";
 
-describe(testPath(__filename), () => {
+describe(testPath(import.meta.url), () => {
   const things: AnyObject[] = [];
   for (let i = 0; i < 100; i++) things.push({ _id: i });
 

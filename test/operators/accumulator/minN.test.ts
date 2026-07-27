@@ -14,7 +14,7 @@ const docs = [
   { playerId: "PlayerD", gameId: "G2", score: 80 }
 ];
 
-describe(testPath(__filename), () => {
+describe(testPath(import.meta.url), () => {
   it("Finding the Minimum Three Scores Across Multiple Games", () => {
     const result = aggregate(docs, [
       {

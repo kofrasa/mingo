@@ -28,7 +28,7 @@ const french = [
   { name: "A" }
 ];
 
-describe(testPath(__filename), () => {
+describe(testPath(import.meta.url), () => {
   it("can sort collection with $sort", () => {
     const result = aggregate(studentsData, [
       { $sort: { _id: -1 } },
@@ -155,7 +155,7 @@ describe(testPath(__filename), () => {
     ]);
   });
 
-  it("can sort with collation caseLevel with default 'caseFirst' (lower)", () => {
+  it("can sort with collation caseLevel with caseFirst='upper'", () => {
     const res = aggregate(
       input,
       [

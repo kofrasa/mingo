@@ -14,7 +14,7 @@ const team = [
   }
 ];
 
-runTest(testPath(__filename), {
+runTest(testPath(import.meta.url), {
   $sortArray: [
     [{ input: null, sortBy: 1 }, null],
     [{ input: "invalid", sortBy: 1 }, Error("resolve to array")],

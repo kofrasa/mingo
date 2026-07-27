@@ -36,7 +36,7 @@ const fixtures: [string, string, string, number, string?][] = [
   // All operations performed in UTC.
 ];
 
-runTest(testPath(__filename), {
+runTest(testPath(import.meta.url), {
   $dateSubtract: fixtures.map(([result, date, unit, amount, timezone]) => [
     {
       startDate: new Date(date),

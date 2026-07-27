@@ -1,6 +1,6 @@
 import { runTest, testPath } from "../../../support";
 
-runTest(testPath(__filename), {
+runTest(testPath(import.meta.url), {
   $zip: [
     [null, Error("invalid arguments")],
     [null, Error("invalid arguments"), { failOnError: false }],

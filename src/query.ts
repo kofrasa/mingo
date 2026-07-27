@@ -25,7 +25,7 @@ const TOP_LEVEL_OPS = new Set(["$and", "$or", "$nor", "$expr", "$jsonSchema"]);
  * ```
  */
 export class Query<T = AnyObject> {
-  #compiled: Predicate<Any>[];
+  #compiled: Predicate[];
   #condition: Criteria<T>;
   #options: Options;
 

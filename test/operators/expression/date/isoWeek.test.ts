@@ -1,6 +1,6 @@
 import { runTest, testPath } from "../../../support";
 
-runTest(testPath(__filename), {
+runTest(testPath(import.meta.url), {
   $isoWeek: [
     [new Date("2016-01-04T00:00:00Z"), 1],
     [new Date("2016-01-01"), 53],

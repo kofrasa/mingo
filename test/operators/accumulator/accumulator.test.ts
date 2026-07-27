@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { aggregate } from "../../../src";
 import { testPath } from "../../support";
 
-describe(testPath(__filename), () => {
+describe(testPath(import.meta.url), () => {
   it("returns initial value when no documents are present", () => {
     const result = aggregate(
       [{ _id: 1, value: null }, { _id: 2, value: null }, { _id: 3 }],

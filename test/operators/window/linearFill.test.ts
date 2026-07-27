@@ -32,7 +32,7 @@ const data = [
   }
 ];
 
-describe(testPath(__filename), () => {
+describe(testPath(import.meta.url), () => {
   it("Fills Missing Contiguous Vales", () => {
     const result = aggregate(
       [

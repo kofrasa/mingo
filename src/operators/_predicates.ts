@@ -55,13 +55,11 @@ function elemMatchPredicate(criteria: AnyObject, options: Options) {
   return (v: Any) => q.test(format(v) as AnyObject) as boolean;
 }
 
-export type QueryPredicate = (_a: Any, _b: Any, _o: Options) => boolean;
-
 export function processQuery(
   selector: string,
   value: Any,
   options: Options,
-  predicate: QueryPredicate
+  predicate: Predicate
 ): (_: AnyObject) => boolean {
   let [begin, depth] = [-1, 0];
   while ((begin = selector.indexOf(".", begin + 1)) !== -1) depth++;
@@ -81,7 +79,7 @@ export function processExpression(
   obj: AnyObject,
   expr: Any,
   options: Options,
-  predicate: QueryPredicate
+  predicate: Predicate
 ): boolean {
   assert(
     isArray(expr) && expr.length === 2,
@@ -237,7 +235,7 @@ export function $elemMatch(
 const isNull = (a: Any) => a === null;
 
 /** Mapping of type to predicate */
-const compareFuncs: Record<ConversionType, Predicate<Any>> = {
+const compareFuncs: Record<ConversionType, Predicate> = {
   array: isArray,
   boolean: isBoolean,
   bool: isBoolean,
@@ -258,7 +256,7 @@ const compareFuncs: Record<ConversionType, Predicate<Any>> = {
   1: isNumber, //double
   2: isString,
   3: isObject,
-  4: isArray as Predicate<Any>,
+  4: isArray as Predicate,
   6: isNil, // deprecated
   8: isBoolean,
   9: isDate,
@@ -290,7 +288,7 @@ export function $type(
     : compareType(a, b, options);
 }
 
-function compare(a: Any, b: Any, f: Predicate<Any>): boolean {
+function compare(a: Any, b: Any, f: Predicate): boolean {
   for (const v of ensureArray(a)) {
     if (typeOf(v) === typeOf(b) && f(v, b)) return true;
   }

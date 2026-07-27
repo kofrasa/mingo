@@ -8,7 +8,7 @@ export function $jsonSchema(
   _: string,
   schema: Any,
   options: Options
-): Predicate<AnyObject> {
+): Predicate {
   assert(
     !!options?.jsonSchemaValidator,
     "$jsonSchema requires 'jsonSchemaValidator' option to be defined."

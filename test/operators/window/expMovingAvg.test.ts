@@ -19,7 +19,7 @@ const data = [
   { stock: "DEF", date: new Date("2020-05-21T20:00:00Z"), price: 97.3 }
 ];
 
-describe(testPath(__filename), () => {
+describe(testPath(import.meta.url), () => {
   it("Exponential Moving Average Using N", () => {
     const result = aggregate(
       data,

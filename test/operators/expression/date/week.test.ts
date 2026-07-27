@@ -11,7 +11,7 @@ const fixtures: [number | null, string, string?][] = [
   // [43, "1998-11-07T00:00:00Z", "-0500"]
 ] as const;
 
-runTest(testPath(__filename), {
+runTest(testPath(import.meta.url), {
   $week: fixtures.map(([result, date, timezone]) => [
     {
       date: new Date(date),

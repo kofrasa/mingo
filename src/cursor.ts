@@ -5,7 +5,6 @@ import { $project } from "./operators/pipeline/project";
 import { $skip } from "./operators/pipeline/skip";
 import { $sort } from "./operators/pipeline/sort";
 import type {
-  Any,
   AnyObject,
   Callback,
   CollationSpec,
@@ -27,7 +26,7 @@ const OPERATORS: Record<string, PipelineOperator> = { $sort, $skip, $limit };
  */
 export class Cursor<T> {
   #source: Source;
-  #predicate: Predicate<Any>;
+  #predicate: Predicate;
   #projection: Projection<T>;
   #options: Options;
   #operators: AnyObject = {};
@@ -44,7 +43,7 @@ export class Cursor<T> {
    */
   constructor(
     source: Source,
-    predicate: Predicate<Any>,
+    predicate: Predicate,
     projection: Projection<T>,
     options: Options
   ) {

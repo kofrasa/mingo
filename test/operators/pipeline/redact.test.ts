@@ -7,7 +7,7 @@ import { testPath } from "../../support";
  * Test for $redact operator
  * https://docs.mongodb.com/manual/reference/operator/aggregation/redact/
  */
-describe(testPath(__filename), () => {
+describe(testPath(import.meta.url), () => {
   describe("redact variables", () => {
     const obj = [{ name: "Francis" }];
     const opts = { processingMode: ProcessingMode.CLONE_INPUT };

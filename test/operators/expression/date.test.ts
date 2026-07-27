@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import * as mingo from "../../../src";
 import { testPath } from "../../support";
 
-describe(testPath(__filename), () => {
+describe(testPath(import.meta.url), () => {
   // https://github.com/kofrasa/mingo/issues/587
   it("FIX #587: should correctly handle timezones", () => {
     const data = [

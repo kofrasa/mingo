@@ -1,6 +1,6 @@
 import { runTest, testPath } from "../../../support";
 
-runTest(testPath(__filename), {
+runTest(testPath(import.meta.url), {
   $size: [
     [null, null],
     ["invalid", Error("expression must resolve to number")],

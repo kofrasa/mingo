@@ -1,7 +1,7 @@
 import { evalExpr } from "../../../core/_internal";
 import { Any, AnyObject, Options } from "../../../types";
 import { assert, isArray, isInteger } from "../../../util";
-import { errExpectNumber, INT_OPTS } from "../_internal";
+import { errExpectInteger } from "../_internal";
 
 /**
  * Returns an array whose elements are a generated sequence of numbers.
@@ -16,12 +16,10 @@ export const $range = (obj: AnyObject, expr: Any, options: Options): Any => {
 
   const step = arg3 ?? 1;
 
-  if (!isInteger(start))
-    return errExpectNumber(foe, `$range arg1 <start>`, INT_OPTS.int);
-  if (!isInteger(end))
-    return errExpectNumber(foe, `$range arg2 <end>`, INT_OPTS.int);
+  if (!isInteger(start)) return errExpectInteger(foe, `$range arg1 <start>`);
+  if (!isInteger(end)) return errExpectInteger(foe, `$range arg2 <end>`);
   if (!isInteger(step) || step === 0)
-    return errExpectNumber(foe, `$range arg3 <step>`, INT_OPTS.nzero);
+    return errExpectInteger(foe, `$range arg3 <step>`, { min: 0, max: 0 }); // special case: this means step cannot be zero
   const result = new Array<number>();
   let counter = start;
   while ((counter < end && step > 0) || (counter > end && step < 0)) {

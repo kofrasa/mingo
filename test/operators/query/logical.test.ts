@@ -7,7 +7,7 @@ import { ObjectId, personData, testPath } from "../../support";
 const idStr = "123456789abe";
 const obj = Object.assign({}, personData, { _id: ObjectId(idStr) });
 
-describe(testPath(__filename), () => {
+describe(testPath(import.meta.url), () => {
   const fixtures: Record<string, Array<Any[]>> = {
     $and: [
       [

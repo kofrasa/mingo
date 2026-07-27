@@ -652,10 +652,9 @@ export function filterMissing(obj: ArrayOrObject): void {
       }
     }
   } else if (isObject(obj)) {
-    for (const k of Object.keys(obj)) {
-      if (has(obj, k)) {
-        filterMissing(obj[k] as ArrayOrObject);
-      }
+    const keys = Object.keys(obj);
+    for (let i = 0; i < keys.length; i++) {
+      filterMissing(obj[keys[i]] as ArrayOrObject);
     }
   }
 }
@@ -752,10 +751,10 @@ export function removeValue(
   walk(
     obj,
     selector,
-    ((item: Any, key: string) => {
+    ((item: ArrayOrObject, key: string) => {
       if (isArray(item)) {
         item.splice(Number(key), 1);
-      } else if (isObject(item)) {
+      } else {
         delete item[key];
       }
     }) as Callback<void>,
@@ -782,19 +781,17 @@ export function normalize(expr: Any): Any {
   }
 
   // normalize object expression. using ObjectLike handles custom types
-  if (isObjectLike(expr)) {
-    // no valid query operator found, so we do simple comparison
-    if (!Object.keys(expr as AnyObject).some(isOperator)) return { $eq: expr };
-    // ensure valid regex
-    if (isObject(expr) && has(expr, "$regex")) {
-      const newExpr = { ...expr };
-      newExpr["$regex"] = new RegExp(
-        expr["$regex"] as string,
-        expr["$options"] as string
-      );
-      delete newExpr["$options"];
-      return newExpr;
-    }
+  // no valid query operator found, so we do simple comparison
+  if (!Object.keys(expr as AnyObject).some(isOperator)) return { $eq: expr };
+  // ensure valid regex
+  if (isObject(expr) && has(expr, "$regex")) {
+    const newExpr = { ...expr };
+    newExpr["$regex"] = new RegExp(
+      expr["$regex"] as string,
+      expr["$options"] as string
+    );
+    delete newExpr["$options"];
+    return newExpr;
   }
 
   return expr;

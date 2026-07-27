@@ -8,7 +8,7 @@ const options = {
   processingMode: ProcessingMode.CLONE_INPUT
 };
 
-describe(testPath(__filename), () => {
+describe(testPath(import.meta.url), () => {
   it("Computes minMaxScaler over the window", () => {
     const result = aggregate(
       [{ a: 1 }, { a: 5 }, { a: 13 }, { a: 21 }],

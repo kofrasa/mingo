@@ -1,6 +1,6 @@
 import { runTest, testPath } from "../../../support";
 
-runTest(testPath(__filename), {
+runTest(testPath(import.meta.url), {
   $in: [
     [[null, "invalid"], Error("arg2 <array>")],
     [[2, [1, 2, 3]], true],

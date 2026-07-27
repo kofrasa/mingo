@@ -7,7 +7,7 @@ import {
   isInteger,
   isNil
 } from "../../../util/_internal";
-import { errExpectArray, errExpectNumber, INT_OPTS } from "../_internal";
+import { errExpectArray, errExpectInteger } from "../_internal";
 
 const OP = "$indexOfArray";
 
@@ -36,9 +36,9 @@ export const $indexOfArray = (
   const end = (args[3] ?? arr.length) as number;
 
   if (!isInteger(start) || start < 0)
-    return errExpectNumber(foe, `${OP} arg3 <start>`, INT_OPTS.pos);
+    return errExpectInteger(foe, `${OP} arg3 <start>`, { min: 1 });
   if (!isInteger(end) || end < 0)
-    return errExpectNumber(foe, `${OP} arg4 <end>`, INT_OPTS.pos);
+    return errExpectInteger(foe, `${OP} arg4 <end>`, { min: 1 });
 
   if (start > end) return -1;
 

@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { aggregate } from "../../../../src";
 import { runTest, testPath } from "../../../support";
 
-runTest(testPath(__filename) + "_Expression", {
+runTest(testPath(import.meta.url) + "_Expression", {
   $concatArrays: [
     [[null], null],
     [null, null],
@@ -35,7 +35,7 @@ runTest(testPath(__filename) + "_Expression", {
   ]
 });
 
-describe(testPath(__filename) + "__Accumulator", () => {
+describe(testPath(import.meta.url) + "__Accumulator", () => {
   it("should accept expression as argument", () => {
     const res = aggregate(
       [

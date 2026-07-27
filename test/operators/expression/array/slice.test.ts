@@ -1,6 +1,6 @@
 import { runTest, testPath } from "../../../support";
 
-runTest(testPath(__filename), {
+runTest(testPath(import.meta.url), {
   $slice: [
     [null, Error("expects array(3)")],
     [[null, 2], Error("arg1 <array>")],

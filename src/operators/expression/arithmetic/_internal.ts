@@ -1,5 +1,5 @@
 import { isInteger, isNil, isNumber } from "../../../util";
-import { errExpectNumber } from "../_internal";
+import { errExpectInteger, errExpectNumber } from "../_internal";
 
 /**
  * Truncates integer value to number of places. If roundOff is specified round value instead to the number of places.
@@ -19,10 +19,9 @@ export function truncate(
   }
 
   if (!isInteger(precision) || precision < -20 || precision > 100) {
-    return errExpectNumber(failOnError, `${name} arg2 <precision>`, {
+    return errExpectInteger(failOnError, `${name} arg2 <precision>`, {
       min: -20,
-      max: 100,
-      int: true
+      max: 100
     });
   }
 
@@ -55,7 +54,7 @@ export function truncate(
     // compute decimal remainder and add to whole number
     // manually formatting float re
     result = (result * offset + remainder) / offset;
-  } else if (precision < 0) {
+  } else {
     // handle negative decimal places
     const offset = Math.pow(10, -1 * precision);
     let excess = result % offset;

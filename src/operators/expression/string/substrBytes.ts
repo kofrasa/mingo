@@ -2,10 +2,9 @@ import { evalExpr } from "../../../core/_internal";
 import { Any, AnyObject, Options } from "../../../types";
 import { assert, isArray, isInteger, isNil, isString } from "../../../util";
 import {
-  errExpectNumber,
+  errExpectInteger,
   errExpectString,
-  errInvalidArgs,
-  INT_OPTS
+  errInvalidArgs
 } from "../_internal";
 
 const OP = "$substrBytes";
@@ -28,9 +27,9 @@ export const $substrBytes = (obj: AnyObject, expr: Any, options: Options) => {
 
   if (!nil && !isString(s)) return errExpectString(foe, `${OP} arg1 <string>`);
   if (!isInteger(index) || index < 0)
-    return errExpectNumber(foe, `${OP} arg2 <index>`, INT_OPTS.index);
+    return errExpectInteger(foe, `${OP} arg2 <index>`, { min: 0 });
   if (!isInteger(count) || count < 0)
-    return errExpectNumber(foe, `${OP} arg3 <count>`, INT_OPTS.index);
+    return errExpectInteger(foe, `${OP} arg3 <count>`, { min: 0 });
 
   if (nil) return "";
 

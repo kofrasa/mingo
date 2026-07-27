@@ -1,6 +1,6 @@
 import { runTest, testPath } from "../../../support";
 
-runTest(testPath(__filename), {
+runTest(testPath(import.meta.url), {
   $indexOfArray: [
     [[[1, 2], "search", "<start>", "<end>"], Error()],
     [[[1, 2], "search", "<start>", "<end>"], null, { failOnError: false }],

@@ -49,7 +49,7 @@ const fixtures: [string, string, string, number, string?][] = [
   ]
 ];
 
-runTest(testPath(__filename), {
+runTest(testPath(import.meta.url), {
   $dateAdd: fixtures.map(([result, date, unit, amount, timezone]) => [
     {
       startDate: new Date(date),

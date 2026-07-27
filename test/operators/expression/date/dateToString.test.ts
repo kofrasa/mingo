@@ -3,7 +3,7 @@ import { runTest, testPath } from "../../../support";
 
 const date = new Date("2014-01-01T08:15:39.736Z");
 
-runTest(testPath(__filename), {
+runTest(testPath(import.meta.url), {
   $dateToString: [
     [
       {
@@ -48,6 +48,8 @@ runTest(testPath(__filename), {
 
     // yearMonthDayUTC
     [{ format: "%Y-%m-%d", date }, "2014-01-01"],
+
+    [{ format: "%G", date }, "2014"],
 
     // timewithOffsetNY
     [

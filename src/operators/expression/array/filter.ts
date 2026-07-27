@@ -9,7 +9,7 @@ import {
   isObject,
   truthy
 } from "../../../util/_internal";
-import { errExpectArray, errExpectNumber } from "../_internal";
+import { errExpectArray, errExpectInteger } from "../_internal";
 
 /**
  * Selects a subset of the array to return an array with only the elements that match the filter condition.
@@ -31,7 +31,7 @@ export const $filter = (
 
   const limit = (expr.limit as number) ?? Math.max(input.length, 1);
   if (!isInteger(limit) || limit < 1)
-    return errExpectNumber(foe, "$filter 'limit'", { min: 1, int: true });
+    return errExpectInteger(foe, "$filter 'limit'", { min: 1 });
 
   // exit early
   if (input.length === 0) return [];

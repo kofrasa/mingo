@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { aggregate } from "../../../../src";
 import { runTest, testPath } from "../../../support";
 
-runTest(testPath(__filename), {
+runTest(testPath(import.meta.url), {
   $reduce: [
     [{ input: null, initialValue: null, in: null }, null],
     [
@@ -43,7 +43,7 @@ runTest(testPath(__filename), {
   ]
 });
 
-describe(`${testPath(__filename)}: More tests`, () => {
+describe(`${testPath(import.meta.url)}: More tests`, () => {
   it("should resolve fields with both variables and current object", () => {
     const result = aggregate(
       [

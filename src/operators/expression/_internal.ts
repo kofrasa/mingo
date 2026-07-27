@@ -1,12 +1,5 @@
 import { assert, isNil } from "../../util";
 
-export const INT_OPTS = {
-  int: { int: true }, // (-∞, ∞)
-  pos: { min: 1, int: true }, // [1, ∞]
-  index: { min: 0, int: true }, // [0, ∞]
-  nzero: { min: 0, max: 0, int: true } // non-zero
-};
-
 export const ARR_OPTS = {
   int: { type: "integers" },
   obj: { type: "objects" }
@@ -32,9 +25,9 @@ export function errExpectString(failOnError: boolean, prefix: string): null {
 export function errExpectNumber(
   failOnError: boolean,
   name: string,
-  opts?: { int?: boolean; min?: number; max?: number }
+  opts?: { integer?: boolean; min?: number; max?: number }
 ): null {
-  const type = opts?.int ? "integer" : "number";
+  const type = opts?.integer ? "integer" : "number";
   const min = opts?.min ?? -Infinity;
   const max = opts?.max ?? Infinity;
   let msg: string;
@@ -53,6 +46,12 @@ export function errExpectNumber(
   assert(!failOnError, msg);
   return null;
 }
+
+export const errExpectInteger = (
+  failOnError: boolean,
+  name: string,
+  opts?: { min?: number; max?: number }
+) => errExpectNumber(failOnError, name, { ...opts, integer: true });
 
 export function errExpectArray(
   failOnError: boolean,
