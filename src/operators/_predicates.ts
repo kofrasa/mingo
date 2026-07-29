@@ -38,6 +38,11 @@ type ConversionType = number | Exclude<JsType, "function"> | BsonType;
  * This includes pre-compiling the query and determining if we need to wrap non-objects in a temporary object.
  */
 function elemMatchPredicate(criteria: AnyObject, options: Options) {
+  // MongoDB parity: an empty $elemMatch matches arrays that contain
+  // at least one document (object) element.
+  if (Object.keys(criteria).length === 0) {
+    return (v: Any) => isObject(v);
+  }
   // precompute criteria and format function at query compilation time
   let format = (x: Any) => x;
   // determine if we need to wrap the criteria in a temporary key to avoid confusion with top-level operators.
@@ -123,7 +128,16 @@ export function $ne(a: Any, b: Any, options?: Options): boolean {
 export function $in(a: Any[], b: Any[], _options?: Options): boolean {
   // queries for null should be able to find undefined fields
   if (isNil(a)) return b.some(v => v === null);
-  return intersection([ensureArray(a), b]).length > 0;
+  const values = ensureArray(a);
+  if (intersection([values, b]).length > 0) return true;
+  // MongoDB parity: a regular expression in the query array matches
+  // string values as a pattern, in addition to equal regex values.
+  // https://docs.mongodb.com/manual/reference/operator/query/in/
+  const patterns = b.filter(isRegExp) as RegExp[];
+  return (
+    patterns.length > 0 &&
+    values.some(v => isString(v) && patterns.some(re => re.test(v)))
+  );
 }
 
 /**
