@@ -1,5 +1,5 @@
 import { AnyObject } from "../../types";
-import { compare } from "../../util";
+import { compare, has } from "../../util";
 import { applyUpdate, DEFAULT_OPTIONS, walkExpression } from "./_internal";
 
 /** Updates the value of the field to a specified value if the specified value is less than the current value of the field. */
@@ -16,7 +16,7 @@ export function $min(
         node,
         queries,
         (o: AnyObject, k: string | number) => {
-          if (compare(o[k], val) < 1) return false;
+          if (has(o, String(k)) && compare(o[k], val) < 1) return false;
           o[k] = val;
           return true;
         },

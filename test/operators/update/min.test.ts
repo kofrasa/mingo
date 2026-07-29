@@ -9,6 +9,12 @@ describe("operators/update/min", () => {
     expect(state).toEqual({ _id: 1, highScore: 800, lowScore: 150 });
   });
 
+  it("should set missing field to specified value", () => {
+    const state = { _id: 1, highScore: 800 };
+    expect($min({ lowScore: 200 })(state)).toEqual(["lowScore"]);
+    expect(state).toEqual({ _id: 1, highScore: 800, lowScore: 200 });
+  });
+
   it("should ignore greater value", () => {
     const state = { _id: 1, highScore: 800, lowScore: 200 };
     expect($min({ lowScore: 300 })(state)).toEqual([]);
