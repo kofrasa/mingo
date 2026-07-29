@@ -533,6 +533,38 @@ describe("updater", () => {
       ]);
     });
 
+    it("should rename a field", () => {
+      const people = [{ _id: 1, oldName: "Alice" }];
+
+      expect(
+        updateOne(people, { _id: 1 }, { $rename: { oldName: "name" } })
+      ).toEqual({
+        matchedCount: 1,
+        modifiedCount: 1,
+        modifiedFields: ["name", "oldName"],
+        modifiedIndex: 0
+      });
+
+      expect(people).toEqual([{ _id: 1, name: "Alice" }]);
+    });
+
+    it("should reject conflicting update paths from rename targets", () => {
+      const people = [{ _id: 1, oldName: "Alice", name: "Existing" }];
+
+      expect(() =>
+        updateOne(
+          people,
+          { _id: 1 },
+          {
+            $rename: { oldName: "name" },
+            $set: { name: "Bob" }
+          }
+        )
+      ).toThrow("updating the path 'name' would create a conflict at 'name'");
+
+      expect(people).toEqual([{ _id: 1, oldName: "Alice", name: "Existing" }]);
+    });
+
     it("should update with sort with filter specified", () => {
       const people = [
         { name: "Alice", state: "active", rating: 5 },
