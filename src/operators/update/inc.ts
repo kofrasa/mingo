@@ -20,9 +20,10 @@ export function $inc(
           queries,
           (o: AnyObject, k: string) => {
             if (isNumber(o[k]) || o[k] === undefined) {
+              const previous = o[k] as number | undefined;
               o[k] ||= 0;
               (o[k] as number) += val;
-              return true;
+              return o[k] !== previous;
             }
             return false;
           },
