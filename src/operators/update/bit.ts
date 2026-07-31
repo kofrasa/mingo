@@ -5,6 +5,8 @@ import { applyUpdate, DEFAULT_OPTIONS, walkExpression } from "./_internal";
 const BIT_OPS = ["and", "or", "xor"] as const;
 type BitOp = (typeof BIT_OPS)[number];
 
+const typeName = (v: unknown) => (v === null ? "null" : typeof v);
+
 /** Performs a bitwise update of a field. The operator supports AND, OR, and XOR.*/
 export function $bit(
   expr: Record<string, Partial<Record<BitOp, number>>>,
@@ -20,7 +22,7 @@ export function $bit(
     );
     assert(
       isNumber(vals[op[0]]),
-      `$bit expression value must be a number. Got ${typeof vals[op[0]]}`
+      `$bit expression value must be a number. Got ${typeName(vals[op[0]])}.`
     );
   }
   return (obj: AnyObject) => {
