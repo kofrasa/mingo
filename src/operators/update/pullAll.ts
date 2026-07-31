@@ -1,4 +1,5 @@
 import { Any, AnyObject } from "../../types";
+import { assert, isArray } from "../../util";
 import { DEFAULT_OPTIONS } from "./_internal";
 import { $pull } from "./pull";
 
@@ -10,6 +11,7 @@ export function $pullAll(
 ) {
   const pullExpr: Record<string, AnyObject> = {};
   for (const k of Object.keys(expr)) {
+    assert(isArray(expr[k]), `$pullAll requires an array argument.`);
     pullExpr[k] = { $in: expr[k] };
   }
   return $pull(pullExpr, arrayFilters, options);

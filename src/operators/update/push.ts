@@ -1,9 +1,11 @@
 import { Any, AnyObject, SortSpec } from "../../types";
 import {
+  assert,
   compare,
   has,
   isArray,
   isEqual,
+  isInteger,
   isNumber,
   isObject,
   resolve
@@ -23,6 +25,23 @@ export function $push(
   arrayFilters: AnyObject[] = [],
   options = DEFAULT_OPTIONS
 ) {
+  for (const pushSpec of Object.values(expr)) {
+    if (isObject(pushSpec) && MODIFIERS.some(m => has(pushSpec, m))) {
+      assert(
+        isArray(pushSpec.$each),
+        `The argument to $each in $push must be an array.`
+      );
+      assert(
+        pushSpec.$slice === undefined || isInteger(pushSpec.$slice),
+        `The value for $slice must be an integer value.`
+      );
+      assert(
+        pushSpec.$position === undefined || isInteger(pushSpec.$position),
+        `The value for $position must be an integer value.`
+      );
+    }
+  }
+
   return (obj: AnyObject) => {
     return walkExpression(expr, arrayFilters, options, (val, node, queries) => {
       const args: {

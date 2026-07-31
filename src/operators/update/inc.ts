@@ -1,5 +1,5 @@
 import { AnyObject } from "../../types";
-import { isNumber } from "../../util";
+import { assert, isNumber } from "../../util";
 import { applyUpdate, DEFAULT_OPTIONS, walkExpression } from "./_internal";
 
 /** Increments a field by a specified value. */
@@ -8,6 +8,10 @@ export function $inc(
   arrayFilters: AnyObject[] = [],
   options = DEFAULT_OPTIONS
 ) {
+  for (const amount of Object.values(expr)) {
+    assert(isNumber(amount), `Cannot increment with non-numeric argument.`);
+  }
+
   return (obj: AnyObject) => {
     return walkExpression<number>(
       expr,
