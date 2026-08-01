@@ -1,5 +1,5 @@
 import { AnyObject } from "../../types";
-import { assert, isNumber, isObject } from "../../util";
+import { assert, isInteger, isObject, typeOf } from "../../util";
 import { applyUpdate, DEFAULT_OPTIONS, walkExpression } from "./_internal";
 
 const BIT_OPS = ["and", "or", "xor"] as const;
@@ -19,8 +19,8 @@ export function $bit(
       `$bit spec is invalid '${op[0]}'. Must be one of 'and', 'or', or 'xor'.`
     );
     assert(
-      isNumber(vals[op[0]]),
-      `$bit expression value must be a number. Got ${typeof vals[op[0]]}`
+      isInteger(vals[op[0]]),
+      `$bit expression value must be an integer. Got ${typeOf(vals[op[0]])}`
     );
   }
   return (obj: AnyObject) => {
@@ -38,7 +38,7 @@ export function $bit(
             let n = o[k] as number;
             const v = val[op[0]];
             const missing = n === undefined;
-            if (!missing && !(isNumber(n) && isNumber(v))) return false;
+            if (!missing && !isInteger(n)) return false;
             n = n || 0;
             switch (op[0]) {
               case "and":

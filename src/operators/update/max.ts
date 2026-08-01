@@ -11,6 +11,7 @@ export function $max(
   return (obj: AnyObject) => {
     return walkExpression(expr, arrayFilters, options, (val, node, queries) => {
       // If the field does not exist, the $max operator sets the field to the specified value.
+      // this is because the comparison of undefined with any value is always less than 0.
       return applyUpdate(
         obj,
         node,
