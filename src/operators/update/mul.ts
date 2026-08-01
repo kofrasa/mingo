@@ -1,5 +1,5 @@
 import { AnyObject } from "../../types";
-import { isNumber } from "../../util";
+import { assert, isNumber } from "../../util";
 import { applyUpdate, DEFAULT_OPTIONS, walkExpression } from "./_internal";
 
 /** Multiply the value of a field by a number. */
@@ -8,6 +8,10 @@ export function $mul(
   arrayFilters: AnyObject[] = [],
   options = DEFAULT_OPTIONS
 ) {
+  for (const factor of Object.values(expr)) {
+    assert(isNumber(factor), `Cannot multiply with non-numeric argument.`);
+  }
+
   return (obj: AnyObject) => {
     return walkExpression<number>(
       expr,

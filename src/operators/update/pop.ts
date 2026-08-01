@@ -1,5 +1,5 @@
 import { Any, AnyObject, SortSpec } from "../../types";
-import { isArray } from "../../util";
+import { assert, isArray } from "../../util";
 import { applyUpdate, DEFAULT_OPTIONS, walkExpression } from "./_internal";
 
 /** Removes the first or last element of an array. */
@@ -8,6 +8,10 @@ export function $pop(
   arrayFilters: AnyObject[] = [],
   options = DEFAULT_OPTIONS
 ) {
+  for (const position of Object.values(expr)) {
+    assert(position === 1 || position === -1, `$pop argument must be 1 or -1.`);
+  }
+
   return (obj: AnyObject) => {
     return walkExpression<1 | -1>(
       expr,

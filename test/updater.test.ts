@@ -262,6 +262,19 @@ describe("updater", () => {
       });
     });
 
+    it("should not partially mutate when $pull has an invalid condition", () => {
+      const state = { count: 1, results: [1, 3, 5, 7] };
+
+      expect(() =>
+        update(state, {
+          $inc: { count: 1 },
+          $pull: { results: { $invalid: 1 } }
+        })
+      ).toThrow();
+
+      expect(state).toEqual({ count: 1, results: [1, 3, 5, 7] });
+    });
+
     it("should update different nested path of parent selector with multiple modifiers", () => {
       const state = {
         items: ["ball", "bat", "gloves"]

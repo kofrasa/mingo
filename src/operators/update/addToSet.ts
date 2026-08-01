@@ -1,5 +1,5 @@
 import { Any, AnyObject } from "../../types";
-import { has, isArray, isObject, unique } from "../../util";
+import { assert, has, isArray, isObject, unique } from "../../util";
 import {
   applyUpdate,
   clone,
@@ -13,6 +13,14 @@ export function $addToSet(
   arrayFilters: AnyObject[] = [],
   options = DEFAULT_OPTIONS
 ) {
+  for (const valueSpec of Object.values(expr)) {
+    assert(
+      !(isObject(valueSpec) && has(valueSpec, "$each")) ||
+        isArray(valueSpec.$each),
+      `The argument to $each in $addToSet must be an array.`
+    );
+  }
+
   return (obj: AnyObject) => {
     return walkExpression(expr, arrayFilters, options, (val, node, queries) => {
       const args = { $each: [val] };

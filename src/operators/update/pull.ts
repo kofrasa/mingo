@@ -9,14 +9,19 @@ export function $pull(
   arrayFilters: AnyObject[] = [],
   options = DEFAULT_OPTIONS
 ) {
+  const predicates = Object.values(expr).map(pullSpec => {
+    // wrap simple values or condition objects
+    const wrap = !isObject(pullSpec) || Object.keys(pullSpec).some(isOperator);
+    const query = new Query(wrap ? { k: pullSpec } : pullSpec, options);
+    return wrap
+      ? (v: Any) => query.test({ k: v })
+      : (v: Any) => query.test(v as AnyObject);
+  });
+
   return (obj: AnyObject) => {
-    return walkExpression(expr, arrayFilters, options, (val, node, queries) => {
-      // wrap simple values or condition objects
-      const wrap = !isObject(val) || Object.keys(val).some(isOperator);
-      const query = new Query(wrap ? { k: val } : val, options);
-      const pred = wrap
-        ? (v: Any) => query.test({ k: v })
-        : (v: Any) => query.test(v as AnyObject);
+    let index = 0;
+    return walkExpression(expr, arrayFilters, options, (_, node, queries) => {
+      const pred = predicates[index++];
       return applyUpdate(obj, node, queries, (o: AnyObject, k: string) => {
         const prev = o[k] as Any[];
         if (!isArray(prev) || !prev.length) return false;

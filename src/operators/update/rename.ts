@@ -15,6 +15,7 @@ export function $rename(
   // validate target fields are not id field (source fields validated in walkExpression)
   const idKey = options.idKey;
   for (const target of Object.values(expr)) {
+    assert(typeof target === "string", `$rename target must be a string.`);
     assert(
       !isIdPath(target, idKey),
       `Performing an update on the path '${target}' would modify the immutable field '${idKey}'.`

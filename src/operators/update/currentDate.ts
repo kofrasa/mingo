@@ -1,4 +1,5 @@
 import { AnyObject } from "../../types";
+import { assert, isObject } from "../../util";
 import { applyUpdate, DEFAULT_OPTIONS, walkExpression } from "./_internal";
 
 type CurrentDateType = true | { $type: "date" | "timestamp" };
@@ -9,6 +10,15 @@ export function $currentDate(
   arrayFilters: AnyObject[] = [],
   options = DEFAULT_OPTIONS
 ) {
+  for (const dateSpec of Object.values(expr)) {
+    assert(
+      dateSpec === true ||
+        (isObject(dateSpec) &&
+          (dateSpec.$type === "date" || dateSpec.$type === "timestamp")),
+      `Invalid type for $currentDate. Please use a boolean ('true') or a $type expression ({$type: 'timestamp/date'}).`
+    );
+  }
+
   return (obj: AnyObject) => {
     return walkExpression<CurrentDateType>(
       expr,
