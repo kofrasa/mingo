@@ -37,6 +37,24 @@ describe("operators/update/bit", () => {
     });
   });
 
+  it("should report missing field updates that resolve to zero", () => {
+    const state = { _id: 1 };
+
+    expect(
+      $bit({
+        "a.and": { and: 5 },
+        "b.or": { or: 0 },
+        "c.xor": { xor: 0 }
+      })(state)
+    ).toEqual(["a.and", "b.or", "c.xor"]);
+    expect(state).toEqual({
+      _id: 1,
+      a: { and: 0 },
+      b: { or: 0 },
+      c: { xor: 0 }
+    });
+  });
+
   it("should returns null if value is not a number.", () => {
     const state = { _id: 1 };
 

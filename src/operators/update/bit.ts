@@ -37,15 +37,16 @@ export function $bit(
           (o: AnyObject, k: string) => {
             let n = o[k] as number;
             const v = val[op[0]];
-            if (n !== undefined && !(isNumber(n) && isNumber(v))) return false;
+            const missing = n === undefined;
+            if (!missing && !(isNumber(n) && isNumber(v))) return false;
             n = n || 0;
             switch (op[0]) {
               case "and":
-                return (o[k] = n & v) !== n;
+                return (o[k] = n & v) !== n || missing;
               case "or":
-                return (o[k] = n | v) !== n;
+                return (o[k] = n | v) !== n || missing;
               case "xor":
-                return (o[k] = n ^ v) !== n;
+                return (o[k] = n ^ v) !== n || missing;
             }
           },
           { buildGraph: true }

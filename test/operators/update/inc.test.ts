@@ -11,6 +11,12 @@ describe(testPath(import.meta.url), () => {
     expect(state).toEqual({ _id: 1, n: "Bob" });
   });
 
+  it("should not report a change when incrementing by zero", () => {
+    const state = { _id: 1, n: 1 };
+    expect($inc({ n: 0 })(state)).toEqual([]);
+    expect(state).toEqual({ _id: 1, n: 1 });
+  });
+
   it("should set field to current date", () => {
     const state = {
       _id: 1,
