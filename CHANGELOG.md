@@ -1,14 +1,20 @@
 # Changelog
 
-## 7.2.3 / 2026-08-03
+## 7.2.4 / 2026-08-07
 
 **Fixes**
+- fix incorrect types configuration from `7.2.3`.
+- `$graphLookup` correctly handles 'restrictSearchWithMatch' option using query filter syntax. (#624)
 - make `$elemMatch` with empty field and $in/$nin with regex behave correctly (#613).
 - update with `$rename` fails due to not adding destination to updateParams (#616).
 - fix `$min` fails for empty field (#619).
 - fix edge cases for `$bit` and `$inc` to report changes correctly on update (#620).
 - improve update operators argument validations (#621).
 - `$bit` must apply strictly to integeral values.
+
+## 7.2.3 / 2026-08-03 (deprecated)
+
+Incorrect types configurations. (#625)
 
 ## 7.2.2 / 2026-06-17
 
