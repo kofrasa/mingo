@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { aggregate } from "../../../src";
+import { aggregate, ProcessingMode } from "../../../src";
 import { DEFAULT_OPTS, testPath } from "../../support";
 
 describe(testPath(import.meta.url), () => {
@@ -245,8 +245,6 @@ describe(testPath(import.meta.url), () => {
       }
     ];
 
-    const collectionResolver = (_: string) => people;
-
     const result = aggregate(
       people,
       [
@@ -276,7 +274,7 @@ describe(testPath(import.meta.url), () => {
           }
         }
       ],
-      { ...DEFAULT_OPTS, collectionResolver }
+      { ...DEFAULT_OPTS, collectionResolver: (_: string) => people }
     );
 
     expect(result).toEqual([
@@ -290,6 +288,49 @@ describe(testPath(import.meta.url), () => {
           "Joseph Dennis",
           "Tanya Jordan"
         ]
+      }
+    ]);
+  });
+
+  it("does not ignore JOIN when 'restrictSearchWithMatch' is specified (#624)", () => {
+    const employees = [
+      { _id: 1, name: "Dev", reportsTo: null },
+      { _id: 2, name: "Eliot", reportsTo: "Dev" },
+      { _id: 3, name: "Ron", reportsTo: "Eliot" },
+      { _id: 4, name: "Andrew", reportsTo: "Eliot" },
+      { _id: 5, name: "Asya", reportsTo: "Ron" },
+      { _id: 6, name: "Dan", reportsTo: "Andrew" }
+    ];
+
+    const pipeline = [
+      { $match: { name: "Ron" } },
+      {
+        $graphLookup: {
+          from: "employees",
+          startWith: "$reportsTo",
+          connectFromField: "reportsTo",
+          connectToField: "name",
+          as: "reportingHierarchy",
+          restrictSearchWithMatch: { name: { $ne: "nobody" } }
+        }
+      }
+    ];
+
+    const result = aggregate(employees, pipeline, {
+      ...DEFAULT_OPTS,
+      collectionResolver: () => employees,
+      processingMode: ProcessingMode.CLONE_INPUT
+    });
+
+    expect(result).toEqual([
+      {
+        _id: 3,
+        name: "Ron",
+        reportingHierarchy: [
+          { _id: 2, name: "Eliot", reportsTo: "Dev" },
+          { _id: 1, name: "Dev", reportsTo: null }
+        ],
+        reportsTo: "Eliot"
       }
     ]);
   });

@@ -99,7 +99,7 @@ export function $lookup(
 
     if (pipeline?.length === 0) {
       return coll.map((obj: AnyObject) => {
-        return { ...obj, [expr.as]: lookupEq(obj).pop() };
+        return { ...obj, [expr.as]: lookupEq(obj)[1] };
       });
     }
   }
@@ -108,8 +108,8 @@ export function $lookup(
   const agg = new Aggregator(pipeline ?? [], options);
   const opts = ComputeOptions.init(options);
   return coll.map((obj: AnyObject) => {
-    const vars = evalExpr(obj, letExpr, options) as AnyObject;
-    opts.update({ root: null, variables: vars });
+    const variables = evalExpr(obj, letExpr, options) as AnyObject;
+    opts.update({ root: null, variables });
     const [ok, res] = lookupEq(obj);
     return { ...obj, [expr.as]: ok ? agg.run(joinColl, opts) : res };
   });

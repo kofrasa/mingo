@@ -1,5 +1,6 @@
 import { evalExpr } from "../../core/_internal";
 import { Iterator, Lazy } from "../../lazy";
+import { Query } from "../../query";
 import type { Any, AnyObject, Options } from "../../types";
 import { assert, flatten, HashMap, isArray, isNil, setValue } from "../../util";
 import { resolveCollection } from "./_internal";
@@ -51,7 +52,7 @@ export function $graphLookup(
   } = expr;
 
   // extra match condition
-  const pipelineExpr = matchExpr ? { pipeline: [{ $match: matchExpr }] } : {};
+  const query = new Query(matchExpr ?? {}, options);
 
   return coll.map((obj: AnyObject) => {
     // initial object to start matching
@@ -73,14 +74,15 @@ export function $graphLookup(
             from: fromColl,
             localField: connectFromField,
             foreignField: connectToField,
-            as: asField,
-            ...pipelineExpr
+            as: asField
           },
           options
         )
           .map((o: AnyObject) => o[asField] as AnyObject)
           .collect()
       ) as AnyObject[];
+      // filter matches by additional 'restrictSearchWithMatch' condition
+      matches = matches.filter(o => query.test(o));
       const oldSize = map.size;
       for (const k of matches) map.set(k, map.get(k) ?? i);
       // check to see if there are any new items

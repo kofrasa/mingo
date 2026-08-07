@@ -1,4 +1,7 @@
-import * as samples from "../../support";
+import { describe, expect, it } from "vitest";
+
+import { aggregate, ProcessingMode } from "../../../src";
+import { DEFAULT_OPTS, testPath } from "../../support";
 
 const orders = [
   { _id: 1, item: { name: "almonds" }, price: 12, quantity: 2 },
@@ -85,21 +88,26 @@ const restaurants = [
   }
 ];
 
-samples.runTestPipeline(samples.testPath(import.meta.url), [
-  {
-    message: "Perform a Single Equality Join",
-    input: orders,
-    pipeline: [
-      {
-        $lookup: {
-          from: inventory,
-          localField: "item.name",
-          foreignField: "sku",
-          as: "inventory_docs"
+describe(testPath(import.meta.url), () => {
+  const opts = { ...DEFAULT_OPTS, processingMode: ProcessingMode.CLONE_INPUT };
+
+  it("Perform a Single Equality Join", () => {
+    const actual = aggregate(
+      orders,
+      [
+        {
+          $lookup: {
+            from: inventory,
+            localField: "item.name",
+            foreignField: "sku",
+            as: "inventory_docs"
+          }
         }
-      }
-    ],
-    expected: [
+      ],
+      opts
+    );
+
+    expect(actual).toEqual([
       {
         _id: 1,
         item: { name: "almonds" },
@@ -125,46 +133,50 @@ samples.runTestPipeline(samples.testPath(import.meta.url), [
           { _id: 6 }
         ]
       }
-    ]
-  },
-  {
-    message: "Use $lookup with an Array",
-    input: [
-      {
-        _id: 1,
-        title: "Reading is ...",
-        enrollmentlist: ["giraffe2", "pandabear", "artie"],
-        days: ["M", "W", "F"]
-      },
-      {
-        _id: 2,
-        title: "But Writing ...",
-        enrollmentlist: ["giraffe1", "artie"],
-        days: ["T", "F"]
-      }
-    ],
-    pipeline: [
-      {
-        $lookup: {
-          from: members,
-          localField: "enrollmentlist",
-          foreignField: "name",
-          as: "enrollee_info"
+    ]);
+  });
+
+  it("Use $lookup with an Array", () => {
+    const actual = aggregate(
+      [
+        {
+          _id: 1,
+          title: "Reading is ...",
+          enrollmentlist: ["giraffe2", "pandabear", "artie"],
+          days: ["M", "W", "F"]
+        },
+        {
+          _id: 2,
+          title: "But Writing ...",
+          enrollmentlist: ["giraffe1", "artie"],
+          days: ["T", "F"]
         }
-      },
-      {
-        // ensuring test stability
-        $addFields: {
-          enrollee_info: {
-            $sortArray: {
-              input: "$enrollee_info",
-              sortBy: { _id: 1 }
+      ],
+      [
+        {
+          $lookup: {
+            from: members,
+            localField: "enrollmentlist",
+            foreignField: "name",
+            as: "enrollee_info"
+          }
+        },
+        {
+          // ensuring test stability
+          $addFields: {
+            enrollee_info: {
+              $sortArray: {
+                input: "$enrollee_info",
+                sortBy: { _id: 1 }
+              }
             }
           }
         }
-      }
-    ],
-    expected: [
+      ],
+      opts
+    );
+
+    expect(actual).toEqual([
       {
         _id: 1,
         title: "Reading is ...",
@@ -211,38 +223,42 @@ samples.runTestPipeline(samples.testPath(import.meta.url), [
           }
         ]
       }
-    ]
-  },
-  {
-    message: "Use Multiple Join Conditions and a Correlated Subquery",
-    input: [
-      { _id: 1, item: "almonds", price: 12, ordered: 2 },
-      { _id: 2, item: "pecans", price: 20, ordered: 1 },
-      { _id: 3, item: "cookies", price: 10, ordered: 60 }
-    ],
-    pipeline: [
-      {
-        $lookup: {
-          from: warehouses,
-          let: { order_item: "$item", order_qty: "$ordered" },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    { $eq: ["$stock_item", "$$order_item"] },
-                    { $gte: ["$instock", "$$order_qty"] }
-                  ]
+    ]);
+  });
+
+  it("Use Multiple Join Conditions and a Correlated Subquery", () => {
+    const actual = aggregate(
+      [
+        { _id: 1, item: "almonds", price: 12, ordered: 2 },
+        { _id: 2, item: "pecans", price: 20, ordered: 1 },
+        { _id: 3, item: "cookies", price: 10, ordered: 60 }
+      ],
+      [
+        {
+          $lookup: {
+            from: warehouses,
+            let: { order_item: "$item", order_qty: "$ordered" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $eq: ["$stock_item", "$$order_item"] },
+                      { $gte: ["$instock", "$$order_qty"] }
+                    ]
+                  }
                 }
-              }
-            },
-            { $project: { stock_item: 0, _id: 0 } }
-          ],
-          as: "stockdata"
+              },
+              { $project: { stock_item: 0, _id: 0 } }
+            ],
+            as: "stockdata"
+          }
         }
-      }
-    ],
-    expected: [
+      ],
+      opts
+    );
+
+    expect(actual).toEqual([
       {
         _id: 1,
         item: "almonds",
@@ -267,36 +283,40 @@ samples.runTestPipeline(samples.testPath(import.meta.url), [
         ordered: 60,
         stockdata: [{ warehouse: "A", instock: 80 }]
       }
-    ]
-  },
-  {
-    message: "Perform an Uncorrelated Subquery with $lookup",
-    input: [
-      {
-        _id: 1,
-        student: "Ann Aardvark",
-        sickdays: [new Date("2018-05-01"), new Date("2018-08-23")]
-      },
-      {
-        _id: 2,
-        student: "Zoe Zebra",
-        sickdays: [new Date("2018-02-01"), new Date("2018-05-23")]
-      }
-    ],
-    pipeline: [
-      {
-        $lookup: {
-          from: holidays,
-          pipeline: [
-            { $match: { year: 2018 } },
-            { $project: { _id: 0, date: { name: "$name", date: "$date" } } },
-            { $replaceRoot: { newRoot: "$date" } }
-          ],
-          as: "holidays"
+    ]);
+  });
+
+  it("Perform an Uncorrelated Subquery with $lookup", () => {
+    const actual = aggregate(
+      [
+        {
+          _id: 1,
+          student: "Ann Aardvark",
+          sickdays: [new Date("2018-05-01"), new Date("2018-08-23")]
+        },
+        {
+          _id: 2,
+          student: "Zoe Zebra",
+          sickdays: [new Date("2018-02-01"), new Date("2018-05-23")]
         }
-      }
-    ],
-    expected: [
+      ],
+      [
+        {
+          $lookup: {
+            from: holidays,
+            pipeline: [
+              { $match: { year: 2018 } },
+              { $project: { _id: 0, date: { name: "$name", date: "$date" } } },
+              { $replaceRoot: { newRoot: "$date" } }
+            ],
+            as: "holidays"
+          }
+        }
+      ],
+      opts
+    );
+
+    expect(actual).toEqual([
       {
         _id: 1,
         student: "Ann Aardvark",
@@ -323,48 +343,52 @@ samples.runTestPipeline(samples.testPath(import.meta.url), [
           { name: "Ice Cream Day", date: new Date("2018-07-15T00:00:00.000Z") }
         ]
       }
-    ]
-  },
-  {
-    message: "Perform a Concise Correlated Subquery with $lookup",
-    input: [
-      {
-        _id: 1,
-        item: "filet",
-        restaurant_name: "American Steak House"
-      },
-      {
-        _id: 2,
-        item: "cheese pizza",
-        restaurant_name: "Honest John Pizza",
-        drink: "lemonade"
-      },
-      {
-        _id: 3,
-        item: "cheese pizza",
-        restaurant_name: "Honest John Pizza",
-        drink: "soda"
-      }
-    ],
-    pipeline: [
-      {
-        $lookup: {
-          from: restaurants,
-          localField: "restaurant_name",
-          foreignField: "name",
-          let: { orders_drink: "$drink" },
-          pipeline: [
-            {
-              $match: {
-                $expr: { $in: ["$$orders_drink", "$beverages"] }
-              }
-            }
-          ],
-          as: "matches"
+    ]);
+  });
+
+  it("Perform a Concise Correlated Subquery with $lookup", () => {
+    const actual = aggregate(
+      [
+        {
+          _id: 1,
+          item: "filet",
+          restaurant_name: "American Steak House"
+        },
+        {
+          _id: 2,
+          item: "cheese pizza",
+          restaurant_name: "Honest John Pizza",
+          drink: "lemonade"
+        },
+        {
+          _id: 3,
+          item: "cheese pizza",
+          restaurant_name: "Honest John Pizza",
+          drink: "soda"
         }
-      }
-    ],
-    expected: [
+      ],
+      [
+        {
+          $lookup: {
+            from: restaurants,
+            localField: "restaurant_name",
+            foreignField: "name",
+            let: { orders_drink: "$drink" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: { $in: ["$$orders_drink", "$beverages"] }
+                }
+              }
+            ],
+            as: "matches"
+          }
+        }
+      ],
+      opts
+    );
+
+    expect(actual).toEqual([
       {
         _id: 1,
         item: "filet",
@@ -392,6 +416,6 @@ samples.runTestPipeline(samples.testPath(import.meta.url), [
           }
         ]
       }
-    ]
-  }
-]);
+    ]);
+  });
+});
