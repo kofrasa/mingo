@@ -69,10 +69,6 @@
     "update",
     "modify"
   ],
-  "author": {
-    "name": "Francis Asante",
-    "email": "kofrasa@gmail.com"
-  },
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/kofrasa/mingo/issues"
