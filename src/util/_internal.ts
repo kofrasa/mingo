@@ -480,7 +480,7 @@ export function groupBy<T = Any, K = Any>(
 }
 
 export const OBJECT_PROTO_PROPS = new Set(
-  Object.getOwnPropertyNames(Object.prototype).find(s => s !== "__proto__")!
+  Object.getOwnPropertyNames(Object.prototype).filter(s => s !== "__proto__")!
 );
 
 /**
