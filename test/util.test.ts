@@ -463,6 +463,8 @@ describe("util", () => {
       prop => {
         expect(resolve(Object.prototype as AnyObject, prop)).toBeUndefined();
         expect(resolve({ a: Object.prototype }, `a.${prop}`)).toBeUndefined();
+        // ignore prototype fields not explicitly present in the object
+        expect(resolve({}, prop)).toBeUndefined();
       }
     );
 
