@@ -479,6 +479,13 @@ export function groupBy<T = Any, K = Any>(
   return result;
 }
 
+/**
+ * A set of all properties of Object.prototype.
+ * It is legal to use any of these as keys in a document, but they must be explicitly
+ *  added as keys in the document so that they do not accidentally access values of Object.prototype properties.
+ *
+ * The exception is "__proto__" which fails on access because it is readonly field and cannot be set on a document explicitly.
+ */
 export const OBJECT_PROTO_PROPS = new Set(
   Object.getOwnPropertyNames(Object.prototype).filter(s => s !== "__proto__")!
 );
@@ -487,13 +494,14 @@ export const OBJECT_PROTO_PROPS = new Set(
  * Retrieve the value of a given key on an object/array
  */
 function getValue(obj: ArrayOrObject, key: string | number): Any {
-  if (isPrimitive(obj) || Number.isNaN(key)) return undefined;
+  // guard against prototype pollution. we don't want to allow any read/write access to Object.prototype properties.
+  if (obj === Object.prototype) return;
+  if (isPrimitive(obj) || Number.isNaN(key)) return;
   // enforce array is only accessed with numeric keys.
   if (isArray(obj)) return obj[Number(key)];
   // enforce properties of Object.prototype are not accessed accidentally.
-  return !OBJECT_PROTO_PROPS.has(key as string) || has(obj, key as string)
-    ? (obj as AnyObject)[key]
-    : undefined;
+  if (OBJECT_PROTO_PROPS.has(key as string) && !has(obj, key as string)) return;
+  return (obj as AnyObject)[key];
 }
 
 /**
@@ -686,6 +694,8 @@ export function walk(
     assertNoProto(selector);
     options = { ...options, ignoreProto: true };
   }
+  // guard against prototype pollution. we don't want to allow any read/write access to Object.prototype properties.
+  if (obj === Object.prototype) return;
 
   const dotIndex = selector.indexOf(".");
   const key = dotIndex === -1 ? selector : selector.substring(0, dotIndex);

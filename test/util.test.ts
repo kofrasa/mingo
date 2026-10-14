@@ -458,6 +458,14 @@ describe("util", () => {
   });
 
   describe("resolve", () => {
+    it.each(Array.from(OBJECT_PROTO_PROPS))(
+      "should return undefined for Object.prototype property %s",
+      prop => {
+        expect(resolve(Object.prototype as AnyObject, prop)).toBeUndefined();
+        expect(resolve({ a: Object.prototype }, `a.${prop}`)).toBeUndefined();
+      }
+    );
+
     const doc = { a: 1, b: { c: 2, d: ["hello"], e: [1, 2, 3] } };
     const sameDoc = cloneDeep(doc);
 
@@ -510,12 +518,23 @@ describe("util", () => {
     const optsKeys = { preserveKeys: true };
     const optsIndex = { preserveIndex: "default" as const };
     const optsMissing = { preserveIndex: "missing" as const };
+    const optsAll = { preserveKeys: true, preserveIndex: "default" as const };
 
     const doc = {
       a: 1,
       b: { c: 2, d: ["hello"], e: [1, 2, 3, undefined, 5] },
       f: [{ u: 0, v: 0 }, { u: 1, v: 1 }, { u: 2, v: 2 }, { v: 3 }]
     };
+
+    it.each(Array.from(OBJECT_PROTO_PROPS))(
+      "should return undefined for Object.prototype property %s",
+      prop => {
+        const obj = Object.prototype as AnyObject;
+        expect(resolveGraph(obj, prop, optsAll)).toBeUndefined();
+        expect(resolveGraph({ a: obj }, `a.${prop}`, optsAll)).toBeUndefined();
+      }
+    );
+
     it.each([
       ["b.e.1", { b: { e: [2] } }, {}],
       [
@@ -644,6 +663,35 @@ describe("util", () => {
         a: { b: { c: [{ x: 1 }, { x: 4 }] } }
       };
     });
+
+    it("should not pollute Object.prototype with new fields", () => {
+      const obj = { a: Object.prototype };
+      walk(obj, "a.polluted", (o, k) => {
+        o[k] = 42;
+      });
+      expect(obj.a).toEqual(Object.prototype);
+      expect((obj.a as AnyObject).polluted).toBeUndefined();
+      expect((Object.prototype as AnyObject).polluted).toBeUndefined();
+    });
+
+    it.each(Array.from(OBJECT_PROTO_PROPS))(
+      "should not pollute Object.prototype member - %s",
+      prop => {
+        const obj = { a: Object.prototype };
+        walk(obj, `a.${prop}`, (o, k) => {
+          o[k] = 42;
+        });
+        expect(obj.a).toEqual(Object.prototype);
+        expect((obj.a as AnyObject)[prop]).not.toEqual(42);
+        expect((Object.prototype as AnyObject)[prop]).not.toEqual(42);
+
+        walk(Object.prototype as AnyObject, prop, (o, k) => {
+          o[k] = 42;
+        });
+        expect((Object.prototype as AnyObject)[prop]).not.toEqual(42);
+      }
+    );
+
     it("should return undefined for missing path", () => {
       let counter = 0;
       walk(o, "a.c.e", () => counter++);
