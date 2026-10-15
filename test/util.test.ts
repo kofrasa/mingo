@@ -38,6 +38,24 @@ class CustomWithToString extends Custom {
 }
 
 describe("util", () => {
+  describe("OBJECT_PROTO_PROPS", () => {
+    it("should contain the correct prototype properties", () => {
+      expect(Array.from(OBJECT_PROTO_PROPS).sort()).toEqual([
+        "__defineGetter__",
+        "__defineSetter__",
+        "__lookupGetter__",
+        "__lookupSetter__",
+        "constructor",
+        "hasOwnProperty",
+        "isPrototypeOf",
+        "propertyIsEnumerable",
+        "toLocaleString",
+        "toString",
+        "valueOf"
+      ]);
+    });
+  });
+
   describe("PathValidator", () => {
     it("should detect conflicts for overlapping paths: nested -> root", () => {
       const trie = new PathValidator();
