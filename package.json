@@ -1,6 +1,6 @@
 {
   "name": "mingo",
-  "version": "7.2.4",
+  "version": "7.2.5",
   "description": "MongoDB query language for in-memory objects",
   "main": "./cjs/index.js",
   "module": "./esm/index.js",

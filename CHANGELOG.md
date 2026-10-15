@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.2.5 / 2026-10-15
+
+**Fixes**
+- Fix enforcing own keys that conflict with Object.prototype propertes. (#632)
+- Prevent read/write access to Object.prototype members.
+
 ## 7.2.4 / 2026-08-07
 
 **Fixes**
