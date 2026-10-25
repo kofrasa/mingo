@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.2.6 / 2026-10-25
+
+**Fixes**
+- Return empty parent object on project when nested field is missing. (#634)
+
 ## 7.2.5 / 2026-10-15
 
 **Fixes**
