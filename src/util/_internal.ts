@@ -607,7 +607,7 @@ export function resolveGraph(
   const key = sep == -1 ? selector : selector.substring(0, sep);
   const next = selector.substring(sep + 1);
   const hasNext = sep != -1;
-  const { preserveIndex } = options;
+  const { preserveIndex, preserveKeys } = options;
 
   if (isArray(obj)) {
     const isIndex = isDigits(key);
@@ -634,12 +634,18 @@ export function resolveGraph(
     return arr as ArrayOrObject;
   }
 
-  const res = options?.preserveKeys ? { ...obj } : {};
   let value = getValue(obj, key);
   if (hasNext) {
     value = resolveGraph(value as ArrayOrObject, next, options);
   }
-  if (value === undefined) return undefined;
+
+  const res = preserveKeys ? { ...obj } : {};
+  if (value === undefined) {
+    // when the leaf is undefined for a nested object, we return the parent object otherwise undefined.
+    // fixes https://github.com/kofrasa/mingo/issues/634
+    return preserveIndex === "missing" && isObject(obj) ? res : undefined;
+  }
+
   res[key] = value;
   return res;
 }

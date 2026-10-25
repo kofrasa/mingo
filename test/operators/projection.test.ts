@@ -172,7 +172,9 @@ describe(testPath(import.meta.url), () => {
       ];
 
       const expected = {
-        key0: [{ key1: [[[{ key2: [{ a: "value2" }, { a: "dummy" }] }]]] }]
+        key0: [
+          { key1: [[[{ key2: [{ a: "value2" }, { a: "dummy" }, {}] }]], {}] }
+        ]
       };
 
       const result = find(

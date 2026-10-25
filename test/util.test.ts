@@ -586,7 +586,7 @@ describe("util", () => {
         optsKeys
       ],
       ["f.u", { f: [{ u: 0 }, { u: 1 }, { u: 2 }, undefined] }, optsIndex],
-      ["f.u", { f: [{ u: 0 }, { u: 1 }, { u: 2 }, MISSING] }, optsMissing]
+      ["f.u", { f: [{ u: 0 }, { u: 1 }, { u: 2 }, {}] }, optsMissing]
     ])(
       "%#. resolves object graph with appropriate options: (%s, %o, %o)",
       (path, expected, opts) => {
@@ -594,6 +594,14 @@ describe("util", () => {
         expect(result).toEqual(expected);
       }
     );
+
+    it("should return parent object when nested field is missing", () => {
+      const doc = {
+        a: [{ b: { c: 1 } }, { b: 1 }, { c: 1 }, "dropped", { b: {} }]
+      };
+      const res = resolveGraph(doc, "a.b.d", { preserveIndex: "missing" });
+      expect(res).toEqual({ a: [{ b: {} }, {}, {}, MISSING, { b: {} }] });
+    });
   });
 
   describe("unique", () => {

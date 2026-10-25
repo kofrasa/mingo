@@ -83,11 +83,7 @@ function createHandler(
       assert(cond, `${OP}: positional operator '.$' requires array condition.`);
       const field = selector.slice(0, -2);
       handlers[field] = getPositionalFilter(field, cond, options);
-      continue;
-    }
-
-    // handle computable values
-    if (isArray(v)) {
+    } else if (isArray(v)) {
       handlers[selector] = (t: AnyObject, o: AnyObject) => {
         options.update({ root: o });
         const newVal = v.map(e => evalExpr(o, e, options) ?? null);
