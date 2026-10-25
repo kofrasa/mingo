@@ -4,6 +4,7 @@ import { Any, AnyObject } from "../src/types";
 import {
   cloneDeep,
   compare,
+  filterMissing,
   groupBy,
   has,
   hashCode,
@@ -601,6 +602,20 @@ describe("util", () => {
       };
       const res = resolveGraph(doc, "a.b.d", { preserveIndex: "missing" });
       expect(res).toEqual({ a: [{ b: {} }, {}, {}, MISSING, { b: {} }] });
+    });
+  });
+
+  describe("filterMissing", () => {
+    it("should filter out missing values from array", () => {
+      const arr = [1, 2, MISSING, 3, MISSING, 4];
+      filterMissing(arr);
+      expect(arr).toEqual([1, 2, 3, 4]);
+    });
+
+    it("should filter out missing values from array nested in object value", () => {
+      const obj = { a: [MISSING, 1, undefined], b: 3 };
+      filterMissing(obj);
+      expect(obj).toEqual({ a: [1, undefined], b: 3 });
     });
   });
 
