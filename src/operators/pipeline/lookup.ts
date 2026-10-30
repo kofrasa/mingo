@@ -38,7 +38,9 @@ export function $lookup(
   expr: InputExpr,
   options: Options
 ): Iterator {
-  const { let: letExpr, foreignField, localField } = expr;
+  // Safari before 18.2 can't parse a destructured key named "let" (#637).
+  const letExpr = expr.let;
+  const { foreignField, localField } = expr;
 
   // we default to a valid equality match.
   // returns [match_found:boolean, matched_items:array]
