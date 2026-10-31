@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.2.7 / 2026-10-30
+
+**Fixes**
+- Read the `$lookup` "let" option without destructuring it to support incompatible JS engines (#638)
+
 ## 7.2.6 / 2026-10-25
 
 **Fixes**
