@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+**Fixes**
+- `$mod` query operator only matches numeric values, so `null`, booleans, strings, dates and nested arrays no longer match through JavaScript type coercion.
+
 ## 7.2.7 / 2026-10-30
 
 **Fixes**

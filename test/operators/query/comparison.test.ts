@@ -106,6 +106,64 @@ describe("operators/query/comparison", () => {
     expect(result).toEqual(data);
   });
 
+  describe("$mod", () => {
+    // https://www.mongodb.com/docs/manual/reference/operator/query/mod/
+    // only numeric field values (or numeric array elements) can match.
+    const query = new Query({ a: { $mod: [5, 0] } }, DEFAULT_OPTS);
+
+    it.each([
+      ["null", { a: null }],
+      ["missing field", {}],
+      ["numeric string", { a: "10" }],
+      ["empty string", { a: "" }],
+      ["true", { a: true }],
+      ["false", { a: false }],
+      ["date", { a: new Date(10) }],
+      ["NaN", { a: NaN }],
+      ["Infinity", { a: Infinity }],
+      ["empty array", { a: [] }],
+      ["array with null and non-matching number", { a: [null, 3] }],
+      ["array with non-numeric values", { a: ["10", false, null] }],
+      ["nested array", { a: [[10]] }],
+      ["nested empty array", { a: [[]] }]
+    ])("does not match non-numeric value: %s", (_, doc) => {
+      expect(query.test(doc as AnyObject)).toEqual(false);
+    });
+
+    it.each([
+      ["number", { a: 10 }],
+      ["zero", { a: 0 }],
+      ["negative number", { a: -10 }],
+      ["array with matching number", { a: [5] }],
+      ["array with null and matching number", { a: [null, 3, 10] }]
+    ])("matches numeric value: %s", (_, doc) => {
+      expect(query.test(doc as AnyObject)).toEqual(true);
+    });
+
+    it("does not match booleans coerced to numbers", () => {
+      const q = new Query({ a: { $mod: [1, 0] } }, DEFAULT_OPTS);
+      expect(q.test({ a: true })).toEqual(false);
+      expect(q.test({ a: false })).toEqual(false);
+      expect(q.test({ a: 3 })).toEqual(true);
+    });
+
+    it("filters mixed documents", () => {
+      const docs = [
+        { a: null },
+        { a: "10" },
+        { a: true },
+        { a: false },
+        { a: 10 },
+        { a: [null, 3] },
+        { a: [5] },
+        {}
+      ];
+      expect(
+        find(docs, { a: { $mod: [5, 0] } }, {}, DEFAULT_OPTS).all()
+      ).toEqual([{ a: 10 }, { a: [5] }]);
+    });
+  });
+
   it("can match non-primitive values with $in", () => {
     const data = [
       { _id: 1, tags: [[1, 2]] },
