@@ -380,8 +380,11 @@ function updateDocuments<T extends AnyObject>(
   }
 
   if (firstOnly && modifiedFields.length) {
-    modifiedFields.sort();
-    Object.assign(output, { modifiedFields, modifiedIndex });
+    // positional paths on the same array report the same field.
+    Object.assign(output, {
+      modifiedFields: Array.from(new Set(modifiedFields)).sort(),
+      modifiedIndex
+    });
   }
 
   return output;

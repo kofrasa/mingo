@@ -110,6 +110,63 @@ describe("updater", () => {
       ).toThrow();
     });
 
+    describe("positional selectors on the same array", () => {
+      const condition = { "items.id": 1 };
+      let state: { items: AnyObject[] };
+      beforeEach(() => {
+        state = { items: [{ id: 1, b: 0 }, { id: 2 }] };
+      });
+
+      it("should allow several fields of the element matched by $", () => {
+        expect(
+          update(
+            state,
+            { $set: { "items.$.a": 1, "items.$.b": 2 } },
+            [],
+            condition
+          )
+        ).toEqual(["items"]);
+        expect(state.items).toEqual([{ id: 1, a: 1, b: 2 }, { id: 2 }]);
+      });
+
+      it("should allow $ selectors across operators", () => {
+        update(
+          state,
+          { $set: { "items.$.a": 1 }, $unset: { "items.$.b": "" } },
+          [],
+          condition
+        );
+        expect(state.items).toEqual([{ id: 1, a: 1 }, { id: 2 }]);
+      });
+
+      it("should allow several fields of the elements matched by $[identifier]", () => {
+        update(state, { $set: { "items.$[x].a": 1, "items.$[x].b": 2 } }, [
+          { "x.id": 1 }
+        ]);
+        expect(state.items).toEqual([{ id: 1, a: 1, b: 2 }, { id: 2 }]);
+      });
+
+      it("should FAIL if a $ selector is a prefix of another", () => {
+        expect(() =>
+          update(
+            state,
+            { $set: { "items.$": { id: 1 }, "items.$.a": 1 } },
+            [],
+            condition
+          )
+        ).toThrow(
+          "updating the path 'items.$.a' would create a conflict at 'items.$.a'"
+        );
+        expect(state.items).toEqual([{ id: 1, b: 0 }, { id: 2 }]);
+      });
+
+      it("should FAIL if the array and a $ selector are both updated", () => {
+        expect(() =>
+          update(state, { $set: { items: [], "items.$.a": 1 } }, [], condition)
+        ).toThrow(/would create a conflict/);
+      });
+    });
+
     it("should contain valid operator in expression", () => {
       const expr: AnyObject = { $set: { name: "Fred" } };
       expr["$cos"] = { age: 2 };
