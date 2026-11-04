@@ -541,6 +541,7 @@ describe("updater", () => {
         ["$exists: false", { "items.q": { $exists: false } }],
         ["an index", { "items.1.id": 2 }],
         ["no array", { z: 0 }],
+        ["a path through a scalar", { "z.x": null }],
         ["$size", { items: { $size: 3 } }],
         ["nothing", {}]
       ])("should FAIL if the query matches through %s", (_, condition) => {
@@ -583,6 +584,17 @@ describe("updater", () => {
       it("should FAIL on a filter without an identifier", () => {
         expect(() =>
           update(doc(), { $set: { "items.$[x].a": 1 } }, [{}, { "x.id": 1 }])
+        ).toThrow(
+          "Cannot use an expression without a top-level field name in arrayFilters"
+        );
+      });
+
+      it("should FAIL on a filter with only an expression", () => {
+        expect(() =>
+          update(doc(), { $set: { "items.$[x].a": 1 } }, [
+            { $expr: { $eq: [1, 1] } },
+            { "x.id": 1 }
+          ])
         ).toThrow(
           "Cannot use an expression without a top-level field name in arrayFilters"
         );
