@@ -11,7 +11,11 @@ import { $sort } from "./operators/pipeline/sort";
 import { $unset } from "./operators/pipeline/unset";
 import * as queryOperators from "./operators/query";
 import * as updateOperators from "./operators/update";
-import { buildParams, SingleKeyRecord } from "./operators/update/_internal";
+import {
+  assertNoResolvedConflict,
+  buildParams,
+  SingleKeyRecord
+} from "./operators/update/_internal";
 import { Query } from "./query";
 import {
   Any,
@@ -352,9 +356,12 @@ function updateDocuments<T extends AnyObject>(
   ];
 
   // build parameters and add to locals
-  opts.update({
-    updateParams: buildParams(updateExpressions, arrayFilters, opts)
-  });
+  const updateParams = buildParams(updateExpressions, arrayFilters, opts);
+  opts.update({ updateParams });
+
+  // positional selectors only resolve to their paths against each document.
+  const params = Object.values(updateParams);
+  const checkResolved = params.length > 1 && params.some(p => p.node.position);
 
   const matchedCount = foundDocs.length;
   const output = { matchedCount, modifiedCount: 0 };
@@ -368,6 +375,7 @@ function updateDocuments<T extends AnyObject>(
   }
 
   for (const doc of foundDocs) {
+    if (checkResolved) assertNoResolvedConflict(doc, updateParams);
     let modified = false;
     for (const mutate of fns) {
       const fields = mutate(doc);

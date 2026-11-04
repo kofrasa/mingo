@@ -165,6 +165,168 @@ describe("updater", () => {
           update(state, { $set: { items: [], "items.$.a": 1 } }, [], condition)
         ).toThrow(/would create a conflict/);
       });
+
+      it("should allow $ and an index resolving to different elements", () => {
+        update(
+          state,
+          { $set: { "items.$.a": 1, "items.1.a": 2 } },
+          [],
+          condition
+        );
+        expect(state.items).toEqual([
+          { id: 1, b: 0, a: 1 },
+          { id: 2, a: 2 }
+        ]);
+      });
+
+      it("should allow $ and an index resolving to different fields of an element", () => {
+        update(
+          state,
+          { $set: { "items.$.a": 1, "items.0.c": 2 } },
+          [],
+          condition
+        );
+        expect(state.items).toEqual([{ id: 1, b: 0, a: 1, c: 2 }, { id: 2 }]);
+      });
+
+      it("should allow $[identifier] selectors matching different elements", () => {
+        update(state, { $set: { "items.$[x].a": 1, "items.$[y].a": 2 } }, [
+          { "x.id": 1 },
+          { "y.id": 2 }
+        ]);
+        expect(state.items).toEqual([
+          { id: 1, b: 0, a: 1 },
+          { id: 2, a: 2 }
+        ]);
+      });
+
+      it("should allow $[] and $[identifier] updating different fields", () => {
+        update(state, { $set: { "items.$[].a": 1, "items.$[x].b": 2 } }, [
+          { "x.id": 1 }
+        ]);
+        expect(state.items).toEqual([
+          { id: 1, b: 2, a: 1 },
+          { id: 2, a: 1 }
+        ]);
+      });
+
+      it.each([
+        [
+          "$ and an index",
+          { $set: { "items.$.a": 1, "items.0.a": 2 } },
+          "items.0.a"
+        ],
+        [
+          "an index and $",
+          { $set: { "items.0.a": 2, "items.$.a": 1 } },
+          "items.0.a"
+        ],
+        [
+          "$ and an index across operators",
+          { $set: { "items.$.b": 1 }, $inc: { "items.0.b": 1 } },
+          "items.0.b"
+        ],
+        [
+          "$ and the index of its parent",
+          { $set: { "items.$.a": 1, "items.0": { id: 9 } } },
+          "items.0"
+        ],
+        [
+          "$ and a field of its index",
+          { $set: { "items.$": { id: 9 }, "items.0.a": 1 } },
+          "items.0"
+        ]
+      ])("should FAIL if %s resolve to the same path", (_, modifier, path) => {
+        const before = JSON.stringify(state);
+        expect(() => update(state, modifier, [], condition)).toThrow(
+          `Update created a conflict at '${path}'`
+        );
+        expect(JSON.stringify(state)).toEqual(before);
+      });
+
+      it.each([
+        [
+          "$[identifier] selectors match the same element",
+          { $set: { "items.$[x].a": 1, "items.$[y].a": 2 } },
+          [{ "x.id": 1 }, { "y.id": { $gte: 1 } }],
+          "items.0.a"
+        ],
+        [
+          "$[] and $[identifier] update the same field",
+          { $set: { "items.$[].a": 1, "items.$[x].a": 2 } },
+          [{ "x.id": 1 }],
+          "items.0.a"
+        ],
+        [
+          "$[] and $[identifier] update a field and its parent",
+          { $set: { "items.$[].a": 1, "items.$[x]": { id: 7 } } },
+          [{ "x.id": 1 }],
+          "items.0"
+        ]
+      ])("should FAIL if %s", (_, modifier, arrayFilters, path) => {
+        const before = JSON.stringify(state);
+        expect(() => update(state, modifier, arrayFilters)).toThrow(
+          `Update created a conflict at '${path}'`
+        );
+        expect(JSON.stringify(state)).toEqual(before);
+      });
+
+      it("should FAIL on nested $[identifier] selectors matching the same element", () => {
+        const doc = { n: [{ s: [{ k: 1 }, { k: 2 }] }] };
+        expect(() =>
+          update(doc, { $set: { "n.$[].s.$[y].k": 1, "n.$[].s.$[z].k": 2 } }, [
+            { "y.k": 2 },
+            { "z.k": { $gte: 1 } }
+          ])
+        ).toThrow("Update created a conflict at 'n.0.s.1.k'");
+      });
+
+      it.each([
+        ["items.$[].a", "items.1.a", "items"],
+        ["items.1.a", "items.$[].a", "items"],
+        ["items.$[].a", "items.$.a", "items"],
+        ["items.$.a", "items.$[].a", "items"],
+        ["items.$[].a", "items.foo", "items"],
+        ["n.$[].s.0.k", "n.$[].s.$[].k", "n.$[].s"]
+      ])(
+        "should FAIL if an array is updated by both %s and %s",
+        (first, second, parent) => {
+          expect(() =>
+            update(state, { $set: { [first]: 1, [second]: 2 } }, [], condition)
+          ).toThrow(
+            `updating the path '${second}' would create a conflict at '${parent}'`
+          );
+          expect(state.items).toEqual([{ id: 1, b: 0 }, { id: 2 }]);
+        }
+      );
+
+      it("should not resolve a positional selector on an empty array", () => {
+        const doc = { items: [], other: 0 };
+        update(doc, { $set: { "items.$[].a": 1, other: 1 } });
+        expect(doc).toEqual({ items: [], other: 1 });
+      });
+
+      it("should check each document against the elements it matches", () => {
+        const docs: AnyObject[] = [
+          { items: [{ id: 2 }, { id: 1 }] },
+          { items: [{ id: 1 }, { id: 2 }] }
+        ];
+        expect(() =>
+          updateMany(docs, condition, {
+            $set: { "items.$.a": 1, "items.0.a": 2 }
+          })
+        ).toThrow("Update created a conflict at 'items.0.a'");
+        // as on MongoDB, documents before the conflict stay updated.
+        expect(docs).toEqual([
+          {
+            items: [
+              { id: 2, a: 2 },
+              { id: 1, a: 1 }
+            ]
+          },
+          { items: [{ id: 1 }, { id: 2 }] }
+        ]);
+      });
     });
 
     it("should contain valid operator in expression", () => {

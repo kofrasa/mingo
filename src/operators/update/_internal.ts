@@ -56,6 +56,28 @@ const FIRST_ONLY = "$";
 // positional array-wide specifier for all items in matching array.
 const ARRAY_WIDE = "$[]";
 
+/** Returns the indexes of the items of the array selected by the positional operator of the node. */
+const selectIndexes = (
+  arr: Any[],
+  { selector, position: c }: PathNode,
+  q: Record<string, Query>
+): number[] => {
+  if (c === FIRST_ONLY) {
+    const i = arr.findIndex(e => q[selector].test({ [selector]: [e] }));
+    // only matching documents should make it here, so this should never happen.
+    assert(i > -1, "BUG: positional operator found no match for " + selector);
+    return [i];
+  }
+  const indexes: number[] = [];
+  for (let i = 0; i < arr.length; i++) {
+    // filter if applicable.
+    if (c === ARRAY_WIDE || !q[c!] || q[c!].test({ [c!]: [arr[i]] })) {
+      indexes.push(i);
+    }
+  }
+  return indexes;
+};
+
 /**
  * Applies an update function to a value to produce a new value to modify an object in-place.
  * @param o The object or array to modify.
@@ -83,24 +105,12 @@ export const applyUpdate = (
   // no update applied if we do not get correct type.
   if (!isArray(arr) || !arr.length) return false;
 
-  if (c === FIRST_ONLY) {
-    const i = arr.findIndex(e => q[selector].test({ [selector]: [e] }));
-    // only matching documents should make it here, so this should never happen.
-    assert(i > -1, "BUG: positional operator found no match for " + selector);
-    return next
-      ? applyUpdate(arr[i] as AnyObject, next, q, f, opts)
-      : f(arr, i as Any as string);
-  }
-
   // apply update to matching items.
   let status = false;
-  for (let i = 0; i < arr.length; i++) {
-    const e = arr[i] as AnyObject;
-    // filter if applicable.
-    if (c !== ARRAY_WIDE && q[c] && !q[c].test({ [c]: [e] })) continue;
+  for (const i of selectIndexes(arr, n, q)) {
     // apply update and track success.
     status = next
-      ? applyUpdate(e as AnyObject, next, q, f, opts) || status
+      ? applyUpdate(arr[i] as AnyObject, next, q, f, opts) || status
       : f(arr, i as Any as string) || status;
   }
   return status;
@@ -180,6 +190,7 @@ export function buildParams(
   condition = condition ?? {};
   const queryKeys = Object.keys(condition);
   const conflictDetector = new PathValidator();
+  const arrayUpdates = new Map<string, boolean>();
 
   for (const expr of exprList) {
     for (const selector of Object.keys(expr)) {
@@ -255,6 +266,18 @@ export function buildParams(
         `updating the path '${selector}' would create a conflict at '${selector}'`
       );
 
+      // assert a field is not updated through both $[]/$[identifier] and a sub-path, index or $.
+      const parts = selector.split(".");
+      for (let i = 1; i < parts.length; i++) {
+        const parent = parts.slice(0, i).join(".");
+        const isArrayUpdate = parts[i].startsWith("$[");
+        assert(
+          (arrayUpdates.get(parent) ?? isArrayUpdate) === isArrayUpdate,
+          `updating the path '${selector}' would create a conflict at '${parent}'`
+        );
+        arrayUpdates.set(parent, isArrayUpdate);
+      }
+
       // save arguments for evaluation
       params[selector] = { node, queries };
     }
@@ -264,3 +287,54 @@ export function buildParams(
 }
 
 export type UpdateParams = ReturnType<typeof buildParams>;
+
+const ERR_RESOLVED_CONFLICT = (path: string) =>
+  `Update created a conflict at '${path}'`;
+
+/** Collects the paths in the object that a path node resolves to. */
+const collectPaths = (
+  o: AnyObject,
+  n: PathNode,
+  q: Record<string, Query>,
+  prefix: string,
+  paths: string[]
+): void => {
+  const path = prefix + n.selector;
+  if (!n.position) {
+    paths.push(path);
+    return;
+  }
+  const arr = resolve(o, n.selector) as AnyObject[];
+  if (!isArray(arr) || !arr.length) return;
+  for (const i of selectIndexes(arr, n, q)) {
+    if (n.next) collectPaths(arr[i], n.next, q, `${path}.${i}.`, paths);
+    else paths.push(`${path}.${i}`);
+  }
+};
+
+/**
+ * Asserts that no two selectors update the same field of the object, or a field and its parent.
+ * This depends on the array items matched in the object, so it cannot be detected by {@link buildParams}.
+ */
+export function assertNoResolvedConflict(
+  obj: AnyObject,
+  params: UpdateParams
+): void {
+  const paths: string[] = [];
+  for (const { node, queries } of Object.values(params)) {
+    collectPaths(obj, node, queries, "", paths);
+  }
+  const seen = new Set<string>();
+  for (const path of paths) {
+    assert(!seen.has(path), ERR_RESOLVED_CONFLICT(path));
+    seen.add(path);
+  }
+  for (const path of paths) {
+    let i = path.indexOf(".");
+    while (i > -1) {
+      const parent = path.substring(0, i);
+      assert(!seen.has(parent), ERR_RESOLVED_CONFLICT(parent));
+      i = path.indexOf(".", i + 1);
+    }
+  }
+}
