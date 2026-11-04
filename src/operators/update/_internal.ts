@@ -46,36 +46,98 @@ export const clone = (val: Any, opts: ComputeOptions): Any => {
 };
 
 export type PathNode = {
+  /** The path to the array or field. Empty for an array directly nested in an array. */
   selector: string;
   position?: string;
   next?: PathNode;
+  /** Returns the index that "$" stands for in a document, or -1. */
+  matchFirst?: (doc: AnyObject) => number;
+  /** The items selected in each array, resolved before the document is modified. */
+  resolved?: WeakMap<Any[], number[]>;
 };
 
 // positional array specifier for first matching item.
 const FIRST_ONLY = "$";
 // positional array-wide specifier for all items in matching array.
 const ARRAY_WIDE = "$[]";
+const DIGITS = /^\d+$/;
 
-/** Returns the indexes of the items of the array selected by the positional operator of the node. */
-const selectIndexes = (
+const ERR_POSITIONAL_NO_MATCH =
+  "The positional operator did not find the match needed from the query.";
+
+/** Returns the indexes of the items of the array matched by the positional operator of the node. */
+const matchIndexes = (
   arr: Any[],
-  { selector, position: c }: PathNode,
-  q: Record<string, Query>
+  n: PathNode,
+  q: Record<string, Query>,
+  root: AnyObject
 ): number[] => {
+  const c = n.position as string;
   if (c === FIRST_ONLY) {
-    const i = arr.findIndex(e => q[selector].test({ [selector]: [e] }));
-    // only matching documents should make it here, so this should never happen.
-    assert(i > -1, "BUG: positional operator found no match for " + selector);
+    const i = n.matchFirst!(root);
+    assert(i > -1 && i < arr.length, ERR_POSITIONAL_NO_MATCH);
     return [i];
   }
-  const key = c as string;
-  const filter = c === ARRAY_WIDE ? undefined : q[key];
+  const filter = c === ARRAY_WIDE ? undefined : q[c];
   const indexes: number[] = [];
   for (let i = 0; i < arr.length; i++) {
     // filter if applicable.
-    if (!filter || filter.test({ [key]: [arr[i]] })) indexes.push(i);
+    if (!filter || filter.test({ [c]: [arr[i]] })) indexes.push(i);
   }
   return indexes;
+};
+
+// returns whether a predicate can match without recording the array item it matched.
+const isNegation = (v: Any): boolean =>
+  isObject(v) &&
+  (["$ne", "$nin", "$not"].some(op => op in v) || v.$exists === false);
+
+/**
+ * Creates the function returning the index that "$" stands for in a document. As on MongoDB,
+ * this is the first match in the array traversed by the last predicate of the query in path
+ * order, whichever array the selector updates. $nor and $or with several branches do not
+ * record a match.
+ */
+const createMatchFirst = (condition: AnyObject, options: ComputeOptions) => {
+  const predicates: [string, Any, string[]][] = [];
+  const collect = (cond: AnyObject) => {
+    for (const k of Object.keys(cond)) {
+      const list = cond[k] as AnyObject[];
+      if (k === "$and" || (k === "$or" && list.length === 1))
+        list.forEach(collect);
+      else if (k.startsWith("$")) continue;
+      else if (!isNegation(cond[k]))
+        predicates.push([k, cond[k], k.split(".")]);
+    }
+  };
+  collect(condition);
+  predicates.sort((a, b) => (a[0] < b[0] ? 1 : -1));
+
+  const queries = new Map<string, Query>();
+  return (doc: AnyObject): number => {
+    for (const [, value, parts] of predicates) {
+      let cur: Any = doc;
+      let j = 0;
+      for (
+        ;
+        j < parts.length && !(isArray(cur) && !DIGITS.test(parts[j]));
+        j++
+      ) {
+        cur =
+          isArray(cur) || isObject(cur)
+            ? (cur as AnyObject)[parts[j]]
+            : undefined;
+      }
+      if (!isArray(cur)) continue;
+      const field = ["e", ...parts.slice(j)].join(".");
+      let query = queries.get(field);
+      if (!query)
+        queries.set(field, (query = new Query({ [field]: value }, options)));
+      const i = cur.findIndex(e => query.test({ e: [e] }));
+      if (i > -1) return i;
+    }
+    return -1;
+  };
 };
 
 /**
@@ -101,13 +163,13 @@ export const applyUpdate = (
     walk(o, selector, g, opts);
     return b;
   }
-  const arr = resolve(o, selector) as AnyObject;
+  const arr = (selector ? resolve(o, selector) : o) as AnyObject;
   // no update applied if we do not get correct type.
   if (!isArray(arr) || !arr.length) return false;
 
   // apply update to matching items.
   let status = false;
-  for (const i of selectIndexes(arr, n, q)) {
+  for (const i of n.resolved?.get(arr) ?? matchIndexes(arr, n, q, o)) {
     // apply update and track success.
     status = next
       ? applyUpdate(arr[i] as AnyObject, next, q, f, opts) || status
@@ -122,8 +184,8 @@ export type Action<T> = (
   queries: Record<string, Query>
 ) => boolean;
 
-const ERR_MISSING_FIELD =
-  "You must include the array field for '.$' as part of the query document.";
+const ERR_CONFLICT = (path: string, at: string) =>
+  `Updating the path '${path}' would create a conflict at '${at}'`;
 
 const ERR_IMMUTABLE_FIELD = (path: string, idKey: string) =>
   `Performing an update on the path '${path}' would modify the immutable field '${idKey}'.`;
@@ -156,6 +218,16 @@ export function walkExpression<T>(
   return modified.sort();
 }
 
+/** Returns the identifiers an array filter applies to, including within $and, $or and $nor. */
+const filterIdentifiers = (filter: AnyObject): string[] =>
+  Object.keys(filter).flatMap(k =>
+    !k.startsWith("$")
+      ? [k.split(".")[0]]
+      : isArray(filter[k])
+        ? (filter[k] as AnyObject[]).flatMap(filterIdentifiers)
+        : []
+  );
+
 /**
  * Builds a map of parameters for update operations, where each parameter is associated
  * with its corresponding path node and query conditions. Conflicting selectors are detected.
@@ -171,26 +243,28 @@ export function buildParams(
   arrayFilters ||= [];
 
   // group filters by root field. handles multiple keys per filter object.
-  const filterIndexMap = arrayFilters.reduce(
-    (res: Record<string, AnyObject>, filter) => {
-      for (const k of Object.keys(filter)) {
-        const parent = k.substring(0, k.indexOf(".")) || k;
-        if (res[parent]) {
-          res[parent][k] = filter[k];
-        } else {
-          res[parent] = { [k]: filter[k] };
-        }
-      }
-      return res;
-    },
-    {}
-  ) as Record<string, AnyObject>;
+  const filterIndexMap: Record<string, AnyObject> = {};
+  for (const filter of arrayFilters) {
+    const ids = Array.from(new Set(filterIdentifiers(filter)));
+    assert(
+      ids.length,
+      "Cannot use an expression without a top-level field name in arrayFilters"
+    );
+    assert(
+      ids.length < 2,
+      `Error parsing array filter :: caused by :: Expected a single top-level field name, found '${ids[0]}' and '${ids[1]}'`
+    );
+    assert(
+      !filterIndexMap[ids[0]],
+      `Found multiple array filters with the same top-level field name ${ids[0]}`
+    );
+    filterIndexMap[ids[0]] = filter;
+  }
 
-  let { condition } = options.local;
-  condition = condition ?? {};
-  const queryKeys = Object.keys(condition);
-  const conflictDetector = new PathValidator();
-  const arrayUpdates = new Map<string, boolean>();
+  const matchFirst = createMatchFirst(options.local.condition ?? {}, options);
+  // selectors seen, and whether the children of each parent are $[]/$[identifier].
+  const leaves = new Set<string>();
+  const parents = new Map<string, boolean>();
 
   for (const expr of exprList) {
     for (const selector of Object.keys(expr)) {
@@ -201,26 +275,35 @@ export function buildParams(
       );
 
       const identifiers: string[] = [];
+      let usesFirstOnly = false;
       const node: PathNode = selector.includes("$")
         ? { selector: "" }
         : { selector };
 
       if (!node.selector) {
         selector.split(".").reduce((n, v) => {
-          if (v === FIRST_ONLY || v === ARRAY_WIDE) {
-            n.position = v;
-          } else if (v.startsWith("$[") && v.endsWith("]")) {
-            const id = v.slice(2, -1);
+          const isFilter = v.startsWith("$[") && v.endsWith("]");
+          if (v === FIRST_ONLY || isFilter) {
             assert(
-              /^[a-z]+\w*$/.test(id),
-              `The filter <identifier> must begin with a lowercase letter and contain only alphanumeric characters. '${v}' is invalid.`
+              v !== FIRST_ONLY || !usesFirstOnly,
+              `Too many positional (i.e. '$') elements found in path '${selector}'`
             );
-            identifiers.push(id);
-            n.position = id;
-          } else if (!n.selector) {
-            n.selector = v;
+            usesFirstOnly ||= v === FIRST_ONLY;
+            let position = v;
+            if (isFilter && v !== ARRAY_WIDE) {
+              position = v.slice(2, -1);
+              assert(
+                /^[a-z]+\w*$/.test(position),
+                `The filter <identifier> must begin with a lowercase letter and contain only alphanumeric characters. '${v}' is invalid.`
+              );
+              identifiers.push(position);
+            }
+            // an array directly nested in the matched item.
+            if (n.position) n = n.next = { selector: "" };
+            n.position = position;
+            if (v === FIRST_ONLY) n.matchFirst = matchFirst;
           } else if (!n.position) {
-            n.selector += "." + v;
+            n.selector = n.selector ? `${n.selector}.${v}` : v;
           } else {
             n.next = { selector: v };
             return n.next;
@@ -231,26 +314,13 @@ export function buildParams(
       }
 
       const queries: Record<string, Query> = {};
-      if (identifiers.length) {
-        // extract filters for each identifier
-        const filters: Record<string, AnyObject> = {};
-        for (const v of identifiers) filters[v] = filterIndexMap[v];
-        // create query for each filter
-        for (const k of Object.keys(filters)) {
-          queries[k] = new Query(filters[k], options);
-        }
-      }
-
-      if (node.position === FIRST_ONLY) {
-        const field = node.selector;
-        assert(queryKeys && queryKeys.length, ERR_MISSING_FIELD);
-        const matches = queryKeys.filter(
-          k => k === field || k.startsWith(field + ".")
+      // create query for each filter
+      for (const v of identifiers) {
+        assert(
+          filterIndexMap[v],
+          `No array filter found for identifier '${v}' in path '${selector}'`
         );
-        assert(matches.length === 1, ERR_MISSING_FIELD);
-        const k = matches[0];
-        // add query for matching condition.
-        queries[field] = new Query({ [k]: condition[k] }, options);
+        queries[v] = new Query(filterIndexMap[v], options);
       }
 
       // assert id field is not being modified (MongoDB immutability constraint)
@@ -260,23 +330,25 @@ export function buildParams(
         ERR_IMMUTABLE_FIELD(node.selector, idKey)
       );
 
-      // assert there are no conflicting selectors
-      assert(
-        conflictDetector.add(selector),
-        `updating the path '${selector}' would create a conflict at '${selector}'`
-      );
-
-      // assert a field is not updated through both $[]/$[identifier] and a sub-path, index or $.
+      // assert there are no conflicting selectors, including a field that is
+      // updated through both $[]/$[identifier] and a sub-path, index or $.
       const parts = selector.split(".");
+      let path = parts[0];
       for (let i = 1; i < parts.length; i++) {
-        const parent = parts.slice(0, i).join(".");
         const isArrayUpdate = parts[i].startsWith("$[");
         assert(
-          (arrayUpdates.get(parent) ?? isArrayUpdate) === isArrayUpdate,
-          `updating the path '${selector}' would create a conflict at '${parent}'`
+          !leaves.has(path) &&
+            (parents.get(path) ?? isArrayUpdate) === isArrayUpdate,
+          ERR_CONFLICT(selector, path)
         );
-        arrayUpdates.set(parent, isArrayUpdate);
+        parents.set(path, isArrayUpdate);
+        path += "." + parts[i];
       }
+      assert(
+        !leaves.has(selector) && !parents.has(selector),
+        ERR_CONFLICT(selector, selector)
+      );
+      leaves.add(selector);
 
       // save arguments for evaluation
       params[selector] = { node, queries };
@@ -288,72 +360,139 @@ export function buildParams(
 
 export type UpdateParams = ReturnType<typeof buildParams>;
 
+/** Returns whether any selector uses a positional operator. */
+export const hasPositional = (params: UpdateParams): boolean =>
+  Object.values(params).some(p => p.node.position);
+
 /**
- * Returns whether positional selectors may resolve to conflicting paths in some object.
+ * Returns whether selectors may resolve to conflicting paths in some object.
  * A positional operator only resolves to an index, so selectors that do not conflict
  * when treating every positional operator and index as the same field never will.
  */
 export function mayResolveToConflict(params: UpdateParams): boolean {
-  if (!Object.values(params).some(p => p.node.position)) return false;
   const validator = new PathValidator();
   return Object.keys(params).some(
     selector =>
       !validator.add(
         selector
           .split(".")
-          .map(v => (v.startsWith("$") || /^\d+$/.test(v) ? "*" : v))
+          .map(v => (v.startsWith("$") || DIGITS.test(v) ? "*" : v))
           .join(".")
       )
   );
 }
 
-const ERR_RESOLVED_CONFLICT = (path: string) =>
-  `Update created a conflict at '${path}'`;
+/** Returns the value at the path without traversing arrays other than by index. */
+const getValue = (o: Any, selector: string): Any => {
+  let cur = o;
+  for (const k of selector.split(".")) {
+    if (isArray(cur) ? !DIGITS.test(k) : !isObject(cur)) return undefined;
+    cur = (cur as AnyObject)[k];
+  }
+  return cur;
+};
 
-/** Collects the paths in the object that a path node resolves to. */
-const collectPaths = (
+/** Formats a value as in the messages of MongoDB. */
+const format = (v: Any): string => {
+  if (isArray(v)) return v.length ? `[ ${v.map(format).join(", ")} ]` : "[]";
+  if (!isObject(v)) return JSON.stringify(v);
+  const entries = Object.keys(v).map(k => `${k}: ${format(v[k])}`);
+  return entries.length ? `{ ${entries.join(", ")} }` : "{}";
+};
+
+/** Resolves a path node against the object, keeping the items it selects and collecting its paths. */
+const resolveNode = (
+  root: AnyObject,
   o: AnyObject,
   n: PathNode,
   q: Record<string, Query>,
   prefix: string,
-  paths: string[]
+  paths?: string[]
 ): void => {
-  const path = prefix + n.selector;
+  const path = n.selector ? prefix + n.selector : prefix.slice(0, -1);
   if (!n.position) {
-    paths.push(path);
+    paths?.push(path);
     return;
   }
-  const arr = resolve(o, n.selector) as AnyObject[];
-  if (!isArray(arr) || !arr.length) return;
-  for (const i of selectIndexes(arr, n, q)) {
-    if (n.next) collectPaths(arr[i], n.next, q, `${path}.${i}.`, paths);
-    else paths.push(`${path}.${i}`);
+  const arr = (n.selector ? getValue(o, n.selector) : o) as AnyObject[];
+  if (n.position === FIRST_ONLY) {
+    assert(isArray(arr), ERR_POSITIONAL_NO_MATCH);
+  } else {
+    assert(
+      arr !== undefined,
+      `The path '${path}' must exist in the document in order to apply array updates.`
+    );
+    if (!isArray(arr)) {
+      const name = path.substring(path.lastIndexOf(".") + 1);
+      assert(
+        false,
+        `Cannot apply array updates to non-array element ${name}: ${format(arr)}`
+      );
+    }
+  }
+  // $[] selects every item whatever the update changes, so there is nothing to keep.
+  const isWide = n.position === ARRAY_WIDE;
+  const descend = paths || n.next?.position;
+  if (isWide && !descend) return;
+  const indexes = matchIndexes(arr, n, q, root);
+  if (!isWide) (n.resolved ??= new WeakMap()).set(arr, indexes);
+  if (!descend) return;
+  for (const i of indexes) {
+    if (n.next) resolveNode(root, arr[i], n.next, q, `${path}.${i}.`, paths);
+    else paths?.push(`${path}.${i}`);
   }
 };
 
 /**
- * Asserts that no two selectors update the same field of the object, or a field and its parent.
- * This depends on the array items matched in the object, so it cannot be detected by {@link buildParams}.
+ * Resolves positional selectors against the document before it is modified, so that an
+ * update does not change what later selectors match, as on MongoDB. This also detects
+ * conflicts that depend on the matched array items, which {@link buildParams} cannot.
+ *
+ * @param obj The document about to be modified.
+ * @param params The parameters from {@link buildParams}.
+ * @param checkConflicts Whether the resolved paths may conflict.
  */
-export function assertNoResolvedConflict(
+export function resolvePositions(
   obj: AnyObject,
-  params: UpdateParams
+  params: UpdateParams,
+  checkConflicts: boolean
 ): void {
-  const paths: string[] = [];
+  const paths: string[] | undefined = checkConflicts ? [] : undefined;
   for (const { node, queries } of Object.values(params)) {
-    collectPaths(obj, node, queries, "", paths);
+    resolveNode(obj, obj, node, queries, "", paths);
   }
+  if (!paths) return;
+
   const seen = new Set<string>();
+  const conflicts: string[] = [];
   for (const path of paths) {
-    assert(!seen.has(path), ERR_RESOLVED_CONFLICT(path));
+    if (seen.has(path)) conflicts.push(path);
     seen.add(path);
   }
-  for (const path of paths) {
-    let i = path.indexOf(".");
-    while (i > -1) {
+  for (const path of seen) {
+    for (let i = path.indexOf("."); i > -1; i = path.indexOf(".", i + 1)) {
       const parent = path.substring(0, i);
-      assert(!seen.has(parent), ERR_RESOLVED_CONFLICT(parent));
-      i = path.indexOf(".", i + 1);
+      if (seen.has(parent)) conflicts.push(parent);
+    }
+  }
+  // report the first in document order.
+  conflicts.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+  assert(!conflicts.length, `Update created a conflict at '${conflicts[0]}'`);
+}
+
+/** Asserts that every array filter is used by a selector of the update, as on MongoDB. */
+export function assertArrayFiltersUsed(
+  arrayFilters: AnyObject[],
+  params: UpdateParams,
+  modifier: AnyObject
+): void {
+  const selectors = Object.keys(params).join(".");
+  for (const id of arrayFilters.flatMap(filterIdentifiers)) {
+    if (!selectors.includes(`$[${id}]`)) {
+      assert(
+        false,
+        `The array filter for identifier '${id}' was not used in the update ${format(modifier)}`
+      );
     }
   }
 }
