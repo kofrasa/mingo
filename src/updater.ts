@@ -11,7 +11,14 @@ import { $sort } from "./operators/pipeline/sort";
 import { $unset } from "./operators/pipeline/unset";
 import * as queryOperators from "./operators/query";
 import * as updateOperators from "./operators/update";
-import { buildParams, SingleKeyRecord } from "./operators/update/_internal";
+import {
+  assertArrayFiltersUsed,
+  buildParams,
+  hasPositional,
+  mayResolveToConflict,
+  resolvePositions,
+  SingleKeyRecord
+} from "./operators/update/_internal";
 import { Query } from "./query";
 import {
   Any,
@@ -352,9 +359,12 @@ function updateDocuments<T extends AnyObject>(
   ];
 
   // build parameters and add to locals
-  opts.update({
-    updateParams: buildParams(updateExpressions, arrayFilters, opts)
-  });
+  const updateParams = buildParams(updateExpressions, arrayFilters, opts);
+  opts.update({ updateParams });
+  assertArrayFiltersUsed(arrayFilters, updateParams, modifier as AnyObject);
+
+  const positional = hasPositional(updateParams);
+  const checkConflicts = positional && mayResolveToConflict(updateParams);
 
   const matchedCount = foundDocs.length;
   const output = { matchedCount, modifiedCount: 0 };
@@ -368,6 +378,7 @@ function updateDocuments<T extends AnyObject>(
   }
 
   for (const doc of foundDocs) {
+    if (positional) resolvePositions(doc, updateParams, checkConflicts);
     let modified = false;
     for (const mutate of fns) {
       const fields = mutate(doc);
