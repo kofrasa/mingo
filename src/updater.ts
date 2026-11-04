@@ -14,6 +14,7 @@ import * as updateOperators from "./operators/update";
 import {
   assertNoResolvedConflict,
   buildParams,
+  mayResolveToConflict,
   SingleKeyRecord
 } from "./operators/update/_internal";
 import { Query } from "./query";
@@ -360,8 +361,7 @@ function updateDocuments<T extends AnyObject>(
   opts.update({ updateParams });
 
   // positional selectors only resolve to their paths against each document.
-  const params = Object.values(updateParams);
-  const checkResolved = params.length > 1 && params.some(p => p.node.position);
+  const checkResolved = mayResolveToConflict(updateParams);
 
   const matchedCount = foundDocs.length;
   const output = { matchedCount, modifiedCount: 0 };

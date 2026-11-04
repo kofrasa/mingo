@@ -227,12 +227,12 @@ describe("updater", () => {
           "items.0.b"
         ],
         [
-          "$ and the index of its parent",
+          "$ and the index of the element",
           { $set: { "items.$.a": 1, "items.0": { id: 9 } } },
           "items.0"
         ],
         [
-          "$ and a field of its index",
+          "$ and a field at the index of the element",
           { $set: { "items.$": { id: 9 }, "items.0.a": 1 } },
           "items.0"
         ]
@@ -300,11 +300,30 @@ describe("updater", () => {
         }
       );
 
-      it("should not resolve a positional selector on an empty array", () => {
-        const doc = { items: [], other: 0 };
-        update(doc, { $set: { "items.$[].a": 1, other: 1 } });
-        expect(doc).toEqual({ items: [], other: 1 });
+      it("should FAIL if a $rename target and $ resolve to the same path", () => {
+        const doc: AnyObject = { name: "x", items: [{ id: 1 }] };
+        expect(() =>
+          update(
+            doc,
+            { $rename: { name: "items.0.a" }, $set: { "items.$.a": 1 } },
+            [],
+            condition
+          )
+        ).toThrow("Update created a conflict at 'items.0.a'");
+        expect(doc).toEqual({ name: "x", items: [{ id: 1 }] });
       });
+
+      it.each([[{ items: [] }], [{ other: 0 }], [{ items: { a: 0 } }]])(
+        "should not resolve positional selectors without an array in %j",
+        (doc: AnyObject) => {
+          const before = JSON.stringify(doc);
+          update(doc, { $set: { "items.$[x].a": 1, "items.$[y].a": 2 } }, [
+            { "x.id": 1 },
+            { "y.id": 1 }
+          ]);
+          expect(JSON.stringify(doc)).toEqual(before);
+        }
+      );
 
       it("should check each document against the elements it matches", () => {
         const docs: AnyObject[] = [

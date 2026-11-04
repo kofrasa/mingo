@@ -68,12 +68,12 @@ const selectIndexes = (
     assert(i > -1, "BUG: positional operator found no match for " + selector);
     return [i];
   }
+  const key = c as string;
+  const filter = c === ARRAY_WIDE ? undefined : q[key];
   const indexes: number[] = [];
   for (let i = 0; i < arr.length; i++) {
     // filter if applicable.
-    if (c === ARRAY_WIDE || !q[c!] || q[c!].test({ [c!]: [arr[i]] })) {
-      indexes.push(i);
-    }
+    if (!filter || filter.test({ [key]: [arr[i]] })) indexes.push(i);
   }
   return indexes;
 };
@@ -287,6 +287,25 @@ export function buildParams(
 }
 
 export type UpdateParams = ReturnType<typeof buildParams>;
+
+/**
+ * Returns whether positional selectors may resolve to conflicting paths in some object.
+ * A positional operator only resolves to an index, so selectors that do not conflict
+ * when treating every positional operator and index as the same field never will.
+ */
+export function mayResolveToConflict(params: UpdateParams): boolean {
+  if (!Object.values(params).some(p => p.node.position)) return false;
+  const validator = new PathValidator();
+  return Object.keys(params).some(
+    selector =>
+      !validator.add(
+        selector
+          .split(".")
+          .map(v => (v.startsWith("$") || /^\d+$/.test(v) ? "*" : v))
+          .join(".")
+      )
+  );
+}
 
 const ERR_RESOLVED_CONFLICT = (path: string) =>
   `Update created a conflict at '${path}'`;
