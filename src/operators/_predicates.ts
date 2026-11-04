@@ -177,10 +177,11 @@ export function $gte(a: Any, b: Any, _options?: Options): boolean {
 
 /**
  * Performs a modulo operation on the value of a field and selects documents with a specified result.
+ * Only numeric values match, to avoid JavaScript type coercion (e.g. `null % 5 === 0`).
  */
 export function $mod(a: Any, b: number[], _options: Options): boolean {
   return ensureArray(a).some(
-    ((x: number) => b.length === 2 && x % b[0] === b[1]) as Callback
+    (x: Any) => isNumber(x) && b.length === 2 && x % b[0] === b[1]
   );
 }
 
