@@ -251,8 +251,8 @@ export function buildParams(
 
       // assert there are no conflicting selectors
       assert(
-        conflictDetector.add(node.selector),
-        `updating the path '${node.selector}' would create a conflict at '${node.selector}'`
+        conflictDetector.add(selector),
+        `updating the path '${selector}' would create a conflict at '${selector}'`
       );
 
       // save arguments for evaluation
