@@ -12,6 +12,7 @@ import {
 import {
   assert,
   compare as mingoCmp,
+  compareValues,
   ensureArray,
   flatten,
   intersection,
@@ -80,18 +81,21 @@ export function processQuery(
   };
 }
 
+/**
+ * Evaluates a comparison expression ($eq, $gt, ...) like MongoDB: both operands are compared
+ * by value and BSON type order, so arrays are not traversed and values of different types
+ * are ordered by type instead of never matching.
+ */
 export function processExpression(
   obj: AnyObject,
   expr: Any,
   options: Options,
-  predicate: Predicate
+  name: string,
+  test: (order: number) => boolean
 ): boolean {
-  assert(
-    isArray(expr) && expr.length === 2,
-    `${predicate.name} expects array(2)`
-  );
+  assert(isArray(expr) && expr.length === 2, `${name} expects array(2)`);
   const [lhs, rhs] = evalExpr(obj, expr, options) as Any[];
-  return predicate(lhs, rhs, options);
+  return test(compareValues(lhs, rhs));
 }
 
 /**

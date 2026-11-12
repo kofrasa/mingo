@@ -1,8 +1,8 @@
 import type { ComputeOptions } from "../../core/_internal";
-import { evalExpr } from "../../core/_internal";
 import type { Any, AnyObject, Options } from "../../types";
 import { isInteger } from "../../util";
 import { errExpectInteger } from "../expression/_internal";
+import { evalGroupArg } from "./_internal";
 import { $push } from "./push";
 
 interface InputExpr {
@@ -22,7 +22,7 @@ export const $firstN = (
   const foe = options.failOnError;
   const copts = options as ComputeOptions;
   const m = coll.length;
-  const n = evalExpr(copts?.local?.groupId, expr.n, copts) as number;
+  const n = evalGroupArg(expr.n, copts) as number;
   if (!isInteger(n) || n < 1)
     return errExpectInteger(foe, "$firstN 'n'", { min: 1 });
 

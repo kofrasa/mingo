@@ -1,7 +1,8 @@
-import { ComputeOptions, evalExpr } from "../../core/_internal";
+import { ComputeOptions } from "../../core/_internal";
 import { Lazy } from "../../lazy";
 import { Any, AnyObject, Options, SortSpec } from "../../types";
 import { $sort } from "../pipeline/sort";
+import { evalGroupArg } from "./_internal";
 import { $push } from "./push";
 
 interface InputExpr {
@@ -16,7 +17,7 @@ interface InputExpr {
  */
 export const $topN = (coll: AnyObject[], expr: InputExpr, options: Options) => {
   const copts = options as ComputeOptions;
-  const { n, sortBy } = evalExpr(copts?.local?.groupId, expr, copts) as Pick<
+  const { n, sortBy } = evalGroupArg(expr, copts) as Pick<
     InputExpr,
     "n" | "sortBy"
   >;
