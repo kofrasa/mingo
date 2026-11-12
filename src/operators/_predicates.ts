@@ -23,6 +23,7 @@ import {
   isNil,
   isNumber,
   isObject,
+  isObjectLike,
   isOperator,
   isRegExp,
   isString,
@@ -57,7 +58,9 @@ function elemMatchPredicate(criteria: AnyObject, options: Options) {
   }
   // create query once, reuse for all documents
   const q = new Query(criteria, options);
-  return (v: Any) => q.test(format(v) as AnyObject) as boolean;
+  if (wrap) return (v: Any) => q.test(format(v) as AnyObject) as boolean;
+  // MongoDB parity: field criteria only match embedded documents (or arrays), never scalars.
+  return (v: Any) => isObjectLike(v) && (q.test(v as AnyObject) as boolean);
 }
 
 export function processQuery(
@@ -197,31 +200,27 @@ export function $regex(a: Any, b: RegExp, options?: Options): boolean {
 
 /**
  * Matches arrays that contain all elements specified in the query.
+ * Like MongoDB, `{ a: { $all: [x, y] } }` is the same as `{ $and: [{ a: x }, { a: y }] }`,
+ * so a non-array field matches when it equals every value.
  */
-export function $all(
-  values: Any[],
-  rhs: AnyObject[],
-  options: Options
-): boolean {
-  if (!isArray(values) || !isArray(rhs) || !values.length || !rhs.length) {
-    return false;
-  }
+export function $all(values: Any, rhs: AnyObject[], options: Options): boolean {
+  if (!isArray(rhs) || !rhs.length) return false;
 
-  let matched = true;
   for (const expr of rhs) {
-    // no need to check all the queries.
-    if (!matched) break;
+    let matched: boolean;
     if (isObject(expr) && Object.keys(expr)[0] === "$elemMatch") {
       const criteria = expr["$elemMatch"] as AnyObject;
       const pred = elemMatchPredicate(criteria, options);
-      matched = $elemMatch(values, pred, options);
+      matched = $elemMatch(values as Any[], pred, options);
     } else if (isRegExp(expr)) {
-      matched = values.some(s => isString(s) && expr.test(s));
+      matched = ensureArray(values).some(s => isString(s) && expr.test(s));
     } else {
-      matched = values.some(v => isEqual(expr, v));
+      matched = $eq(values, expr, options);
     }
+    // no need to check all the queries.
+    if (!matched) return false;
   }
-  return matched;
+  return true;
 }
 
 /**
@@ -298,9 +297,12 @@ export function $type(
   b: ConversionType | ConversionType[],
   options?: Options
 ): boolean {
-  return isArray(b)
-    ? b.findIndex(t => compareType(a, t, options)) >= 0
-    : compareType(a, b, options);
+  const matches = (v: Any) =>
+    isArray(b)
+      ? b.some(t => compareType(v, t, options))
+      : compareType(v, b, options);
+  // MongoDB parity: an array field also matches when one of its elements has the type.
+  return matches(a) || (isArray(a) && a.some(matches));
 }
 
 function compare(a: Any, b: Any, f: Predicate): boolean {
