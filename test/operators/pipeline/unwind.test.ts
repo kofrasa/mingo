@@ -115,4 +115,25 @@ describe("operators/pipeline/unwind", () => {
       { _id: 2, number: 1 }
     ]);
   });
+
+  it("$unwind keeps an empty object or empty string as a single value", () => {
+    const result = aggregate(
+      [
+        { _id: 1, a: {} },
+        { _id: 2, a: { x: 1 } },
+        { _id: 3, a: 5 },
+        { _id: 4, a: [] },
+        { _id: 5, a: null },
+        { _id: 6 },
+        { _id: 7, a: [1, 2] },
+        { _id: 8, a: "" },
+        { _id: 9, a: 0 }
+      ],
+      [{ $unwind: "$a" }],
+      options
+    );
+    expect(result.map(o => o._id)).toStrictEqual([1, 2, 3, 7, 7, 8, 9]);
+    expect(result[0]).toStrictEqual({ _id: 1, a: {} });
+    expect(result[5]).toStrictEqual({ _id: 8, a: "" });
+  });
 });
