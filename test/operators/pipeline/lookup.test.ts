@@ -418,4 +418,39 @@ describe(testPath(import.meta.url), () => {
       }
     ]);
   });
+
+  it("does not add unmatched values of an array localField", () => {
+    const foreign = [
+      { _id: "f1", k: 1 },
+      { _id: "f2", k: [2, 9] }
+    ];
+    const result = aggregate(
+      [
+        { _id: 1, a: [5, 6] },
+        { _id: 2, a: [1, 7] },
+        { _id: 3, a: 5 },
+        { _id: 4, a: [7, 9, 1, 2] }
+      ],
+      [
+        {
+          $lookup: {
+            from: foreign,
+            localField: "a",
+            foreignField: "k",
+            as: "j"
+          }
+        }
+      ],
+      DEFAULT_OPTS
+    );
+    expect(result.map(o => o.j)).toStrictEqual([
+      [],
+      [{ _id: "f1", k: 1 }],
+      [],
+      [
+        { _id: "f2", k: [2, 9] },
+        { _id: "f1", k: 1 }
+      ]
+    ]);
+  });
 });
