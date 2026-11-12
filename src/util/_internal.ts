@@ -144,8 +144,6 @@ function mingoCmp(a: Any, b: Any, descendArray: boolean = false): number {
  * @returns {Number}
  */
 export function compareValues(a: Any, b: Any): number {
-  if (a === MISSING) a = undefined;
-  if (b === MISSING) b = undefined;
   const typeA = typeOf(a);
   if (typeA !== typeOf(b)) return mingoCmp(a, b);
   switch (typeA) {
@@ -163,14 +161,21 @@ export function compareValues(a: Any, b: Any): number {
       return simpleCmp(xs.length, ys.length);
     }
     case "object": {
-      const keysA = Object.keys(a as object).sort();
-      const keysB = Object.keys(b as object).sort();
-      let neq = mingoCmp(keysA, keysB);
-      if (neq) return neq;
-      for (const k of keysA)
-        if ((neq = compareValues((a as AnyObject)[k], (b as AnyObject)[k])))
-          return neq;
-      return 0;
+      // field pairs are compared like BSON (type, then name, then value), with
+      // keys sorted so that field order does not matter.
+      const [xs, ys] = [Object.keys(a as object), Object.keys(b as object)];
+      xs.sort();
+      ys.sort();
+      const size = Math.min(xs.length, ys.length);
+      let neq = 0;
+      for (let i = 0; i < size; i++) {
+        const va = (a as AnyObject)[xs[i]];
+        const vb = (b as AnyObject)[ys[i]];
+        if (typeOf(va) !== typeOf(vb)) return compareValues(va, vb);
+        if ((neq = simpleCmp(xs[i], ys[i]))) return neq;
+        if ((neq = compareValues(va, vb))) return neq;
+      }
+      return simpleCmp(xs.length, ys.length);
     }
   }
   return mingoCmp(a, b);
