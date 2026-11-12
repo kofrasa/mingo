@@ -92,7 +92,10 @@ export function $lookup(
           return [local.some(v => map.has(v)), []];
         }
         // return entire result set.
-        const result = Array.from(new Set(flatten(local.map(v => map.get(v)))));
+        // values without a match add nothing
+        const result = Array.from(
+          new Set(flatten(local.map(v => map.get(v) ?? [])))
+        );
         return [result.length > 0, result];
       }
       const result = map.get(local) ?? null;
