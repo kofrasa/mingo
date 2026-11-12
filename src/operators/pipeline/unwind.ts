@@ -2,7 +2,7 @@ import { Iterator, Lazy } from "../../lazy";
 import { Any, AnyObject, Callback, Options } from "../../types";
 import {
   isArray,
-  isEmpty,
+  isNil,
   isString,
   removeValue,
   resolve,
@@ -75,7 +75,8 @@ export function $unwind(
             return format(newObj, i);
           }) as Callback);
         }
-      } else if (!isEmpty(value) || preserveNullAndEmptyArrays === true) {
+      } else if (!isNil(value) || preserveNullAndEmptyArrays === true) {
+        // like MongoDB, only a missing or null field (or an empty array) drops the document
         return { value: format(obj, null), done: false };
       }
     }
