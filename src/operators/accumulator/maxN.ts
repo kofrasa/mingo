@@ -1,7 +1,8 @@
-import { ComputeOptions, evalExpr } from "../../core/_internal";
+import { ComputeOptions } from "../../core/_internal";
 import { Any, AnyObject, Options } from "../../types";
 import { compare, isInteger, isNil } from "../../util";
 import { errExpectInteger } from "../expression/_internal";
+import { evalGroupArg } from "./_internal";
 import { $push } from "./push";
 
 interface InputExpr {
@@ -14,7 +15,7 @@ interface InputExpr {
  */
 export const $maxN = (coll: AnyObject[], expr: InputExpr, options: Options) => {
   const copts = options as ComputeOptions;
-  const n = evalExpr(copts?.local?.groupId, expr.n, copts) as number;
+  const n = evalGroupArg(expr.n, copts) as number;
   if (!isInteger(n) || n < 1) {
     return errExpectInteger(options.failOnError, "$maxN 'n'", { min: 1 });
   }

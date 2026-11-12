@@ -1,3 +1,22 @@
+import { ComputeOptions, evalExpr } from "../../core/_internal";
+import { Any, Options } from "../../types";
+
+/**
+ * Evaluates an argument such as `n` of the N accumulators ($firstN, $topN, ...).
+ * Inside $group, MongoDB resolves field paths in it against the group key (`_id`),
+ * not against the documents of the group.
+ */
+export function evalGroupArg(expr: Any, options: Options): Any {
+  const copts = options as ComputeOptions;
+  const groupId = copts?.local?.groupId as Any;
+  if (groupId === undefined) return evalExpr(groupId, expr, copts);
+  return evalExpr(
+    groupId,
+    expr,
+    ComputeOptions.init(copts).update({ root: groupId })
+  );
+}
+
 export function stddev(data: number[], sampled = true) {
   let sum = 0;
   for (let i = 0; i < data.length; i++) sum += data[i];

@@ -4,6 +4,7 @@
 
 **Fixes**
 - `$mod` query operator only matches numeric values, so `null`, booleans, strings, dates and nested arrays no longer match through JavaScript type coercion.
+- Comparison expressions `$eq`, `$ne`, `$gt`, `$gte`, `$lt`, `$lte` and `$cmp` compare value and type using the BSON comparison order, compare arrays as whole values, and treat `NaN` as less than other numbers, as in MongoDB (#643). The `n` argument of `$firstN`, `$lastN`, `$minN`, `$maxN`, `$topN` and `$bottomN` in `$group` now resolves field paths against the group key.
 
 ## 7.2.7 / 2026-10-30
 

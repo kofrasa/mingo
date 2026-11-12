@@ -134,6 +134,49 @@ function mingoCmp(a: Any, b: Any, descendArray: boolean = false): number {
 }
 
 /**
+ * Compare two values the way MongoDB comparison expressions ($cmp, $eq, $gt, ...) do:
+ * by BSON type order first, then by value. Unlike {@link compare}, an array is compared
+ * as one value (element by element, in order) and never matched against its elements.
+ * NaN equals NaN and is less than any other number.
+ *
+ * @param a The first value
+ * @param b The second value
+ * @returns {Number}
+ */
+export function compareValues(a: Any, b: Any): number {
+  if (a === MISSING) a = undefined;
+  if (b === MISSING) b = undefined;
+  const typeA = typeOf(a);
+  if (typeA !== typeOf(b)) return mingoCmp(a, b);
+  switch (typeA) {
+    case "number": {
+      const [nanA, nanB] = [Number.isNaN(a), Number.isNaN(b)];
+      if (nanA || nanB) return nanA === nanB ? 0 : nanA ? -1 : 1;
+      return simpleCmp(a as number, b as number);
+    }
+    case "array": {
+      const [xs, ys] = [a as Any[], b as Any[]];
+      const size = Math.min(xs.length, ys.length);
+      let neq = 0;
+      for (let i = 0; i < size; i++)
+        if ((neq = compareValues(xs[i], ys[i]))) return neq;
+      return simpleCmp(xs.length, ys.length);
+    }
+    case "object": {
+      const keysA = Object.keys(a as object).sort();
+      const keysB = Object.keys(b as object).sort();
+      let neq = mingoCmp(keysA, keysB);
+      if (neq) return neq;
+      for (const k of keysA)
+        if ((neq = compareValues((a as AnyObject)[k], (b as AnyObject)[k])))
+          return neq;
+      return 0;
+    }
+  }
+  return mingoCmp(a, b);
+}
+
+/**
  * Compare function which adheres to MongoDB comparison order.
  *
  * @param a The first value
