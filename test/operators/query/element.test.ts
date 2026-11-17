@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { Query } from "../../../src";
+import { find, Query } from "../../../src";
 import { $exists } from "../../../src/operators/query";
 import { AnyObject } from "../../../src/types";
 import { DEFAULT_OPTS, testPath } from "../../support";
@@ -48,6 +48,37 @@ describe(testPath(import.meta.url), () => {
         const query = new Query(criteria as AnyObject);
         expect(query.test(obj)).toEqual(true);
       });
+    });
+  });
+
+  describe("$type on array fields", () => {
+    const ids = (criteria: AnyObject, docs: AnyObject[]) =>
+      find(docs, criteria)
+        .all()
+        .map(d => d._id);
+
+    it("matches when an array element has the type", () => {
+      const docs = [
+        { _id: 1, a: ["A"] },
+        { _id: 2, a: [1, "A"] },
+        { _id: 3, a: [1, 2] }
+      ];
+      expect(ids({ a: { $type: "string" } }, docs)).toEqual([1, 2]);
+      expect(ids({ a: { $type: 2 } }, docs)).toEqual([1, 2]);
+      expect(ids({ a: { $type: ["bool", "string"] } }, docs)).toEqual([1, 2]);
+      expect(ids({ a: { $type: "bool" } }, [{ _id: 1, a: [true] }])).toEqual([
+        1
+      ]);
+    });
+
+    it("still matches the array itself", () => {
+      const docs = [
+        { _id: 1, a: [] },
+        { _id: 2, a: [[1]] },
+        { _id: 3, a: 1 }
+      ];
+      expect(ids({ a: { $type: "array" } }, docs)).toEqual([1, 2]);
+      expect(ids({ a: { $type: "number" } }, docs)).toEqual([3]);
     });
   });
 

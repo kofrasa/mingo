@@ -526,4 +526,83 @@ describe(testPath(import.meta.url), () => {
       { _id: 3, scores: [80, 90, 100] }
     ]);
   });
+  describe("MongoDB parity for scalar fields", () => {
+    const ids = (criteria: AnyObject, docs: AnyObject[]) =>
+      find(docs, criteria)
+        .all()
+        .map(d => d._id);
+
+    it("$all matches a scalar field equal to every value", () => {
+      expect(
+        ids({ a: { $all: [0] } }, [
+          { _id: 1, a: 0 },
+          { _id: 2, a: [0] }
+        ])
+      ).toEqual([1, 2]);
+      expect(ids({ a: { $all: [0, 0] } }, [{ _id: 1, a: 0 }])).toEqual([1]);
+      expect(ids({ a: { $all: ["x"] } }, [{ _id: 1, a: "y" }])).toEqual([]);
+      expect(
+        ids({ a: { $all: [/^x/] } }, [
+          { _id: 1, a: "xy" },
+          { _id: 2, a: "yx" }
+        ])
+      ).toEqual([1]);
+    });
+
+    it("$all with null matches null and missing fields", () => {
+      expect(
+        ids({ a: { $all: [null] } }, [
+          { _id: 1 },
+          { _id: 2, a: null },
+          { _id: 3, a: 1 }
+        ])
+      ).toEqual([1, 2]);
+    });
+
+    it("$all with an array value matches an equal array field", () => {
+      expect(
+        ids({ a: { $all: [[1, 2]] } }, [
+          { _id: 1, a: [1, 2] },
+          { _id: 2, a: [[1, 2], 3] },
+          { _id: 3, a: [2, 1] }
+        ])
+      ).toEqual([1, 2]);
+      expect(
+        ids({ a: { $all: [[]] } }, [
+          { _id: 1, a: [] },
+          { _id: 2, a: [1] }
+        ])
+      ).toEqual([1]);
+    });
+
+    it("$all does not match with an empty list or $elemMatch on a scalar", () => {
+      expect(
+        ids({ a: { $all: [] } }, [
+          { _id: 1, a: 0 },
+          { _id: 2, a: [] }
+        ])
+      ).toEqual([]);
+      expect(
+        ids({ a: { $all: [{ $elemMatch: { $gt: 0 } }] } }, [{ _id: 1, a: 5 }])
+      ).toEqual([]);
+    });
+
+    it("$elemMatch with field criteria does not match scalar elements", () => {
+      expect(
+        ids({ a: { $elemMatch: { y: 3 } } }, [
+          { _id: 1, a: [3] },
+          { _id: 2, a: [3, { y: 3 }] }
+        ])
+      ).toEqual([2]);
+      expect(
+        ids({ a: { $elemMatch: { y: { $gt: -1 } } } }, [{ _id: 1, a: [3] }])
+      ).toEqual([]);
+      expect(
+        ids({ a: { $elemMatch: { $or: [{ y: 3 }] } } }, [{ _id: 1, a: [3] }])
+      ).toEqual([]);
+      expect(
+        ids({ a: { $elemMatch: { $gt: 1 } } }, [{ _id: 1, a: [3] }])
+      ).toEqual([1]);
+    });
+  });
 });
