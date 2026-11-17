@@ -16,10 +16,14 @@ interface InputExpr {
 export const $lastN = (coll: Any[], expr: InputExpr, options: Options) => {
   const copts = options as ComputeOptions;
   const m = coll.length;
-  const n = evalExpr(copts?.local?.groupId, expr.n, copts) as number;
+  const n = evalExpr(
+    copts?.local?.groupId,
+    expr.n,
+    copts.update({ root: null })
+  ) as number;
   const foe = options.failOnError;
-  if (!isInteger(n) || n < 1) {
+  if (!isInteger(n) || n < 1)
     return errExpectInteger(foe, "$lastN 'n'", { min: 1 });
-  }
+
   return $push(m <= n ? coll : coll.slice(m - n), expr.input, options);
 };

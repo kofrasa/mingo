@@ -1,4 +1,4 @@
-import { ComputeOptions, evalExpr } from "../core/_internal";
+import { ComputeOptions } from "../core/_internal";
 import { Query } from "../query";
 import {
   Any,
@@ -10,8 +10,7 @@ import {
   Predicate
 } from "../types";
 import {
-  assert,
-  compare as mingoCmp,
+  compare,
   ensureArray,
   flatten,
   intersection,
@@ -80,20 +79,6 @@ export function processQuery(
   };
 }
 
-export function processExpression(
-  obj: AnyObject,
-  expr: Any,
-  options: Options,
-  predicate: Predicate
-): boolean {
-  assert(
-    isArray(expr) && expr.length === 2,
-    `${predicate.name} expects array(2)`
-  );
-  const [lhs, rhs] = evalExpr(obj, expr, options) as Any[];
-  return predicate(lhs, rhs, options);
-}
-
 /**
  * Checks that two values are equal.
  */
@@ -151,28 +136,28 @@ export function $nin(a: Any[], b: Any[], options?: Options): boolean {
  * Matches values that are less than the value specified in the query.
  */
 export function $lt(a: Any, b: Any, _options?: Options): boolean {
-  return compare(a, b, (x: Any, y: Any) => mingoCmp(x, y) < 0);
+  return queryCmp(a, b, [-1]);
 }
 
 /**
  * Matches values that are less than or equal to the value specified in the query.
  */
 export function $lte(a: Any, b: Any, _options?: Options): boolean {
-  return compare(a, b, (x: Any, y: Any) => mingoCmp(x, y) <= 0);
+  return queryCmp(a, b, [0, -1]);
 }
 
 /**
  * Matches values that are greater than the value specified in the query.
  */
 export function $gt(a: Any, b: Any, _options?: Options): boolean {
-  return compare(a, b, (x: Any, y: Any) => mingoCmp(x, y) > 0);
+  return queryCmp(a, b, [1]);
 }
 
 /**
  * Matches values that are greater than or equal to the value specified in the query.
  */
 export function $gte(a: Any, b: Any, _options?: Options): boolean {
-  return compare(a, b, (x: Any, y: Any) => mingoCmp(x, y) >= 0);
+  return queryCmp(a, b, [0, 1]);
 }
 
 /**
@@ -303,9 +288,8 @@ export function $type(
     : compareType(a, b, options);
 }
 
-function compare(a: Any, b: Any, f: Predicate): boolean {
-  for (const v of ensureArray(a)) {
-    if (typeOf(v) === typeOf(b) && f(v, b)) return true;
-  }
-  return false;
+function queryCmp(a: Any, b: Any, expectedValues: number[]): boolean {
+  return ensureArray(a).some(
+    v => typeOf(v) === typeOf(b) && expectedValues.includes(compare(v, b))
+  );
 }

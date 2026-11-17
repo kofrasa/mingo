@@ -14,10 +14,14 @@ interface InputExpr {
  */
 export const $minN = (coll: AnyObject[], expr: InputExpr, options: Options) => {
   const copts = options as ComputeOptions;
-  const n = evalExpr(copts?.local?.groupId, expr.n, copts) as number;
-  if (!isInteger(n) || n < 1) {
+  const n = evalExpr(
+    copts?.local?.groupId,
+    expr.n,
+    copts.update({ root: null })
+  ) as number;
+  if (!isInteger(n) || n < 1)
     return errExpectInteger(options.failOnError, "$minN 'n'", { min: 1 });
-  }
+
   return $push(coll, expr.input, options)
     .filter(o => !isNil(o))
     .sort(compare)

@@ -16,10 +16,11 @@ interface InputExpr {
  */
 export const $topN = (coll: AnyObject[], expr: InputExpr, options: Options) => {
   const copts = options as ComputeOptions;
-  const { n, sortBy } = evalExpr(copts?.local?.groupId, expr, copts) as Pick<
-    InputExpr,
-    "n" | "sortBy"
-  >;
+  const { n, sortBy } = evalExpr(
+    copts?.local?.groupId,
+    expr,
+    copts.update({ root: null })
+  ) as Pick<InputExpr, "n" | "sortBy">;
 
   const result = $sort(Lazy(coll), sortBy, options).take(n).collect();
   return $push(result, expr.output, copts);

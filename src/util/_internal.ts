@@ -51,7 +51,14 @@ const typedArraysCmp = (a: ArrayBufferView, b: ArrayBufferView): number => {
   return simpleCmp(bytesA.length, bytesB.length);
 };
 
-function mingoCmp(a: Any, b: Any, descendArray: boolean = false): number {
+/**
+ * Compare two values
+ * @param a The first value
+ * @param b  The second value
+ * @param strictMode whether to follow MongoDB comparison order for arrays. @default false
+ * @returns
+ */
+export function mingoCmp(a: Any, b: Any, strictMode: boolean = false): number {
   if (a === MISSING) a = undefined;
   if (b === MISSING) b = undefined;
   // null, undefined, same object ref, same primitive value
@@ -105,7 +112,7 @@ function mingoCmp(a: Any, b: Any, descendArray: boolean = false): number {
   // undefined is smallest, empty array is next smallest.
   if (typeA == "undefined") return -1;
   if (typeB == "undefined") return 1;
-  if (descendArray) {
+  if (strictMode) {
     if (typeA == "array") {
       const xs = a as Any[];
       if (!xs.length) return -1;
@@ -138,7 +145,7 @@ function mingoCmp(a: Any, b: Any, descendArray: boolean = false): number {
  *
  * @param a The first value
  * @param b The second value
- * @returns {Number}
+ * @returns {Number} 0 | 1 | -1
  */
 export const compare = (a: Any, b: Any): number => mingoCmp(a, b, true);
 

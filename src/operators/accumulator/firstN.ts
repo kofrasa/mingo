@@ -22,7 +22,11 @@ export const $firstN = (
   const foe = options.failOnError;
   const copts = options as ComputeOptions;
   const m = coll.length;
-  const n = evalExpr(copts?.local?.groupId, expr.n, copts) as number;
+  const n = evalExpr(
+    copts?.local?.groupId,
+    expr.n,
+    copts.update({ root: null })
+  ) as number;
   if (!isInteger(n) || n < 1)
     return errExpectInteger(foe, "$firstN 'n'", { min: 1 });
 

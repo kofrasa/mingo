@@ -17,7 +17,11 @@ interface InputExpr {
 export const $bottomN = (coll: Any[], expr: Any, options: Options) => {
   const copts = options as ComputeOptions;
   const args = expr as InputExpr;
-  const n = evalExpr(copts?.local?.groupId, args.n, copts) as number;
+  const n = evalExpr(
+    copts?.local?.groupId,
+    args.n,
+    copts.update({ root: null })
+  ) as number;
   const result = $sort(Lazy(coll), args.sortBy, options).collect();
   const m = result.length;
   return $push(m <= n ? result : result.slice(m - n), args.output, copts);

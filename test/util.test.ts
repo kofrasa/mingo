@@ -91,8 +91,6 @@ describe("util", () => {
       1,
       "a",
       Symbol(),
-      // array are compared element-wise
-      [Symbol("sym")],
       { a: 1, b: 2 },
       new Uint8Array(0),
       false,
@@ -210,12 +208,13 @@ describe("util", () => {
           [1, 2],
           [1, 2, 0],
           [1],
+          3,
+          [[1]],
           [[1, 2]],
           [1, 3],
+          [2],
           [1, "a"],
           [],
-          [2],
-          [[1]],
           ["a"],
           [1, null],
           null
@@ -230,6 +229,7 @@ describe("util", () => {
           [1, 3],
           [1, "a"],
           [2],
+          3,
           ["a"],
           [[1]],
           [[1, 2]]
