@@ -5,6 +5,7 @@
 **Fixes**
 - `$mod` query operator only matches numeric values, so `null`, booleans, strings, dates and nested arrays no longer match through JavaScript type coercion.
 - `$all` matches a non-array field that equals every listed value (and `null` matches missing fields), `$type` matches an array field when an element has the type, and `$elemMatch` with field criteria no longer matches scalar elements, as in MongoDB (#644).
+- `$dateAdd` and `$dateSubtract` with unit `month`, `quarter` or `year` clamp to the last day of the target month (`2024-01-31` + 1 month is `2024-02-29`, not `2024-03-02`), as in MongoDB.
 
 ## 7.2.7 / 2026-10-30
 

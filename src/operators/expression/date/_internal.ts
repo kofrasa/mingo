@@ -337,15 +337,14 @@ export const dateDiffHour = (start: Date, end: Date): number =>
   end.getUTCHours() - start.getUTCHours() + dateDiffDay(start, end) * 24;
 
 const addMonth = (d: Date, amount: number): void => {
-  // months start from 0 to 11.
-  const m = d.getUTCMonth() + amount;
-  const yearOffset = Math.floor(m / 12);
-  if (m < 0) {
-    const month = (m % 12) + 12;
-    d.setUTCFullYear(d.getUTCFullYear() + yearOffset, month, d.getUTCDate());
-  } else {
-    d.setUTCFullYear(d.getUTCFullYear() + yearOffset, m % 12, d.getUTCDate());
-  }
+  const day = d.getUTCDate();
+  // move to the 1st so the month change cannot overflow into the next month.
+  d.setUTCDate(1);
+  d.setUTCMonth(d.getUTCMonth() + amount);
+  // keep the day, but clamp it to the last day of the new month.
+  const last = new Date(d);
+  last.setUTCMonth(last.getUTCMonth() + 1, 0);
+  d.setUTCDate(Math.min(day, last.getUTCDate()));
 };
 
 export const dateAdd = (
@@ -357,7 +356,7 @@ export const dateAdd = (
   const d = new Date(date);
   switch (unit) {
     case "year":
-      d.setUTCFullYear(d.getUTCFullYear() + amount);
+      addMonth(d, 12 * amount);
       break;
     case "quarter":
       addMonth(d, 3 * amount);
