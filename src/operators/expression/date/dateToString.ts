@@ -11,6 +11,7 @@ import {
   dayOfYear,
   formatTimezone,
   isoWeek,
+  isoWeekYear,
   padDigits,
   parseTimezone,
   weekOfYear
@@ -26,7 +27,7 @@ interface DateOptions {
 // date functions for format specifiers
 const DATE_FUNCTIONS: Record<string, Callback<number, Date>> = {
   "%Y": (d: Date) => d.getUTCFullYear(), //year
-  "%G": (d: Date) => d.getUTCFullYear(), //year
+  "%G": isoWeekYear, //year
   "%m": (d: Date) => d.getUTCMonth() + 1, //month
   "%d": (d: Date) => d.getUTCDate(), //dayOfMonth
   "%H": (d: Date) => d.getUTCHours(), //hour

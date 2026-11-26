@@ -51,6 +51,18 @@ runTest(testPath(import.meta.url), {
 
     [{ format: "%G", date }, "2014"],
 
+    // %G is the ISO week-numbering year of %V
+    [
+      { format: "%G-W%V-%u", date: new Date("2021-01-01T00:00:00Z") },
+      "2020-W53-5"
+    ],
+    [
+      { format: "%G-W%V-%u", date: new Date("2024-12-31T00:00:00Z") },
+      "2025-W01-2"
+    ],
+    [{ format: "%U", date: new Date("2023-01-01T00:00:00Z") }, "01"],
+    [{ format: "%U", date: new Date("2024-01-07T00:00:00Z") }, "01"],
+
     // timewithOffsetNY
     [
       {

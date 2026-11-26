@@ -88,22 +88,21 @@ export function isoWeek(d: Date): number {
   return w;
 }
 
+/**
+ * Returns the week of the year (0-53). Weeks begin on Sunday; days before the
+ * first Sunday of the year are in week 0. Same as strftime's %U.
+ */
 export function weekOfYear(d: Date): number {
-  const result = isoWeek(d);
-  // check for starting of year and adjust accordingly
-  if (d.getUTCDay() > 0 && d.getUTCDate() == 1 && d.getUTCMonth() == 0)
-    return 0;
-  // adjust for week start on Sunday
-  if (d.getUTCDay() == 0) return result + 1;
-  // else
-  return result;
+  return Math.floor((dayOfYear(d) - 1 + DAYS_PER_WEEK - d.getUTCDay()) / 7);
 }
 
+/** Returns the ISO 8601 week-numbering year, which owns the ISO week of the date. */
 export function isoWeekYear(d: Date): number {
-  return (
-    d.getUTCFullYear() -
-    Number(d.getUTCMonth() === 0 && d.getUTCDate() == 1 && d.getUTCDay() < 1)
-  );
+  const y = d.getUTCFullYear();
+  const w = isoWeek(d);
+  if (d.getUTCMonth() === 0 && w > 50) return y - 1;
+  if (d.getUTCMonth() === 11 && w === 1) return y + 1;
+  return y;
 }
 
 export const MINUTES_PER_HOUR = 60;
