@@ -479,11 +479,57 @@ runTest(testPath(import.meta.url), {
     [[[1], [1, 2]], -1],
     [[[1, 2], [1]], 1],
 
-    // Objects
+    // Objects: identical objects
     [[{}, {}], 0],
-    [[{ a: 1 }, { a: 1 }], 0],
+    [
+      [
+        { a: 1, b: 2 },
+        { a: 1, b: 2 }
+      ],
+      0
+    ],
+
+    // Objects: keys are sorted before comparison
+    [
+      [
+        { b: 2, a: 1 },
+        { a: 1, b: 2 }
+      ],
+      0
+    ],
+
+    // Objects: compare field names before values
+    [[{ a: 100 }, { b: -100 }], -1],
+    [[{ b: -100 }, { a: 100 }], 1],
+
+    // Objects: compare BSON types before field names
+    [[{ z: null }, { a: 0 }], -1],
+    [[{ z: 1 }, { a: "a" }], -1],
+    [[{ z: "a" }, { a: {} }], -1],
+    [[{ z: {} }, { a: [] }], -1],
+
+    // Objects: compare values when keys and types match
     [[{ a: 1 }, { a: 2 }], -1],
-    [[{ a: 2 }, { a: 1 }], 1],
+    [[{ a: "a" }, { a: "b" }], -1],
+    [[{ a: false }, { a: true }], -1],
+
+    // Objects: compare object length after common prefix
+    [[{ a: 1 }, { a: 1, b: 2 }], -1],
+    [[{ a: 1, b: 2 }, { a: 1 }], 1],
+
+    // Objects: nested object comparison
+    [[{ a: { x: 1 } }, { a: { x: 2 } }], -1],
+    [[{ a: { x: 1, y: 2 } }, { a: { x: 1, y: 3 } }], -1],
+
+    // Objects: nested keys are sorted before comparison
+    [[{ a: { y: 2, x: 1 } }, { a: { x: 1, y: 2 } }], 0],
+
+    // Objects: nested BSON type precedence
+    [[{ a: { z: null } }, { a: { a: 0 } }], -1],
+
+    // Objects: arrays as field values
+    [[{ a: [1, 2] }, { a: [1, 3] }], -1],
+    [[{ a: [1] }, { a: [1, 2] }], -1],
 
     // Field references
     [["$a", "$b"], 0, { obj: { a: 10, b: 10 } }],

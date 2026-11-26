@@ -98,12 +98,23 @@ export function mingoCmp(a: Any, b: Any, strictMode: boolean = false): number {
             return simpleCmp((a as Str).toString(), (b as Str).toString());
         }
         // plain objects
-        const keysA = Object.keys(a as object).sort();
-        const keysB = Object.keys(b as object).sort();
-        if ((neq = mingoCmp(keysA, keysB))) return neq;
-        for (const k of keysA)
-          if ((neq = mingoCmp((a as AnyObject)[k], (b as AnyObject)[k])))
-            return neq;
+        const objA = a as AnyObject;
+        const objB = b as AnyObject;
+        const keysA = Object.keys(objA).sort();
+        const keysB = Object.keys(objB).sort();
+        const size = Math.min(keysA.length, keysB.length);
+        // from test observation - object comparison in MongoDB is not stable and can return different results for the same static objects.
+        // unlike MongoDB, keys are sorted for comparison to provide some stability before compariing in order of field types, then field names, then field values.
+        for (let i = 0; i < size; i++) {
+          const ka = keysA[i];
+          const kb = keysB[i];
+          const ta = SORT_ORDER[typeOf(objA[ka])] ?? Number.MAX_VALUE;
+          const tb = SORT_ORDER[typeOf(objB[kb])] ?? Number.MAX_VALUE;
+          if ((neq = simpleCmp(ta, tb))) return neq;
+          if ((neq = simpleCmp(ka, kb))) return neq;
+          if ((neq = mingoCmp(objA[ka], objB[kb]))) return neq;
+        }
+        if ((neq = mingoCmp(keysA.length, keysB.length))) return neq;
         return 0;
       }
     }
